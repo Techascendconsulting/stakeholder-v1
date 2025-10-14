@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { 
   GraduationCap, 
@@ -29,7 +29,9 @@ import {
   Video,
   Headphones,
   Monitor,
-  Smartphone
+  Smartphone,
+  Map,
+  Bot
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 
@@ -38,6 +40,7 @@ const LandingPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
     setIsVisible(true)
@@ -53,46 +56,78 @@ const LandingPage: React.FC = () => {
     const interval = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length)
     }, 5000)
+
+    // Parallax scroll effect
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
     
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-fadeInUp')
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, {
+      threshold: 0.1,
+      rootMargin: '50px'
+    })
+
+    document.querySelectorAll('.observe-animation').forEach(el => {
+      observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [isVisible])
 
   if (showAuth) {
     return <LoginSignup />
   }
 
+  // Updated features to match actual app
   const features = [
     {
-      icon: Brain,
-      title: "AI-Powered Stakeholder Simulation",
-      description: "Practice with hyper-realistic AI stakeholders that adapt to your questions and provide authentic business responses",
+      icon: Map,
+      title: "Learning Journey",
+      description: "Master Business Analysis through 10 sequential modules. Core concepts, project initiation, elicitation, documentation, and more - all with interactive assignments and AI feedback.",
       image: "https://images.pexels.com/photos/2566581/pexels-photo-2566581.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "25+ Stakeholders",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: FileText,
-      title: "Professional Documentation Suite",
-      description: "Generate industry-standard BRDs, user stories, and acceptance criteria with AI-assisted templates",
-      image: "https://images.pexels.com/photos/15543115/pexels-photo-15543115.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "15+ Templates",
-      color: "from-purple-500 to-pink-500"
+      stats: "10 Modules",
+      color: "from-purple-500 to-indigo-600"
     },
     {
       icon: Target,
-      title: "Real Enterprise Scenarios",
-      description: "Work on actual business cases from Fortune 500 companies across multiple industries",
+      title: "AI-Powered Practice",
+      description: "Practice elicitation, documentation, MVP building, and Scrum with realistic AI stakeholders. Get instant feedback and improve your skills with every session.",
       image: "https://images.pexels.com/photos/7688339/pexels-photo-7688339.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "5 Industries",
-      color: "from-emerald-500 to-teal-500"
+      stats: "4 Practice Modules",
+      color: "from-cyan-500 to-blue-600"
     },
     {
-      icon: Trophy,
-      title: "Skill Certification Program",
-      description: "Earn recognized certifications and build a portfolio that showcases your BA expertise",
+      icon: Briefcase,
+      title: "Hands-On Projects",
+      description: "Work on real-world business scenarios. Apply your learning to actual BA projects with tools for requirements, process mapping, and stakeholder management.",
+      image: "https://images.pexels.com/photos/15543115/pexels-photo-15543115.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      stats: "Real Scenarios",
+      color: "from-emerald-500 to-teal-600"
+    },
+    {
+      icon: Bot,
+      title: "Verity AI Assistant",
+      description: "Your 24/7 learning companion. Get instant answers to BA questions, navigate the platform, and receive personalized guidance throughout your journey.",
       image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "Industry Recognized",
-      color: "from-orange-500 to-red-500"
+      stats: "Always Available",
+      color: "from-pink-500 to-purple-600"
     }
   ]
 
@@ -107,17 +142,16 @@ const LandingPage: React.FC = () => {
       salary: "£85k → £120k",
       location: "London, UK"
     },
-   {
-  name: "Chukwuemeka Nwosu",
-  role: "Lead Product Analyst",
-  company: "Deloitte",
-  content: "The real-world scenarios are incredible. I practiced on the exact type of digital transformation project I later worked on at Deloitte. The stakeholder personalities are so diverse and realistic.",
-  rating: 5,
-  image: "https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/images//ChatGPT%20Image%20Jul%2011,%202025,%2007_55_26%20PM.png",
-  salary: "£65k → £95k",
-  location: "Manchester, UK"
-},
-
+    {
+      name: "Chukwuemeka Nwosu",
+      role: "Lead Product Analyst",
+      company: "Deloitte",
+      content: "The real-world scenarios are incredible. I practiced on the exact type of digital transformation project I later worked on at Deloitte. The stakeholder personalities are so diverse and realistic.",
+      rating: 5,
+      image: "https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/images//ChatGPT%20Image%20Jul%2011,%202025,%2007_55_26%20PM.png",
+      salary: "£65k → £95k",
+      location: "Manchester, UK"
+    },
     {
       name: "Folake Adebayo",
       role: "Business Transformation Consultant",
@@ -146,80 +180,103 @@ const LandingPage: React.FC = () => {
     { name: "EY", logo: "https://images.pexels.com/photos/4348416/pexels-photo-4348416.jpeg?auto=compress&cs=tinysrgb&w=200" }
   ]
 
+  const howItWorksSteps = [
+    {
+      number: "01",
+      title: "Learn",
+      description: "Complete 10 interactive modules covering all BA fundamentals. From core concepts to advanced techniques, build a solid foundation.",
+      icon: GraduationCap,
+      color: "from-purple-500 to-indigo-600"
+    },
+    {
+      number: "02",
+      title: "Practice",
+      description: "Apply your knowledge with AI-powered simulations. Practice elicitation, documentation, MVP building, and Scrum in realistic scenarios.",
+      icon: Target,
+      color: "from-cyan-500 to-blue-600"
+    },
+    {
+      number: "03",
+      title: "Build",
+      description: "Work on hands-on projects that mirror real-world BA work. Create requirements, map processes, and manage stakeholders.",
+      icon: Rocket,
+      color: "from-emerald-500 to-teal-600"
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Floating Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-white" />
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">BA Mastery</span>
-          </div>
-          <nav className="hidden md:flex items-center space-x-6">
-            <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-all duration-300 hover:scale-105">Features</a>
-            <a href="#pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-all duration-300 hover:scale-105">Pricing</a>
-            <a href="#success" className="text-gray-600 hover:text-blue-600 font-medium transition-all duration-300 hover:scale-105">Success Stories</a>
-          </nav>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowAuth(true)}
-              className="text-gray-700 hover:text-gray-900 font-medium transition-all duration-300 hover:scale-105"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setShowAuth(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Start Free
-            </button>
-          </div>
+            <nav className="hidden md:flex items-center space-x-6">
+              <a href="#features" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">Features</a>
+              <a href="#how-it-works" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">How It Works</a>
+              <a href="#success" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">Success Stories</a>
+            </nav>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowAuth(true)}
+                className="text-gray-700 hover:text-gray-900 font-medium transition-all duration-300 hover:scale-105"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setShowAuth(true)}
+                className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Start Free
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section - Ultra Rich */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-full blur-3xl animate-spin-slow"></div>
+      {/* Hero Section - 2025 Silicon Valley Design */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+        {/* Animated Background with Parallax */}
+        <div className="absolute inset-0" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-full blur-3xl animate-spin-slow"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content */}
             <div className={`text-center lg:text-left transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <div className="inline-flex items-center bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 px-6 py-3 rounded-full text-sm font-medium mb-8 animate-bounce shadow-lg">
+              <div className="inline-flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-8 animate-bounce shadow-lg">
                 <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
                 Join 2,847+ Successful Business Analysts
               </div>
             
               <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                BA WorkXP
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient"> Platform </span>
-                <br />Master Business Analysis with AI
+                Master Business Analysis
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 animate-gradient"> with AI </span>
               </h1>
               
               <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl">
-                Practice with hyper-realistic AI stakeholders, work on real Fortune 500 scenarios, and build a portfolio that lands you your dream BA role. 
-                <span className="font-semibold text-gray-900"> Average salary increase: £47k within 6 months.</span>
+                Learn through 10 interactive modules, practice with AI stakeholders, and build real projects. 
+                <span className="font-semibold text-gray-900"> Start free and unlock your BA career.</span>
               </p>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start mb-12">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="group bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-5 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-blue-500/25"
+                  className="group bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-5 rounded-2xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-purple-500/25"
                 >
                   <Rocket className="w-6 h-6 group-hover:animate-bounce" />
-                  <span>Start Free Training</span>
+                  <span>Start Learning Free</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="group border-2 border-gray-300 text-gray-700 px-10 py-5 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 transform hover:scale-105">
+                <button className="group border-2 border-gray-300 text-gray-700 px-10 py-5 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 transform hover:scale-105">
                   <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   <span>Watch Success Stories</span>
                 </button>
@@ -228,16 +285,16 @@ const LandingPage: React.FC = () => {
               {/* Trust Indicators */}
               <div className="grid grid-cols-3 gap-8 max-w-md mx-auto lg:mx-0">
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">94%</div>
-                  <div className="text-sm text-gray-600">Job Placement</div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">10</div>
+                  <div className="text-sm text-gray-600">Learning Modules</div>
                 </div>
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">£47k</div>
-                  <div className="text-sm text-gray-600">Avg. Increase</div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">AI</div>
+                  <div className="text-sm text-gray-600">Powered Practice</div>
                 </div>
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">4.9★</div>
-                  <div className="text-sm text-gray-600">Student Rating</div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">Free</div>
+                  <div className="text-sm text-gray-600">To Start</div>
                 </div>
               </div>
             </div>
@@ -246,37 +303,38 @@ const LandingPage: React.FC = () => {
             <div className={`relative transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <div className="relative">
                 {/* Main Product Screenshot */}
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500 group">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500 group backdrop-blur-sm bg-white/30 border border-white/50">
                   <img
                     src="https://images.pexels.com/photos/7698715/pexels-photo-7698715.jpeg?auto=compress&cs=tinysrgb&w=1200"
                     alt="AI-Powered Business Analysis Training Platform"
                     className="w-full h-[600px] object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                   
-                  {/* Floating UI Elements */}
-                  <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float">
+                  {/* Floating UI Elements - Glassmorphism */}
+                  <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl animate-float border border-white/50">
                     <div className="flex items-center space-x-3">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-semibold text-gray-900">Live AI Interview</span>
+                      <span className="text-sm font-semibold text-gray-900">Learning Journey</span>
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">Stakeholder: Sarah Chen, Head of Operations</div>
+                    <div className="text-xs text-gray-600 mt-1">Module 3: Requirements Elicitation</div>
                   </div>
                   
-                  <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-500">
+                  <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl animate-float delay-500 border border-white/50">
                     <div className="flex items-center space-x-3">
-                      <Users className="w-5 h-5 text-purple-600" />
+                      <Bot className="w-5 h-5 text-purple-600" />
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">5 Stakeholders</div>
-                        <div className="text-xs text-gray-600">Ready for interview</div>
+                        <div className="text-sm font-semibold text-gray-900">Verity AI</div>
+                        <div className="text-xs text-gray-600">Ready to help</div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Background Decoration */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-200/30 to-purple-200/30 rounded-3xl transform rotate-3 scale-105 -z-10 blur-sm"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-200/20 to-pink-200/20 rounded-3xl transform -rotate-2 scale-110 -z-20 blur-md"></div>
+                {/* Background Decoration with 3D effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-200/30 to-indigo-200/30 rounded-3xl transform rotate-3 scale-105 -z-10 blur-sm"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-200/20 to-purple-200/20 rounded-3xl transform -rotate-2 scale-110 -z-20 blur-md"></div>
               </div>
             </div>
           </div>
@@ -304,74 +362,144 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Stats Section - Animated Counters */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-purple-600 to-indigo-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200')] opacity-10 bg-cover bg-center"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 observe-animation opacity-0">
             <h2 className="text-4xl font-bold text-white mb-4">Transforming Careers Worldwide</h2>
-            <p className="text-xl text-blue-100">Real results from real professionals</p>
+            <p className="text-xl text-purple-100">Real results from real professionals</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center group transform hover:scale-110 transition-all duration-300">
-                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-all duration-300">
+              <div key={index} className="text-center group transform hover:scale-110 transition-all duration-300 observe-animation opacity-0" style={{ transitionDelay: `${index * 100}ms` }}>
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-all duration-300 border border-white/30">
                   <stat.icon className="w-10 h-10 text-white" />
                 </div>
                 <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform">{stat.number}</div>
-                <div className="text-blue-100 font-medium mb-1">{stat.label}</div>
-                <div className="text-blue-200 text-sm">{stat.change}</div>
+                <div className="text-purple-100 font-medium mb-1">{stat.label}</div>
+                <div className="text-purple-200 text-sm">{stat.change}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section - Rich Visual Cards */}
-      <section id="features" className="py-24 bg-gray-50">
+      {/* How It Works - 3-Step Journey */}
+      <section id="how-it-works" className="py-24 bg-gradient-to-br from-slate-50 to-purple-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center bg-blue-50 text-blue-700 px-6 py-3 rounded-full text-sm font-medium mb-6">
-              <Lightbulb className="w-4 h-4 mr-2" />
-              Revolutionary Training Technology
+          <div className="text-center mb-20 observe-animation opacity-0">
+            <div className="inline-flex items-center bg-purple-50 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-6 border border-purple-200">
+              <Map className="w-4 h-4 mr-2" />
+              Your Learning Path
             </div>
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">Everything you need to become a BA expert</h2>
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">How It Works</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our AI-powered platform provides the most realistic business analysis training experience available anywhere.
+              A structured, progressive journey from foundational concepts to real-world application
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {howItWorksSteps.map((step, index) => (
+              <div 
+                key={index} 
+                className="relative group observe-animation opacity-0"
+                style={{ transitionDelay: `${index * 150}ms` }}
+              >
+                {/* Connection Line (except last item) */}
+                {index < howItWorksSteps.length - 1 && (
+                  <div className="hidden md:block absolute top-20 left-full w-full h-0.5 bg-gradient-to-r from-purple-300 to-transparent -translate-x-1/2 z-0"></div>
+                )}
+                
+                <div className="relative bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 border border-gray-100 hover:border-purple-200">
+                  {/* Step Number */}
+                  <div className="absolute -top-6 left-8">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center shadow-lg text-white font-bold text-xl`}>
+                      {step.number}
+                    </div>
+                  </div>
+                  
+                  {/* Icon */}
+                  <div className="mb-6 mt-8">
+                    <div className={`w-20 h-20 bg-gradient-to-r ${step.color} rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <step.icon className="w-10 h-10 text-white" />
+                    </div>
+                  </div>
+                  
+                  {/* Content */}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">{step.title}</h3>
+                  <p className="text-gray-600 leading-relaxed text-center">{step.description}</p>
+                  
+                  {/* Decorative gradient line */}
+                  <div className={`mt-6 h-1 bg-gradient-to-r ${step.color} rounded-full mx-auto w-16 group-hover:w-full transition-all duration-500`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-16 observe-animation opacity-0">
+            <button
+              onClick={() => setShowAuth(true)}
+              className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-4 rounded-2xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105 inline-flex items-center space-x-3"
+            >
+              <span>Start Your Journey Free</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Rich Visual Cards */}
+      <section id="features" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20 observe-animation opacity-0">
+            <div className="inline-flex items-center bg-purple-50 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-6 border border-purple-200">
+              <Lightbulb className="w-4 h-4 mr-2" />
+              Platform Features
+            </div>
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">Everything You Need to Master BA</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our comprehensive platform combines learning, practice, and real-world application
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {features.map((feature, index) => (
-              <div key={index} className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4">
+              <div 
+                key={index} 
+                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 border border-gray-100 hover:border-purple-200 observe-animation opacity-0"
+                style={{ transitionDelay: `${index * 100}ms` }}
+              >
                 <div className="relative h-80 overflow-hidden">
                   <img
                     src={feature.image}
                     alt={feature.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent`}></div>
                   
-                  {/* Feature Icon */}
+                  {/* Feature Icon - Glassmorphism */}
                   <div className="absolute top-6 left-6">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm border border-white/30`}>
                       <feature.icon className="w-8 h-8 text-white" />
                     </div>
                   </div>
                   
-                  {/* Stats Badge */}
-                  <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
+                  {/* Stats Badge - Glassmorphism */}
+                  <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-md rounded-xl px-4 py-2 shadow-lg border border-white/50">
                     <div className="text-sm font-bold text-gray-900">{feature.stats}</div>
                   </div>
                   
                   {/* Feature Title Overlay */}
                   <div className="absolute bottom-6 left-6 right-6">
-                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-200 transition-colors">{feature.title}</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-purple-200 transition-colors">{feature.title}</h3>
                   </div>
                 </div>
                 
                 <div className="p-8">
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">{feature.description}</p>
-                  <button className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-800 transition-colors group-hover:translate-x-2 transform transition-transform duration-300">
+                  <button className="inline-flex items-center text-purple-600 font-semibold hover:text-purple-800 transition-colors group-hover:translate-x-2 transform transition-transform duration-300">
                     Learn More
                     <ChevronRight className="w-5 h-5 ml-1" />
                   </button>
@@ -382,226 +510,25 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* One Platform All Features Section */}
-      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              ONE PLATFORM.
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
-                ALL THE FEATURES.
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Stop juggling multiple training resources and platforms. We've seamlessly integrated everything 
-              into one comprehensive Business Analysis mastery platform.
-            </p>
-            <button
-              onClick={() => setShowAuth(true)}
-              className="mt-8 inline-flex items-center space-x-2 bg-white text-gray-900 px-8 py-4 rounded-2xl hover:bg-gray-100 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105"
-            >
-              <span>Explore All Features</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Feature Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* AI Stakeholder Interviews */}
-            <div className="group bg-gradient-to-br from-pink-100 to-rose-100 rounded-3xl p-8 border border-pink-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">AI STAKEHOLDER INTERVIEWS</h3>
-              </div>
-              
-              {/* Mock Interface */}
-              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-8 h-8 bg-pink-500 rounded-full"></div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-900">Sarah Chen</div>
-                    <div className="text-xs text-gray-600">Head of Operations</div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-2 bg-gray-200 rounded w-full"></div>
-                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-2 bg-pink-200 rounded w-1/2"></div>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-4 font-medium">
-                Practice with hyper-realistic AI stakeholders that respond authentically to your questions.
-              </p>
-              <button className="text-pink-600 font-semibold hover:text-pink-800 transition-colors flex items-center space-x-1">
-                <span>Learn More</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Requirements Documentation */}
-            <div className="group bg-gradient-to-br from-yellow-100 to-amber-100 rounded-3xl p-8 border border-yellow-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <FileText className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">REQUIREMENTS DOCUMENTATION</h3>
-              </div>
-              
-              {/* Mock Interface */}
-              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs font-semibold text-gray-900">Business Requirements</div>
-                  <div className="text-xs text-green-600 font-medium">✓ Complete</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <div className="text-xs text-gray-700">User Stories: 12/15</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="text-xs text-gray-700">BRD: Complete</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <div className="text-xs text-gray-700">Acceptance Criteria: 8/10</div>
-                  </div>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-4 font-medium">
-                Create professional BRDs, user stories, and acceptance criteria with industry-standard templates.
-              </p>
-              <button className="text-yellow-600 font-semibold hover:text-yellow-800 transition-colors flex items-center space-x-1">
-                <span>Learn More</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Real-World Projects */}
-            <div className="group bg-gradient-to-br from-purple-100 to-indigo-100 rounded-3xl p-8 border border-purple-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Briefcase className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">REAL-WORLD PROJECTS</h3>
-              </div>
-              
-              {/* Mock Interface */}
-              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs font-semibold text-gray-900">Customer Onboarding</div>
-                    <div className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Active</div>
-                  </div>
-                  <div className="text-xs text-gray-600">Fortune 500 Case Study</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-500 h-2 rounded-full w-3/4"></div>
-                  </div>
-                  <div className="text-xs text-gray-500">Progress: 75%</div>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-4 font-medium">
-                Work on actual business cases from Fortune 500 companies across multiple industries.
-              </p>
-              <button className="text-purple-600 font-semibold hover:text-purple-800 transition-colors flex items-center space-x-1">
-                <span>Learn More</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Progress Analytics */}
-            <div className="group bg-gradient-to-br from-cyan-100 to-blue-100 rounded-3xl p-8 border border-cyan-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <BarChart3 className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">PROGRESS ANALYTICS</h3>
-              </div>
-              
-              {/* Mock Interface */}
-              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="text-xs text-gray-600">Skill Development</div>
-                    <div className="text-lg font-bold text-cyan-600">94%</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-700">Stakeholder Mgmt</span>
-                      <span className="text-cyan-600 font-medium">Expert</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-700">Requirements</span>
-                      <span className="text-blue-600 font-medium">Advanced</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-700">Documentation</span>
-                      <span className="text-purple-600 font-medium">Proficient</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <p className="text-gray-700 mb-4 font-medium">
-                Track your BA skill development with detailed analytics and personalized insights.
-              </p>
-              <button className="text-cyan-600 font-semibold hover:text-cyan-800 transition-colors flex items-center space-x-1">
-                <span>Learn More</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom CTA */}
-          <div className="text-center mt-16">
-            <p className="text-gray-300 text-lg mb-8">
-              Everything you need to master Business Analysis in one comprehensive platform
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => setShowAuth(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105"
-              >
-                Start Free Training
-              </button>
-              <button className="border-2 border-white text-white px-10 py-4 rounded-2xl hover:bg-white hover:text-gray-900 transition-all duration-300 font-semibold text-lg">
-                View All Features
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
       {/* Success Stories - Interactive Testimonials */}
-      <section id="success" className="py-24 bg-white">
+      <section id="success" className="py-24 bg-gradient-to-br from-slate-50 to-purple-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 observe-animation opacity-0">
             <h2 className="text-5xl font-bold text-gray-900 mb-6">Success Stories That Inspire</h2>
             <p className="text-xl text-gray-600">Real professionals, real results, real career transformations</p>
           </div>
 
-          <div className="relative">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-12 shadow-xl">
+          <div className="relative observe-animation opacity-0">
+            <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 shadow-xl border border-white/50">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="relative">
                   <img
                     src={testimonials[currentTestimonial].image}
                     alt={testimonials[currentTestimonial].name}
                     className="w-full h-96 object-cover rounded-2xl shadow-lg"
+                    loading="lazy"
                   />
-                  <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-6 shadow-xl">
+                  <div className="absolute -bottom-6 -right-6 bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">{testimonials[currentTestimonial].salary}</div>
                       <div className="text-sm text-gray-600">Salary Increase</div>
@@ -620,9 +547,9 @@ const LandingPage: React.FC = () => {
                     "{testimonials[currentTestimonial].content}"
                   </blockquote>
                   
-                  <div className="border-l-4 border-blue-500 pl-6">
+                  <div className="border-l-4 border-purple-500 pl-6">
                     <div className="text-xl font-bold text-gray-900">{testimonials[currentTestimonial].name}</div>
-                    <div className="text-blue-600 font-semibold">{testimonials[currentTestimonial].role}</div>
+                    <div className="text-purple-600 font-semibold">{testimonials[currentTestimonial].role}</div>
                     <div className="text-gray-600">{testimonials[currentTestimonial].company} • {testimonials[currentTestimonial].location}</div>
                   </div>
                 </div>
@@ -636,8 +563,9 @@ const LandingPage: React.FC = () => {
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentTestimonial ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                    index === currentTestimonial ? 'bg-purple-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'
                   }`}
+                  aria-label={`View testimonial ${index + 1}`}
                 />
               ))}
             </div>
@@ -645,168 +573,108 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Section - Premium Cards */}
-      <section id="pricing" className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">Invest in Your Future</h2>
-            <p className="text-xl text-gray-600">Choose the plan that accelerates your BA career</p>
+      {/* Start Free Section - Replacing Pricing */}
+      <section className="py-24 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 observe-animation opacity-0">
+            <h2 className="text-5xl font-bold text-white mb-6">Start Learning for Free</h2>
+            <p className="text-xl text-purple-100 max-w-2xl mx-auto leading-relaxed">
+              Access the complete Learning Journey, practice with AI, and work on your first project - completely free.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-white rounded-3xl border-2 border-gray-200 p-8 relative transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Starter</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-gray-900">£0</span>
-                  <span className="text-gray-600 ml-2">/forever</span>
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-12 border border-white/20 observe-animation opacity-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="w-6 h-6 text-green-300" />
                 </div>
-                <p className="text-gray-600">Perfect for exploring BA fundamentals</p>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">1 comprehensive project</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">2 AI stakeholder interviews</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Basic project brief access</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Community support</span>
+                <div>
+                  <h3 className="text-white font-semibold text-lg mb-1">10 Learning Modules</h3>
+                  <p className="text-purple-100 text-sm">Complete BA fundamentals with assignments and AI feedback</p>
                 </div>
               </div>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="w-6 h-6 text-green-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-lg mb-1">AI Practice Sessions</h3>
+                  <p className="text-purple-100 text-sm">Unlock practice modules as you progress through learning</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="w-6 h-6 text-green-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-lg mb-1">1 Hands-On Project</h3>
+                  <p className="text-purple-100 text-sm">Work on a real-world BA project with all tools included</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="w-6 h-6 text-green-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-lg mb-1">Verity AI Assistant</h3>
+                  <p className="text-purple-100 text-sm">24/7 support with 20 questions per day</p>
+                </div>
+              </div>
+            </div>
 
+            <div className="text-center">
               <button
                 onClick={() => setShowAuth(true)}
-                className="w-full py-4 px-6 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-900 text-white hover:bg-gray-800 shadow-lg"
+                className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
               >
-                Start Free Training
+                <Rocket className="w-6 h-6" />
+                <span>Start Learning Free</span>
+                <ArrowRight className="w-6 h-6" />
               </button>
-            </div>
-
-            {/* Premium Plan */}
-            <div className="bg-white rounded-3xl border-2 border-blue-500 p-8 relative transform scale-105 shadow-2xl">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full text-sm font-semibold animate-pulse shadow-lg">
-                  Most Popular
-                </span>
-              </div>
-              
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Professional</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-gray-900">£99</span>
-                  <span className="text-gray-600 ml-2">/one-time</span>
-                </div>
-                <p className="text-gray-600">For serious BA professionals</p>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">2 comprehensive projects</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited AI interviews</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Full note-taking capabilities</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Professional templates</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Progress tracking</span>
-                </div>
-              </div>
-
-              <button className="w-full py-4 px-6 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg opacity-50 cursor-not-allowed">
-                Coming Soon
-              </button>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="bg-white rounded-3xl border-2 border-purple-500 p-8 relative transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Enterprise</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-gray-900">£399</span>
-                  <span className="text-gray-600 ml-2">/one-time</span>
-                </div>
-                <p className="text-gray-600">Complete BA mastery program</p>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">All 5 training projects</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited everything</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Advanced analytics</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Priority support</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-700">Certification pathway</span>
-                </div>
-              </div>
-
-              <button className="w-full py-4 px-6 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg opacity-50 cursor-not-allowed">
-                Coming Soon
-              </button>
+              <p className="text-purple-100 text-sm mt-6">
+                No credit card required • Start in 30 seconds • Unlock more projects anytime
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA - Rich Background */}
-      <section className="relative py-24 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden">
+      {/* Final CTA */}
+      <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1600"
             alt="Professional success"
             className="w-full h-full object-cover opacity-20"
+            loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/95 to-purple-600/95"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/95 to-indigo-700/95"></div>
         </div>
 
-        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 observe-animation opacity-0">
           <h2 className="text-5xl font-bold text-white mb-8">
             Your BA Career Transformation Starts Today
           </h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-purple-100 mb-12 max-w-2xl mx-auto leading-relaxed">
             Join 2,847+ professionals who've accelerated their careers with our AI-powered training. 
             Average salary increase: £47k within 6 months.
           </p>
           <button
             onClick={() => setShowAuth(true)}
-            className="bg-white text-blue-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
+            className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
           >
             <Rocket className="w-6 h-6" />
             <span>Start Free Training Now</span>
             <ArrowRight className="w-6 h-6" />
           </button>
-          <p className="text-blue-100 text-sm mt-6">No credit card required • Start in 30 seconds • 94% job placement rate</p>
+          <p className="text-purple-100 text-sm mt-6">No credit card required • Start in 30 seconds • 94% job placement rate</p>
         </div>
       </section>
 
@@ -816,13 +684,13 @@ const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
                   <GraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold">BA Mastery Platform</span>
+                <span className="text-2xl font-bold">BA WorkXP Platform</span>
               </div>
               <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
-                The world's most advanced Business Analysis training platform. Transform your career with AI-powered scenarios and real-world projects.
+                The world's most advanced Business Analysis training platform. Transform your career with AI-powered learning, practice, and real-world projects.
               </p>
               <div className="flex space-x-4">
                 {['Facebook', 'Twitter', 'LinkedIn', 'YouTube'].map((social) => (
@@ -835,7 +703,7 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-6">Platform</h3>
               <ul className="space-y-4 text-gray-400">
-                {['Features', 'Pricing', 'Projects', 'Certification', 'Success Stories'].map((item) => (
+                {['Learning Journey', 'Practice Sessions', 'Projects', 'Success Stories'].map((item) => (
                   <li key={item} className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">{item}</li>
                 ))}
               </ul>
@@ -843,19 +711,19 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-6">Support</h3>
               <ul className="space-y-4 text-gray-400">
-                {['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service', 'Careers'].map((item) => (
+                {['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service'].map((item) => (
                   <li key={item} className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">{item}</li>
                 ))}
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 BA Mastery Platform. All rights reserved. Transforming careers worldwide.</p>
+            <p>&copy; 2025 BA WorkXP Platform. All rights reserved. Transforming careers worldwide.</p>
           </div>
         </div>
       </footer>
 
-      {/* Custom Animations */}
+      {/* Custom Animations + 2025 Enhancements */}
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -873,6 +741,16 @@ const LandingPage: React.FC = () => {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
         .animate-float {
           animation: float 4s ease-in-out infinite;
         }
@@ -885,6 +763,33 @@ const LandingPage: React.FC = () => {
         }
         .animate-spin-slow {
           animation: spin-slow 20s linear infinite;
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        /* Reduced motion support for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+          width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #9333ea, #4f46e5);
+          border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #7e22ce, #4338ca);
         }
       `}</style>
     </div>
