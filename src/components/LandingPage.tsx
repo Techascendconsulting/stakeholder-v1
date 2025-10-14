@@ -92,7 +92,7 @@ const LandingPage: React.FC = () => {
   }, [isVisible])
 
   if (showAuth) {
-    return <LoginSignup />
+    return <LoginSignup onBack={() => setShowAuth(false)} />
   }
 
   // Updated features to match actual app

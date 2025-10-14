@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, GraduationCap } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscriptionService } from '../lib/subscription'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
 
-const LoginSignup: React.FC = () => {
+interface LoginSignupProps {
+  onBack?: () => void
+}
+
+const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin')
   const [formData, setFormData] = useState({
     name: '',
@@ -154,15 +158,28 @@ const LoginSignup: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Header */}
         <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8 text-white" />
-          </div>
+          {/* Clickable Logo - Returns to landing page */}
+          <button
+            onClick={onBack}
+            className={`w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 ${
+              onBack ? 'cursor-pointer hover:scale-110 hover:shadow-xl' : ''
+            }`}
+            title={onBack ? 'Back to home' : undefined}
+            disabled={!onBack}
+          >
+            <GraduationCap className="w-8 h-8 text-white" />
+          </button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            BA Training Platform
+            BA WorkXP
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Professional Business Analysis Development
+            Professional Business Analysis Training
           </p>
+          {onBack && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              Click logo to return to home
+            </p>
+          )}
         </div>
 
         {/* Tab Navigation */}
