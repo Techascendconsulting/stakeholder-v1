@@ -71,7 +71,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'learning',
       title: '📚 Learning Journey',
-      description: 'Let me show you the Learning Journey! This is where you start. You\'ll complete 10 modules covering all BA fundamentals.',
+      description: 'This is where you start your BA training. You\'ll complete 10 modules covering all BA fundamentals.',
       highlightSelector: '[data-tour="learning-journey"]',
       position: 'top-right',
       navigateTo: 'learning-flow', // Actually navigate to Learning Journey
@@ -79,7 +79,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'learning-modules',
       title: '📖 Your 10 Learning Modules',
-      description: 'See these cards? Each is a module with lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!',
+      description: 'Here are your 10 modules! Each has lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!',
       position: 'top-right',
       navigateTo: 'learning-flow',
     },
@@ -87,15 +87,15 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       id: 'practice',
       title: userType === 'new' ? '🔒 Practice Journey (Locked)' : '🎯 Practice Journey',
       description: userType === 'new' 
-        ? 'Practice is locked for now. It unlocks after you complete all 10 learning modules. Let me show you the Practice page - you\'ll see it\'s locked with a clear message.'
-        : 'Here\'s the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
+        ? 'This is the Practice Journey. It\'s locked for now and unlocks after you complete all 10 learning modules. You\'ll see a clear lock message here.'
+        : 'This is the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
       position: 'bottom-left',
       navigateTo: 'practice-flow', // Actually go to Practice page
     },
     {
       id: 'resources',
       title: '📖 Resources Always Available',
-      description: 'Good news! Resources are never locked. Access the BA Handbook, templates, and reference materials anytime you need help. Let me show you!',
+      description: 'These are your Resources! The BA Handbook, templates, and reference materials are never locked. You can access them anytime you need help.',
       highlightSelector: '[data-tour="resources"]',
       position: 'bottom-left',
       navigateTo: 'ba-reference', // Navigate to Resources page
