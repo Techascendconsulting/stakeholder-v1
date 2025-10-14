@@ -175,85 +175,67 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
         currentStepData.position === 'bottom' ? 'bottom-32 right-32' : // Position near Verity (bottom-right)
         currentStepData.position === 'left' ? 'top-1/2 left-24 -translate-y-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
-      } max-w-md w-full ${currentStepData.position === 'bottom' ? '' : 'mx-6'}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-4 border-purple-500">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 p-4 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-16 translate-x-16"></div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="text-xs font-semibold uppercase tracking-wide">Platform Tour</span>
-                </div>
-                <button
-                  onClick={handleSkip}
-                  className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                  aria-label="Skip tour"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <h2 className="text-lg font-bold mb-3">{currentStepData.title}</h2>
-              
-              {/* Progress Dots */}
-              <div className="flex items-center space-x-1.5">
+      } max-w-sm w-full ${currentStepData.position === 'bottom' ? '' : 'mx-6'}`}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-2 border-purple-500">
+          {/* Compact Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-white text-xs font-bold">{currentStepData.title}</span>
+            </div>
+            <button
+              onClick={handleSkip}
+              className="p-1 hover:bg-white/20 rounded transition-colors"
+              aria-label="Skip tour"
+            >
+              <X className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              {currentStepData.description}
+            </p>
+
+            {/* Progress & Actions */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {/* Progress Dots */}
                 {steps.map((_, index) => (
                   <div
                     key={index}
                     className={`h-1 rounded-full transition-all duration-300 ${
                       index === currentStep
-                        ? 'w-6 bg-white'
+                        ? 'w-4 bg-purple-600'
                         : index < currentStep
-                        ? 'w-1 bg-white/60'
-                        : 'w-1 bg-white/30'
+                        ? 'w-1 bg-purple-400'
+                        : 'w-1 bg-gray-300 dark:bg-gray-600'
                     }`}
                   />
                 ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6">
-            <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-              {currentStepData.description}
-            </p>
-
-            {/* Actions */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleSkip}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors"
-              >
-                Skip Tour
-              </button>
-
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
                   {currentStep + 1}/{steps.length}
                 </span>
-                
-                {currentStepData.action ? (
-                  <button
-                    onClick={currentStepData.action.onClick}
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-sm"
-                  >
-                    <span>{currentStepData.action.label}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleNext}
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-sm"
-                  >
-                    <span>{isLastStep ? 'Finish' : 'Next'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
               </div>
+
+              {currentStepData.action ? (
+                <button
+                  onClick={currentStepData.action.onClick}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-xs"
+                >
+                  <span>{currentStepData.action.label}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-xs"
+                >
+                  <span>{isLastStep ? 'Finish' : 'Next'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
