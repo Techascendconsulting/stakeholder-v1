@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 interface OnboardingTourProps {
   onComplete: () => void;
@@ -22,8 +24,33 @@ interface TourStep {
 
 const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) => {
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [userType, setUserType] = useState<'new' | 'existing'>('new');
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data) {
+          setUserType(data.user_type || 'new');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+    
+    loadUserType();
+  }, [user?.id]);
 
   const steps: TourStep[] = [
     {
@@ -57,12 +84,13 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       navigateTo: 'learning-flow',
     },
     {
-      id: 'practice-locked',
-      title: '🔒 Practice Journey (Locked)',
-      description: 'Practice is locked for now. It unlocks after you complete all 10 learning modules. Let me show you what it looks like...',
-      highlightSelector: '[data-tour="practice-journey"]',
-      position: 'right',
-      navigateTo: 'dashboard', // Back to dashboard
+      id: 'practice',
+      title: userType === 'new' ? '🔒 Practice Journey (Locked)' : '🎯 Practice Journey',
+      description: userType === 'new' 
+        ? 'Practice is locked for now. It unlocks after you complete all 10 learning modules. Let me show you the Practice page - you\'ll see it\'s locked with a clear message.'
+        : 'Here\'s the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
+      position: 'center',
+      navigateTo: 'practice-flow', // Actually go to Practice page
     },
     {
       id: 'resources',
@@ -75,7 +103,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'verity',
       title: '💬 Meet Verity - Your AI Assistant',
-      description: 'See this button? That\'s Verity! Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
+      description: 'Look at the bottom-right corner! That purple button is Verity, your AI assistant. Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
       highlightSelector: '[data-tour="verity"]',
       position: 'bottom',
       navigateTo: 'dashboard',
@@ -137,17 +165,17 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
 
   return (
     <>
-      {/* Semi-transparent Overlay - allows seeing content below */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[100] transition-opacity duration-300 pointer-events-none" />
+      {/* Very light overlay - NO BLUR, just slight darkening */}
+      <div className="fixed inset-0 bg-black/20 z-[100] transition-opacity duration-300 pointer-events-none" />
 
       {/* Floating Tour Tooltip - positioned based on step */}
       <div className={`fixed z-[101] transition-all duration-500 ${
         currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
         currentStepData.position === 'top' ? 'top-24 left-1/2 -translate-x-1/2' :
-        currentStepData.position === 'bottom' ? 'bottom-24 left-1/2 -translate-x-1/2' :
+        currentStepData.position === 'bottom' ? 'bottom-32 right-32' : // Position near Verity (bottom-right)
         currentStepData.position === 'left' ? 'top-1/2 left-24 -translate-y-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
-      } max-w-md w-full mx-6`}>
+      } max-w-md w-full ${currentStepData.position === 'bottom' ? '' : 'mx-6'}`}>
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-4 border-purple-500">
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 p-4 text-white relative overflow-hidden">
