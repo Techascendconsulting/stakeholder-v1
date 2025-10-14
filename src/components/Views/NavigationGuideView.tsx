@@ -167,83 +167,57 @@ const NavigationGuideView: React.FC = () => {
                 </div>
               </div>
 
-              {/* My Practice - Conditional rendering */}
-              {isPracticeAccessible ? (
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border-l-4 border-purple-600">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
-                    <Target className="w-5 h-5 text-purple-600" />
-                    <span>My Practice</span>
-                  </h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                    Apply what you learned. Practice with AI stakeholders and tools.
-                  </p>
-                  <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-4">
-                    <div className="flex items-start space-x-2">
-                      <span className="text-purple-600 font-bold">→</span>
-                      <div>
-                        <strong>Practice Journey:</strong> 4 practice modules (Elicitation, Documentation, MVP, Scrum).
-                      </div>
+              {/* My Practice */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border-l-4 border-purple-600">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
+                  <Target className="w-5 h-5 text-purple-600" />
+                  <span>My Practice</span>
+                </h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                  Apply what you learned. Practice with AI stakeholders and tools.
+                </p>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-4">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-purple-600 font-bold">→</span>
+                    <div>
+                      <strong>Practice Journey:</strong> 4 practice modules (Elicitation, Documentation, MVP, Scrum).
                     </div>
                   </div>
-                  <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-3 mt-3 text-xs text-purple-900 dark:text-purple-200">
-                    <Unlock className="w-4 h-4 inline mr-1" />
-                    <strong>Unlocked!</strong> You can now access practice modules.
-                  </div>
                 </div>
-              ) : (
-                <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl p-4 border-l-4 border-gray-400 opacity-60">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-400 mb-2 flex items-center space-x-2">
-                    <Lock className="w-5 h-5 text-gray-500" />
-                    <span>My Practice (Locked)</span>
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    This section unlocks after you complete all 10 Learning modules.
-                  </p>
-                  <div className="bg-gray-200 dark:bg-gray-700/50 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-400">
-                    <Lock className="w-4 h-4 inline mr-1" />
-                    <strong>Complete Learning Journey first</strong> to unlock Practice.
-                  </div>
+                <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-3 mt-3 text-xs text-purple-900 dark:text-purple-200">
+                  <Lock className="w-4 h-4 inline mr-1" />
+                  <strong>How to unlock:</strong> Complete all 10 Learning modules first.
+                  {isPracticeAccessible && (
+                    <span className="ml-2 text-green-700 dark:text-green-300 font-bold">✓ Unlocked for you!</span>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Hands-on Project - Conditional rendering */}
-              {isProjectsAccessible ? (
-                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border-l-4 border-orange-600">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
-                    <Briefcase className="w-5 h-5 text-orange-600" />
-                    <span>Hands-on Project</span>
-                  </h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                    Real-world application. Work on full BA projects and build your portfolio.
-                  </p>
-                  <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-4">
-                    <div className="flex items-start space-x-2">
-                      <span className="text-orange-600 font-bold">→</span>
-                      <div>
-                        <strong>Project Journey:</strong> Select a project, conduct meetings, create deliverables, build portfolio.
-                      </div>
+              {/* Hands-on Project */}
+              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border-l-4 border-orange-600">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
+                  <Briefcase className="w-5 h-5 text-orange-600" />
+                  <span>Hands-on Project</span>
+                </h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                  Real-world application. Work on full BA projects and build your portfolio.
+                </p>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-4">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-orange-600 font-bold">→</span>
+                    <div>
+                      <strong>Project Journey:</strong> Select a project, conduct meetings, create deliverables, build portfolio.
                     </div>
                   </div>
-                  <div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg p-3 mt-3 text-xs text-orange-900 dark:text-orange-200">
-                    <Unlock className="w-4 h-4 inline mr-1" />
-                    <strong>Unlocked!</strong> You can now work on real projects.
-                  </div>
                 </div>
-              ) : (
-                <div className="bg-gray-100 dark:bg-gray-800/50 rounded-xl p-4 border-l-4 border-gray-400 opacity-60">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-400 mb-2 flex items-center space-x-2">
-                    <Lock className="w-5 h-5 text-gray-500" />
-                    <span>Hands-on Project (Locked)</span>
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    This section unlocks after you complete all 4 Practice modules.
-                  </p>
-                  <div className="bg-gray-200 dark:bg-gray-700/50 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-400">
-                    <Lock className="w-4 h-4 inline mr-1" />
-                    <strong>Complete Practice Journey first</strong> to unlock Projects.
-                  </div>
+                <div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg p-3 mt-3 text-xs text-orange-900 dark:text-orange-200">
+                  <Lock className="w-4 h-4 inline mr-1" />
+                  <strong>How to unlock:</strong> Complete all 4 Practice modules first.
+                  {isProjectsAccessible && (
+                    <span className="ml-2 text-green-700 dark:text-green-300 font-bold">✓ Unlocked for you!</span>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* My Resources */}
               <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border-l-4 border-green-600">
@@ -299,79 +273,61 @@ const NavigationGuideView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Practice Step - Conditional */}
-              {isPracticeAccessible ? (
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                      Move to Practice Journey
-                    </h3>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Click <strong>My Practice → Practice Journey</strong>. Complete 4 practice modules.
-                    </p>
+              {/* Step 2: Practice */}
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                  2
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Move to Practice Journey
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    After Learning unlocks Practice. Click <strong>My Practice → Practice Journey</strong>. Complete 4 practice modules.
+                  </p>
+                  {isPracticeAccessible ? (
                     <button
                       onClick={() => setCurrentView('practice-flow')}
                       className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium"
                     >
                       Go to Practice Journey →
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start space-x-4 opacity-50">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-600 dark:text-gray-500 mb-1">
-                      Practice Journey (Locked)
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-500">
-                      Complete all 10 Learning modules to unlock Practice.
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+                      <Lock className="w-3 h-3 inline mr-1" />
+                      Unlocks after completing all 10 Learning modules
                     </p>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Projects Step - Conditional */}
-              {isProjectsAccessible ? (
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                      Work on Real Projects
-                    </h3>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Click <strong>Hands-on Project → Project Journey</strong>. Build your portfolio.
-                    </p>
+              {/* Step 3: Projects */}
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                  3
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Work on Real Projects
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    After Practice unlocks Projects. Click <strong>Hands-on Project → Project Journey</strong>. Build your portfolio.
+                  </p>
+                  {isProjectsAccessible ? (
                     <button
                       onClick={() => setCurrentView('project-flow')}
                       className="text-sm text-orange-600 dark:text-orange-400 hover:underline font-medium"
                     >
                       Go to Project Journey →
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start space-x-4 opacity-50">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-600 dark:text-gray-500 mb-1">
-                      Hands-on Projects (Locked)
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-500">
-                      Complete all 4 Practice modules to unlock Projects.
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+                      <Lock className="w-3 h-3 inline mr-1" />
+                      Unlocks after completing all 4 Practice modules
                     </p>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
