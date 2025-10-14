@@ -179,8 +179,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
 
   return (
     <>
-      {/* Very light overlay - NO BLUR, just slight darkening */}
-      <div className="fixed inset-0 bg-black/20 z-[100] transition-opacity duration-300 pointer-events-none" />
+      {/* Overlay - blocks clicks on page content */}
+      <div className="fixed inset-0 bg-black/20 z-[100] transition-opacity duration-300" />
 
       {/* Floating Tour Tooltip - positioned based on step */}
       <div className={`fixed z-[101] transition-all duration-500 ${
@@ -198,13 +198,21 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
               <Sparkles className="w-4 h-4 text-white" />
               <span className="text-white text-xs font-bold">{currentStepData.title}</span>
             </div>
-            <button
-              onClick={handleSkip}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
-              aria-label="Skip tour"
-            >
-              <X className="w-3.5 h-3.5 text-white" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleSkip}
+                className="px-2 py-1 text-xs text-white/90 hover:text-white hover:bg-white/20 rounded transition-colors font-medium"
+              >
+                Skip Tour
+              </button>
+              <button
+                onClick={handleSkip}
+                className="p-1 hover:bg-white/20 rounded transition-colors"
+                aria-label="Close tour"
+              >
+                <X className="w-3.5 h-3.5 text-white" />
+              </button>
+            </div>
           </div>
 
           {/* Content */}
