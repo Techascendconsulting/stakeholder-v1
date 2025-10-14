@@ -223,15 +223,15 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
 
             {/* Progress & Actions */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                {/* Back Button */}
+              <div className="flex items-center space-x-3">
+                {/* Back Button - Same style as Next */}
                 {currentStep > 0 && (
                   <button
                     onClick={handleBack}
-                    className="inline-flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-xs font-medium"
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow"
                     title="Go back"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-4 h-4" />
                     <span>Back</span>
                   </button>
                 )}
