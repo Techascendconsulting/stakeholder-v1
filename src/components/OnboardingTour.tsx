@@ -13,6 +13,7 @@ interface TourStep {
   description: string;
   highlightSelector?: string; // CSS selector to highlight
   position: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  navigateTo?: string; // Page to navigate to during this step
   action?: {
     label: string;
     onClick: () => void;
@@ -28,49 +29,63 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'welcome',
       title: '👋 Welcome to BA Training!',
-      description: 'Let me show you around in 60 seconds. You\'ll learn how to navigate the platform and start your BA journey.',
+      description: 'Let me show you around in 60 seconds. I\'ll walk you through the actual pages so you know exactly where everything is.',
       position: 'center',
+      navigateTo: 'dashboard',
     },
     {
       id: 'dashboard',
       title: '🎯 Your Dashboard',
-      description: 'This is your home base. The "Next Step" banner always shows what to do next. Check here if you\'re ever unsure!',
-      highlightSelector: '.hero-banner', // We'll add this class
+      description: 'This is your home base. The "Next Step" banner shows what to do next. Check here if you\'re ever unsure where to go!',
+      highlightSelector: '.hero-banner',
       position: 'center',
+      navigateTo: 'dashboard',
     },
     {
       id: 'learning',
       title: '📚 Learning Journey',
-      description: 'Start here! Complete 10 modules to master BA fundamentals. Each module has lessons and an assignment to test your knowledge.',
+      description: 'Let me show you the Learning Journey! This is where you start. You\'ll complete 10 modules covering all BA fundamentals.',
       highlightSelector: '[data-tour="learning-journey"]',
       position: 'right',
+      navigateTo: 'learning-flow', // Actually navigate to Learning Journey
     },
     {
-      id: 'locks',
-      title: '🔒 Progressive Unlock',
-      description: 'Practice and Projects are locked at first. They unlock as you complete modules. No skipping ahead - this ensures you build a strong foundation!',
+      id: 'learning-modules',
+      title: '📖 Your 10 Learning Modules',
+      description: 'See these cards? Each is a module with lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!',
+      position: 'center',
+      navigateTo: 'learning-flow',
+    },
+    {
+      id: 'practice-locked',
+      title: '🔒 Practice Journey (Locked)',
+      description: 'Practice is locked for now. It unlocks after you complete all 10 learning modules. Let me show you what it looks like...',
       highlightSelector: '[data-tour="practice-journey"]',
       position: 'right',
+      navigateTo: 'dashboard', // Back to dashboard
     },
     {
       id: 'resources',
-      title: '📖 Resources',
-      description: 'Stuck? The BA Handbook and templates are always available here. Use them as reference materials anytime.',
+      title: '📖 Resources Always Available',
+      description: 'Good news! Resources are never locked. Access the BA Handbook, templates, and reference materials anytime you need help.',
       highlightSelector: '[data-tour="resources"]',
       position: 'right',
+      navigateTo: 'dashboard',
     },
     {
       id: 'verity',
-      title: '💬 Meet Verity',
-      description: 'Your AI assistant! Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
+      title: '💬 Meet Verity - Your AI Assistant',
+      description: 'See this button? That\'s Verity! Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
       highlightSelector: '[data-tour="verity"]',
       position: 'bottom',
+      navigateTo: 'dashboard',
     },
     {
       id: 'ready',
-      title: '🚀 You\'re All Set!',
-      description: 'Your journey: Learning (10 modules) → Practice (4 exercises) → Hands-On Projects. Take it step by step, and you\'ll be a skilled BA in no time!',
+      title: '🚀 Ready to Start Your BA Journey?',
+      description: 'Your path: Learning (10 modules) → Practice (4 exercises) → Hands-On Projects. I\'ll take you to the Learning Journey now. Good luck! 🎉',
       position: 'center',
+      navigateTo: 'dashboard',
       action: {
         label: 'Start Learning Journey',
         onClick: () => {
@@ -88,7 +103,15 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     if (isLastStep) {
       onComplete();
     } else {
-      setCurrentStep(prev => prev + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      
+      // Navigate to the page for the next step
+      const nextStepData = steps[nextStep];
+      if (nextStepData.navigateTo) {
+        console.log('🎯 Tour: Navigating to', nextStepData.navigateTo);
+        setCurrentView(nextStepData.navigateTo as any);
+      }
     }
   };
 

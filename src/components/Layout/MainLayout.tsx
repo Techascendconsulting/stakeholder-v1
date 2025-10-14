@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
-import Dashboard from '../Views/Dashboard';
+// import Dashboard from '../Views/Dashboard'; // OLD: Archived for MVP
 import Dashboard2 from '../Views/Dashboard2'; // NEW: Clean, purposeful dashboard
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
@@ -92,13 +92,14 @@ import LearningPageWrapper from '../LearningPageWrapper';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import LockMessageToast from '../LockMessageToast';
+import NavigationGuideView from '../Views/NavigationGuideView'; // NEW: How to navigate guide
 
 
 const MainLayout: React.FC = () => {
   const { currentView, setCurrentView, isLoading, selectedProject, lockMessage, clearLockMessage } = useApp();
   const { isAdmin } = useAdmin();
   const { user } = useAuth();
-  const [userType, setUserType] = React.useState<'new' | 'existing'>('existing');
+  const [userType, setUserType] = React.useState<'new' | 'existing'>('existing'); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   // Load user type
   React.useEffect(() => {
@@ -326,6 +327,8 @@ const MainLayout: React.FC = () => {
         return <DeliverablesView />;
       case 'profile':
         return <ProfileView />;
+      case 'navigation-guide':
+        return <NavigationGuideView />;
       case 'analysis':
         return <AnalysisView />;
       case 'custom-project':

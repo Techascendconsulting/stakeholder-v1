@@ -564,26 +564,31 @@ export const ProfileView: React.FC = () => {
                 </select>
               </div>
 
-              {/* Reset Onboarding Section */}
+              {/* Restart Tour Section */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-sm font-bold">!</span>
-                    </div>
+                    <RefreshCw className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Reset Onboarding</h4>
+                      <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Restart Guided Tour</h4>
                       <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
-                        If you want to change your experience level or starting path, you can reset the onboarding process. This will take you back to the initial setup.
+                        Want to see the platform walkthrough again? Restart the 60-second guided tour to refresh your knowledge of the platform.
                       </p>
                       <button
-                        onClick={async () => {
-                          await resetOnboarding();
-                          setCurrentView('get-started');
+                        onClick={() => {
+                          if (user?.id) {
+                            // Clear tour completion flag
+                            localStorage.removeItem(`onboarding_tour_completed_${user.id}`);
+                            // Go to dashboard where tour will auto-trigger
+                            setCurrentView('dashboard');
+                            // Reload page to trigger tour
+                            window.location.reload();
+                          }
                         }}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
                       >
-                        Reset Onboarding
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Restart Tour</span>
                       </button>
                     </div>
                   </div>
