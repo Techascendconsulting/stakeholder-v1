@@ -85,9 +85,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     },
     {
       id: 'practice',
-      title: userType === 'new' ? '🔒 Practice Journey (Locked)' : '🎯 Practice Journey',
+      title: userType === 'new' ? '🔒 Practice Journey' : '🎯 Practice Journey',
       description: userType === 'new' 
-        ? 'This is the Practice Journey. It\'s locked for now and unlocks after you complete all 10 learning modules. You\'ll see a clear lock message here.'
+        ? 'This is the Practice Journey with 4 practice modules. Most are locked initially. Elicitation practice unlocks after Module 3, and full access unlocks after completing all 10 learning modules.'
         : 'This is the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
       position: 'bottom-left',
       navigateTo: 'practice-flow', // Actually go to Practice page
