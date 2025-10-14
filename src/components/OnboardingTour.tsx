@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -14,7 +14,7 @@ interface TourStep {
   title: string;
   description: string;
   highlightSelector?: string; // CSS selector to highlight
-  position: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  position: 'center' | 'top-right' | 'bottom-left' | 'bottom-right' | 'bottom-center';
   navigateTo?: string; // Page to navigate to during this step
   action?: {
     label: string;
@@ -65,7 +65,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       title: '🎯 Your Dashboard',
       description: 'This is your home base. The "Next Step" banner shows what to do next. Check here if you\'re ever unsure where to go!',
       highlightSelector: '.hero-banner',
-      position: 'center',
+      position: 'top-right',
       navigateTo: 'dashboard',
     },
     {
@@ -73,14 +73,14 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       title: '📚 Learning Journey',
       description: 'Let me show you the Learning Journey! This is where you start. You\'ll complete 10 modules covering all BA fundamentals.',
       highlightSelector: '[data-tour="learning-journey"]',
-      position: 'right',
+      position: 'top-right',
       navigateTo: 'learning-flow', // Actually navigate to Learning Journey
     },
     {
       id: 'learning-modules',
       title: '📖 Your 10 Learning Modules',
       description: 'See these cards? Each is a module with lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!',
-      position: 'center',
+      position: 'top-right',
       navigateTo: 'learning-flow',
     },
     {
@@ -89,23 +89,23 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       description: userType === 'new' 
         ? 'Practice is locked for now. It unlocks after you complete all 10 learning modules. Let me show you the Practice page - you\'ll see it\'s locked with a clear message.'
         : 'Here\'s the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
-      position: 'center',
+      position: 'bottom-left',
       navigateTo: 'practice-flow', // Actually go to Practice page
     },
     {
       id: 'resources',
       title: '📖 Resources Always Available',
-      description: 'Good news! Resources are never locked. Access the BA Handbook, templates, and reference materials anytime you need help.',
+      description: 'Good news! Resources are never locked. Access the BA Handbook, templates, and reference materials anytime you need help. Let me show you!',
       highlightSelector: '[data-tour="resources"]',
-      position: 'right',
-      navigateTo: 'dashboard',
+      position: 'bottom-left',
+      navigateTo: 'ba-reference', // Navigate to Resources page
     },
     {
       id: 'verity',
       title: '💬 Meet Verity - Your AI Assistant',
       description: 'Look at the bottom-right corner! That purple button is Verity, your AI assistant. Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
       highlightSelector: '[data-tour="verity"]',
-      position: 'bottom',
+      position: 'bottom-center',
       navigateTo: 'dashboard',
     },
     {
@@ -143,6 +143,20 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     }
   };
 
+  const handleBack = () => {
+    if (currentStep > 0) {
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      
+      // Navigate to the page for the previous step
+      const prevStepData = steps[prevStep];
+      if (prevStepData.navigateTo) {
+        console.log('🎯 Tour: Navigating back to', prevStepData.navigateTo);
+        setCurrentView(prevStepData.navigateTo as any);
+      }
+    }
+  };
+
   const handleSkip = () => {
     setIsVisible(false);
     setTimeout(() => onSkip(), 300); // Allow fade out animation
@@ -171,11 +185,12 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       {/* Floating Tour Tooltip - positioned based on step */}
       <div className={`fixed z-[101] transition-all duration-500 ${
         currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
-        currentStepData.position === 'top' ? 'top-24 left-1/2 -translate-x-1/2' :
-        currentStepData.position === 'bottom' ? 'bottom-32 right-32' : // Position near Verity (bottom-right)
-        currentStepData.position === 'left' ? 'top-1/2 left-24 -translate-y-1/2' :
+        currentStepData.position === 'top-right' ? 'top-24 right-8' :
+        currentStepData.position === 'bottom-left' ? 'bottom-24 left-8' :
+        currentStepData.position === 'bottom-right' ? 'bottom-24 right-8' :
+        currentStepData.position === 'bottom-center' ? 'bottom-24 left-1/2 -translate-x-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
-      } max-w-sm w-full ${currentStepData.position === 'bottom' ? '' : 'mx-6'}`}>
+      } max-w-sm w-full`}>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-2 border-purple-500">
           {/* Compact Header */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 flex items-center justify-between">
@@ -201,22 +216,36 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
             {/* Progress & Actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
+                {/* Back Button */}
+                {currentStep > 0 && (
+                  <button
+                    onClick={handleBack}
+                    className="inline-flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-xs font-medium"
+                    title="Go back"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back</span>
+                  </button>
+                )}
+                
                 {/* Progress Dots */}
-                {steps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1 rounded-full transition-all duration-300 ${
-                      index === currentStep
-                        ? 'w-4 bg-purple-600'
-                        : index < currentStep
-                        ? 'w-1 bg-purple-400'
-                        : 'w-1 bg-gray-300 dark:bg-gray-600'
-                    }`}
-                  />
-                ))}
-                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                  {currentStep + 1}/{steps.length}
-                </span>
+                <div className="flex items-center space-x-1.5">
+                  {steps.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1 rounded-full transition-all duration-300 ${
+                        index === currentStep
+                          ? 'w-4 bg-purple-600'
+                          : index < currentStep
+                          ? 'w-1 bg-purple-400'
+                          : 'w-1 bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                    {currentStep + 1}/{steps.length}
+                  </span>
+                </div>
               </div>
 
               {currentStepData.action ? (
