@@ -137,44 +137,50 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
 
   return (
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300" />
+      {/* Semi-transparent Overlay - allows seeing content below */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[100] transition-opacity duration-300 pointer-events-none" />
 
-      {/* Tour Modal */}
-      <div className="fixed inset-0 z-[101] flex items-center justify-center p-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+      {/* Floating Tour Tooltip - positioned based on step */}
+      <div className={`fixed z-[101] transition-all duration-500 ${
+        currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
+        currentStepData.position === 'top' ? 'top-24 left-1/2 -translate-x-1/2' :
+        currentStepData.position === 'bottom' ? 'bottom-24 left-1/2 -translate-x-1/2' :
+        currentStepData.position === 'left' ? 'top-1/2 left-24 -translate-y-1/2' :
+        'top-1/2 right-24 -translate-y-1/2'
+      } max-w-md w-full mx-6`}>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-4 border-purple-500">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+          <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 p-4 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-16 translate-x-16"></div>
             
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="w-6 h-6" />
-                  <span className="text-sm font-semibold">Quick Tour</span>
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-xs font-semibold uppercase tracking-wide">Platform Tour</span>
                 </div>
                 <button
                   onClick={handleSkip}
                   className="p-1 hover:bg-white/20 rounded-lg transition-colors"
                   aria-label="Skip tour"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               
-              <h2 className="text-2xl font-bold mb-2">{currentStepData.title}</h2>
+              <h2 className="text-lg font-bold mb-3">{currentStepData.title}</h2>
               
               {/* Progress Dots */}
-              <div className="flex items-center space-x-2 mt-4">
+              <div className="flex items-center space-x-1.5">
                 {steps.map((_, index) => (
                   <div
                     key={index}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                    className={`h-1 rounded-full transition-all duration-300 ${
                       index === currentStep
-                        ? 'w-8 bg-white'
+                        ? 'w-6 bg-white'
                         : index < currentStep
-                        ? 'w-1.5 bg-white/60'
-                        : 'w-1.5 bg-white/30'
+                        ? 'w-1 bg-white/60'
+                        : 'w-1 bg-white/30'
                     }`}
                   />
                 ))}
@@ -183,8 +189,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
           </div>
 
           {/* Content */}
-          <div className="p-8">
-            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+          <div className="p-6">
+            <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
               {currentStepData.description}
             </p>
 
@@ -192,31 +198,31 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
             <div className="flex items-center justify-between">
               <button
                 onClick={handleSkip}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors"
               >
                 Skip Tour
               </button>
 
               <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {currentStep + 1} of {steps.length}
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {currentStep + 1}/{steps.length}
                 </span>
                 
                 {currentStepData.action ? (
                   <button
                     onClick={currentStepData.action.onClick}
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-sm"
                   >
                     <span>{currentStepData.action.label}</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 ) : (
                   <button
                     onClick={handleNext}
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-sm"
                   >
-                    <span>{isLastStep ? 'Get Started' : 'Next'}</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <span>{isLastStep ? 'Finish' : 'Next'}</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
