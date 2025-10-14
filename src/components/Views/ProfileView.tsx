@@ -570,26 +570,23 @@ export const ProfileView: React.FC = () => {
                   <div className="flex items-start space-x-3">
                     <RefreshCw className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Restart Guided Tour</h4>
+                      <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Interactive Platform Tour</h4>
                       <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
-                        Want to see the platform walkthrough again? Restart the 60-second guided tour to refresh your knowledge of the platform.
+                        Take the 60-second interactive tour that shows you around the platform. It walks you through actual pages and explains how everything works.
                       </p>
                       <button
                         onClick={() => {
-                          if (user?.id) {
-                            // Clear tour completion flag
-                            localStorage.removeItem(`onboarding_tour_completed_${user.id}`);
-                            // Go to dashboard where tour will auto-trigger
-                            setCurrentView('dashboard');
-                            // Reload page to trigger tour
-                            window.location.reload();
-                          }
+                          // Go to dashboard (tour will be triggered from "How to Navigate" button)
+                          setCurrentView('dashboard');
                         }}
                         className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
                       >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Restart Tour</span>
+                        <HelpCircle className="w-4 h-4" />
+                        <span>Go to Dashboard</span>
                       </button>
+                      <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">
+                        💡 Click the "How to Navigate" button on the Dashboard to start the tour
+                      </p>
                     </div>
                   </div>
                 </div>

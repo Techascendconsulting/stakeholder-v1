@@ -225,6 +225,11 @@ const Dashboard2: React.FC = () => {
     setShowOnboarding(false);
   };
 
+  const handleStartTour = () => {
+    console.log('🎯 Starting interactive tour');
+    setShowOnboarding(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
       {/* Onboarding Tour */}
@@ -233,11 +238,11 @@ const Dashboard2: React.FC = () => {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Help/Guide Button - Fixed top right */}
+        {/* Interactive Tour Button - Fixed top right */}
         <button
-          onClick={() => setCurrentView('navigation-guide')}
+          onClick={handleStartTour}
           className="fixed top-6 right-6 z-30 flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-2 border-purple-200 dark:border-purple-700 rounded-full hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-all shadow-lg hover:shadow-xl group"
-          title="How to Navigate"
+          title="Start Interactive Tour"
         >
           <HelpCircle className="w-5 h-5" />
           <span className="font-semibold text-sm hidden sm:inline">How to Navigate</span>

@@ -92,7 +92,7 @@ import LearningPageWrapper from '../LearningPageWrapper';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import LockMessageToast from '../LockMessageToast';
-import NavigationGuideView from '../Views/NavigationGuideView'; // NEW: How to navigate guide
+// import NavigationGuideView from '../Views/NavigationGuideView'; // Removed: Using interactive tour instead
 
 
 const MainLayout: React.FC = () => {
@@ -327,8 +327,8 @@ const MainLayout: React.FC = () => {
         return <DeliverablesView />;
       case 'profile':
         return <ProfileView />;
-      case 'navigation-guide':
-        return <NavigationGuideView />;
+      // case 'navigation-guide': // Removed: Using interactive tour instead
+      //   return <NavigationGuideView />;
       case 'analysis':
         return <AnalysisView />;
       case 'custom-project':
