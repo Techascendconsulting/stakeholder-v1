@@ -103,9 +103,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'verity',
       title: '💬 Meet Verity - Your AI Assistant',
-      description: 'Look at the bottom-right corner! That purple button is Verity, your AI assistant. Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
+      description: 'Look right here! This purple button is Verity, your AI assistant. Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
       highlightSelector: '[data-tour="verity"]',
-      position: 'bottom-center',
+      position: 'bottom-right',
       navigateTo: 'dashboard',
     },
     {
@@ -187,7 +187,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
         currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
         currentStepData.position === 'top-right' ? 'top-24 right-8' :
         currentStepData.position === 'bottom-left' ? 'bottom-24 left-8' :
-        currentStepData.position === 'bottom-right' ? 'bottom-24 right-8' :
+        currentStepData.position === 'bottom-right' ? 'bottom-32 right-32' : // Position above Verity
         currentStepData.position === 'bottom-center' ? 'bottom-24 left-1/2 -translate-x-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
       } max-w-sm w-full`}>
