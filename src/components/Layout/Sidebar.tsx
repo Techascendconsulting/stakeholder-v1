@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Moon,
   Sun,
+  HelpCircle,
   // Sparkles // Archived with AI Process Mapper
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -248,6 +249,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: Heart
         }
       ]
+    },
+    { 
+      id: 'help', 
+      label: 'Help', 
+      icon: HelpCircle,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'how-to-navigate', 
+          label: 'How to Navigate', 
+          icon: HelpCircle
+        }
+      ]
     }
   ];
 
@@ -434,7 +448,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                           <button
                             onClick={() => {
                               console.log('🖱️ SIDEBAR SUB-ITEM CLICK:', subItem.id);
-                              setCurrentView(subItem.id as any);
+                              
+                              // Special handling for "How to Navigate" - trigger tour instead of navigation
+                              if (subItem.id === 'how-to-navigate') {
+                                console.log('🎯 Sidebar: Triggering onboarding tour');
+                                window.dispatchEvent(new Event('start-onboarding-tour'));
+                              } else {
+                                setCurrentView(subItem.id as any);
+                              }
+                              
                               console.debug('[Sidebar] subItemClick', { id: subItem.id });
                             }}
                             className={`w-full flex items-center space-x-3 px-2 py-1.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
