@@ -397,6 +397,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       console.debug('[Sidebar] sectionClick', { id: item.id });
                     }
                   }}
+                  data-tour={item.id === 'my-learning' ? 'learning-journey' : item.id === 'my-practice' ? 'practice-journey' : item.id === 'my-resources' ? 'resources' : undefined}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'space-x-3 px-2 py-1.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
