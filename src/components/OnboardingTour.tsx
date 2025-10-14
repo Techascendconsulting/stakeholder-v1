@@ -94,11 +94,11 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     },
     {
       id: 'resources',
-      title: '📖 Resources Always Available',
-      description: 'These are your Resources! The BA Handbook, templates, and reference materials are never locked. You can access them anytime you need help.',
+      title: '📖 BA Handbook - Always Available',
+      description: 'This is the BA Handbook! Your complete reference guide with definitions, concepts, and best practices. It\'s never locked - access it anytime you need help.',
       highlightSelector: '[data-tour="resources"]',
       position: 'bottom-left',
-      navigateTo: 'ba-reference', // Navigate to Resources page
+      navigateTo: 'handbook', // Navigate to BA Handbook (the actual book)
     },
     {
       id: 'verity',
