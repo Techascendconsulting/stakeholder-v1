@@ -3,14 +3,12 @@ import { ArrowRight, BookOpen, Target, Briefcase, Lock, CheckCircle, Clock, Awar
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import OnboardingTour from '../OnboardingTour';
 
 const Dashboard2: React.FC = () => {
   const { setCurrentView, selectedProject, elicitationAccess } = useApp();
   const { user } = useAuth();
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [learningProgress, setLearningProgress] = useState({ completed: 0, total: 10 });
   const [practiceProgress, setPracticeProgress] = useState({ completed: 0, total: 4 });
   const [projectProgress, setProjectProgress] = useState({ completed: 0, total: 6 });
@@ -27,19 +25,6 @@ const Dashboard2: React.FC = () => {
   useEffect(() => {
     loadDashboardData();
   }, [user?.id]);
-
-  // Check if user needs onboarding tour (first-time new users only)
-  useEffect(() => {
-    if (!user?.id || loading) return;
-    
-    const tourCompleted = localStorage.getItem(`onboarding_tour_completed_${user.id}`);
-    
-    // Show tour only for new users who haven't seen it
-    if (userType === 'new' && !tourCompleted) {
-      console.log('🎯 First-time new user detected - showing onboarding tour');
-      setShowOnboarding(true);
-    }
-  }, [user?.id, userType, loading]);
 
   const loadDashboardData = async () => {
     if (!user?.id) return;
@@ -209,34 +194,13 @@ const Dashboard2: React.FC = () => {
     );
   }
 
-  const handleTourComplete = () => {
-    if (user?.id) {
-      localStorage.setItem(`onboarding_tour_completed_${user.id}`, 'true');
-      console.log('✅ Onboarding tour completed');
-    }
-    setShowOnboarding(false);
-  };
-
-  const handleTourSkip = () => {
-    if (user?.id) {
-      localStorage.setItem(`onboarding_tour_completed_${user.id}`, 'true');
-      console.log('⏭️ Onboarding tour skipped');
-    }
-    setShowOnboarding(false);
-  };
-
   const handleStartTour = () => {
-    console.log('🎯 Starting interactive tour');
-    setShowOnboarding(true);
+    console.log('🎯 Dashboard: Triggering tour via event');
+    window.dispatchEvent(new Event('start-onboarding-tour'));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
-      {/* Onboarding Tour */}
-      {showOnboarding && (
-        <OnboardingTour onComplete={handleTourComplete} onSkip={handleTourSkip} />
-      )}
-
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Interactive Tour Button - Fixed top right */}
         <button

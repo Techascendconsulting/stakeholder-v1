@@ -93,6 +93,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import LockMessageToast from '../LockMessageToast';
 // import NavigationGuideView from '../Views/NavigationGuideView'; // Removed: Using interactive tour instead
+import OnboardingTour from '../OnboardingTour';
 
 
 const MainLayout: React.FC = () => {
@@ -517,4 +518,49 @@ function getPageTitle(view: string): string {
   return titles[view] || 'BA WorkXP Platform';
 }
 
-export default MainLayout;
+// Add this before the export
+const MainLayoutWithTour: React.FC = () => {
+  const { currentView, setCurrentView, isLoading, selectedProject, lockMessage, clearLockMessage } = useApp();
+  const { isAdmin } = useAdmin();
+  const { user } = useAuth();
+  const [userType, setUserType] = React.useState<'new' | 'existing'>('existing');
+  const [showTour, setShowTour] = React.useState(false);
+
+  // Listen for tour trigger from Dashboard
+  React.useEffect(() => {
+    const handleStartTour = () => {
+      console.log('🎯 MainLayout: Tour triggered');
+      setShowTour(true);
+    };
+
+    window.addEventListener('start-onboarding-tour', handleStartTour);
+    return () => window.removeEventListener('start-onboarding-tour', handleStartTour);
+  }, []);
+
+  const handleTourComplete = () => {
+    console.log('✅ MainLayout: Tour completed');
+    setShowTour(false);
+    if (user?.id) {
+      localStorage.setItem(`onboarding_tour_completed_${user.id}`, 'true');
+    }
+  };
+
+  const handleTourSkip = () => {
+    console.log('⏭️ MainLayout: Tour skipped');
+    setShowTour(false);
+    if (user?.id) {
+      localStorage.setItem(`onboarding_tour_completed_${user.id}`, 'true');
+    }
+  };
+
+  return (
+    <>
+      <MainLayout />
+      {showTour && (
+        <OnboardingTour onComplete={handleTourComplete} onSkip={handleTourSkip} />
+      )}
+    </>
+  );
+};
+
+export default MainLayoutWithTour;
