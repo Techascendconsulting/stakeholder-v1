@@ -487,6 +487,58 @@ const ProjectBrief: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Stakeholder Identification */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Stakeholder Identification</h2>
+            </div>
+            <div className="space-y-4">
+              {stakeholderRoles.map((stakeholder, index) => (
+                <div key={index} className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Users className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{stakeholder.role}</h4>
+                      <p className="text-gray-700">{stakeholder.concern}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Next Steps */}
+        <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Next Steps</h3>
+          <p className="text-gray-700 mb-8 text-lg leading-relaxed">
+            Now that you have reviewed the comprehensive project brief, you're ready to begin stakeholder engagement. 
+            Use this information to prepare targeted questions for each stakeholder group, focusing on their specific 
+            concerns and areas of expertise. Remember to validate the information presented here and gather additional 
+            details that will inform your requirements analysis.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={() => setCurrentView('stakeholders')}
+              className="flex items-center justify-center space-x-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-8 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <Users className="w-6 h-6" />
+              <span>Meet Stakeholders</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setCurrentView('deliverables')}
+              className="flex items-center justify-center space-x-3 bg-white dark:bg-gray-800 text-gray-700 font-semibold py-4 px-8 rounded-xl border border-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-all duration-200"
+            >
+              <span>View Deliverables</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
