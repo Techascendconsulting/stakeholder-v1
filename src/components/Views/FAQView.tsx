@@ -16,15 +16,18 @@ import {
   Play,
   Award,
   ArrowLeft,
-  Search
+  Search,
+  BookOpen
 } from 'lucide-react';
 
 interface FAQViewProps {
   onBack?: () => void;
   onContactClick?: () => void;
+  onTabChange?: (tab: 'help' | 'faq') => void;
+  showTabs?: boolean;
 }
 
-const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick }) => {
+const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, showTabs = false }) => {
   const [openCategories, setOpenCategories] = useState<string[]>(['getting-started', 'account-security', 'learning']);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -308,6 +311,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick }) => {
       )
     : [];
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50" style={{ scrollbarGutter: 'stable' }}>
       {/* Header with Navigation */}
@@ -398,12 +402,32 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick }) => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 px-6 py-3 rounded-full text-sm font-medium mb-6 text-white">
             <HelpCircle className="w-4 h-4 mr-2" />
-            Frequently Asked Questions
+            {showTabs ? 'Support Center' : 'Frequently Asked Questions'}
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">How Can We Help You?</h1>
           <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Find answers to common questions about the platform, learning journey, and getting started
           </p>
+
+          {/* Tab Navigation (only shown when embedded in Support Center) */}
+          {showTabs && onTabChange && (
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <button
+                onClick={() => onTabChange('help')}
+                className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
+              >
+                <BookOpen className="w-5 h-5" />
+                Help Articles
+              </button>
+              <button
+                onClick={() => onTabChange('faq')}
+                className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 bg-white text-purple-600 shadow-xl scale-105"
+              >
+                <MessageSquare className="w-5 h-5" />
+                FAQ
+              </button>
+            </div>
+          )}
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
@@ -428,7 +452,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick }) => {
                         key={q.id}
                         onClick={() => {
                           setSearchQuery('');
-                          setOpenCategory(q.categoryId);
+                          setOpenCategories(prev => prev.includes(q.categoryId) ? prev : [...prev, q.categoryId]);
                           setOpenQuestion(q.id);
                         }}
                         className="w-full text-left p-4 rounded-xl hover:bg-purple-50 transition-all duration-300 border border-transparent hover:border-purple-200"

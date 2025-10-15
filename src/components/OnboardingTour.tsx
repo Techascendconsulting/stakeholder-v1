@@ -63,7 +63,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'dashboard',
       title: '🎯 Your Dashboard',
-      description: 'This is your home base. The "Next Step" banner shows what to do next. Check here if you\'re ever unsure where to go!',
+      description: userType === 'new'
+        ? 'Your central hub for learning. Follow the "Next Step" banner to progress through your journey. New sections unlock as you complete modules.'
+        : 'Your central hub - all sections are unlocked. However, we recommend starting with My Learning to build strong foundational concepts before exploring Practice and Projects.',
       highlightSelector: '.hero-banner',
       position: 'top-right',
       navigateTo: 'dashboard',
@@ -71,7 +73,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'learning',
       title: '📚 Learning Journey',
-      description: 'This is where you start your BA training. You\'ll complete 10 modules covering all BA fundamentals.',
+      description: userType === 'new'
+        ? 'This is where you start your BA training. Complete 10 modules covering all BA fundamentals, unlocking new sections as you progress.'
+        : 'Access 10 comprehensive modules covering all BA fundamentals. Great for refreshing concepts or filling knowledge gaps.',
       highlightSelector: '[data-tour="learning-journey"]',
       position: 'top-right',
       navigateTo: 'learning-flow', // Actually navigate to Learning Journey
@@ -79,7 +83,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'learning-modules',
       title: '📖 Your 10 Learning Modules',
-      description: 'Here are your 10 modules! Each has lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!',
+      description: userType === 'new'
+        ? 'Here are your 10 modules! Each has lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!'
+        : 'Here are your 10 modules! All modules are unlocked for you. We recommend completing them in order to build strong foundational concepts.',
       position: 'top-right',
       navigateTo: 'learning-flow',
     },
@@ -94,11 +100,11 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     },
     {
       id: 'resources',
-      title: '📖 BA Handbook - Always Available',
-      description: 'This is the BA Handbook! Your complete reference guide with definitions, concepts, and best practices. It\'s never locked - access it anytime you need help.',
+      title: '📖 My Resources - Always Available',
+      description: 'Your learning library with BA Handbook, Reference Library, and Motivation content. These resources are never locked - access them anytime you need help or inspiration.',
       highlightSelector: '[data-tour="resources"]',
       position: 'bottom-left',
-      navigateTo: 'handbook', // Navigate to BA Handbook (the actual book)
+      navigateTo: 'my-resources', // Navigate to My Resources (with tabs)
     },
     {
       id: 'verity',

@@ -16,7 +16,12 @@ interface LearningModule {
   prerequisites?: string[];
 }
 
-const BAReferenceView: React.FC = () => {
+interface BAReferenceViewProps {
+  showTabs?: boolean;
+  onTabChange?: (tab: 'handbook' | 'reference' | 'motivation') => void;
+}
+
+const BAReferenceView: React.FC<BAReferenceViewProps> = ({ showTabs = false, onTabChange }) => {
   const { currentView } = useApp();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [isLectureActive, setIsLectureActive] = useState(false);

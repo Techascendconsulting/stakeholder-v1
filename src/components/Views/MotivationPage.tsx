@@ -12,7 +12,12 @@ interface AudioFile {
 }
 
 
-const MotivationPage: React.FC = () => {
+interface MotivationPageProps {
+  showTabs?: boolean;
+  onTabChange?: (tab: 'handbook' | 'reference' | 'motivation') => void;
+}
+
+const MotivationPage: React.FC<MotivationPageProps> = ({ showTabs = false, onTabChange }) => {
   const { setCurrentView } = useApp()
   const { activeTrack, isPlaying, playTrack, stopTrack } = useGlobalAudio()
   const [talks, setTalks] = useState<AudioFile[]>([])

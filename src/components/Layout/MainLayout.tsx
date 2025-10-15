@@ -35,8 +35,6 @@ import CustomProjectView from '../Views/CustomProjectView';
 import CustomStakeholdersView from '../Views/CustomStakeholdersView';
 import ScrumEssentialsView from '../Views/ScrumEssentialsView';
 import ScrumLearningView from '../Views/ScrumLearningView';
-import BAReferenceLibrary from '../Views/BAReferenceLibrary';
-import HandbookView from '../Views/HandbookView';
 import { AgileHubView } from '../Views/AgileHubView';
 // Lazy load heavy Scrum views
 const ScrumPracticeView = lazy(() => import('../Views/ScrumPracticeView'));
@@ -70,7 +68,6 @@ import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
 import WelcomeView from '../Views/WelcomeView';
-import MotivationPage from '../Views/MotivationPage';
 import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 // import AIProcessMapperView from '../Views/AIProcessMapperView'; // Archived
@@ -87,7 +84,7 @@ import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import ContactUsView from '../Views/ContactUsView';
 import AdminContactSubmissionsView from '../Views/AdminContactSubmissionsView';
-import FAQView from '../Views/FAQView';
+import SupportCentreView from '../Views/SupportCentreView';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 import CoreLearningView from '../Views/CoreLearningView';
 import CoreLearning2View from '../Views/CoreLearning2View'; // NEW: Overview + Individual Topic Pages
@@ -249,8 +246,6 @@ const MainLayout: React.FC = () => {
         return <GuidedPracticeHub />;
       case 'elicitation-hub':
         return <GuidedPracticeHub />;
-      case 'motivation':
-        return <MotivationPage />;
       case 'project':
         return <ProjectLandingView />;
 
@@ -270,10 +265,6 @@ const MainLayout: React.FC = () => {
         return <ScrumLearningView />;
       case 'agile-scrum':
         return <AgileHubView />;
-      case 'ba-reference':
-        return <BAReferenceLibrary />;
-      case 'handbook':
-        return <HandbookView />;
       case 'my-resources':
         return <MyResourcesView />;
       case 'progress-tracking':
@@ -414,8 +405,8 @@ const MainLayout: React.FC = () => {
         return <ContactUsView />;
       case 'admin-contact-submissions':
         return <AdminContactSubmissionsView />;
-      case 'faq':
-        return <FAQView />;
+      case 'support':
+        return <SupportCentreView />;
       default:
         return <ProjectsView />;
     }

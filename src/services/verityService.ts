@@ -50,19 +50,28 @@ export class VerityService {
 The current page is: ${context.pageTitle || 'Unknown Page'} (${context.context}).
 User role: ${context.userRole || 'learner'}`;
 
-      // Call OpenAI with optimized settings for faster responses
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: contextualSystemPrompt },
-          ...messages
-        ],
-        temperature: 0.7,
-        max_tokens: 300 // Reduced for faster responses
+      // Call backend API instead of OpenAI directly to avoid CORS issues
+      const response = await fetch('http://localhost:3001/api/verity-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: contextualSystemPrompt },
+            ...messages
+          ],
+          context
+        })
       });
 
-      const reply = completion.choices[0]?.message?.content || 
-        "I'm having trouble right now. Let me notify Tech Ascend Consulting so they can help you directly.";
+      if (!response.ok) {
+        throw new Error(`Backend API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const reply = data.reply || 
+        "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
 
       // Detect if escalation is needed
       const escalate = 
@@ -72,7 +81,7 @@ User role: ${context.userRole || 'learner'}`;
       // Clean up escalation markers from reply
       const cleanReply = reply.replace(/\[ESCALATE_TO_JOY\]/g, '').trim();
 
-      return { reply: cleanReply, escalate };
+      return { reply: cleanReply, escalate: data.escalate || escalate };
 
     } catch (error) {
       console.error('❌ Verity Service Error:', error);
@@ -115,6 +124,7 @@ User role: ${context.userRole || 'learner'}`;
 }
 
 export default VerityService;
+
 
 
 

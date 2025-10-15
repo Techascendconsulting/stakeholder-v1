@@ -14,7 +14,8 @@ import { getNextModuleId } from '../views/LearningFlow/learningData';
 // Current approach acceptable for MVP but exposes API key in browser
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // ⚠️ SECURITY: Move to Edge Function for production
+  dangerouslyAllowBrowser: true, // ⚠️ SECURITY: Move to Edge Function for production
+  baseURL: 'http://localhost:3001/api/openai-proxy'
 });
 
 export interface AssignmentSubmission {
@@ -302,6 +303,7 @@ export function formatTimeRemaining(milliseconds: number): string {
   }
   return `${minutes}m remaining`;
 }
+
 
 
 

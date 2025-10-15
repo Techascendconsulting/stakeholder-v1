@@ -7,6 +7,9 @@ const debriefRoutes = require('./routes/debrief');
 const processCoachRoutes = require('./routes/process-coach');
 const processDrafterRoutes = require('./routes/process-drafter');
 const stakeholderReplyRoutes = require('./routes/stakeholder-reply');
+const verityChatRoutes = require('./routes/verity-chat');
+const stakeholderAIRoutes = require('./routes/stakeholder-ai');
+const openaiProxyRoutes = require('./routes/openai-proxy');
 
 // Register plugins
 fastify.register(cors, {
@@ -113,6 +116,9 @@ debriefRoutes(fastify);
 fastify.register(processCoachRoutes);
 fastify.register(processDrafterRoutes);
 fastify.register(stakeholderReplyRoutes);
+fastify.register(verityChatRoutes);
+fastify.register(stakeholderAIRoutes);
+fastify.register(openaiProxyRoutes);
 
 // Start server
 const start = async () => {

@@ -230,7 +230,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
       console.log('✅ Issue submitted successfully:', data);
       
-      // Send email notification to Tech Ascend Consulting
+      // Send email notification to BA WorkXP team
       const emailSent = await EmailService.sendHelpRequestEmail({
         userEmail: user?.email || 'anonymous',
         userName: user?.full_name || user?.email,
@@ -242,7 +242,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       });
       
       if (emailSent) {
-        console.log('✅ Email notification sent to Tech Ascend Consulting');
+        console.log('✅ Email notification sent to BA WorkXP team');
       } else {
         console.log('⚠️ Email not sent (EmailJS not configured - check console)');
       }
@@ -482,7 +482,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                       <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Thanks for letting us know!</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Tech Ascend Consulting will review this shortly.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Our team will review this shortly.</p>
                   </div>
                 </div>
               ) : (
@@ -520,7 +520,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg p-3">
                       <p className="text-xs text-orange-700 dark:text-orange-300 flex items-start space-x-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>This will be sent to Tech Ascend Consulting. Include as much detail as possible.</span>
+                        <span>This will be sent to our team. Include as much detail as possible.</span>
                       </p>
                     </div>
                   </div>
@@ -566,6 +566,8 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
+
+
 
 
 

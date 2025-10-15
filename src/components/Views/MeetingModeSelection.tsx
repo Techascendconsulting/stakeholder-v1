@@ -13,10 +13,21 @@ const MeetingModeSelection: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore selectedStakeholders from localStorage on component mount
+  // Restore selectedStakeholders from sessionStorage (training flow) or localStorage (regular flow)
   useEffect(() => {
     const restoreStakeholders = () => {
       try {
+        // First check sessionStorage for training flow stakeholders
+        const trainingStakeholders = sessionStorage.getItem('trainingStakeholders');
+        if (trainingStakeholders) {
+          const stakeholderObjects = JSON.parse(trainingStakeholders);
+          console.log("👥 MEETING_MODE_SELECTION: Restoring training stakeholders:", stakeholderObjects.length);
+          setSelectedStakeholders(stakeholderObjects);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fallback to localStorage for regular flow
         const raw = localStorage.getItem("meetingSetupProgress");
         if (raw) {
           const setup = JSON.parse(raw);

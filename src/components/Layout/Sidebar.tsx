@@ -143,51 +143,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: Home
     }] : []),
     { 
+      id: 'how-to-navigate', 
+      label: 'How to Navigate', 
+      icon: HelpCircle
+    },
+    { 
       id: 'dashboard', 
       label: 'My Dashboard', 
       icon: LayoutDashboard
     },
     { 
-      id: 'learn', 
+      id: 'learning-flow', 
       label: 'My Learning', 
-      icon: BookOpen,
-      isCollapsible: true,
-      subItems: [
-        // ALL students: Learning Journey (pathway design)
-        // - New students: Sequential locks + assignments
-        // - Existing students: All unlocked + assignments
-        { 
-          id: 'learning-flow', 
-          label: 'Learning Journey', 
-          icon: GraduationCap
-        },
-      ]
+      icon: GraduationCap
     },
     { 
-      id: 'my-practice', 
+      id: 'practice-flow', 
       label: 'My Practice', 
-      icon: Target,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'practice-flow', 
-          label: 'Practice Journey', 
-          icon: Target
-        },
-      ]
+      icon: Target
     },
     { 
-      id: 'hands-on-project', 
-      label: 'Hands-on Project', 
-      icon: FolderOpen,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'project-flow',
-          label: 'Project Journey', 
-          icon: FolderOpen
-        },
-      ]
+      id: 'project-flow',
+      label: 'My Hands-On Project', 
+      icon: FolderOpen
     },
     // { 
     //   id: 'create-project',
@@ -227,41 +205,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     //   label: 'Community Hub', 
     //   icon: Users
     // }, // Archived for MVP
-    { 
-      id: 'my-resources', 
-      label: 'My Resources', 
-      icon: Archive,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'handbook', 
-          label: 'BA Handbook', 
-          icon: BookOpen
-        },
-        { 
-          id: 'ba-reference', 
-          label: 'BA Reference Library', 
-          icon: BookOpen
-        },
-        { 
-          id: 'motivation', 
-          label: 'Motivation', 
-          icon: Heart
-        }
-      ]
+    {
+      id: 'my-resources',
+      label: 'My Resources',
+      icon: Archive
     },
     { 
-      id: 'help', 
-      label: 'Help', 
-      icon: HelpCircle,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'how-to-navigate', 
-          label: 'How to Navigate', 
-          icon: HelpCircle
-        }
-      ]
+      id: 'support', 
+      label: 'Support', 
+      icon: HelpCircle
     }
   ];
 
@@ -403,6 +355,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 <button
                   onClick={() => {
                     console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
+                    
+                    // Special handling for "How to Navigate" - trigger tour
+                    if (item.id === 'how-to-navigate') {
+                      console.log('🎯 Sidebar: Triggering onboarding tour from main menu');
+                      setCurrentView('dashboard'); // Go to dashboard first
+                      setTimeout(() => {
+                        window.dispatchEvent(new Event('start-onboarding-tour'));
+                      }, 100); // Small delay to ensure dashboard renders
+                      return;
+                    }
+                    
                     if (hasSubItems && item.isCollapsible) {
                       toggleSection(item.id);
                     } else {
@@ -452,6 +415,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                               // Special handling for "How to Navigate" - trigger tour instead of navigation
                               if (subItem.id === 'how-to-navigate') {
                                 console.log('🎯 Sidebar: Triggering onboarding tour');
+                                setCurrentView('dashboard'); // Go to dashboard first
                                 window.dispatchEvent(new Event('start-onboarding-tour'));
                               } else {
                                 setCurrentView(subItem.id as any);

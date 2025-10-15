@@ -115,7 +115,7 @@ function localLint(xml) {
 
 async function processCoachRoutes(fastify, options) {
   const openai = new OpenAI({
-    apiKey: process.env.VITE_OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   fastify.post('/api/process-coach', async (request, reply) => {

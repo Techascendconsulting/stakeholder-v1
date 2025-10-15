@@ -160,17 +160,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { error }
       }
 
-      // If login successful, check device lock
+      // If login successful, check if user is blocked FIRST
       if (data.user) {
-        console.log('🔐 AUTH - Checking device lock for user:', data.user.id)
+        console.log('🔐 AUTH - Checking if user is blocked:', data.user.id)
         
-        // Check if this is a device reset scenario (no device binding + account locked)
-        // BUT ONLY for non-admin users
+        // Check if user is blocked
         const { data: userProfile } = await supabase
           .from('user_profiles')
-          .select('registered_device, locked, is_admin, is_super_admin, is_senior_admin')
+          .select('blocked, block_reason, registered_device, locked, is_admin, is_super_admin, is_senior_admin')
           .eq('user_id', data.user.id)
           .single();
+        
+        // If user is blocked, immediately sign out and show error
+        if (userProfile?.blocked) {
+          console.log('🚫 AUTH - User is blocked, preventing access')
+          
+          // Sign out immediately
+          await supabase.auth.signOut()
+          
+          // Store blocked status for UI to display
+          localStorage.setItem('accountBlocked', JSON.stringify({
+            blocked: true,
+            reason: userProfile.block_reason || 'Your account has been blocked.',
+            email: email
+          }))
+          
+          // Log blocked access attempt
+          await userActivityService.logActivity(
+            data.user.id,
+            'blocked_access_attempt',
+            {
+              email,
+              deviceId: await deviceLockService.getDeviceId(),
+              blockReason: userProfile.block_reason,
+              success: false
+            }
+          )
+          
+          return {
+            error: new Error(`Account blocked. ${userProfile.block_reason || 'Contact hello@baworkxp.com for assistance.'}`)
+          }
+        }
+        
+        console.log('🔐 AUTH - User not blocked, proceeding with device lock check');
         
         const isAdminUser = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
         const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdminUser;
@@ -434,8 +466,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Check every 5 seconds
       deviceCheckInterval.current = setInterval(async () => {
         try {
+          // First: Check if user has been blocked
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('blocked, block_reason, is_admin, is_super_admin, is_senior_admin')
+            .eq('user_id', user.id)
+            .single();
+          
+          // If user is blocked, immediately sign out
+          if (profile?.blocked) {
+            console.log('🚫 AUTH - User was blocked during session, forcing sign out');
+            
+            // Store blocked status for UI
+            localStorage.setItem('accountBlocked', JSON.stringify({
+              blocked: true,
+              reason: profile.block_reason || 'Your account has been blocked.',
+              email: user.email
+            }));
+            
+            // Clear interval
+            if (deviceCheckInterval.current) {
+              clearInterval(deviceCheckInterval.current);
+              deviceCheckInterval.current = null;
+            }
+            
+            // Sign out
+            await supabase.auth.signOut();
+            alert('Your account has been blocked. Contact hello@baworkxp.com if you believe this is an error.');
+            return;
+          }
+          
           // Double-check admin status before any device lock action
-          const isAdmin = await checkIfAdmin();
+          const isAdmin = profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin;
           if (isAdmin) {
             console.log('🔐 AUTH - Admin user detected during monitoring, stopping device monitoring');
             if (deviceCheckInterval.current) {

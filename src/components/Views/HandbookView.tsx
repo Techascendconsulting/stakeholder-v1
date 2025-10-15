@@ -27,7 +27,12 @@ interface Page {
   chapterId: string;
 }
 
-const HandbookView: React.FC = () => {
+interface HandbookViewProps {
+  showTabs?: boolean;
+  onTabChange?: (tab: 'handbook' | 'reference' | 'motivation') => void;
+}
+
+const HandbookView: React.FC<HandbookViewProps> = ({ showTabs = false, onTabChange }) => {
   const { setCurrentView } = useApp();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(false);
@@ -400,7 +405,8 @@ ${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 dark:from-gray-900 dark:via-blue-900 dark:to-gray-900 flex flex-col">
-      {/* Header */}
+      {/* Header - Only show when not embedded with tabs */}
+      {!showTabs && (
       <div className="bg-white/80 dark:bg-black/30 backdrop-blur-sm border-b border-gray-200/50 dark:border-white/10 sticky top-0 z-20">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -436,6 +442,7 @@ ${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
           </div>
         </div>
       </div>
+      )}
 
       {/* Table of Contents Sidebar */}
       {showTOC && (
@@ -686,6 +693,15 @@ ${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
           >
             <ChevronRight className="w-8 h-8 text-gray-700 dark:text-white" />
           </button>
+
+          {/* Page Counter - Show when embedded with tabs */}
+          {showTabs && (
+            <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur px-4 py-2 rounded-full shadow-lg">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Page {currentPageNumber + 1} of {pages.length}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -846,6 +862,7 @@ ${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
 };
 
 export default HandbookView;
+
 
 
 

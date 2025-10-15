@@ -166,7 +166,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
         }
       );
 
-      const aiReply = data.reply || "I'll forward this to Tech Ascend Consulting to help further.";
+      const aiReply = data.reply || "I'll forward this to our team to help further.";
       const shouldEscalate = data.escalate;
 
       // Only escalate if AI explicitly requests it (not on keywords)
@@ -174,7 +174,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       let finalReply = aiReply.replace('[ESCALATE_TO_JOY]', '');
       
       // Only log escalation if AI explicitly requested it
-      if (shouldEscalate && finalReply.toLowerCase().includes('tech ascend')) {
+      if (shouldEscalate && (finalReply.toLowerCase().includes('our team') || finalReply.toLowerCase().includes('support'))) {
         await logHelpRequest(userMessage, context, pageTitle, 'learning');
       }
       
@@ -189,7 +189,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       // Fallback response
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Let me notify Tech Ascend Consulting about this so they can help you directly."
+        content: "I'm having trouble connecting right now. Please use the **⚠️ Report Issue** tab to get help from our team."
       }]);
 
       // Log as help request
@@ -215,7 +215,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       
       console.log('✅ Help request logged to Supabase');
 
-      // Send email notification to Tech Ascend Consulting
+      // Send email notification to BA WorkXP team
       const emailSent = await EmailService.sendHelpRequestEmail({
         userEmail: user?.email || 'anonymous',
         userName: user?.full_name || user?.email,
@@ -227,7 +227,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       });
 
       if (emailSent) {
-        console.log('✅ Email notification sent to Tech Ascend Consulting');
+        console.log('✅ Email notification sent to BA WorkXP team');
       } else {
         console.warn('⚠️ Email notification failed');
       }
@@ -263,6 +263,8 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
 }
 
 export default useVerity;
+
+
 
 
 

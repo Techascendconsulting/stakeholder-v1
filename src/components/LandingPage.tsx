@@ -18,7 +18,6 @@ import {
   MessageSquare,
   BarChart3,
   Globe,
-  Briefcase,
   ChevronRight,
   Sparkles,
   Brain,
@@ -39,17 +38,22 @@ import {
   Instagram,
   Mail,
   MapPin,
-  AlertCircle
+  AlertCircle,
+  Briefcase,
+  Compass,
+  Layers
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
+import RequestAccessModal from './RequestAccessModal'
 
 const LandingPage: React.FC = () => {
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
   const [showContact, setShowContact] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
+  const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
 
@@ -120,6 +124,10 @@ const LandingPage: React.FC = () => {
         setShowContact(true);
       }} 
     />
+  }
+  
+  if (showRequestAccess) {
+    return <RequestAccessModal onClose={() => setShowRequestAccess(false)} onBackToHome={() => setShowRequestAccess(false)} />
   }
 
   // Updated features to match actual app with detailed modal content
@@ -442,10 +450,11 @@ const LandingPage: React.FC = () => {
                 Sign In
               </button>
               <button
-                onClick={() => setShowAuth(true)}
-                className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                onClick={() => setShowRequestAccess(true)}
+                className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Get Started
+                <Mail className="w-4 h-4" />
+                <span>Request Access</span>
               </button>
             </div>
           </div>
@@ -666,6 +675,187 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Benefits Section - Why Choose BA WorkXP */}
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-purple-50/30 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 observe-animation">
+            <div className="inline-block mb-4">
+              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                Why BA WorkXP?
+              </span>
+            </div>
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+              From Learning to <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Employment</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Bridge the gap between training and getting hired with real digital work experience
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Benefit 1: Practical Work Experience */}
+            <div className="relative bg-gradient-to-br from-purple-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-purple-100 hover:border-purple-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <Briefcase className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-purple-600 transition-colors">Practical Work Experience</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Gain real, hands-on digital work experience without needing a corporate placement. Work on structured projects that mirror actual business problems.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-purple-100">
+                  <div className="flex items-center text-purple-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Real-world confidence</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Benefit 2: Become Job-Ready */}
+            <div className="relative bg-gradient-to-br from-indigo-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-indigo-100 hover:border-indigo-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-indigo-600 transition-colors">Become Job-Ready</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Learn to speak and think like a real Business Analyst. Master interview-level skills and understand what hiring managers actually want.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-indigo-100">
+                  <div className="flex items-center text-indigo-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Interview-ready skills</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Benefit 3: End-to-End Project Exposure */}
+            <div className="relative bg-gradient-to-br from-pink-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-pink-100 hover:border-pink-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <Layers className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-pink-600 transition-colors">Full Project Lifecycle</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Experience the complete journey from problem identification to solution delivery. Interact with simulated stakeholders across departments.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-pink-100">
+                  <div className="flex items-center text-pink-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Real BA activities</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-pink-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Benefit 4: Guided Learning */}
+            <div className="relative bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-blue-100 hover:border-blue-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <Compass className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">AI-Powered Guidance</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Receive step-by-step coaching just like in a real BA role. Get instant feedback to correct mistakes and improve your delivery depth.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-blue-100">
+                  <div className="flex items-center text-blue-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Learn why, not just what</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Benefit 5: Build Your Portfolio */}
+            <div className="relative bg-gradient-to-br from-green-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-green-100 hover:border-green-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors">Build Your Portfolio</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Export real deliverables as portfolio samples. Showcase tangible project experience to recruiters and hiring managers.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-green-100">
+                  <div className="flex items-center text-green-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Proof of experience</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-green-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Benefit 6: Confidence Through Practice */}
+            <div className="relative bg-gradient-to-br from-orange-50 to-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-2 border-orange-100 hover:border-orange-300 observe-animation group overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-orange-600 transition-colors">Confidence Through Practice</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Rehearse stakeholder meetings with instant feedback. Develop the fluency and composure that separate trained candidates from hired ones.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-orange-100">
+                  <div className="flex items-center text-orange-600 font-semibold text-sm">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    <span>Interview composure</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-orange-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Stats/CTA */}
+          <div className="mt-16 text-center observe-animation">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                  <div className="text-4xl font-bold text-white mb-2">100%</div>
+                  <div className="text-purple-100">Digital Work Experience</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-white mb-2">Real</div>
+                  <div className="text-purple-100">Portfolio Projects</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-white mb-2">Job-Ready</div>
+                  <div className="text-purple-100">Skills & Confidence</div>
+                </div>
+              </div>
+              <p className="text-xl text-white font-semibold mb-6">
+                Close the gap between "I've trained" and "I've got the job"
+              </p>
+              <button
+                onClick={() => setShowRequestAccess(true)}
+                className="bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-lg inline-flex items-center space-x-2"
+              >
+                <span>Start Building Experience</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section - Rich Visual Cards */}
       <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -717,10 +907,11 @@ const LandingPage: React.FC = () => {
                 <div className="p-8">
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">{feature.description}</p>
                   <button 
-                    onClick={() => setShowAuth(true)}
+                    onClick={() => setShowRequestAccess(true)}
                     className="inline-flex items-center bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                   >
-                    Get Started
+                    <Mail className="w-4 h-4 mr-2" />
+                    Request Access
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </button>
                 </div>
@@ -814,7 +1005,7 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Get Started Section - Replacing Pricing */}
+      {/* Request Access Section - Invite Only */}
       <section className="py-24 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 relative overflow-hidden">
         {/* Animated background */}
         <div className="absolute inset-0">
@@ -824,9 +1015,13 @@ const LandingPage: React.FC = () => {
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 observe-animation">
-            <h2 className="text-5xl font-bold text-white mb-6">Begin Your Learning Journey</h2>
+            <div className="inline-flex items-center space-x-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-6">
+              <Shield className="w-4 h-4 text-white" />
+              <span className="text-white font-semibold text-sm">Invite-Only Platform</span>
+            </div>
+            <h2 className="text-5xl font-bold text-white mb-6">Join BA WorkXP</h2>
             <p className="text-xl text-purple-100 max-w-2xl mx-auto leading-relaxed">
-              Access the complete Learning Journey, practice with AI, and work on your first project with private access.
+              Request access for yourself or explore partnership opportunities for your training platform.
             </p>
           </div>
 
@@ -871,16 +1066,22 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="text-center">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-white mb-3">Ready to Get Started?</h3>
+                <p className="text-purple-100 text-lg">
+                  Request access for individual learning or explore partnership opportunities for your training platform.
+                </p>
+              </div>
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={() => setShowRequestAccess(true)}
                 className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
               >
-                <Rocket className="w-6 h-6" />
+                <Mail className="w-6 h-6" />
                 <span>Request Access</span>
                 <ArrowRight className="w-6 h-6" />
               </button>
               <p className="text-purple-100 text-sm mt-6">
-                Private access • Start in 30 seconds • Unlock more projects anytime
+                Exclusive access for training platform partners • We respond within 24 hours
               </p>
             </div>
           </div>
@@ -904,18 +1105,17 @@ const LandingPage: React.FC = () => {
             Your BA Career Transformation Starts Today
           </h2>
           <p className="text-xl text-purple-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join 2,847+ professionals who've accelerated their careers with our AI-powered training. 
-            Average salary increase: £47k within 6 months.
+            Join thousands of professionals accelerating their BA careers with AI-powered training. Request access today.
           </p>
           <button
-            onClick={() => setShowAuth(true)}
+            onClick={() => setShowRequestAccess(true)}
             className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
           >
-            <Rocket className="w-6 h-6" />
-            <span>Request Access Now</span>
+            <Mail className="w-6 h-6" />
+            <span>Request Access</span>
             <ArrowRight className="w-6 h-6" />
           </button>
-          <p className="text-purple-100 text-sm mt-6">Private access • Start in 30 seconds • Join successful Business Analysts worldwide</p>
+          <p className="text-purple-100 text-sm mt-6">For individuals and training platforms • We respond within 24 hours</p>
         </div>
       </section>
 

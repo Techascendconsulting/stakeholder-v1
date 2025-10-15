@@ -140,7 +140,12 @@ const referenceData: Section[] = [
   },
 ];
 
-const BAReferenceLibrary: React.FC = () => {
+interface BAReferenceLibraryProps {
+  showTabs?: boolean;
+  onTabChange?: (tab: 'handbook' | 'reference' | 'motivation') => void;
+}
+
+const BAReferenceLibrary: React.FC<BAReferenceLibraryProps> = ({ showTabs = false, onTabChange }) => {
   const [search, setSearch] = useState("");
 
   const filteredData = referenceData.map((section) => ({

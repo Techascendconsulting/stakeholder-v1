@@ -39,7 +39,8 @@ class LectureService {
   private constructor() {
     this.openai = new OpenAI({
       apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
+      dangerouslyAllowBrowser: true,
+      baseURL: 'http://localhost:3001/api/openai-proxy'
     });
   }
 

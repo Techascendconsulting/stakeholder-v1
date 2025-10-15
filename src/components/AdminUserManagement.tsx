@@ -331,48 +331,87 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleBlockUser = async (userId: string, email: string, isBlocked: boolean) => {
-    const action = isBlocked ? 'unblock' : 'block';
-    const confirmMessage = isBlocked 
-      ? `Are you sure you want to unblock ${email}?`
-      : `Are you sure you want to block ${email}? This will prevent them from accessing the system.`;
-
-    if (!confirm(confirmMessage)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Update the blocked status
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ blocked: !isBlocked })
-        .eq('user_id', userId);
-
-      if (error) {
-        console.error(`Error ${action}ing user:`, error);
-        alert(`Failed to ${action} user. Please try again.`);
+    if (isBlocked) {
+      // Unblocking - simple confirmation
+      if (!confirm(`✅ Unblock ${email}?\n\nThey will regain full access to the platform.`)) {
         return;
       }
+      
+      try {
+        setLoading(true);
+        
+        // Call database function to unblock
+        const { error } = await supabase.rpc('unblock_user', {
+          target_user_id: userId
+        });
 
-      // Log the action
-      await adminService.logActivity(
-        user?.id || '',
-        'user_blocked',
-        userId,
-        { email, action: `user_${action}ed` }
+        if (error) {
+          console.error('Error unblocking user:', error);
+          alert(`Failed to unblock user. ${error.message || 'Please try again.'}`);
+          return;
+        }
+
+        // Log the action
+        await adminService.logActivity(
+          user?.id || '',
+          'user_unblocked',
+          userId,
+          { email, action: 'unblocked', success: true }
+        );
+
+        alert(`✅ User ${email} has been unblocked successfully.`);
+        await loadUsers();
+        
+      } catch (error) {
+        console.error('Error unblocking user:', error);
+        alert('Failed to unblock user. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Blocking - ask for reason
+      const reason = prompt(
+        `🚫 Block ${email}?\n\nThis will:\n• Sign them out immediately\n• Prevent all login attempts\n• Block all API/database access\n• Show them a blocked account message\n\nEnter reason for blocking (required):`,
+        'Policy violation'
       );
+      
+      if (!reason || !reason.trim()) {
+        alert('Block cancelled - reason is required');
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        
+        // Call database function to block with reason
+        const { error } = await supabase.rpc('block_user', {
+          target_user_id: userId,
+          reason: reason.trim()
+        });
 
-      alert(`User ${email} has been ${action}ed successfully.`);
-      
-      // Reload users to reflect changes
-      await loadUsers();
-      
-    } catch (error) {
-      console.error(`Error ${action}ing user:`, error);
-      alert(`Failed to ${action} user. Please try again.`);
-    } finally {
-      setLoading(false);
+        if (error) {
+          console.error('Error blocking user:', error);
+          alert(`Failed to block user. ${error.message || 'Please try again.'}`);
+          return;
+        }
+
+        // Log the action with reason
+        await adminService.logActivity(
+          user?.id || '',
+          'user_blocked',
+          userId,
+          { email, reason: reason.trim(), action: 'blocked', success: true }
+        );
+
+        alert(`🚫 User ${email} has been blocked.\n\nReason: ${reason}\n\nThey will be signed out immediately if currently logged in.`);
+        await loadUsers();
+        
+      } catch (error) {
+        console.error('Error blocking user:', error);
+        alert('Failed to block user. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -1152,6 +1191,7 @@ const AdminUserManagement: React.FC = () => {
 };
 
 export default AdminUserManagement;
+
 
 
 

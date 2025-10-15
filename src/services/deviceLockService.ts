@@ -25,6 +25,7 @@ class DeviceLockService {
 
   /**
    * Get the current device's unique fingerprint
+   * Uses hardware-based components to ensure same device = same ID across browser instances
    */
   async getDeviceId(): Promise<string | null> {
     try {
@@ -36,15 +37,55 @@ class DeviceLockService {
       const fp = await this.fpPromise;
       const result = await fp.get();
 
-      // IMPORTANT: Use a stable device identifier so the same device passes every time.
-      // Do NOT include volatile info like timestamps or session flags that change per visit.
-      const stableId = result.visitorId;
-      console.log('🔐 DEVICE LOCK - Generated stable device ID:', stableId);
+      // IMPORTANT: Use hardware-based components only for device identification
+      // This ensures the same physical device gets the same ID across:
+      // - Multiple Chrome windows
+      // - Multiple browser instances
+      // - Browser restarts
+      // But DIFFERENT devices (or different browsers like Chrome vs Firefox) get different IDs
+      
+      const components = result.components;
+      
+      // Build stable device ID from hardware components only
+      const hardwareComponents = [
+        components.platform?.value || '',           // OS platform (Windows/Mac/Linux)
+        components.hardwareConcurrency?.value || '', // CPU cores
+        components.screenResolution?.value || '',    // Screen resolution
+        components.timezone?.value || '',            // Timezone
+        components.languages?.value || '',           // Browser languages
+        components.vendor?.value || '',              // GPU vendor
+        components.vendorFlavors?.value || ''        // Additional vendor info
+      ].filter(Boolean);
+      
+      // Create hash of hardware components
+      const hardwareString = hardwareComponents.join('|');
+      const stableId = await this.simpleHash(hardwareString);
+      
+      console.log('🔐 DEVICE LOCK - Generated hardware-based device ID:', stableId);
+      console.log('🔐 DEVICE LOCK - Hardware components:', {
+        platform: components.platform?.value,
+        cores: components.hardwareConcurrency?.value,
+        screen: components.screenResolution?.value,
+        timezone: components.timezone?.value
+      });
+      
       return stableId;
     } catch (error) {
       console.error('Failed to get device ID:', error);
       return null;
     }
+  }
+
+  /**
+   * Simple hash function for creating stable device IDs
+   */
+  private async simpleHash(str: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex.substring(0, 32); // Return first 32 chars
   }
 
   private isIncognito(): boolean {
@@ -68,9 +109,9 @@ class DeviceLockService {
       
       // FIRST: Check if user is admin - admins bypass device lock entirely
       try {
-        // FORCE ADMIN BYPASS FOR YOUR EMAIL
+        // FORCE ADMIN BYPASS FOR BA WORKXP ADMIN EMAIL
         const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email === 'techascendconsulting1@gmail.com') {
+        if (userData?.user?.email === 'admin@baworkxp.com' || userData?.user?.email === 'techascendconsulting1@gmail.com') {
           console.log('🔐 DEVICE LOCK - FORCED ADMIN BYPASS for', userData?.user?.email);
           return {
             success: true,

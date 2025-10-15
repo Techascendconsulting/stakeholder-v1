@@ -9,7 +9,8 @@ function getOpenAIClient() {
   }
   return new OpenAI({ 
     apiKey,
-    dangerouslyAllowBrowser: true // Required for browser environment
+    dangerouslyAllowBrowser: true, // Required for browser environment
+    baseURL: 'http://localhost:3001/api/openai-proxy'
   });
 }
 

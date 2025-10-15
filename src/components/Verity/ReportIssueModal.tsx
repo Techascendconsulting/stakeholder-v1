@@ -70,7 +70,7 @@ export default function ReportIssueModal({ isOpen, onClose, pageContext, pageTit
               <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Thanks for letting us know!</h3>
-            <p className="text-gray-600 dark:text-gray-300">Tech Ascend Consulting will review this shortly.</p>
+            <p className="text-gray-600 dark:text-gray-300">Our team will review this shortly.</p>
           </div>
         ) : (
           <>
@@ -118,7 +118,7 @@ export default function ReportIssueModal({ isOpen, onClose, pageContext, pageTit
 
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 flex items-start space-x-2">
                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-orange-500" />
-                <span>This will be sent to Tech Ascend Consulting for review. Include as much detail as possible.</span>
+                <span>This will be sent to our team for review. Include as much detail as possible.</span>
               </p>
 
               {/* Actions */}
@@ -156,6 +156,7 @@ export default function ReportIssueModal({ isOpen, onClose, pageContext, pageTit
     </div>
   );
 }
+
 
 
 
