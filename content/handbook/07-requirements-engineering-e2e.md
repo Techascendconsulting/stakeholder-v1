@@ -78,3 +78,6 @@ Requirements engineering is not clerical work. It is the discipline that prevent
 
 For the BA, mastering this end-to-end discipline is what transforms you from a passive note-taker into an active architect of solutions. Projects succeed or fail not on how many requirements are written, but on whether those requirements are right. And whether they are right depends on the skill, judgement, and persistence of the Business Analyst.
 
+
+
+

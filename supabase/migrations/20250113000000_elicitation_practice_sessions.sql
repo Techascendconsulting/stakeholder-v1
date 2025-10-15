@@ -141,3 +141,6 @@ COMMENT ON FUNCTION get_daily_interaction_count IS
 COMMENT ON FUNCTION check_voice_unlock_eligibility IS 
   'Checks if user has unlocked voice practice (3 sessions, 70%+, 3 different days)';
 
+
+
+

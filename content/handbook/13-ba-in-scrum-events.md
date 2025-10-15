@@ -71,3 +71,6 @@ Scrum does not mention Business Analysts, but real Scrum teams thrive when someo
 
 The BA does not own these events. They enhance them. Their presence ensures that clarity, alignment, and value remain at the centre of Agile delivery. In a world where Scrum risks becoming a series of rituals, the BA ensures those rituals serve their true purpose: delivering outcomes that matter.
 
+
+
+

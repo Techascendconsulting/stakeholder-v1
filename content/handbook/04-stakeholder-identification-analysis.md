@@ -52,3 +52,6 @@ Stakeholder identification and analysis are not background exercises to tick off
 
 A system that works but is rejected by its users has failed. A solution that satisfies regulators but frustrates customers has missed the point. The BA's value lies in navigating these competing interests with honesty, curiosity, and skill. Stakeholder analysis is how you begin that journey — not as a one-time task, but as a continuous practice that sustains projects from start to finish.
 
+
+
+

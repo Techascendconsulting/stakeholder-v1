@@ -68,3 +68,6 @@ if (typeof window !== 'undefined' && supabaseServer) {
  * const { data } = await supabaseAdmin.from('user_profiles').select('*')
  */
 
+
+
+

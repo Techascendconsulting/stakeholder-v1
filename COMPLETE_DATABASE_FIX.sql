@@ -442,3 +442,6 @@ CREATE POLICY "Users can update their own onboarding" ON public.user_onboarding
 SELECT 'Database completely fixed! All tables, functions, and policies have been created successfully.' as status;
 
 
+
+
+

@@ -62,3 +62,6 @@ For Business Analysts, this means developing fluency in integrations. Not by cod
 
 The BA who masters integrations stops being a translator of requirements only. They become a guardian of connected value, ensuring that systems not only work individually but also work together to deliver seamless business outcomes.
 
+
+
+

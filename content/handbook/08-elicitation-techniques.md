@@ -118,3 +118,6 @@ Elicitation is the heartbeat of Business Analysis. It is not about collecting wi
 
 The BA who masters this toolkit is not just a recorder of requirements. They are an investigator of value. They are the person who ensures that projects solve the right problems, for the right people, in the right way.
 
+
+
+

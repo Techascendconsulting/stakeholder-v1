@@ -94,3 +94,6 @@ ALTER TABLE user_activity_logs ALTER COLUMN user_id DROP NOT NULL;
 GRANT EXECUTE ON FUNCTION log_user_activity(TEXT, TEXT, TEXT, INET, TEXT, TEXT, BOOLEAN, TEXT, JSONB) TO authenticated;
 
 
+
+
+

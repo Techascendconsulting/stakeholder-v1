@@ -80,3 +80,6 @@ For the Business Analyst, writing good acceptance criteria is an act of precisio
 
 Projects that treat acceptance criteria as an afterthought stumble into disputes and rework. Projects that use them as contracts of clarity move forward with confidence. In the end, acceptance criteria are not about documentation — they are about trust. Trust that what was promised will be delivered, and delivered in a way that everyone can recognise as success.
 
+
+
+

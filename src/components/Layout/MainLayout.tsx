@@ -85,6 +85,9 @@ import ProjectLandingView from '../Views/ProjectLandingView';
 import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
+import ContactUsView from '../Views/ContactUsView';
+import AdminContactSubmissionsView from '../Views/AdminContactSubmissionsView';
+import FAQView from '../Views/FAQView';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 import CoreLearningView from '../Views/CoreLearningView';
 import CoreLearning2View from '../Views/CoreLearning2View'; // NEW: Overview + Individual Topic Pages
@@ -407,6 +410,12 @@ const MainLayout: React.FC = () => {
         return <CareerCoaching />;
       case 'my-progress-mentor':
         return <MyProgressWithMentor />;
+      case 'contact-us':
+        return <ContactUsView />;
+      case 'admin-contact-submissions':
+        return <AdminContactSubmissionsView />;
+      case 'faq':
+        return <FAQView />;
       default:
         return <ProjectsView />;
     }

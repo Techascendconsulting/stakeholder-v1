@@ -224,7 +224,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'book-session',
         'mentor-feedback',
         'career-coaching',
-        'my-progress-mentor'
+        'my-progress-mentor',
+        'contact-us',
+        'admin-contact-submissions',
+        'faq'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)

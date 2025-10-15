@@ -87,3 +87,6 @@ SELECT
   'Check browser console for detailed errors' as note;
 
 
+
+
+

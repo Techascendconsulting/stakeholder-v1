@@ -101,7 +101,10 @@ export type AppView =
   | 'career-coaching'
   | 'my-progress-mentor'
   | 'admin'
-  | 'admin-panel';
+  | 'admin-panel'
+  | 'contact-us'
+  | 'admin-contact-submissions'
+  | 'faq';
 
 // Re-export specific types for convenience
 export type {

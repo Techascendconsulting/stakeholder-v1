@@ -221,3 +221,6 @@ SELECT
   (SELECT COUNT(*) FROM public.training_sessions) as training_sessions_count;
 
 
+
+
+

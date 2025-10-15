@@ -846,3 +846,10 @@ ${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
 };
 
 export default HandbookView;
+
+
+
+
+
+
+

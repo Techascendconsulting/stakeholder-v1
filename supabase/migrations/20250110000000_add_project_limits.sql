@@ -31,3 +31,6 @@ COMMENT ON COLUMN public.user_profiles.subscription_tier IS 'User subscription t
 COMMENT ON COLUMN public.user_profiles.max_projects IS 'Maximum number of projects user can select. Free=1, Premium=5, Enterprise=999';
 COMMENT ON COLUMN public.user_profiles.subscription_status IS 'Current subscription status';
 
+
+
+

@@ -94,3 +94,6 @@ SELECT 'Stories table columns:' as info, COUNT(*) as count FROM information_sche
 SELECT 'MVP flows table created:' as info, COUNT(*) as count FROM information_schema.tables WHERE table_name = 'mvp_flows' AND table_schema = 'public';
 
 
+
+
+

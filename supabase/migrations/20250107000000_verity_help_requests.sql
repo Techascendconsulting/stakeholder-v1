@@ -54,3 +54,11 @@ USING (
   auth.email() = 'techascendconsulting@gmail.com'
 );
 
+
+
+
+
+
+
+
+

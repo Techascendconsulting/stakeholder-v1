@@ -54,3 +54,6 @@ The analyst who embraces these shifts will find themselves at the centre of stra
 
 Digital transformation is not just about technology. It is about analysis — rigorous, value-focused, ethically grounded analysis. And in that, the Business Analyst has never been more essential.
 
+
+
+

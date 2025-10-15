@@ -25,3 +25,6 @@ WHERE au.email IN ('techascendconsulting2@gmail.com', 'obyj1st2@gmail.com')
 ORDER BY au.email;
 
 
+
+
+

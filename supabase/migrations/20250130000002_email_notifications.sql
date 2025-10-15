@@ -42,3 +42,6 @@ COMMENT ON COLUMN email_notifications.status IS 'Delivery status: sent, delivere
 COMMENT ON COLUMN email_notifications.metadata IS 'Additional notification data in JSON format';
 
 
+
+
+

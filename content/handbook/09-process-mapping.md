@@ -131,3 +131,6 @@ Unlike other techniques, process mapping is not a tool you pull out occasionally
 
 With process maps, organisations stop arguing about who is at fault and start seeing where change must happen. They stop imagining processes and start confronting reality. For a Business Analyst, there are few tools more powerful.
 
+
+
+

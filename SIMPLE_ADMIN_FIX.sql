@@ -83,3 +83,6 @@ GRANT EXECUTE ON FUNCTION public.make_super_admin(TEXT) TO authenticated;
 SELECT 'Simple admin fix ready! Use the make_super_admin function with your email.' as status;
 
 
+
+
+

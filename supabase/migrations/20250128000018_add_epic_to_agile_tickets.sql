@@ -12,3 +12,6 @@ ALTER TABLE public.agile_tickets ADD CONSTRAINT agile_tickets_type_check
 ALTER TABLE public.agile_tickets ADD COLUMN IF NOT EXISTS epic text;
 
 
+
+
+

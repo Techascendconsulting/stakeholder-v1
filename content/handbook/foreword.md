@@ -9,3 +9,6 @@ This is why this book matters. It is not just a handbook of techniques, nor a th
 Whether you are new to Business Analysis or a seasoned practitioner, this book will sharpen your thinking, deepen your toolkit, and most importantly, help you deliver value. That, after all, is the essence of practical business analysis.
 
 
+
+
+

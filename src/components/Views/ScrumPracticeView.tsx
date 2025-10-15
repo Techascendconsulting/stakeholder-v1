@@ -200,3 +200,4 @@ export const ScrumPracticeView: React.FC = () => {
 };
 
 export default ScrumPracticeView;
+

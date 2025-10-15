@@ -38,3 +38,6 @@ Understanding where the BA fits is not about memorising jargon or aligning yours
 - Hybrid approaches demand adaptability and the ability to switch between different working styles
 - The BA's core purpose remains constant regardless of the delivery approach
 
+
+
+

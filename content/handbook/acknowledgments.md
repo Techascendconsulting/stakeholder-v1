@@ -9,3 +9,6 @@ I am also grateful to the broader business analysis community—from the IIBA to
 Finally, thank you to the readers who will use this book to deliver better value in their organizations. Your success is the ultimate measure of this book's worth.
 
 
+
+
+

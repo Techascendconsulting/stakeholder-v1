@@ -15,3 +15,6 @@ Each chapter can be read on its own, but the book is structured to flow naturall
 Business Analysis is ultimately about value — not documents, not jargon, but solving the right problems in the right way. My hope is that this book equips you to see beyond process into purpose, and to carry the mindset of a true Business Analyst wherever your career takes you.
 
 
+
+
+

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { subscriptionService } from '../lib/subscription'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
+import { supabase } from '../lib/supabase'
 
 interface LoginSignupProps {
   onBack?: () => void

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { 
   GraduationCap, 
@@ -31,15 +31,26 @@ import {
   Monitor,
   Smartphone,
   Map,
-  Bot
+  Bot,
+  Linkedin,
+  Twitter,
+  Facebook,
+  Youtube,
+  Instagram,
+  Mail,
+  MapPin,
+  AlertCircle
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
+import ContactUsView from './Views/ContactUsView'
+import FAQView from './Views/FAQView'
 
 const LandingPage: React.FC = () => {
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [showContact, setShowContact] = useState(false)
+  const [showFAQ, setShowFAQ] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
   const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
@@ -52,10 +63,7 @@ const LandingPage: React.FC = () => {
       localStorage.removeItem('showLoginForm')
     }
     
-    // Auto-rotate testimonials
-    const interval = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % testimonials.length)
-    }, 5000)
+    // Testimonials auto-rotation removed (using dual-scroll instead)
 
     // Parallax scroll effect
     const handleScroll = () => {
@@ -64,7 +72,6 @@ const LandingPage: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true })
     
     return () => {
-      clearInterval(interval)
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
@@ -95,50 +102,131 @@ const LandingPage: React.FC = () => {
     return <LoginSignup onBack={() => setShowAuth(false)} />
   }
 
-  // Updated features to match actual app
+  if (showContact) {
+    return <ContactUsView 
+      onBack={() => setShowContact(false)} 
+      onFAQClick={() => {
+        setShowContact(false);
+        setShowFAQ(true);
+      }}
+    />
+  }
+
+  if (showFAQ) {
+    return <FAQView 
+      onBack={() => setShowFAQ(false)} 
+      onContactClick={() => {
+        setShowFAQ(false);
+        setShowContact(true);
+      }} 
+    />
+  }
+
+  // Updated features to match actual app with detailed modal content
   const features = [
     {
       icon: Map,
       title: "Learning Journey",
-      description: "Master Business Analysis through 10 sequential modules. Core concepts, project initiation, elicitation, documentation, and more - all with interactive assignments and AI feedback.",
+      description: "Master Business Analysis through comprehensive sequential modules. Core concepts, project initiation, elicitation, documentation, and more - all with interactive assignments and AI feedback.",
       image: "https://images.pexels.com/photos/2566581/pexels-photo-2566581.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "10 Modules",
-      color: "from-purple-500 to-indigo-600"
+      stats: "Full Curriculum",
+      color: "from-purple-500 to-indigo-600",
+      detailedContent: {
+        overview: "A structured, progressive learning path that takes you from Business Analysis fundamentals to advanced techniques. Each module builds on the previous one, ensuring you develop a solid foundation.",
+        features: [
+          "Core Business Analysis Concepts - Role, value, and competencies",
+          "Project Initiation - Stakeholder analysis and project scoping",
+          "Requirements Elicitation - Interview techniques and facilitation",
+          "Process Mapping - Visualize and optimize business processes",
+          "Requirements Engineering - Documentation and validation",
+          "Solution Design - Design thinking and option analysis",
+          "Documentation Standards - User stories, acceptance criteria",
+          "MVP Strategy - Prioritization and value delivery",
+          "Agile & Scrum - BA role in ceremonies and frameworks",
+          "Interactive assignments with AI feedback after each module"
+        ],
+        outcomes: "By completing the Learning Journey, you'll have mastered the core competencies needed for Business Analysis roles and be ready to practice with realistic scenarios."
+      }
     },
     {
       icon: Target,
       title: "AI-Powered Practice",
       description: "Practice elicitation, documentation, MVP building, and Scrum with realistic AI stakeholders. Get instant feedback and improve your skills with every session.",
       image: "https://images.pexels.com/photos/7688339/pexels-photo-7688339.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "4 Practice Modules",
-      color: "from-cyan-500 to-blue-600"
+      stats: "Unlimited Practice",
+      color: "from-cyan-500 to-blue-600",
+      detailedContent: {
+        overview: "Practice makes perfect. Our AI-powered practice modules let you conduct realistic stakeholder conversations in both chat and voice modes, with instant coaching and feedback.",
+        features: [
+          "Elicitation Practice - Chat mode unlocked first, voice mode after mastery",
+          "User Story Documentation - Build perfect user stories with INVEST principles",
+          "MVP Building - Prioritize features using MoSCoW and value analysis",
+          "Agile Ceremonies - Practice backlog refinement and sprint planning",
+          "Realistic AI stakeholders with diverse personalities and communication styles",
+          "Real-time coaching suggestions during conversations",
+          "Detailed feedback reports after each session",
+          "Progress tracking across all practice modules",
+          "Unlimited sessions to refine your skills"
+        ],
+        outcomes: "Practice sessions prepare you for real-world stakeholder interactions and help you build confidence before working on actual projects."
+      }
     },
     {
       icon: Briefcase,
       title: "Hands-On Projects",
-      description: "Work on real-world business scenarios. Apply your learning to actual BA projects with tools for requirements, process mapping, and stakeholder management.",
+      description: "Work on real-world business scenarios. Apply your learning to actual Business Analysis projects with tools for requirements, process mapping, and stakeholder management.",
       image: "https://images.pexels.com/photos/15543115/pexels-photo-15543115.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "Real Scenarios",
-      color: "from-emerald-500 to-teal-600"
+      color: "from-emerald-500 to-teal-600",
+      detailedContent: {
+        overview: "Apply everything you've learned to hands-on projects based on real-world business scenarios. Create a professional portfolio of deliverables.",
+        features: [
+          "Multiple industry project scenarios to choose from",
+          "Comprehensive project briefs with business context",
+          "Full stakeholder roster with diverse roles and concerns",
+          "Conduct complete stakeholder interview sessions",
+          "Generate professional meeting summaries and transcripts",
+          "Create requirements documentation",
+          "Build process maps and diagrams",
+          "Develop user stories and acceptance criteria",
+          "Portfolio-ready deliverables you can show to employers"
+        ],
+        outcomes: "Complete hands-on projects that demonstrate your Business Analysis skills and build a professional portfolio for job applications."
+      }
     },
     {
       icon: Bot,
       title: "Verity AI Assistant",
-      description: "Your 24/7 learning companion. Get instant answers to BA questions, navigate the platform, and receive personalized guidance throughout your journey.",
+      description: "Your 24/7 learning companion. Get instant answers to Business Analysis questions, navigate the platform, and receive personalized guidance throughout your journey.",
       image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "Always Available",
-      color: "from-pink-500 to-purple-600"
+      color: "from-pink-500 to-purple-600",
+      detailedContent: {
+        overview: "Verity is your intelligent AI assistant, available 24/7 to help you throughout your learning journey. Get instant answers, guidance, and support whenever you need it.",
+        features: [
+          "Answer questions about Business Analysis concepts and techniques",
+          "Explain complex topics in simple, understandable terms",
+          "Help navigate the platform and find resources",
+          "Provide personalized learning recommendations",
+          "Suggest next steps based on your progress",
+          "Context-aware assistance on current page/module",
+          "Daily question limit to encourage focused learning",
+          "Report issues or request help from mentors"
+        ],
+        outcomes: "Never feel stuck or lost. Verity ensures you always have support and guidance, accelerating your learning and keeping you on track."
+      }
     }
   ]
 
   const testimonials = [
+    // Row 1 (scrolls left)
     {
       name: "Adunni Okafor",
       role: "Senior Business Analyst",
       company: "Microsoft",
-      content: "This platform completely transformed my approach to stakeholder management. The AI interviews felt so real, I was genuinely nervous during my first session! Within 3 months, I landed a senior BA role at Microsoft.",
+      content: "This platform transformed my stakeholder management approach. The AI interviews felt incredibly real!",
       rating: 5,
-      image: "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg?auto=compress&cs=tinysrgb&w=400",
+      image: "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
       salary: "£85k → £120k",
       location: "London, UK"
     },
@@ -146,9 +234,9 @@ const LandingPage: React.FC = () => {
       name: "Chukwuemeka Nwosu",
       role: "Lead Product Analyst",
       company: "Deloitte",
-      content: "The real-world scenarios are incredible. I practiced on the exact type of digital transformation project I later worked on at Deloitte. The stakeholder personalities are so diverse and realistic.",
+      content: "The real-world scenarios prepared me perfectly for my role at Deloitte. Incredibly realistic practice.",
       rating: 5,
-      image: "https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/images//ChatGPT%20Image%20Jul%2011,%202025,%2007_55_26%20PM.png",
+      image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
       salary: "£65k → £95k",
       location: "Manchester, UK"
     },
@@ -156,13 +244,108 @@ const LandingPage: React.FC = () => {
       name: "Folake Adebayo",
       role: "Business Transformation Consultant",
       company: "PwC",
-      content: "I went from junior analyst to consultant in 8 months. The documentation templates and interview techniques I learned here are exactly what we use at PwC. Absolutely game-changing.",
+      content: "From junior analyst to consultant in 8 months. The techniques I learned are exactly what we use at PwC.",
       rating: 5,
-      image: "https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400",
+      image: "https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
       salary: "£45k → £78k",
       location: "Birmingham, UK"
+    },
+    {
+      name: "Oluwaseun Adeleke",
+      role: "Business Analyst",
+      company: "Accenture",
+      content: "The progressive learning system kept me engaged. Verity AI helped me whenever I got stuck.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£52k → £82k",
+      location: "Leeds, UK"
+    },
+    {
+      name: "Chiamaka Okonkwo",
+      role: "Requirements Analyst",
+      company: "KPMG",
+      content: "The documentation practice was invaluable. I now write user stories that developers actually love.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£48k → £72k",
+      location: "London, UK"
+    },
+    {
+      name: "Emeka Obi",
+      role: "Senior BA",
+      company: "Barclays",
+      content: "The MVP prioritization module changed how I approach feature planning. Landed my dream role!",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£58k → £88k",
+      location: "London, UK"
+    },
+    // Row 2 (scrolls right - different people)
+    {
+      name: "Ngozi Eze",
+      role: "Product Analyst",
+      company: "Google",
+      content: "The AI stakeholder practice gave me confidence I never had before. Now interviewing feels natural.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/3752834/pexels-photo-3752834.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£72k → £110k",
+      location: "Dublin, Ireland"
+    },
+    {
+      name: "Babatunde Akinola",
+      role: "Business Systems Analyst",
+      company: "IBM",
+      content: "Process mapping was my weakness. Now it's my strength. Got promoted within 4 months of completing.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1182825/pexels-photo-1182825.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£55k → £75k",
+      location: "Edinburgh, UK"
+    },
+    {
+      name: "Zainab Mohammed",
+      role: "Senior Consultant",
+      company: "EY",
+      content: "The Agile & Scrum module was exceptional. I now run refinement sessions with confidence.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/3796810/pexels-photo-3796810.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£62k → £95k",
+      location: "London, UK"
+    },
+    {
+      name: "Kelechi Udeh",
+      role: "Lead Business Analyst",
+      company: "Amazon",
+      content: "Best investment in my career. The hands-on projects gave me a portfolio that got me into Amazon.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£68k → £105k",
+      location: "London, UK"
+    },
+    {
+      name: "Amara Nwankwo",
+      role: "Requirements Lead",
+      company: "Santander",
+      content: "The elicitation techniques I learned helped me uncover requirements others missed. Career game-changer!",
+      rating: 5,
+      image: "https://images.pexels.com/photos/3785084/pexels-photo-3785084.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£50k → £78k",
+      location: "Milton Keynes, UK"
+    },
+    {
+      name: "Chidera Okoro",
+      role: "Digital BA",
+      company: "Lloyds Banking",
+      content: "Voice practice mode was brilliant. I felt prepared for every stakeholder meeting in my new role.",
+      rating: 5,
+      image: "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=faces",
+      salary: "£54k → £80k",
+      location: "Bristol, UK"
     }
   ]
+  
+  // Split testimonials for dual-direction scroll
+  const row1Testimonials = testimonials.slice(0, 6)
+  const row2Testimonials = testimonials.slice(6, 12)
 
   const stats = [
     { number: "2,847", label: "Professionals Trained", icon: Users, change: "+127% this year" },
@@ -184,7 +367,7 @@ const LandingPage: React.FC = () => {
     {
       number: "01",
       title: "Learn",
-      description: "Complete 10 interactive modules covering all BA fundamentals. From core concepts to advanced techniques, build a solid foundation.",
+      description: "Complete comprehensive interactive modules covering all Business Analysis fundamentals. From core concepts to advanced techniques, build a solid foundation.",
       icon: GraduationCap,
       color: "from-purple-500 to-indigo-600"
     },
@@ -205,21 +388,51 @@ const LandingPage: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden" style={{ scrollbarGutter: 'stable' }}>
       {/* Floating Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
-            </div>
+            </button>
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">How It Works</a>
-              <a href="#success" className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105">Success Stories</a>
+              <button 
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                Success Stories
+              </button>
+              <button 
+                onClick={() => setShowFAQ(true)}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                FAQ
+              </button>
+              <button 
+                onClick={() => setShowContact(true)}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                Contact Us
+              </button>
             </nav>
             <div className="flex items-center space-x-3">
               <button
@@ -232,7 +445,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => setShowAuth(true)}
                 className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Start Free
+                Get Started
               </button>
             </div>
           </div>
@@ -240,61 +453,64 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section - 2025 Silicon Valley Design */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-700">
         {/* Animated Background with Parallax */}
         <div className="absolute inset-0" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
-          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-full blur-3xl animate-spin-slow"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-white/10 to-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-pink-400/20 to-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-cyan-400/15 to-purple-300/15 rounded-full blur-3xl animate-spin-slow"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content */}
             <div className={`text-center lg:text-left transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <div className="inline-flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-8 animate-bounce shadow-lg">
+              <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-full text-sm font-medium mb-8 animate-bounce shadow-lg">
                 <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
                 Join 2,847+ Successful Business Analysts
               </div>
             
-              <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+              <h1 className="text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
                 Master Business Analysis
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 animate-gradient"> with AI </span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-200 to-purple-200 animate-gradient"> with AI </span>
               </h1>
               
-              <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl">
-                Learn through 10 interactive modules, practice with AI stakeholders, and build real projects. 
-                <span className="font-semibold text-gray-900"> Start free and unlock your BA career.</span>
+              <p className="text-xl text-purple-100 mb-10 leading-relaxed max-w-2xl">
+                Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. 
+                <span className="font-semibold text-white"> Begin your Business Analysis career transformation today.</span>
               </p>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start mb-12">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="group bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-5 rounded-2xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-purple-500/25"
+                  className="group bg-white text-purple-600 px-10 py-5 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 shadow-2xl transform hover:scale-105"
                 >
                   <Rocket className="w-6 h-6 group-hover:animate-bounce" />
-                  <span>Start Learning Free</span>
+                  <span>Start Learning Now</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="group border-2 border-gray-300 text-gray-700 px-10 py-5 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 transform hover:scale-105">
-                  <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                  <span>Watch Success Stories</span>
+                <button 
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="group border-2 border-white/30 text-white px-10 py-5 rounded-2xl hover:border-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-3 transform hover:scale-105"
+                >
+                  <Target className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <span>Explore Platform</span>
                 </button>
               </div>
               
               {/* Trust Indicators */}
               <div className="grid grid-cols-3 gap-8 max-w-md mx-auto lg:mx-0">
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">10</div>
-                  <div className="text-sm text-gray-600">Learning Modules</div>
+                  <div className="text-3xl font-bold text-white mb-1">Complete</div>
+                  <div className="text-sm text-purple-200">Learning Journey</div>
                 </div>
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">AI</div>
-                  <div className="text-sm text-gray-600">Powered Practice</div>
+                  <div className="text-3xl font-bold text-white mb-1">AI</div>
+                  <div className="text-sm text-purple-200">Powered Practice</div>
                 </div>
                 <div className="text-center transform hover:scale-110 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gray-900 mb-1">Free</div>
-                  <div className="text-sm text-gray-600">To Start</div>
+                  <div className="text-3xl font-bold text-white mb-1">24/7</div>
+                  <div className="text-sm text-purple-200">AI Support</div>
                 </div>
               </div>
             </div>
@@ -345,7 +561,8 @@ const LandingPage: React.FC = () => {
       <section className="py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-gray-600 font-medium text-lg">Our graduates work at leading companies worldwide</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Our graduates work at leading companies worldwide</h2>
+            <p className="text-gray-600 font-medium">Trusted by top organizations across the globe</p>
           </div>
           <div className="relative overflow-hidden">
             <div className="flex animate-scroll space-x-12 items-center">
@@ -361,33 +578,10 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats Section - Animated Counters */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-indigo-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200')] opacity-10 bg-cover bg-center"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 observe-animation opacity-0">
-            <h2 className="text-4xl font-bold text-white mb-4">Transforming Careers Worldwide</h2>
-            <p className="text-xl text-purple-100">Real results from real professionals</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center group transform hover:scale-110 transition-all duration-300 observe-animation opacity-0" style={{ transitionDelay: `${index * 100}ms` }}>
-                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-all duration-300 border border-white/30">
-                  <stat.icon className="w-10 h-10 text-white" />
-                </div>
-                <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform">{stat.number}</div>
-                <div className="text-purple-100 font-medium mb-1">{stat.label}</div>
-                <div className="text-purple-200 text-sm">{stat.change}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works - 3-Step Journey */}
       <section id="how-it-works" className="py-24 bg-gradient-to-br from-slate-50 to-purple-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20 observe-animation opacity-0">
+          <div className="text-center mb-20 observe-animation">
             <div className="inline-flex items-center bg-purple-50 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-6 border border-purple-200">
               <Map className="w-4 h-4 mr-2" />
               Your Learning Path
@@ -402,7 +596,7 @@ const LandingPage: React.FC = () => {
             {howItWorksSteps.map((step, index) => (
               <div 
                 key={index} 
-                className="relative group observe-animation opacity-0"
+                className="relative group observe-animation"
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {/* Connection Line (except last item) */}
@@ -437,14 +631,37 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Bottom CTA */}
-          <div className="text-center mt-16 observe-animation opacity-0">
+          <div className="text-center mt-16 observe-animation">
             <button
               onClick={() => setShowAuth(true)}
               className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-4 rounded-2xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105 inline-flex items-center space-x-3"
             >
-              <span>Start Your Journey Free</span>
+              <span>Start Your Journey</span>
               <ArrowRight className="w-5 h-5" />
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section - Animated Counters */}
+      <section className="py-20 bg-gradient-to-r from-purple-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200')] opacity-10 bg-cover bg-center"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 observe-animation">
+            <h2 className="text-4xl font-bold text-white mb-4">Transforming Careers Worldwide</h2>
+            <p className="text-xl text-purple-100">Real results from real professionals</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group transform hover:scale-110 transition-all duration-300 observe-animation" style={{ transitionDelay: `${index * 100}ms` }}>
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-all duration-300 border border-white/30">
+                  <stat.icon className="w-10 h-10 text-white" />
+                </div>
+                <div className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform">{stat.number}</div>
+                <div className="text-purple-100 font-medium mb-1">{stat.label}</div>
+                <div className="text-purple-200 text-sm">{stat.change}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -452,7 +669,7 @@ const LandingPage: React.FC = () => {
       {/* Features Section - Rich Visual Cards */}
       <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20 observe-animation opacity-0">
+          <div className="text-center mb-20 observe-animation">
             <div className="inline-flex items-center bg-purple-50 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-6 border border-purple-200">
               <Lightbulb className="w-4 h-4 mr-2" />
               Platform Features
@@ -467,7 +684,7 @@ const LandingPage: React.FC = () => {
             {features.map((feature, index) => (
               <div 
                 key={index} 
-                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 border border-gray-100 hover:border-purple-200 observe-animation opacity-0"
+                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 border border-gray-100 hover:border-purple-200 observe-animation"
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="relative h-80 overflow-hidden">
@@ -499,9 +716,12 @@ const LandingPage: React.FC = () => {
                 
                 <div className="p-8">
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">{feature.description}</p>
-                  <button className="inline-flex items-center text-purple-600 font-semibold hover:text-purple-800 transition-colors group-hover:translate-x-2 transform transition-transform duration-300">
-                    Learn More
-                    <ChevronRight className="w-5 h-5 ml-1" />
+                  <button 
+                    onClick={() => setShowAuth(true)}
+                    className="inline-flex items-center bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    Get Started
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </button>
                 </div>
               </div>
@@ -510,70 +730,91 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Success Stories - Interactive Testimonials */}
-      <section id="success" className="py-24 bg-gradient-to-br from-slate-50 to-purple-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20 observe-animation opacity-0">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">Success Stories That Inspire</h2>
-            <p className="text-xl text-gray-600">Real professionals, real results, real career transformations</p>
+      {/* Success Stories - Dual-Direction Infinite Scroll */}
+      <section id="success" className="py-24 bg-gradient-to-br from-slate-50 to-purple-50/30 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+          <div className="text-center observe-animation">
+            <div className="inline-flex items-center bg-white border border-purple-200 text-purple-700 px-6 py-3 rounded-full text-sm font-medium mb-6">
+              <Star className="w-4 h-4 mr-2 fill-current" />
+              Success Stories
+            </div>
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">Career Transformations from Our Community</h2>
+            <p className="text-xl text-gray-600">Real professionals, real results, real impact</p>
           </div>
+        </div>
 
-          <div className="relative observe-animation opacity-0">
-            <div className="bg-white/70 backdrop-blur-md rounded-3xl p-12 shadow-xl border border-white/50">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div className="relative">
+        {/* Row 1: Scrolling Left */}
+        <div className="relative mb-8 overflow-hidden">
+          <div className="flex animate-scroll-left space-x-6">
+            {[...row1Testimonials, ...row1Testimonials, ...row1Testimonials].map((testimonial, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-80 bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200"
+              >
+                <div className="flex items-start space-x-4 mb-4">
                   <img
-                    src={testimonials[currentTestimonial].image}
-                    alt={testimonials[currentTestimonial].name}
-                    className="w-full h-96 object-cover rounded-2xl shadow-lg"
-                    loading="lazy"
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-purple-200"
                   />
-                  <div className="absolute -bottom-6 -right-6 bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/50">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{testimonials[currentTestimonial].salary}</div>
-                      <div className="text-sm text-gray-600">Salary Increase</div>
-                    </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                    <p className="text-sm text-purple-600">{testimonial.role}</p>
+                    <p className="text-xs text-gray-500">{testimonial.company}</p>
                   </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center mb-6">
-                    {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                      <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  
-                  <blockquote className="text-2xl text-gray-700 leading-relaxed mb-8 italic">
-                    "{testimonials[currentTestimonial].content}"
-                  </blockquote>
-                  
-                  <div className="border-l-4 border-purple-500 pl-6">
-                    <div className="text-xl font-bold text-gray-900">{testimonials[currentTestimonial].name}</div>
-                    <div className="text-purple-600 font-semibold">{testimonials[currentTestimonial].role}</div>
-                    <div className="text-gray-600">{testimonials[currentTestimonial].company} • {testimonials[currentTestimonial].location}</div>
-                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 italic">"{testimonial.content}"</p>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <span className="text-xs text-gray-500">{testimonial.location}</span>
+                  <span className="text-sm font-bold text-green-600">{testimonial.salary}</span>
                 </div>
               </div>
-            </div>
-            
-            {/* Testimonial Navigation */}
-            <div className="flex justify-center mt-8 space-x-3">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentTestimonial ? 'bg-purple-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                  aria-label={`View testimonial ${index + 1}`}
-                />
-              ))}
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Scrolling Right */}
+        <div className="relative overflow-hidden">
+          <div className="flex animate-scroll-right space-x-6">
+            {[...row2Testimonials, ...row2Testimonials, ...row2Testimonials].map((testimonial, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-80 bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200"
+              >
+                <div className="flex items-start space-x-4 mb-4">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-purple-200"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                    <p className="text-sm text-purple-600">{testimonial.role}</p>
+                    <p className="text-xs text-gray-500">{testimonial.company}</p>
+                  </div>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 italic">"{testimonial.content}"</p>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <span className="text-xs text-gray-500">{testimonial.location}</span>
+                  <span className="text-sm font-bold text-green-600">{testimonial.salary}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Start Free Section - Replacing Pricing */}
+      {/* Get Started Section - Replacing Pricing */}
       <section className="py-24 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 relative overflow-hidden">
         {/* Animated background */}
         <div className="absolute inset-0">
@@ -582,22 +823,22 @@ const LandingPage: React.FC = () => {
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 observe-animation opacity-0">
-            <h2 className="text-5xl font-bold text-white mb-6">Start Learning for Free</h2>
+          <div className="text-center mb-12 observe-animation">
+            <h2 className="text-5xl font-bold text-white mb-6">Begin Your Learning Journey</h2>
             <p className="text-xl text-purple-100 max-w-2xl mx-auto leading-relaxed">
-              Access the complete Learning Journey, practice with AI, and work on your first project - completely free.
+              Access the complete Learning Journey, practice with AI, and work on your first project with private access.
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-12 border border-white/20 observe-animation opacity-0">
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-12 border border-white/20 observe-animation">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
                   <CheckCircle className="w-6 h-6 text-green-300" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold text-lg mb-1">10 Learning Modules</h3>
-                  <p className="text-purple-100 text-sm">Complete BA fundamentals with assignments and AI feedback</p>
+                  <h3 className="text-white font-semibold text-lg mb-1">Complete Learning Journey</h3>
+                  <p className="text-purple-100 text-sm">Master Business Analysis fundamentals with assignments and AI feedback</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -635,11 +876,11 @@ const LandingPage: React.FC = () => {
                 className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
               >
                 <Rocket className="w-6 h-6" />
-                <span>Start Learning Free</span>
+                <span>Request Access</span>
                 <ArrowRight className="w-6 h-6" />
               </button>
               <p className="text-purple-100 text-sm mt-6">
-                No credit card required • Start in 30 seconds • Unlock more projects anytime
+                Private access • Start in 30 seconds • Unlock more projects anytime
               </p>
             </div>
           </div>
@@ -658,7 +899,7 @@ const LandingPage: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/95 to-indigo-700/95"></div>
         </div>
 
-        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 observe-animation opacity-0">
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 observe-animation">
           <h2 className="text-5xl font-bold text-white mb-8">
             Your BA Career Transformation Starts Today
           </h2>
@@ -671,10 +912,10 @@ const LandingPage: React.FC = () => {
             className="bg-white text-purple-600 px-12 py-6 rounded-2xl hover:bg-gray-50 transition-all duration-300 font-bold text-xl inline-flex items-center space-x-3 shadow-2xl transform hover:scale-105 hover:shadow-white/25"
           >
             <Rocket className="w-6 h-6" />
-            <span>Start Free Training Now</span>
+            <span>Request Access Now</span>
             <ArrowRight className="w-6 h-6" />
           </button>
-          <p className="text-purple-100 text-sm mt-6">No credit card required • Start in 30 seconds • 94% job placement rate</p>
+          <p className="text-purple-100 text-sm mt-6">Private access • Start in 30 seconds • Join successful Business Analysts worldwide</p>
         </div>
       </section>
 
@@ -692,12 +933,32 @@ const LandingPage: React.FC = () => {
               <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
                 The world's most advanced Business Analysis training platform. Transform your career with AI-powered learning, practice, and real-world projects.
               </p>
-              <div className="flex space-x-4">
-                {['Facebook', 'Twitter', 'LinkedIn', 'YouTube'].map((social) => (
-                  <div key={social} className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 cursor-pointer transition-all duration-300 transform hover:scale-110">
-                    <span className="text-gray-400 font-bold text-sm">{social[0]}</span>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Connect With Us</h3>
+                <div className="flex space-x-3">
+                  <a href="https://linkedin.com/company/baworkxp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-all duration-300 transform hover:scale-110" aria-label="LinkedIn">
+                    <Linkedin className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </a>
+                  <a href="https://twitter.com/baworkxp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-sky-500 transition-all duration-300 transform hover:scale-110" aria-label="Twitter">
+                    <Twitter className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </a>
+                  <a href="https://facebook.com/baworkxp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-all duration-300 transform hover:scale-110" aria-label="Facebook">
+                    <Facebook className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </a>
+                  <a href="https://youtube.com/@baworkxp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-600 transition-all duration-300 transform hover:scale-110" aria-label="YouTube">
+                    <Youtube className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </a>
+                  <a href="https://instagram.com/baworkxp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110" aria-label="Instagram">
+                    <Instagram className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </a>
+                  <button 
+                    onClick={() => setShowContact(true)}
+                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-all duration-300 transform hover:scale-110" 
+                    aria-label="Contact Us"
+                  >
+                    <Mail className="w-5 h-5 text-gray-400 hover:text-white" />
+                  </button>
+                </div>
               </div>
             </div>
             <div>
@@ -711,9 +972,28 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-6">Support</h3>
               <ul className="space-y-4 text-gray-400">
-                {['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service'].map((item) => (
-                  <li key={item} className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">{item}</li>
-                ))}
+                <li>
+                  <button
+                    onClick={() => setShowFAQ(true)}
+                    className="hover:text-white transition-colors transform hover:translate-x-2 duration-300 block"
+                  >
+                    FAQ
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setShowContact(true)}
+                    className="hover:text-white transition-colors transform hover:translate-x-2 duration-300 block"
+                  >
+                    Contact Us
+                  </button>
+                </li>
+                <li className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">
+                  Privacy Policy
+                </li>
+                <li className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">
+                  Terms of Service
+                </li>
               </ul>
             </div>
           </div>
@@ -733,6 +1013,17 @@ const LandingPage: React.FC = () => {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        
+        @keyframes scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.33%); }
+        }
+        
+        @keyframes scroll-right {
+          0% { transform: translateX(-33.33%); }
+          100% { transform: translateX(0); }
+        }
+        
         @keyframes gradient {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -756,6 +1047,22 @@ const LandingPage: React.FC = () => {
         }
         .animate-scroll {
           animation: scroll 30s linear infinite;
+        }
+        
+        .animate-scroll-left {
+          animation: scroll-left 40s linear infinite;
+        }
+        
+        .animate-scroll-left:hover {
+          animation-play-state: paused;
+        }
+        
+        .animate-scroll-right {
+          animation: scroll-right 40s linear infinite;
+        }
+        
+        .animate-scroll-right:hover {
+          animation-play-state: paused;
         }
         .animate-gradient {
           background-size: 200% 200%;

@@ -54,3 +54,6 @@ Business Analysis is as much about character as capability. Stakeholders look to
 
 By embodying ethics, neutrality, and professionalism, the Business Analyst becomes more than a requirements gatherer. They become a trusted advisor, a voice of reason, and a guardian of value. In a world of competing agendas and constant change, that trust is not just desirable — it is essential.
 
+
+
+

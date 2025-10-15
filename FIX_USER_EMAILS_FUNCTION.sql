@@ -45,3 +45,6 @@ $$;
 GRANT EXECUTE ON FUNCTION get_user_details_with_emails() TO authenticated;
 
 
+
+
+

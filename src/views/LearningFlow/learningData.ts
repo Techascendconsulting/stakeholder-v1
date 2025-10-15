@@ -4278,3 +4278,9 @@ export const getNextModuleId = (currentModuleId: string): string | undefined => 
   return LEARNING_MODULES[currentIndex + 1].id;
 };
 
+
+
+
+
+
+

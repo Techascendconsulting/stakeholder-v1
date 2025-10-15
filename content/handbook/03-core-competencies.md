@@ -80,3 +80,6 @@ The competencies described here — analytical thinking, communication, stakehol
 
 A BA is not defined by the tools they use or the documents they produce. They are defined by these competencies, expressed in practice, day after day. Develop them, and you will not only succeed in the role — you will also shape projects that deliver genuine value.
 
+
+
+
