@@ -19,6 +19,7 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
+import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
