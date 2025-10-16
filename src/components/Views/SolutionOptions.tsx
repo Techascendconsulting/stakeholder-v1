@@ -429,15 +429,12 @@ In summary, solution options are the bridge between problem and design. They inv
   if (currentPage === 'overview') {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
-        {/* Back to Learning Journey button */}
+        {/* Context-Aware Breadcrumbs */}
         <div className="max-w-4xl mx-auto px-6 pt-6">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back to Learning Journey</span>
-          </button>
+          <LearningBreadcrumbs 
+            currentModule="Solution Options" 
+            className="text-purple-600 dark:text-purple-400"
+          />
         </div>
 
         {/* Simple Header */}
@@ -512,18 +509,13 @@ In summary, solution options are the bridge between problem and design. They inv
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Back to Learning Journey button - ONLY for new students */}
-      {userType === 'new' && (
-        <div className="max-w-4xl mx-auto px-6 pt-6">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back to Learning Journey</span>
-          </button>
-        </div>
-      )}
+      {/* Context-Aware Breadcrumbs */}
+      <div className="max-w-4xl mx-auto px-6 pt-6">
+        <LearningBreadcrumbs 
+          currentModule="Solution Options" 
+          className="text-purple-600 dark:text-purple-400"
+        />
+      </div>
 
       {/* Simple Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
@@ -679,6 +671,7 @@ In summary, solution options are the bridge between problem and design. They inv
 };
 
 export default SolutionOptions;
+
 
 
 

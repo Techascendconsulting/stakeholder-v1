@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { PenTool, ArrowRight, Palette, Layers, Eye, Code, Zap, Sparkles, ArrowLeft } from 'lucide-react';
+import { PenTool, ArrowRight, Palette, Layers, Eye, Code, Zap, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
+import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 const DesignHub: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -487,15 +488,12 @@ In summary, linking design to user stories is how you ensure the work done in de
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-fuchsia-900/20">
-      {/* Back to Learning Journey button */}
+      {/* Context-Aware Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-6 pt-6">
-        <button
-          onClick={() => setCurrentView('learning-flow')}
-          className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Learning Journey</span>
-        </button>
+        <LearningBreadcrumbs 
+          currentModule="Design" 
+          className="text-purple-600 dark:text-purple-400"
+        />
       </div>
 
       {/* UX/UI Design Header */}

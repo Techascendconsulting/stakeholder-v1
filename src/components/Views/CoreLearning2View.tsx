@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart, AlertCircle, Send } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart, AlertCircle, Send } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
+import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
@@ -601,13 +602,10 @@ d) Departments have different lunch schedules
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Learning Journey</span>
-          </button>
+          <LearningBreadcrumbs 
+            currentModule="Core Learning" 
+            className="text-gray-600 dark:text-gray-400 mb-4"
+          />
 
           <div className="flex items-center justify-between">
             <div>

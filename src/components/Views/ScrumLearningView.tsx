@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle, CheckSquare, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle, CheckSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
+import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 interface ScrumSection {
   id: number;
@@ -420,15 +421,12 @@ const ScrumLearningView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Back to Learning Journey */}
+      {/* Context-Aware Breadcrumbs */}
       <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <button
-          onClick={() => setCurrentView('learning-flow')}
-          className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to Learning Journey</span>
-        </button>
+        <LearningBreadcrumbs 
+          currentModule="Agile & Scrum" 
+          className="text-gray-600 dark:text-gray-400"
+        />
       </div>
 
       {/* Header */}
