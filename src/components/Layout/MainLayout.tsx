@@ -45,6 +45,7 @@ import ProjectBrief from '../Views/ProjectBrief';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
+import StakeholderMappingView from '../Views/StakeholderMappingView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 import DocumentationView from '../Views/DocumentationView';
 import DocumentationPracticeView from '../Views/DocumentationPracticeView';
@@ -85,6 +86,7 @@ import MvpBuilder from '../Views/MvpBuilder';
 import ContactUsView from '../Views/ContactUsView';
 import AdminContactSubmissionsView from '../Views/AdminContactSubmissionsView';
 import SupportCentreView from '../Views/SupportCentreView';
+import CareerJourneyView from '../Views/CareerJourneyView';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 import CoreLearningView from '../Views/CoreLearningView';
 import CoreLearning2View from '../Views/CoreLearning2View'; // NEW: Overview + Individual Topic Pages
@@ -201,6 +203,10 @@ const MainLayout: React.FC = () => {
       case 'project-initiation':
         // Don't wrap - has internal tabs, will handle assignment itself
         return <ProjectInitiationView />;
+      case 'stakeholder-mapping':
+      case 'module-3-stakeholder-mapping':
+        // Stakeholder mapping module
+        return <StakeholderMappingView />;
       case 'requirements-engineering':
         // Has tabs - will handle assignment on last tab
         return <RequirementsEngineeringView />;
@@ -407,6 +413,8 @@ const MainLayout: React.FC = () => {
         return <AdminContactSubmissionsView />;
       case 'support':
         return <SupportCentreView />;
+      case 'career-journey':
+        return <CareerJourneyView />;
       default:
         return <ProjectsView />;
     }

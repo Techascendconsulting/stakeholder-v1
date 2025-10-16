@@ -3797,17 +3797,851 @@ You're on your way to becoming a Business Analyst. Keep learning, stay curious, 
     assignmentDescription: 'Describe the key activities a BA performs during project initiation. What questions should they ask first?'
   },
 
-  // MODULE 3: Requirements Elicitation
+  // MODULE 3: Stakeholder Mapping
   {
-    id: 'module-3-elicitation',
-    title: 'Requirements Elicitation',
-    description: 'Master the art of gathering requirements from stakeholders',
-    icon: '🎯',
-    color: 'green',
+    id: 'module-3-stakeholder-mapping',
+    title: 'Stakeholder Mapping',
+    description: 'Identify, analyze, and plan engagement with key stakeholders',
+    icon: '👥',
+    color: 'emerald',
     order: 3,
     lessons: [
       {
         id: 'lesson-3-1',
+        title: 'Who Are Stakeholders?',
+        type: 'reading',
+        duration: '8 min',
+        content: `# Who Are Stakeholders?
+
+After joining a project and reviewing the initial documents, you might think you're ready to start gathering requirements. But there's a critical step first: **understanding who your stakeholders are**.
+
+## What Is a Stakeholder?
+
+A stakeholder is anyone who:
+- **Has an interest** in the project's outcome
+- **Will be affected** by the changes the project delivers
+- **Has influence** over whether the project succeeds or fails
+- **Holds information** you need to understand the problem
+
+Think of stakeholders as the people who make your work possible. Without them, you'd be guessing at requirements instead of discovering real business needs.
+
+## Why Stakeholders Matter to BAs
+
+Imagine you're working on a project to improve an online booking system. Who do you need to speak to?
+
+**You might think**: "Just the person who requested the project"
+
+**Reality**: You need to speak to:
+- **Customer Service** - They handle booking errors and complaints
+- **Marketing** - They need booking data for campaigns
+- **Finance** - They process payments and refunds
+- **IT** - They maintain the current system
+- **Legal** - They ensure compliance with data protection
+- **End Users** - Customers who actually use the booking system
+
+Each of these groups sees the booking system differently. Customer Service cares about fixing errors quickly. Marketing wants detailed analytics. Finance needs payment security. If you only talk to one group, you'll miss critical requirements.
+
+**This is why stakeholder identification is one of your first tasks as a BA.**
+
+## Types of Stakeholders
+
+### 1. **Internal Stakeholders**
+People within your organization who are affected by the project.
+
+**Examples:**
+- Department managers
+- Business users who will use the new system
+- IT teams who will build or support it
+- Senior leadership who approve budgets
+
+### 2. **External Stakeholders**
+People outside your organization who have an interest.
+
+**Examples:**
+- Customers who use your products/services
+- Suppliers or vendors
+- Regulatory bodies
+- Partner organizations
+
+### 3. **Primary Stakeholders**
+People **directly affected** by the project's outcome.
+
+**Example:** If you're building a new warehouse management system, warehouse staff are primary stakeholders. They'll use it every day.
+
+### 4. **Secondary Stakeholders**
+People **indirectly affected** or who have influence but won't use the solution directly.
+
+**Example:** The Finance Director doesn't use the warehouse system, but they approve the budget and care about cost savings.
+
+## Real-World Example: Food Delivery App Redesign
+
+Let's say you're working on a project to redesign a food delivery app. Who are your stakeholders?
+
+### Internal Stakeholders:
+- **Product Owner** - Sets priorities and vision
+- **Customer Support** - Handles complaints about the current app
+- **Marketing** - Wants better user engagement
+- **Development Team** - Builds the new app
+- **Data Analytics** - Needs usage tracking
+
+### External Stakeholders:
+- **Customers** - People ordering food
+- **Restaurant Partners** - Businesses using the platform
+- **Delivery Drivers** - People delivering orders
+- **Regulators** - Ensuring food safety compliance
+
+If you only speak to the Product Owner and developers, you'll miss critical insights from customers, drivers, and restaurant partners. **Your job as a BA is to make sure all relevant voices are heard.**
+
+## How to Identify Stakeholders
+
+When you first join a project, start by asking:
+
+1. **"Who requested this project?"** - This is usually your project sponsor
+2. **"Who will use the solution?"** - These are your primary users
+3. **"Who else is affected by this change?"** - Think about related departments and teams
+4. **"Who has to approve this?"** - Decision-makers and budget holders
+5. **"Who has information I need?"** - Subject matter experts
+6. **"Who might resist this change?"** - People whose work will change
+
+You'll build a **stakeholder register** - a list of all stakeholders with their:
+- Name and role
+- Department or organization
+- Interest in the project
+- Level of influence
+- Contact details
+
+## What Happens If You Miss Stakeholders?
+
+Missing a key stakeholder can derail your project. Here's what can go wrong:
+
+❌ **Missing Legal/Compliance**: You build a solution that violates data protection laws  
+❌ **Missing End Users**: You deliver a system that's technically correct but unusable  
+❌ **Missing IT Operations**: You deploy something that IT can't support or maintain  
+❌ **Missing Finance**: Your solution exceeds budget with no approval  
+
+**A good BA proactively identifies all stakeholders early** - even the ones who aren't obvious at first.
+
+## Your First Task: Build the Stakeholder List
+
+At this stage of the project, your goal is simple:
+1. Review project documents and note every person or group mentioned
+2. Ask your manager or sponsor: "Who else should I speak to?"
+3. Speak to early stakeholders and ask: "Who else is affected by this?"
+4. Create a master list of all identified stakeholders
+
+This list isn't final - you'll discover more stakeholders as the project progresses. But starting with a comprehensive list ensures you don't miss critical voices.
+
+---
+
+**Next**: Once you know *who* your stakeholders are, you need to understand *how much attention* each one needs. That's where stakeholder analysis comes in.
+`
+      },
+      {
+        id: 'lesson-3-2',
+        title: 'Stakeholder Analysis: Power and Interest',
+        type: 'reading',
+        duration: '10 min',
+        content: `# Stakeholder Analysis: Power and Interest
+
+You've identified your stakeholders. Great! But here's the challenge: **you can't give everyone the same level of attention.**
+
+If you have 20 stakeholders, you can't run 20 one-on-one workshops. You need to **prioritize** based on who has the most influence and who cares the most. This is where **stakeholder analysis** comes in.
+
+## The Power/Interest Grid
+
+The most common tool for stakeholder analysis is the **Power/Interest Grid** (also called the Power/Influence Matrix). It helps you categorize stakeholders based on two factors:
+
+1. **Power**: How much authority do they have over the project?
+2. **Interest**: How much do they care about the outcome?
+
+### The Four Quadrants
+
+\`\`\`
+                    HIGH POWER
+                        |
+   KEEP SATISFIED   |   MANAGE CLOSELY
+   (High Power,      |   (High Power,
+    Low Interest)    |    High Interest)
+                        |
+   ─────────────────────────────────── HIGH INTEREST
+                        |
+   MONITOR           |   KEEP INFORMED
+   (Low Power,       |   (High Power,
+    Low Interest)    |    High Interest)
+                        |
+                    LOW POWER
+\`\`\`
+
+Let's break down each quadrant:
+
+### 1. **Manage Closely** (High Power, High Interest)
+**Who they are**: Senior stakeholders who care deeply about the project and have authority to make decisions.
+
+**Examples:**
+- Project sponsor who approved the budget
+- Department head whose team will use the solution
+- Senior manager accountable for project success
+
+**How to engage them:**
+- Regular one-on-one meetings
+- Detailed updates and progress reports
+- Early involvement in key decisions
+- Immediate escalation of risks or issues
+
+**Why it matters:** These stakeholders can approve or block your work. Keep them happy, informed, and engaged.
+
+---
+
+### 2. **Keep Satisfied** (High Power, Low Interest)
+**Who they are**: Senior people with authority but less day-to-day interest in the details.
+
+**Examples:**
+- CFO who approves budget but delegates execution
+- IT Director who signs off on tech choices but isn't involved daily
+- Legal team who must approve compliance but don't drive requirements
+
+**How to engage them:**
+- Periodic updates (monthly or at key milestones)
+- Consult them on major decisions
+- Keep communication concise and high-level
+- Don't overwhelm them with detail
+
+**Why it matters:** They have veto power. If you ignore them, they can stop the project. But they don't need daily updates.
+
+---
+
+### 3. **Keep Informed** (Low Power, High Interest)
+**Who they are**: People who care a lot but don't have decision-making authority.
+
+**Examples:**
+- Business users who will use the new system daily
+- Customer service teams who handle complaints
+- Operational staff whose work will change
+
+**How to engage them:**
+- Regular communications (newsletters, town halls)
+- Workshops and feedback sessions
+- Show them how the project benefits them
+- Listen to their concerns and ideas
+
+**Why it matters:** These are often your primary users. They know the current pain points and will live with your solution. Ignore them, and you'll build something nobody wants.
+
+---
+
+### 4. **Monitor** (Low Power, Low Interest)
+**Who they are**: People tangentially connected to the project but not deeply involved.
+
+**Examples:**
+- Other departments not directly affected
+- External partners with minimal involvement
+- Support functions who need awareness but not details
+
+**How to engage them:**
+- Minimal communication (project newsletters, general updates)
+- Inform them of major milestones
+- Don't spend too much time here
+
+**Why it matters:** You don't want to ignore anyone, but these stakeholders don't need deep engagement.
+
+---
+
+## Real-World Example: E-commerce Checkout Redesign
+
+Let's apply this to a real project. You're redesigning the checkout process for an e-commerce site.
+
+### Manage Closely (High Power, High Interest)
+- **Head of E-commerce**: Owns the checkout experience and is accountable for conversion rates
+- **Product Owner**: Sets priorities and approves design decisions
+- **UX Lead**: Responsible for user experience and will drive the design
+
+**Engagement:** Weekly workshops, daily Slack check-ins, joint decision-making
+
+---
+
+### Keep Satisfied (High Power, Low Interest)
+- **CFO**: Approves budget but delegates execution
+- **Head of IT**: Must approve infrastructure changes but isn't designing the checkout
+- **Legal/Compliance**: Must ensure PCI compliance but not involved in design
+
+**Engagement:** Monthly updates, approval requests at key gates (e.g., budget approval, compliance sign-off)
+
+---
+
+### Keep Informed (Low Power, High Interest)
+- **Customer Service**: Handles checkout complaints and knows customer pain points
+- **Marketing**: Wants to optimize conversion and track abandonment rates
+- **Customers**: The people using the checkout
+
+**Engagement:** Workshops, user testing sessions, feedback surveys, regular updates on progress
+
+---
+
+### Monitor (Low Power, Low Interest)
+- **Warehouse Team**: Not directly affected by checkout changes
+- **External Payment Gateway Provider**: Needs to know about integration but isn't driving requirements
+
+**Engagement:** Occasional emails, project newsletter
+
+---
+
+## How to Create a Power/Interest Grid
+
+Here's a simple process:
+
+### Step 1: List All Stakeholders
+From your stakeholder register, list everyone involved.
+
+### Step 2: Assess Power
+Ask: "Does this person have authority over budget, approvals, or key decisions?"
+- **High Power**: Can approve or block the project
+- **Low Power**: Can influence but not decide
+
+### Step 3: Assess Interest
+Ask: "How much does this person care about the project outcome?"
+- **High Interest**: Actively engaged, asks questions, wants updates
+- **Low Interest**: Aware but not deeply involved
+
+### Step 4: Plot on the Grid
+Place each stakeholder in one of the four quadrants.
+
+### Step 5: Plan Engagement
+For each quadrant, decide:
+- How often to communicate (daily, weekly, monthly)
+- What format (one-on-one, workshop, email update)
+- What level of detail (strategic, tactical, operational)
+
+## Why This Matters
+
+**Without stakeholder analysis, you'll:**
+- Waste time giving detailed updates to people who don't care
+- Ignore powerful stakeholders who can block your work
+- Miss valuable input from interested users
+- Struggle to manage conflicting priorities
+
+**With stakeholder analysis, you'll:**
+- Focus your time on the people who matter most
+- Build strong relationships with key decision-makers
+- Gather better requirements from engaged stakeholders
+- Navigate politics and conflicting interests more effectively
+
+---
+
+**Next**: You've identified stakeholders and analyzed their power and interest. Now you need to plan **how** to engage them effectively. That's where communication planning comes in.
+`
+      },
+      {
+        id: 'lesson-3-3',
+        title: 'Communication and Engagement Planning',
+        type: 'reading',
+        duration: '9 min',
+        content: `# Communication and Engagement Planning
+
+You've identified your stakeholders. You've analyzed their power and interest. Now comes the critical question: **How do you actually engage with them?**
+
+This is where many BAs struggle. You can't just email everyone the same update and hope for the best. Different stakeholders need different levels of detail, different formats, and different frequencies of communication.
+
+## Why Communication Planning Matters
+
+Imagine you're working on a project to implement a new CRM system. Here's what happens without a communication plan:
+
+❌ **The CEO gets 10-page technical documents** they don't have time to read  
+❌ **Sales teams hear nothing** until the system is live, then resist using it  
+❌ **IT is surprised by requirements** they weren't consulted on  
+❌ **The project sponsor feels ignored** because they only hear from you when there's a problem  
+
+**With a communication plan:**
+
+✅ **The CEO gets a 1-page summary** every month highlighting risks and benefits  
+✅ **Sales teams are involved in workshops** and see demos before launch  
+✅ **IT is consulted early** on technical feasibility  
+✅ **The project sponsor has weekly check-ins** with you  
+
+The difference? You planned **who** gets **what** information, **when**, and **how**.
+
+## The Communication Planning Framework
+
+Here's how to create a stakeholder engagement plan:
+
+### Step 1: Group Stakeholders by Engagement Needs
+
+Based on your Power/Interest Grid, stakeholders fall into engagement groups:
+
+#### **Executive Stakeholders** (High Power, varies interest)
+- **What they need**: High-level summaries, ROI, risks, decisions
+- **Format**: Executive summaries, dashboards, 1-pagers
+- **Frequency**: Monthly or at key milestones
+- **Channel**: Email, face-to-face meetings, board presentations
+
+#### **Core Project Team** (High interest, varies power)
+- **What they need**: Detailed progress, requirements, designs, timelines
+- **Format**: Workshops, working sessions, collaborative documents
+- **Frequency**: Weekly or daily (depending on phase)
+- **Channel**: Workshops, Slack/Teams, Jira, shared docs
+
+#### **Business Users** (High interest, low power)
+- **What they need**: How changes affect them, training, support
+- **Format**: Town halls, demos, FAQs, training sessions
+- **Frequency**: Regular updates during build, intensive during rollout
+- **Channel**: Email newsletters, lunch-and-learns, video demos
+
+#### **Peripheral Stakeholders** (Low interest, low power)
+- **What they need**: Awareness of major changes
+- **Format**: Project newsletters, intranet updates
+- **Frequency**: Quarterly or at major milestones
+- **Channel**: Email, company intranet
+
+---
+
+### Step 2: Define Communication Objectives
+
+For each stakeholder or group, be clear on **why** you're communicating:
+
+- **Inform**: Share updates (e.g., project status)
+- **Consult**: Gather input (e.g., requirements workshops)
+- **Involve**: Collaborate on decisions (e.g., design reviews)
+- **Approve**: Get sign-off (e.g., budget approval, go-live decision)
+
+**Example:**
+- **Project Sponsor**: Weekly updates to keep informed + monthly steering meetings to approve decisions
+- **Business Users**: Workshops to consult on requirements + demos to involve in design
+- **IT Team**: Technical reviews to involve in architecture + integration workshops to consult
+
+---
+
+### Step 3: Choose the Right Communication Format
+
+Different situations need different formats:
+
+#### **One-on-One Meetings**
+**When to use:**
+- Deep dives with senior stakeholders
+- Sensitive topics or conflicts
+- Building trust with key decision-makers
+
+**Best for:** Managing Closely stakeholders (High Power, High Interest)
+
+---
+
+#### **Workshops**
+**When to use:**
+- Gathering requirements from multiple stakeholders
+- Resolving conflicting priorities
+- Collaborative decision-making
+
+**Best for:** Keep Informed stakeholders (Low Power, High Interest) + Core Team
+
+---
+
+#### **Email Updates**
+**When to use:**
+- Regular progress summaries
+- Sharing documents for review
+- Announcements
+
+**Best for:** All stakeholders, but tailor the detail level
+
+---
+
+#### **Dashboards & Reports**
+**When to use:**
+- Ongoing visibility into project status
+- Tracking metrics (budget, timeline, risks)
+
+**Best for:** Keep Satisfied stakeholders (High Power, Low Interest)
+
+---
+
+#### **Town Halls / Group Presentations**
+**When to use:**
+- Major announcements
+- Demos of new solutions
+- Change management and training
+
+**Best for:** Keep Informed stakeholders (Low Power, High Interest)
+
+---
+
+### Step 4: Set Communication Frequency
+
+Not everyone needs daily updates. Here's a guide:
+
+| Stakeholder Type | Frequency | Example |
+|---|---|---|
+| **Project Sponsor** | Weekly | 15-min check-in call |
+| **Core Team** | Daily (during sprints) | Standup, Slack updates |
+| **Executive Stakeholders** | Monthly | 1-page summary email |
+| **Business Users** | Bi-weekly | Email newsletter |
+| **Peripheral Stakeholders** | Quarterly | Project update email |
+
+**Tip**: Set expectations upfront. If a stakeholder expects daily updates but you plan monthly, agree on the cadence early to avoid frustration.
+
+---
+
+## Real-World Example: Warehouse Management System
+
+Let's apply this to a real project. You're implementing a new warehouse management system (WMS).
+
+### Stakeholder: **Warehouse Operations Manager** (High Power, High Interest)
+- **Objective**: Involve in requirements and design, gain approval for rollout
+- **Format**: Weekly workshops + bi-weekly one-on-ones
+- **Frequency**: Weekly during requirements, daily during testing
+- **Content**: Detailed process flows, system demos, training plans
+
+### Stakeholder: **CFO** (High Power, Low Interest)
+- **Objective**: Keep satisfied, get budget approvals
+- **Format**: Monthly 1-page summary
+- **Frequency**: Monthly
+- **Content**: Budget status, ROI forecast, major risks
+
+### Stakeholder: **Warehouse Staff** (Low Power, High Interest)
+- **Objective**: Inform and involve in testing, reduce resistance
+- **Format**: Monthly town halls + hands-on training before go-live
+- **Frequency**: Monthly updates, intensive training 2 weeks before launch
+- **Content**: "What's changing for you," demo videos, FAQs
+
+### Stakeholder: **IT Support Team** (High Power, Low Interest)
+- **Objective**: Consult on technical requirements, ensure they can support the system
+- **Format**: Technical review meetings at key stages
+- **Frequency**: Monthly or at major milestones (design, UAT, launch)
+- **Content**: Technical architecture, integration points, support handover
+
+---
+
+## Creating a Stakeholder Engagement Plan
+
+Here's a simple template you can use:
+
+| Stakeholder | Role | Power/Interest | Objective | Format | Frequency | Owner |
+|---|---|---|---|---|---|---|
+| Sarah Johnson | Project Sponsor | High/High | Manage closely, approve decisions | Weekly 1-on-1 | Weekly | BA (you) |
+| David Lee | Warehouse Manager | High/High | Involve in requirements | Workshops | Bi-weekly | BA (you) |
+| Finance Team | Budget Holder | High/Low | Keep satisfied | Email summary | Monthly | Project Manager |
+| Warehouse Staff | End Users | Low/High | Keep informed, reduce resistance | Town halls, training | Monthly | Change Manager |
+
+**Include:**
+- Who they are
+- Their level of power and interest
+- What you want to achieve (inform, consult, involve, approve)
+- How you'll communicate (format)
+- How often
+- Who is responsible for managing that relationship
+
+---
+
+## Common Mistakes to Avoid
+
+❌ **Over-communicating to low-interest stakeholders**: Don't send daily updates to someone who only cares about quarterly milestones  
+❌ **Under-communicating to high-power stakeholders**: Don't surprise your sponsor with bad news  
+❌ **One-size-fits-all updates**: Tailor your message to the audience  
+❌ **Forgetting to listen**: Communication is two-way. Ask for feedback, concerns, and ideas  
+❌ **No plan for bad news**: Decide upfront how you'll escalate risks and issues  
+
+---
+
+## Key Takeaway
+
+**Good BAs don't just gather requirements - they build relationships.** A strong communication plan ensures that:
+- The right people get the right information at the right time
+- Stakeholders feel heard and valued
+- You build trust and credibility
+- Resistance to change is minimized
+
+---
+
+**Next**: You've identified stakeholders, analyzed their power and interest, and planned your communication. Now it's time to actually **meet them** and start gathering requirements. That's where stakeholder interviews come in.
+`
+      },
+      {
+        id: 'lesson-3-4',
+        title: 'Conducting Stakeholder Interviews',
+        type: 'reading',
+        duration: '12 min',
+        content: `# Conducting Stakeholder Interviews
+
+You've identified your stakeholders. You've analyzed their power and interest. You've planned how to communicate with them. Now it's time for the most important part: **actually talking to them**.
+
+Stakeholder interviews are where the real work of a BA begins. This is where you move from documents and theory to **real people, real problems, and real needs**.
+
+## Why Stakeholder Interviews Matter
+
+Here's the truth: **Documents don't tell you everything.** 
+
+A project brief might say "improve customer satisfaction," but it won't tell you:
+- What specifically is making customers unhappy?
+- Which customer complaints matter most?
+- What workarounds are teams already using?
+- What constraints exist that aren't written down?
+
+**Only stakeholders can tell you this.** And the quality of your requirements depends on the quality of your conversations.
+
+## Types of Stakeholder Interviews
+
+### 1. **Discovery Interviews** (Early in the project)
+**Purpose**: Understand the problem space  
+**Questions**: "What's not working today?" "What are the biggest pain points?" "What have you tried before?"
+
+### 2. **Requirements Interviews** (During elicitation)
+**Purpose**: Gather detailed functional and non-functional requirements  
+**Questions**: "What does the system need to do?" "Who needs to use this?" "What data is involved?"
+
+### 3. **Validation Interviews** (After drafting requirements)
+**Purpose**: Confirm understanding and get sign-off  
+**Questions**: "Is this what you meant?" "Have I missed anything?" "Does this solve your problem?"
+
+### 4. **Design Review Interviews** (During solution design)
+**Purpose**: Get feedback on proposed solutions  
+**Questions**: "Will this work for you?" "What concerns do you have?" "What would make this better?"
+
+---
+
+## Preparing for a Stakeholder Interview
+
+**Never walk into an interview unprepared.** Here's your checklist:
+
+### Before the Meeting
+
+✅ **Review background documents**  
+Read the project brief, business case, and any existing documentation. You should know the basics before the interview.
+
+✅ **Research the stakeholder**  
+- What's their role?
+- What part of the business do they work in?
+- How are they affected by this project?
+
+✅ **Prepare open-ended questions**  
+Don't just ask yes/no questions. Ask questions that encourage storytelling.
+
+**Bad:** "Do you want to automate this process?"  
+**Good:** "Tell me about how this process works today. What frustrates you?"
+
+✅ **Book enough time**  
+- Discovery interviews: 45-60 minutes
+- Requirements interviews: 60-90 minutes
+- Validation interviews: 30-45 minutes
+
+✅ **Send an agenda**  
+Let stakeholders know what you'll cover so they can prepare.
+
+**Example Agenda:**
+> **Purpose**: Understand current warehouse receiving process and identify pain points  
+> **Topics**: Current process walkthrough, key challenges, manual workarounds, system limitations  
+> **Duration**: 60 minutes  
+
+---
+
+## Conducting the Interview
+
+### Step 1: **Set the Scene** (5 minutes)
+
+Start by explaining:
+- Who you are and your role
+- The purpose of the interview
+- How the information will be used
+- That there are no wrong answers
+
+**Example:**
+> "Hi Sarah, I'm the Business Analyst on the warehouse management project. Today I want to understand how the receiving process works and where the challenges are. Everything you share will help us design a solution that actually works for you. There are no wrong answers - I'm here to listen and learn."
+
+**Why this matters:** It puts the stakeholder at ease and clarifies your intent.
+
+---
+
+### Step 2: **Ask Open-Ended Questions** (30-40 minutes)
+
+Let the stakeholder talk. Your job is to **listen, probe, and clarify** - not to jump to solutions.
+
+#### **Good Opening Questions:**
+- "Can you walk me through how this process works today?"
+- "What are the biggest pain points you experience?"
+- "Tell me about a recent example when this process failed."
+- "What workarounds have you created to get around these issues?"
+
+#### **Follow-Up Questions (Probing):**
+- "Can you give me an example of that?"
+- "Why do you think that happens?"
+- "Who else is affected by this?"
+- "What have you tried to fix it?"
+
+#### **Clarifying Questions:**
+- "Just to confirm, did you mean X or Y?"
+- "Help me understand - when you say 'system crashes,' what exactly happens?"
+- "So if I'm hearing this right, the issue is... Is that correct?"
+
+---
+
+### Step 3: **Listen Actively** (Throughout)
+
+**Active listening** means:
+- **Paraphrasing**: "So what you're saying is..."
+- **Reflecting**: "It sounds like this is frustrating because..."
+- **Summarizing**: "Let me make sure I've got this - the three main issues are..."
+
+**Don't:**
+- Interrupt
+- Jump to solutions ("What if we just automate it?")
+- Argue or defend ("But the system is supposed to do that...")
+- Spend the whole time typing (make brief notes, not a transcript)
+
+---
+
+### Step 4: **Capture Key Information**
+
+Take notes on:
+- **Current process**: How things work today
+- **Pain points**: What's not working
+- **Root causes**: Why those problems exist
+- **Impact**: How those problems affect the business
+- **Stakeholder needs**: What would make their life easier
+- **Constraints**: Budget, time, technical, political
+
+**Tip**: Use a voice recorder (with permission) so you can focus on the conversation instead of frantic note-taking.
+
+---
+
+### Step 5: **Close Strong** (5-10 minutes)
+
+Before you finish:
+
+✅ **Summarize what you heard**  
+"Let me recap the key points..."
+
+✅ **Ask if you missed anything**  
+"Is there anything else I should know?"
+
+✅ **Clarify next steps**  
+"I'll send you my notes to review. After that, I'll include this in the requirements document."
+
+✅ **Thank them**  
+"Thanks for your time - this has been really helpful."
+
+---
+
+## Real-World Example: Warehouse Interview
+
+Let's see this in action. You're interviewing a **Warehouse Receiving Manager** about the current receiving process.
+
+### You (BA):
+"Thanks for meeting with me, John. I'm working on the warehouse management system project, and I want to understand how the receiving process works today and where the challenges are. Everything you share will help us build something that actually works for you."
+
+### John (Stakeholder):
+"Sure. Right now, when a delivery arrives, we manually log it into an Excel spreadsheet, then check the items against the purchase order, and finally update our inventory system."
+
+### You (Probing):
+"Can you walk me through that step by step? What happens if the items don't match the purchase order?"
+
+### John:
+"Well, that's where it gets messy. If there's a discrepancy - like wrong quantities or damaged goods - I have to email the buyer, wait for them to respond, then manually adjust everything. Sometimes it takes days."
+
+### You (Clarifying):
+"So just to confirm - the delay is because you're waiting for the buyer to approve the adjustment?"
+
+### John:
+"Exactly. And in the meantime, the stock sits in a holding area, which creates chaos because we don't have much space."
+
+### You (Reflecting):
+"It sounds like the manual approval process is a bottleneck that affects both your workflow and your physical space."
+
+### John:
+"Yes! And honestly, for small discrepancies, it shouldn't even need approval. But the system won't let me proceed without it."
+
+### You (Capturing a requirement):
+"Got it. So ideally, you'd like the system to allow you to make small adjustments without waiting for approval?"
+
+### John:
+"Exactly."
+
+---
+
+**What the BA did well:**
+✅ Set the scene  
+✅ Asked open-ended questions  
+✅ Probed for details  
+✅ Clarified understanding  
+✅ Reflected the stakeholder's frustration  
+✅ Started to identify a potential requirement  
+
+---
+
+## Common Interview Mistakes
+
+❌ **Asking leading questions**  
+"You want automation, right?" → This pushes the stakeholder toward your assumption
+
+✅ **Better**: "How would you like this process to work?"
+
+---
+
+❌ **Jumping to solutions too early**  
+"What if we just automated it?" → You haven't understood the problem yet
+
+✅ **Better**: "Tell me more about why this is a problem."
+
+---
+
+❌ **Talking more than listening**  
+If you're doing 50% of the talking, you're doing it wrong. Aim for 80% stakeholder, 20% you.
+
+---
+
+❌ **Not validating understanding**  
+Assuming you understood correctly without checking
+
+✅ **Better**: "Just to make sure I've got this - you're saying X. Is that right?"
+
+---
+
+❌ **Ignoring body language**  
+If a stakeholder looks uncomfortable or hesitant, probe gently: "It seems like there's something else on your mind?"
+
+---
+
+## After the Interview
+
+Once the interview is done:
+
+✅ **Write up your notes within 24 hours** (while it's fresh)  
+✅ **Send notes to the stakeholder** for review  
+✅ **Highlight key requirements** and pain points  
+✅ **Identify follow-up questions** or areas needing more detail  
+✅ **Update your stakeholder register** with what you learned  
+
+---
+
+## Key Takeaways
+
+**Stakeholder interviews are where requirements come from.** Documents give you context, but **people give you truth**.
+
+**A great BA:**
+- Prepares thoroughly
+- Asks open-ended questions
+- Listens more than they talk
+- Probes for root causes
+- Validates understanding
+- Builds trust
+
+**The quality of your requirements depends on the quality of your interviews.** Master this skill, and you'll be a great BA.
+
+---
+
+**Next**: You've gathered insights from stakeholders. Now you need to document what you learned and turn it into clear, actionable requirements.
+`
+      }
+    ],
+    assignmentTitle: 'Stakeholder Mapping Exercise',
+    assignmentDescription: 'Create a stakeholder analysis for a hypothetical project. Identify at least 8 stakeholders, place them on a Power/Interest Grid, and describe how you would engage each group.'
+  },
+
+  // MODULE 4: Requirements Elicitation
+  {
+    id: 'module-4-elicitation',
+    title: 'Requirements Elicitation',
+    description: 'Master the art of gathering requirements from stakeholders',
+    icon: '🎯',
+    color: 'green',
+    order: 4,
+    lessons: [
+      {
+        id: 'lesson-4-1',
         title: 'Working With Stakeholders',
         type: 'reading',
         duration: '9 min',
@@ -3823,7 +4657,7 @@ You're on your way to becoming a Business Analyst. Keep learning, stay curious, 
         )
       },
       {
-        id: 'lesson-3-2',
+        id: 'lesson-4-2',
         title: 'Elicitation Techniques',
         type: 'reading',
         duration: '12 min',
@@ -3857,14 +4691,14 @@ Ask open-ended questions: "How does this work today?" not "Do you want feature X
     assignmentDescription: 'Choose an elicitation technique and explain when you would use it and why. Provide a specific scenario.'
   },
 
-  // MODULE 4: Process Mapping
+  // MODULE 5: Process Mapping
   {
-    id: 'module-4-process-mapping',
+    id: 'module-5-process-mapping',
     title: 'Process Mapping',
     description: 'Visualize and analyze business processes',
     icon: '🗺️',
     color: 'indigo',
-    order: 4,
+    order: 5,
     lessons: [
       {
         id: 'lesson-4-1',
@@ -3903,14 +4737,14 @@ Ask open-ended questions: "How does this work today?" not "Do you want feature X
     assignmentDescription: 'Map a simple "as-is" process (e.g., customer refund request) and identify 2-3 inefficiencies or bottlenecks.'
   },
 
-  // MODULE 5: Requirements Engineering
+  // MODULE 6: Requirements Engineering
   {
-    id: 'module-5-requirements-engineering',
+    id: 'module-6-requirements-engineering',
     title: 'Requirements Engineering',
     description: 'Document, validate, and manage requirements',
     icon: '⚙️',
     color: 'orange',
-    order: 5,
+    order: 6,
     lessons: [
       {
         id: 'lesson-5-1',
@@ -3950,10 +4784,10 @@ Limitations you must work within:
     assignmentDescription: 'Given a scenario, write 2 functional requirements, 2 non-functional requirements, and 1 business rule.'
   },
 
-  // MODULE 6: Solution Options  
+  // MODULE 7: Solution Options  
   {
-    id: 'module-6-solution-options',
-    order: 6,
+    id: 'module-7-solution-options',
+    order: 7,
     title: 'Solution Options',
     description: 'Evaluate and recommend solutions',
     icon: '💡',
@@ -4002,12 +4836,12 @@ Use a decision matrix to score and compare options objectively.`
 
   // MODULE 7: Documentation (User Stories & ACs)
   {
-    id: 'module-7-documentation',
+    id: 'module-8-documentation',
     title: 'Documentation',
     description: 'Write clear, testable user stories and acceptance criteria',
     icon: '✍️',
     color: 'teal',
-    order: 7,
+    order: 8,
     lessons: [
       {
         id: 'lesson-7-1',
@@ -4073,14 +4907,14 @@ Good ACs are specific, testable, and cover edge cases.`
     assignmentDescription: 'Write 2 user stories with 3 acceptance criteria each for a tenant repair request system. Follow INVEST principles.'
   },
 
-  // MODULE 8: Design
+  // MODULE 9: Design
   {
-    id: 'module-8-design',
+    id: 'module-9-design',
     title: 'Design',
     description: 'Understand design principles and collaborate with designers',
     icon: '🎨',
     color: 'pink',
-    order: 8,
+    order: 9,
     lessons: [
       {
         id: 'lesson-8-1',
@@ -4123,14 +4957,14 @@ As a BA, you don't create pixel-perfect designs, but you must understand design 
     assignmentDescription: 'Write design requirements for a user dashboard. What must be visible? What actions must users be able to take?'
   },
 
-  // MODULE 9: MVP
+  // MODULE 10: MVP
   {
-    id: 'module-9-mvp',
+    id: 'module-10-mvp',
     title: 'MVP',
     description: 'Identify and prioritize minimum viable features',
     icon: '🎯',
     color: 'red',
-    order: 9,
+    order: 10,
     lessons: [
       {
         id: 'lesson-9-1',
@@ -4180,12 +5014,12 @@ That's your starting point.
 
   // MODULE 10: Agile & Scrum
   {
-    id: 'module-10-agile-scrum',
+    id: 'module-11-agile-scrum',
     title: 'Agile & Scrum Basics',
     description: 'Understand Agile methodologies and Scrum framework',
     icon: '🔄',
     color: 'cyan',
-    order: 10,
+    order: 11,
     lessons: [
       {
         id: 'lesson-10-1',
@@ -4277,6 +5111,10 @@ export const getNextModuleId = (currentModuleId: string): string | undefined => 
   }
   return LEARNING_MODULES[currentIndex + 1].id;
 };
+
+
+
+
 
 
 

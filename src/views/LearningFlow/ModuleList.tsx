@@ -122,14 +122,15 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
     const moduleToViewMap: Record<string, string> = {
       'module-1-core-learning': 'core-learning',
       'module-2-project-initiation': 'project-initiation',
-      'module-3-elicitation': 'elicitation',
-      'module-4-process-mapping': 'process-mapper',
-      'module-5-requirements-engineering': 'requirements-engineering',
-      'module-6-solution-options': 'solution-options',
-      'module-7-documentation': 'documentation',
-      'module-8-design': 'design-hub',
-      'module-9-mvp': 'mvp-hub',
-      'module-10-agile-scrum': 'scrum-essentials'
+      'module-3-stakeholder-mapping': 'stakeholder-mapping',
+      'module-4-elicitation': 'elicitation',
+      'module-5-process-mapping': 'process-mapper',
+      'module-6-requirements-engineering': 'requirements-engineering',
+      'module-7-solution-options': 'solution-options',
+      'module-8-documentation': 'documentation',
+      'module-9-design': 'design-hub',
+      'module-10-mvp': 'mvp-hub',
+      'module-11-agile-scrum': 'scrum-essentials'
     };
     return moduleToViewMap[moduleId] || 'core-learning';
   };
@@ -298,6 +299,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 };
 
 export default ModuleList;
+
 
 
 
