@@ -169,3 +169,4 @@ COMMENT ON TABLE public.access_requests IS 'Stores access requests from potentia
 COMMENT ON COLUMN public.access_requests.status IS 'pending, approved, rejected, or withdrawn';
 COMMENT ON COLUMN public.access_requests.reviewed_by IS 'Admin user who reviewed the request';
 
+

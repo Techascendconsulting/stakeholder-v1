@@ -180,3 +180,4 @@ COMMENT ON COLUMN public.user_profiles.block_reason IS 'Reason for blocking the 
 COMMENT ON COLUMN public.user_profiles.blocked_by IS 'Admin user ID who blocked this account';
 COMMENT ON COLUMN public.user_profiles.blocked_at IS 'Timestamp when the account was blocked';
 
+

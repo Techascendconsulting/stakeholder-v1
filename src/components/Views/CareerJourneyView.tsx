@@ -11,7 +11,12 @@ import {
   Sparkles,
   MapPin,
   X,
-  Users as UsersIcon
+  Users as UsersIcon,
+  BookOpen,
+  Target,
+  Rocket,
+  ArrowRight,
+  Lightbulb
 } from 'lucide-react';
 
 interface PhaseProgress {
@@ -21,6 +26,66 @@ interface PhaseProgress {
   started_at?: string;
   completed_at?: string;
 }
+
+// Helper to get learning module info for a phase
+const getPhaseModuleInfo = (phase: JourneyPhase) => {
+  // Proper mapping from module IDs to view IDs (matches ModuleList.tsx)
+  const moduleIdToViewId: Record<string, string> = {
+    'module-1-core-learning': 'core-learning',
+    'module-2-project-initiation': 'project-initiation',
+    'module-3-stakeholder-mapping': 'stakeholder-mapping',
+    'module-4-elicitation': 'elicitation',
+    'module-5-process-mapping': 'process-mapper',
+    'module-6-requirements-engineering': 'requirements-engineering',
+    'module-7-solution-options': 'solution-options',
+    'module-8-documentation': 'documentation',
+    'module-9-design': 'design-hub',
+    'module-10-mvp': 'mvp-hub',
+    'module-11-agile-scrum': 'scrum-essentials'
+  };
+  
+  // If phase has multiple modules defined, use those
+  if (phase.learningModuleIds && phase.learningModuleNames) {
+    return {
+      modules: phase.learningModuleIds.map((id, idx) => ({
+        id,
+        name: phase.learningModuleNames![idx],
+        viewId: moduleIdToViewId[id] || id
+      })),
+      isMultiple: true
+    };
+  }
+  
+  // Otherwise, use single module from learningModuleId
+  if (phase.learningModuleId) {
+    // Map common view IDs to their display names
+    const viewIdToDisplayName: Record<string, string> = {
+      'core-learning': 'Module 1: Core Learning',
+      'project-initiation': 'Module 2: Project Initiation',
+      'stakeholder-mapping': 'Module 3: Stakeholder Mapping',
+      'elicitation': 'Module 4: Requirements Elicitation',
+      'process-mapper': 'Module 5: Process Mapping',
+      'requirements-engineering': 'Module 6: Requirements Engineering',
+      'solution-options': 'Module 7: Solution Options',
+      'documentation': 'Module 8: Documentation',
+      'design-hub': 'Module 9: Design',
+      'mvp-hub': 'Module 10: MVP',
+      'agile-scrum': 'Module 11: Agile/Scrum',
+      'scrum-essentials': 'Module 11: Agile/Scrum'
+    };
+    
+    return {
+      modules: [{
+        id: phase.learningModuleId,
+        name: viewIdToDisplayName[phase.learningModuleId] || 'Learning Module',
+        viewId: phase.learningModuleId
+      }],
+      isMultiple: false
+    };
+  }
+  
+  return null;
+};
 
 const CareerJourneyView: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -116,6 +181,9 @@ const CareerJourneyView: React.FC = () => {
   };
 
   const handleGoToLearning = (phase: JourneyPhase) => {
+    // Store that user came from Career Journey
+    localStorage.setItem('previousView', 'career-journey');
+    
     // Navigate directly to the specific learning module page
     if (phase.learningModuleId) {
       setCurrentView(phase.learningModuleId as any);
@@ -123,6 +191,9 @@ const CareerJourneyView: React.FC = () => {
   };
 
   const handleTopicClick = (topic: JourneyTopic) => {
+    // Store that user came from Career Journey
+    localStorage.setItem('previousView', 'career-journey');
+    
     // Navigate to the topic's view if it has one
     if (topic.viewId) {
       setCurrentView(topic.viewId as any);
@@ -477,6 +548,166 @@ const CareerJourneyView: React.FC = () => {
                         )}
                       </div>
                     )}
+
+                    {/* WHERE TO LEARN & PRACTICE THIS PHASE - NEW SECTION */}
+                    <div className="mt-8 pt-8 border-t-2 border-purple-200 dark:border-purple-700">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                        <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        Where to Learn & Practice This Phase
+                      </h3>
+                      <p className="text-slate-600 dark:text-gray-400 mb-6">
+                        This phase connects to specific areas in the app where you can learn, practice, and apply these skills.
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Learning Module Link */}
+                        {(() => {
+                          const moduleInfo = getPhaseModuleInfo(phase);
+                          if (!moduleInfo) return null;
+                          
+                          return (
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                                  <BookOpen className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                                    Learning
+                                  </div>
+                                  <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                    {moduleInfo.isMultiple ? `${moduleInfo.modules.length} Modules` : moduleInfo.modules[0].name}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* List all modules */}
+                              <div className="space-y-2">
+                                {moduleInfo.modules.map((module, idx) => (
+                                  <button
+                                    key={idx} 
+                                    className="w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all group"
+                                    onClick={() => {
+                                      localStorage.setItem('previousView', 'career-journey');
+                                      setCurrentView(module.viewId as any);
+                                      setSelectedPhaseIndex(null);
+                                    }}>
+                                    <Play className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+                                    <span className="font-medium flex-1 text-left">{module.name}</span>
+                                    <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Practice Link */}
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                             onClick={() => setCurrentView('practice-flow')}>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                              <Target className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                                Practice
+                              </div>
+                              <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                Practice Sessions
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-slate-700 dark:text-gray-300 mb-3">
+                            Practice these skills with AI stakeholders in realistic scenarios
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-600 dark:text-gray-400">
+                              Click to start practicing
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-purple-500 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+
+                        {/* Hands-On Project Link */}
+                        <div className="bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-900/20 dark:to-rose-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                             onClick={() => setCurrentView('project-flow')}>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center">
+                              <Rocket className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                                Apply
+                              </div>
+                              <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                Hands-On Project
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-slate-700 dark:text-gray-300 mb-3">
+                            Apply these skills to your real hands-on BA project
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-600 dark:text-gray-400">
+                              Click to work on project
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-orange-500 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Recommended Learning Path with Specific Modules */}
+                      <div className="mt-6 bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-300 dark:border-purple-600 rounded-lg p-5">
+                        <div className="flex items-start gap-3">
+                          <Lightbulb className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <h4 className="font-bold text-slate-800 dark:text-white mb-2 text-base">Recommended Learning Path for This Phase</h4>
+                            {(() => {
+                              const moduleInfo = getPhaseModuleInfo(phase);
+                              if (!moduleInfo) return null;
+                              
+                              return (
+                                <div className="space-y-3">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">1</span>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">📚 Learn the Concepts</p>
+                                      <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
+                                        {moduleInfo.modules.length === 1 
+                                          ? `Study ${moduleInfo.modules[0].name}` 
+                                          : `Study ${moduleInfo.modules.length} modules: ${moduleInfo.modules.map(m => m.name.replace('Module ', '')).join(', ')}`
+                                        }
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">2</span>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">🎯 Practice with AI</p>
+                                      <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
+                                        Practice these skills with AI stakeholders in realistic scenarios
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">3</span>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">🚀 Apply to Project</p>
+                                      <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
+                                        Apply what you learned to your hands-on BA project
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               );

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { Users, Grid, MessageCircle, Mic, Target, ArrowRight, CheckCircle, ArrowLeft, AlertCircle, FileText } from "lucide-react";
+import { Users, Grid, MessageCircle, Mic, Target, ArrowRight, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
+import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 
 const lessons = [
   { 
@@ -690,13 +691,11 @@ const StakeholderMappingView: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-800 dark:to-pink-800 text-white shadow-lg sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="inline-flex items-center space-x-2 text-purple-100 hover:text-white transition-colors mb-3"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Learning Journey</span>
-          </button>
+          {/* Context-Aware Breadcrumbs */}
+          <LearningBreadcrumbs 
+            currentModule="Stakeholder Mapping" 
+            className="text-purple-100"
+          />
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

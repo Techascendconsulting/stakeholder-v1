@@ -15,6 +15,9 @@ const LearningFlowView: React.FC = () => {
   const handleModuleSelect = (moduleId: string) => {
     console.log('🎯 Module clicked:', moduleId);
     
+    // Store that user came from Learning Journey (not Career Journey)
+    localStorage.setItem('previousView', 'learning-flow');
+    
     // Map module IDs to existing page views
     const moduleToViewMap: Record<string, string> = {
       'module-1-core-learning': 'core-learning',

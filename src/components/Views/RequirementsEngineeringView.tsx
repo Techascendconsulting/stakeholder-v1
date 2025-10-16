@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { ArrowLeft, Search, GitBranch, CheckSquare, FileText, Users, RefreshCw, Lightbulb, Target, Zap } from "lucide-react";
+import { Search, GitBranch, CheckSquare, FileText, Users, RefreshCw, Lightbulb, Target, Zap } from "lucide-react";
+import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import MarkCompleteButton from "../MarkCompleteButton";
@@ -390,14 +391,11 @@ const RequirementsEngineeringView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 md:px-8 py-10 md:py-12">
       <div className="max-w-7xl mx-auto space-y-10">
-        {/* Back to Learning Journey button */}
-        <button
-          onClick={() => setCurrentView('learning-flow')}
-          className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Learning Journey</span>
-        </button>
+        {/* Context-Aware Breadcrumbs */}
+        <LearningBreadcrumbs 
+          currentModule="Requirements Engineering" 
+          className="text-purple-600 dark:text-purple-400"
+        />
 
         {/* Hero */}
         <header className="relative">

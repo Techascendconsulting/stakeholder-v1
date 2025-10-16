@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
+import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import MarkCompleteButton from "../MarkCompleteButton";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
+import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 
 const lessons = [
   { 
@@ -294,14 +295,11 @@ const ProjectInitiationView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 px-8 py-12">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Back to Learning Journey button - For ALL students */}
-        <button
-          onClick={() => setCurrentView('learning-flow')}
-          className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors mb-4"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Learning Journey</span>
-        </button>
+        {/* Context-Aware Breadcrumbs */}
+        <LearningBreadcrumbs 
+          currentModule="Project Initiation" 
+          className="text-purple-600 dark:text-purple-400"
+        />
 
         {/* Header */}
         <header className="text-center">

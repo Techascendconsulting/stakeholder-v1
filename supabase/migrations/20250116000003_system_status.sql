@@ -73,3 +73,4 @@ COMMENT ON COLUMN public.system_status.message IS 'User-friendly status message'
 -- TODO: Future integration with monitoring scripts/cron jobs to auto-update status
 -- TODO: Consider adding severity levels for better alerting
 
+

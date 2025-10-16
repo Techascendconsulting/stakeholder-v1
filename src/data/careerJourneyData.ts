@@ -23,7 +23,9 @@ export interface JourneyPhase {
   realWorldContext: string;
   deliverables?: string[];
   stakeholders?: string[];
-  learningModuleId?: string; // Maps to learning module for navigation
+  learningModuleId?: string; // Primary learning module for navigation
+  learningModuleIds?: string[]; // Multiple learning modules for this phase
+  learningModuleNames?: string[]; // Display names for multiple modules
 }
 
 export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
@@ -245,13 +247,15 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     order: 5,
     title: 'Future State Process (To-Be)',
     shortTitle: 'To-Be Process',
-    description: 'Design improved processes that solve identified problems',
+    description: 'Design improved processes, evaluate solution options, and identify MVP features',
     icon: Lightbulb,
     color: 'green',
     gradientFrom: 'from-green-500',
     gradientTo: 'to-emerald-600',
-    realWorldContext: 'Now that you know what\'s broken, propose HOW to fix it. Design the future state process with automation, simplification, and better controls.',
+    realWorldContext: 'Now that you know what\'s broken, propose HOW to fix it. Design the future state process, evaluate different solution options, and identify which features should be in the MVP for maximum value with minimum complexity.',
     learningModuleId: 'process-mapper',
+    learningModuleIds: ['module-5-process-mapping', 'module-7-solution-options', 'module-10-mvp'],
+    learningModuleNames: ['Module 5: Process Mapping', 'Module 7: Solution Options', 'Module 10: MVP'],
     topics: [
       {
         id: 'to-be-solution-options',
@@ -480,15 +484,17 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
   {
     id: 'phase-9-agile',
     order: 9,
-    title: 'Agile Delivery & Ceremonies',
-    shortTitle: 'Agile',
-    description: 'Participate in Agile ceremonies and manage the backlog',
+    title: 'Agile Delivery Sprint Loop',
+    shortTitle: 'Agile Sprint Loop',
+    description: 'The continuous sprint cycle: plan, refine, build, review, retrospect, and repeat throughout delivery',
     icon: Repeat,
     color: 'cyan',
     gradientFrom: 'from-cyan-500',
     gradientTo: 'to-blue-600',
-    realWorldContext: 'The project moves into Agile sprints. As a BA, you\'re deeply involved in refinement, planning, and ensuring the team builds the right thing.',
+    realWorldContext: 'This is not a single phase—it\'s the ongoing Agile loop that continues throughout project delivery. You participate in sprint planning, daily standups, backlog refinement, sprint reviews, and retrospectives. Each sprint builds on the last, continuously delivering value. This loop continues through MVP launch and beyond.',
     learningModuleId: 'agile-scrum',
+    learningModuleIds: ['module-11-agile-scrum', 'module-10-mvp', 'module-8-documentation', 'module-6-requirements-engineering'],
+    learningModuleNames: ['Module 11: Agile/Scrum', 'Module 10: MVP', 'Module 8: Documentation', 'Module 6: Requirements Engineering'],
     topics: [
       {
         id: 'agile-backlog',
@@ -539,59 +545,72 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
   {
     id: 'phase-10-delivery',
     order: 10,
-    title: 'Delivery & Project Closure',
-    shortTitle: 'Delivery',
-    description: 'Validate outcomes, document achievements, and close the project',
+    title: 'MVP Launch & Continuous Delivery',
+    shortTitle: 'Continuous Delivery',
+    description: 'Launch the MVP, gather user feedback, iterate based on real-world usage, and continuously improve the product',
     icon: Rocket,
     color: 'green',
     gradientFrom: 'from-green-500',
     gradientTo: 'to-emerald-600',
-    realWorldContext: 'The solution is live. As a BA, you validate that business objectives were met, document lessons learned, and prepare for handover.',
-    learningModuleId: 'documentation',
+    realWorldContext: 'The Agile sprint loop (Phase 9) continues, but now with real users. You launch the MVP, monitor how it\'s used, gather feedback, prioritize improvements, and keep iterating. The BA\'s role shifts from building the first version to ensuring continuous delivery of value based on actual user needs and business metrics.',
+    learningModuleId: 'mvp-hub',
+    learningModuleIds: ['module-10-mvp', 'module-11-agile-scrum', 'module-8-documentation'],
+    learningModuleNames: ['Module 10: MVP', 'Module 11: Agile/Scrum', 'Module 8: Documentation'],
     topics: [
       {
-        id: 'delivery-validation',
-        title: 'Solution Validation',
-        description: 'Confirm delivered solution meets original business requirements',
+        id: 'mvp-launch',
+        title: 'MVP Launch',
+        description: 'Launch the minimum viable product to real users',
+        viewId: 'mvp-hub',
         estimatedTime: '1 hour'
       },
       {
-        id: 'delivery-benefits',
-        title: 'Benefits Realization',
-        description: 'Measure and document actual benefits achieved vs. expected',
+        id: 'mvp-feedback',
+        title: 'User Feedback Collection',
+        description: 'Gather and analyze user feedback on the MVP',
+        estimatedTime: '1 hour'
+      },
+      {
+        id: 'mvp-metrics',
+        title: 'Monitor Success Metrics',
+        description: 'Track KPIs, usage analytics, and business impact',
         estimatedTime: '45 min'
       },
       {
-        id: 'delivery-documentation',
-        title: 'Project Documentation',
-        description: 'Complete final documentation for handover and future reference',
-        viewId: 'documentation',
-        estimatedTime: '2 hours'
-      },
-      {
-        id: 'delivery-closure',
-        title: 'Project Closure Summary',
-        description: 'Write closure report with lessons learned and recommendations',
+        id: 'mvp-iteration',
+        title: 'Prioritize Next Iteration',
+        description: 'Based on feedback and metrics, prioritize improvements for next sprint',
+        viewId: 'mvp-hub',
         estimatedTime: '1 hour'
       },
       {
-        id: 'delivery-reflection',
-        title: 'Career Reflection',
-        description: 'Reflect on your BA journey and identify skills developed',
-        estimatedTime: '30 min'
+        id: 'mvp-continuous-refinement',
+        title: 'Continuous Backlog Refinement',
+        description: 'Keep refining user stories based on real-world learnings',
+        viewId: 'agile-scrum',
+        estimatedTime: 'Ongoing'
+      },
+      {
+        id: 'mvp-value-delivery',
+        title: 'Incremental Value Delivery',
+        description: 'Each sprint delivers additional value, building on the MVP',
+        estimatedTime: 'Ongoing'
       }
     ],
     deliverables: [
-      'Project closure report',
-      'Lessons learned document',
-      'Benefits realization report',
-      'Final documentation handover'
+      'MVP launch plan',
+      'User feedback analysis',
+      'Product metrics dashboard',
+      'Prioritized backlog for next iterations',
+      'Continuous improvement roadmap'
     ],
     stakeholders: [
-      'Project Manager',
+      'Product Owner',
+      'End Users',
+      'Scrum Master',
+      'Development Team',
       'Business Sponsor',
-      'Operations Team',
-      'Executive Leadership'
+      'Operations Team'
     ]
   }
 ];

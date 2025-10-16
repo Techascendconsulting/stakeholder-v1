@@ -27,6 +27,7 @@ import {
   Moon,
   Sun,
   HelpCircle,
+  Briefcase,
   // Sparkles // Archived with AI Process Mapper
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -146,6 +147,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'how-to-navigate', 
       label: 'How to Navigate', 
       icon: HelpCircle
+    },
+    {
+      id: 'career-journey',
+      label: 'BA Career Journey',
+      icon: Briefcase
     },
     { 
       id: 'dashboard', 

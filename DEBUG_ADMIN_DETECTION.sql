@@ -69,3 +69,4 @@ SELECT 'Admin detection debug complete! Check the results above.' as status;
 
 
 
+

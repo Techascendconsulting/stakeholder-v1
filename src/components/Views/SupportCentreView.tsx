@@ -94,13 +94,13 @@ const SupportCentreView: React.FC = () => {
       // Add the formatted text
       if (match[2]) {
         // Bold
-        parts.push(<strong key={partIndex++} className="font-semibold text-gray-900">{match[2]}</strong>);
+        parts.push(<strong key={partIndex++} className="font-semibold text-gray-900 dark:text-white">{match[2]}</strong>);
       } else if (match[4]) {
         // Italic
-        parts.push(<em key={partIndex++} className="italic">{match[4]}</em>);
+        parts.push(<em key={partIndex++} className="italic text-gray-800 dark:text-gray-200">{match[4]}</em>);
       } else if (match[6]) {
         // Code
-        parts.push(<code key={partIndex++} className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-purple-600">{match[6]}</code>);
+        parts.push(<code key={partIndex++} className="bg-gray-100 dark:bg-gray-900/50 px-2 py-1 rounded text-sm font-mono text-purple-600 dark:text-purple-400">{match[6]}</code>);
       }
 
       currentIndex = match.index + match[0].length;
@@ -2456,48 +2456,48 @@ Create a portfolio with:
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className={`rounded-2xl p-6 shadow-lg border ${
               overall.status === 'operational' 
-                ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200'
+                ? 'bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800'
                 : overall.status === 'maintenance'
-                ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200'
+                ? 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800'
                 : overall.status === 'degraded'
-                ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200'
-                : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'
+                ? 'bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800'
+                : 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-200 dark:border-red-800'
             }`}>
               <div className="flex items-center space-x-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                   overall.status === 'operational' 
-                    ? 'bg-emerald-100'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40'
                     : overall.status === 'maintenance'
-                    ? 'bg-amber-100'
+                    ? 'bg-amber-100 dark:bg-amber-900/40'
                     : overall.status === 'degraded'
-                    ? 'bg-orange-100'
-                    : 'bg-red-100'
+                    ? 'bg-orange-100 dark:bg-orange-900/40'
+                    : 'bg-red-100 dark:bg-red-900/40'
                 }`}>
-                  {overall.status === 'operational' && <CheckCircle className="w-6 h-6 text-emerald-600" />}
-                  {overall.status === 'maintenance' && <AlertCircle className="w-6 h-6 text-amber-600" />}
-                  {overall.status === 'degraded' && <AlertCircle className="w-6 h-6 text-orange-600" />}
-                  {overall.status === 'issue' && <AlertCircle className="w-6 h-6 text-red-600" />}
+                  {overall.status === 'operational' && <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />}
+                  {overall.status === 'maintenance' && <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />}
+                  {overall.status === 'degraded' && <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
+                  {overall.status === 'issue' && <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
                 </div>
                 <div>
                   <h3 className={`text-lg font-semibold ${
                     overall.status === 'operational' 
-                      ? 'text-emerald-900'
+                      ? 'text-emerald-900 dark:text-emerald-100'
                       : overall.status === 'maintenance'
-                      ? 'text-amber-900'
+                      ? 'text-amber-900 dark:text-amber-100'
                       : overall.status === 'degraded'
-                      ? 'text-orange-900'
-                      : 'text-red-900'
+                      ? 'text-orange-900 dark:text-orange-100'
+                      : 'text-red-900 dark:text-red-100'
                   }`}>
                     {overall.message}
                   </h3>
                   <p className={`text-sm ${
                     overall.status === 'operational' 
-                      ? 'text-emerald-700'
+                      ? 'text-emerald-700 dark:text-emerald-300'
                       : overall.status === 'maintenance'
-                      ? 'text-amber-700'
+                      ? 'text-amber-700 dark:text-amber-300'
                       : overall.status === 'degraded'
-                      ? 'text-orange-700'
-                      : 'text-red-700'
+                      ? 'text-orange-700 dark:text-orange-300'
+                      : 'text-red-700 dark:text-red-300'
                   }`}>
                     All systems are monitored 24/7
                   </p>
@@ -2513,12 +2513,12 @@ Create a portfolio with:
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Featured Articles
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Start Here</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Start Here</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Essential guides to get you started and help you succeed
               </p>
             </div>
@@ -2527,7 +2527,7 @@ Create a portfolio with:
                 <button
                   key={article.id}
                   onClick={() => setSelectedArticle(article)}
-                  className="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-purple-300 transition-all duration-300 text-left transform hover:-translate-y-1"
+                  className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 text-left transform hover:-translate-y-1"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-14 h-14 bg-gradient-to-r ${categoryColors[article.category]} rounded-2xl flex items-center justify-center`}>
@@ -2535,18 +2535,18 @@ Create a portfolio with:
                         className: "w-7 h-7 text-white"
                       })}
                     </div>
-                    <div className="flex items-center space-x-1 text-amber-500">
+                    <div className="flex items-center space-x-1 text-amber-500 dark:text-amber-400">
                       <Star className="w-4 h-4 fill-current" />
                       <span className="text-xs font-medium">Featured</span>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed">
                     {article.content.substring(0, 120)}...
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
                       <span>{article.readTime}</span>
@@ -2562,11 +2562,11 @@ Create a portfolio with:
 
       {/* Category Browse */}
       {!searchQuery && !selectedCategory && (
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white dark:bg-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Browse by Category</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Browse by Category</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Explore help articles organized by topic and skill level
               </p>
             </div>
@@ -2574,30 +2574,30 @@ Create a portfolio with:
               {Object.entries(articlesByCategory).map(([category, articles]) => (
                 <div
                   key={category}
-                  className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 hover:border-purple-200 transition-all duration-300 cursor-pointer group"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600 transition-all duration-300 cursor-pointer group"
                   onClick={() => setSelectedCategory(category)}
                 >
-                  <div className="p-6 border-b border-gray-100">
+                  <div className="p-6 border-b border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
                       <div className={`w-14 h-14 bg-gradient-to-r ${categoryColors[category]} rounded-2xl flex items-center justify-center`}>
                         {React.createElement(categoryIcons[category], {
                           className: "w-7 h-7 text-white"
                         })}
                       </div>
-                      <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                      <ArrowRight className="w-6 h-6 text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{categoryNames[category]}</h3>
-                    <p className="text-sm text-gray-500">{articles.length} articles</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{categoryNames[category]}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{articles.length} articles</p>
                   </div>
                   <div className="p-6">
                     <div className="space-y-2">
                       {articles.slice(0, 3).map((article) => (
-                        <div key={article.id} className="text-sm text-gray-600 truncate">
+                        <div key={article.id} className="text-sm text-gray-600 dark:text-gray-300 truncate">
                           • {article.title}
                         </div>
                       ))}
                       {articles.length > 3 && (
-                        <div className="text-sm text-purple-600 font-medium">
+                        <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
                           +{articles.length - 3} more articles
                         </div>
                       )}
@@ -2615,17 +2615,17 @@ Create a portfolio with:
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Search Results for "{searchQuery}"
               </h2>
-              <p className="text-lg text-gray-600">{filteredArticles.length} articles found</p>
+              <p className="text-lg text-gray-600 dark:text-gray-300">{filteredArticles.length} articles found</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredArticles.map((article) => (
                 <button
                   key={article.id}
                   onClick={() => setSelectedArticle(article)}
-                  className="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-purple-300 transition-all duration-300 text-left"
+                  className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 text-left"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-12 h-12 bg-gradient-to-r ${categoryColors[article.category]} rounded-xl flex items-center justify-center`}>
@@ -2634,18 +2634,18 @@ Create a portfolio with:
                       })}
                     </div>
                     {article.featured && (
-                      <div className="flex items-center space-x-1 text-amber-500">
+                      <div className="flex items-center space-x-1 text-amber-500 dark:text-amber-400">
                         <Star className="w-4 h-4 fill-current" />
                       </div>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
                     {article.content.substring(0, 120)}...
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
                       <span>{article.readTime}</span>
@@ -2665,12 +2665,12 @@ Create a portfolio with:
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">{categoryNames[selectedCategory]}</h2>
-                <p className="text-lg text-gray-600">{articlesByCategory[selectedCategory]?.length} articles</p>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{categoryNames[selectedCategory]}</h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300">{articlesByCategory[selectedCategory]?.length} articles</p>
               </div>
               <button
                 onClick={() => setSelectedCategory(null)}
-                className="text-purple-600 hover:text-purple-800 font-medium"
+                className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium"
               >
                 ← Back to all categories
               </button>
@@ -2680,7 +2680,7 @@ Create a portfolio with:
                 <button
                   key={article.id}
                   onClick={() => setSelectedArticle(article)}
-                  className="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-purple-300 transition-all duration-300 text-left"
+                  className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 text-left"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-12 h-12 bg-gradient-to-r ${categoryColors[article.category]} rounded-xl flex items-center justify-center`}>
@@ -2689,18 +2689,18 @@ Create a portfolio with:
                       })}
                     </div>
                     {article.featured && (
-                      <div className="flex items-center space-x-1 text-amber-500">
+                      <div className="flex items-center space-x-1 text-amber-500 dark:text-amber-400">
                         <Star className="w-4 h-4 fill-current" />
                       </div>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
                     {article.content.substring(0, 150)}...
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
                       <span>{article.readTime}</span>
@@ -2718,14 +2718,14 @@ Create a portfolio with:
       {searchQuery && filteredArticles.length === 0 && (
         <section className="py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Search className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Search className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">No articles found</h3>
-            <p className="text-lg text-gray-600 mb-8">Try adjusting your search terms or browse by category</p>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No articles found</h3>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">Try adjusting your search terms or browse by category</p>
             <button
               onClick={() => setSearchQuery('')}
-              className="bg-purple-600 text-white px-8 py-4 rounded-xl hover:bg-purple-700 transition-colors font-semibold"
+              className="bg-purple-600 dark:bg-purple-700 text-white px-8 py-4 rounded-xl hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-semibold"
             >
               Clear search
             </button>
@@ -2734,7 +2734,7 @@ Create a portfolio with:
       )}
 
       {/* Support CTA */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-3xl p-12 text-white">
             <h2 className="text-4xl font-bold mb-4">Still Have Questions?</h2>
@@ -2764,14 +2764,14 @@ Create a portfolio with:
       {/* Article Detail Modal */}
       {selectedArticle && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedArticle(null)}
         >
           <div 
-            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className={`w-12 h-12 bg-gradient-to-r ${categoryColors[selectedArticle.category]} rounded-xl flex items-center justify-center`}>
                   {React.createElement(categoryIcons[selectedArticle.category], {
@@ -2779,8 +2779,8 @@ Create a portfolio with:
                   })}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedArticle.title}</h2>
-                  <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedArticle.title}</h2>
+                  <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                     <span>{categoryNames[selectedArticle.category]}</span>
                     <span>•</span>
                     <span>{selectedArticle.readTime}</span>
@@ -2791,9 +2791,9 @@ Create a portfolio with:
               </div>
               <button
                 onClick={() => setSelectedArticle(null)}
-                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl flex items-center justify-center transition-colors"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
             </div>
 
@@ -2802,14 +2802,14 @@ Create a portfolio with:
                 {selectedArticle.content.split('\n').map((paragraph, index) => {
                   if (paragraph.startsWith('## ')) {
                     return (
-                      <h2 key={index} className="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">
+                      <h2 key={index} className="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
                         {parseInlineMarkdown(paragraph.substring(3))}
                       </h2>
                     );
                   }
                   if (paragraph.startsWith('### ')) {
                     return (
-                      <h3 key={index} className="text-lg font-semibold text-gray-900 mt-6 mb-3">
+                      <h3 key={index} className="text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-3">
                         {parseInlineMarkdown(paragraph.substring(4))}
                       </h3>
                     );
@@ -2819,24 +2819,24 @@ Create a portfolio with:
                     const label = parts[0].replace(/\*\*/g, '');
                     const content = parts.slice(1).join('**:');
                     return (
-                      <div key={index} className="flex mb-3 p-3 bg-gray-50 rounded-lg">
-                        <span className="font-semibold text-gray-900 min-w-0 flex-shrink-0 mr-3">
+                      <div key={index} className="flex mb-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <span className="font-semibold text-gray-900 dark:text-white min-w-0 flex-shrink-0 mr-3">
                           {label}:
                         </span>
-                        <span className="text-gray-700">{parseInlineMarkdown(content)}</span>
+                        <span className="text-gray-700 dark:text-gray-300">{parseInlineMarkdown(content)}</span>
                       </div>
                     );
                   }
                   if (paragraph.startsWith('- ')) {
                     return (
-                      <li key={index} className="text-gray-700 mb-2 ml-6 leading-relaxed">
+                      <li key={index} className="text-gray-700 dark:text-gray-300 mb-2 ml-6 leading-relaxed">
                         {parseInlineMarkdown(paragraph.substring(2))}
                       </li>
                     );
                   }
                   if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                     return (
-                      <div key={index} className="font-semibold text-gray-900 mb-3 text-lg">
+                      <div key={index} className="font-semibold text-gray-900 dark:text-white mb-3 text-lg">
                         {paragraph.substring(2, paragraph.length - 2)}
                       </div>
                     );
@@ -2849,7 +2849,7 @@ Create a portfolio with:
                   }
                   if (paragraph.trim()) {
                     return (
-                      <p key={index} className="text-gray-700 mb-4 leading-relaxed">
+                      <p key={index} className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
                         {parseInlineMarkdown(paragraph)}
                       </p>
                     );
@@ -2858,17 +2858,17 @@ Create a portfolio with:
                 })}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
                     {selectedArticle.tags.map(tag => (
-                      <span key={tag} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                      <span key={tag} className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
                         {tag}
                       </span>
                     ))}
                   </div>
                   <div className="flex space-x-3">
-                    <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                       <Bookmark className="w-4 h-4" />
                       <span className="text-sm">Save</span>
                     </button>

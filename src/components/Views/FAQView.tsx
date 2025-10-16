@@ -313,7 +313,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50" style={{ scrollbarGutter: 'stable' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900" style={{ scrollbarGutter: 'stable' }}>
       {/* Header with Navigation */}
       {onBack && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
@@ -432,19 +432,19 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search for answers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 bg-white/90 backdrop-blur-md focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300"
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 dark:border-gray-600 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md focus:border-white dark:focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-white/50 dark:focus:ring-purple-500/50 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             
             {/* Search Results */}
             {searchQuery && (
-              <div className="mt-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl max-h-96 overflow-y-auto">
+              <div className="mt-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl max-h-96 overflow-y-auto">
                 {filteredQuestions.length > 0 ? (
                   <div className="p-4 space-y-2">
                     {filteredQuestions.map((q) => (
@@ -455,15 +455,15 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
                           setOpenCategories(prev => prev.includes(q.categoryId) ? prev : [...prev, q.categoryId]);
                           setOpenQuestion(q.id);
                         }}
-                        className="w-full text-left p-4 rounded-xl hover:bg-purple-50 transition-all duration-300 border border-transparent hover:border-purple-200"
+                        className="w-full text-left p-4 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-all duration-300 border border-transparent hover:border-purple-200 dark:hover:border-purple-600"
                       >
-                        <div className="text-sm text-purple-600 font-medium mb-1">{q.category}</div>
-                        <div className="font-semibold text-gray-900">{q.question}</div>
+                        <div className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">{q.category}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white">{q.question}</div>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-gray-500">
+                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                     No results found. Try different keywords.
                   </div>
                 )}
@@ -480,46 +480,46 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
             {faqCategories.map((category) => (
               <div
                 key={category.id}
-                className={`bg-white rounded-2xl shadow-xl border-2 transition-all duration-300 cursor-pointer ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 transition-all duration-300 cursor-pointer ${
                   openCategories.includes(category.id) 
-                    ? 'border-purple-500 shadow-2xl' 
-                    : 'border-gray-100 hover:border-purple-200'
+                    ? 'border-purple-500 dark:border-purple-600 shadow-2xl' 
+                    : 'border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600'
                 }`}
                 onClick={() => toggleCategory(category.id)}
               >
                 {/* Category Header */}
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-14 h-14 bg-gradient-to-r ${category.color} rounded-2xl flex items-center justify-center`}>
                       <category.icon className="w-7 h-7 text-white" />
                     </div>
                     <div className={`transition-transform duration-300 ${openCategories.includes(category.id) ? 'rotate-180' : ''}`}>
-                      <ChevronDown className="w-6 h-6 text-gray-400" />
+                      <ChevronDown className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{category.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{category.questions.length} questions</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{category.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{category.questions.length} questions</p>
                 </div>
 
                 {/* Questions List */}
                 {openCategories.includes(category.id) && (
                   <div className="p-6 space-y-4">
                     {category.questions.map((question) => (
-                      <div key={question.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                      <div key={question.id} className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setOpenQuestion(openQuestion === question.id ? null : question.id);
                           }}
-                          className="w-full text-left p-4 hover:bg-gray-50 transition-all duration-300 flex items-start justify-between"
+                          className="w-full text-left p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 flex items-start justify-between"
                         >
-                          <span className="font-semibold text-gray-900 pr-4">{question.question}</span>
-                          <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${openQuestion === question.id ? 'rotate-180' : ''}`} />
+                          <span className="font-semibold text-gray-900 dark:text-white pr-4">{question.question}</span>
+                          <ChevronDown className={`w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 transition-transform duration-300 ${openQuestion === question.id ? 'rotate-180' : ''}`} />
                         </button>
                         
                         {openQuestion === question.id && (
                           <div className="px-4 pb-4 pt-2">
-                            <p className="text-gray-600 leading-relaxed">{question.answer}</p>
+                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{question.answer}</p>
                           </div>
                         )}
                       </div>
@@ -533,7 +533,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       </section>
 
       {/* Still Have Questions CTA */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-3xl p-12 text-white">
             <h2 className="text-4xl font-bold mb-4">Still Have Questions?</h2>
