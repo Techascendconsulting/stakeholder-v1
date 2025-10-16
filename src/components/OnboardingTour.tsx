@@ -62,23 +62,31 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     },
     {
       id: 'dashboard',
-      title: '🎯 Your Dashboard',
+      title: '🏠 My Dashboard',
       description: userType === 'new'
-        ? 'Your central hub for learning. Follow the "Next Step" banner to progress through your journey. New sections unlock as you complete modules.'
-        : 'Your central hub - all sections are unlocked. However, we recommend starting with My Learning to build strong foundational concepts before exploring Practice and Projects.',
+        ? 'Your central hub - this is home base. Follow the "Next Step" banner to progress through your journey. New sections unlock as you complete modules.'
+        : 'Your central hub - this is home base. All sections are unlocked. We recommend starting with My Learning to build strong foundational concepts before exploring Practice and Projects.',
       highlightSelector: '.hero-banner',
       position: 'top-right',
       navigateTo: 'dashboard',
     },
     {
+      id: 'project-journey',
+      title: '📖 BA Project Journey',
+      description: 'See the big picture! This shows the complete BA project lifecycle from onboarding to delivery. Each phase connects to relevant Learning modules and Practice sessions.',
+      highlightSelector: '[data-tour="career-journey"]',
+      position: 'top-right',
+      navigateTo: 'career-journey',
+    },
+    {
       id: 'learning',
-      title: '📚 Learning Journey',
+      title: '📚 My Learning Journey',
       description: userType === 'new'
-        ? 'This is where you start your BA training. Complete 10 modules covering all BA fundamentals, unlocking new sections as you progress.'
-        : 'Access 10 comprehensive modules covering all BA fundamentals. Great for refreshing concepts or filling knowledge gaps.',
+        ? 'Study BA concepts & modules here. Complete 10 modules covering all BA fundamentals, unlocking new sections as you progress.'
+        : 'Study BA concepts & modules - 10 comprehensive modules covering all BA fundamentals. Great for refreshing concepts or filling knowledge gaps.',
       highlightSelector: '[data-tour="learning-journey"]',
       position: 'top-right',
-      navigateTo: 'learning-flow', // Actually navigate to Learning Journey
+      navigateTo: 'learning-flow',
     },
     {
       id: 'learning-modules',
@@ -91,25 +99,34 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     },
     {
       id: 'practice',
-      title: userType === 'new' ? '🔒 Practice Journey' : '🎯 Practice Journey',
+      title: userType === 'new' ? '🔒 My Practice Journey' : '🎯 My Practice Journey',
       description: userType === 'new' 
-        ? 'This is the Practice Journey with 4 practice modules. Most are locked initially. Elicitation practice unlocks after Module 3, and full access unlocks after completing all 10 learning modules.'
-        : 'This is the Practice Journey! You have full access to all 4 practice modules. Practice with AI stakeholders and build your skills.',
+        ? 'Practice with AI stakeholders in realistic scenarios. 4 practice modules - most are locked initially. Elicitation unlocks after Module 3, full access after completing all 10 learning modules.'
+        : 'Practice with AI stakeholders in realistic scenarios! You have full access to all 4 practice modules. Build your skills through hands-on practice.',
       position: 'bottom-left',
-      navigateTo: 'practice-flow', // Actually go to Practice page
+      navigateTo: 'practice-flow',
+    },
+    {
+      id: 'projects',
+      title: userType === 'new' ? '🔒 My Hands-On Project' : '🚀 My Hands-On Project',
+      description: userType === 'new'
+        ? 'Apply skills to real projects. This unlocks after you complete all 10 learning modules - it\'s where you put everything together!'
+        : 'Apply skills to real projects! Create your own BA projects and conduct stakeholder meetings. This is where theory meets practice.',
+      position: 'bottom-left',
+      navigateTo: 'dashboard',
     },
     {
       id: 'resources',
-      title: '📖 My Resources - Always Available',
-      description: 'Your learning library with BA Handbook, Reference Library, and Motivation content. These resources are never locked - access them anytime you need help or inspiration.',
+      title: '📁 My Resources',
+      description: 'Templates, guides & tools. Your learning library with BA Handbook, Reference Library, and Motivation content. These resources are never locked - access them anytime!',
       highlightSelector: '[data-tour="resources"]',
       position: 'bottom-left',
-      navigateTo: 'my-resources', // Navigate to My Resources (with tabs)
+      navigateTo: 'my-resources',
     },
     {
-      id: 'verity',
-      title: '💬 Meet Verity - Your AI Assistant',
-      description: 'Look right here! This purple button is Verity, your AI assistant. Ask questions about BA concepts, get help with exercises, or navigate the platform. You get 20 questions per day.',
+      id: 'support',
+      title: '💬 Support',
+      description: 'Get help when you need it. Access FAQs, contact support, and meet Verity - your AI assistant (purple button in the corner). You get 20 Verity questions per day.',
       highlightSelector: '[data-tour="verity"]',
       position: 'bottom-right',
       navigateTo: 'dashboard',
@@ -117,7 +134,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     {
       id: 'ready',
       title: '🚀 Ready to Start Your BA Journey?',
-      description: 'Your path: Learning (10 modules) → Practice (4 exercises) → Hands-On Projects. I\'ll take you to the Learning Journey now. Good luck! 🎉',
+      description: 'Your path: Learning → Practice → Apply. I\'ll take you to the Learning Journey now. Good luck! 🎉',
       position: 'center',
       navigateTo: 'dashboard',
       action: {
