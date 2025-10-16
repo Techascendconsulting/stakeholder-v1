@@ -26,6 +26,8 @@ export interface JourneyPhase {
   learningModuleId?: string; // Primary learning module for navigation
   learningModuleIds?: string[]; // Multiple learning modules for this phase
   learningModuleNames?: string[]; // Display names for multiple modules
+  practiceStageId?: string; // Maps to TrainingHub stage for practice
+  practiceStageTitle?: string; // Display name for practice stage
 }
 
 export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
@@ -92,6 +94,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-cyan-600',
     realWorldContext: 'Before you can analyze anything, you need to understand WHY this project exists and WHAT problem it\'s solving.',
     learningModuleId: 'project-initiation',
+    practiceStageId: 'problem_exploration',
+    practiceStageTitle: 'Problem Exploration Practice',
     topics: [
       {
         id: 'context-business-case',
@@ -195,6 +199,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-orange-600',
     realWorldContext: 'Before proposing solutions, you must understand how things work TODAY - even if it\'s messy, manual, or inefficient.',
     learningModuleId: 'process-mapper',
+    practiceStageId: 'as_is',
+    practiceStageTitle: 'As-Is Process Analysis Practice',
     topics: [
       {
         id: 'as-is-document-request',
@@ -256,6 +262,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     learningModuleId: 'process-mapper',
     learningModuleIds: ['module-5-process-mapping', 'module-7-solution-options', 'module-10-mvp'],
     learningModuleNames: ['Module 5: Process Mapping', 'Module 7: Solution Options', 'Module 10: MVP'],
+    practiceStageId: 'to_be',
+    practiceStageTitle: 'To-Be Process Design Practice',
     topics: [
       {
         id: 'to-be-solution-options',
@@ -441,6 +449,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-purple-600',
     realWorldContext: 'With documented requirements, you now work with architects and designers to determine HOW the solution will be built. BAs bridge business needs and technical delivery, ensuring designs are feasible and meet the documented requirements.',
     learningModuleId: 'design-hub',
+    practiceStageId: 'solution_design',
+    practiceStageTitle: 'Solution Design Practice',
     topics: [
       {
         id: 'design-solution-arch',

@@ -603,31 +603,56 @@ const CareerJourneyView: React.FC = () => {
                         })()}
 
                         {/* Practice Link */}
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                             onClick={() => setCurrentView('practice-flow')}>
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                              <Target className="w-5 h-5 text-white" />
+                        {phase.practiceStageId ? (
+                          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                               onClick={() => {
+                                 // Navigate to training-hub with selected stage
+                                 sessionStorage.setItem('selectedTrainingStage', phase.practiceStageId!);
+                                 setCurrentView('training-hub');
+                               }}>
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                <Target className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                                  Practice
+                                </div>
+                                <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                  {phase.practiceStageTitle}
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
-                                Practice
-                              </div>
-                              <div className="text-sm font-bold text-slate-800 dark:text-white">
-                                Practice Sessions
-                              </div>
+                            <p className="text-sm text-slate-700 dark:text-gray-300 mb-3">
+                              Practice these skills with AI stakeholders in realistic scenarios
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-slate-600 dark:text-gray-400">
+                                Click to start practicing
+                              </span>
+                              <ArrowRight className="w-4 h-4 text-purple-500 group-hover:translate-x-1 transition-transform" />
                             </div>
                           </div>
-                          <p className="text-sm text-slate-700 dark:text-gray-300 mb-3">
-                            Practice these skills with AI stakeholders in realistic scenarios
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-600 dark:text-gray-400">
-                              Click to start practicing
-                            </span>
-                            <ArrowRight className="w-4 h-4 text-purple-500 group-hover:translate-x-1 transition-transform" />
+                        ) : (
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-5 opacity-60">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
+                                <Target className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                  Practice
+                                </div>
+                                <div className="text-sm font-bold text-gray-600 dark:text-gray-300">
+                                  General Practice
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                              No specific practice stage available for this phase yet
+                            </p>
                           </div>
-                        </div>
+                        )}
 
                         {/* Hands-On Project Link */}
                         <div className="bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-900/20 dark:to-rose-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
