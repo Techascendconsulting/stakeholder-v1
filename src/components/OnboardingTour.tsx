@@ -82,18 +82,18 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       id: 'learning',
       title: '📚 My Learning Journey',
       description: userType === 'new'
-        ? 'Study BA concepts & modules here. Complete 10 modules covering all BA fundamentals, unlocking new sections as you progress.'
-        : 'Study BA concepts & modules - 10 comprehensive modules covering all BA fundamentals. Great for refreshing concepts or filling knowledge gaps.',
+        ? 'Study BA concepts & modules here. Complete 11 modules covering all BA fundamentals, unlocking new sections as you progress.'
+        : 'Study BA concepts & modules - 11 comprehensive modules covering all BA fundamentals. Great for refreshing concepts or filling knowledge gaps.',
       highlightSelector: '[data-tour="learning-journey"]',
       position: 'top-right',
       navigateTo: 'learning-flow',
     },
     {
       id: 'learning-modules',
-      title: '📖 Your 10 Learning Modules',
+      title: '📖 Your 11 Learning Modules',
       description: userType === 'new'
-        ? 'Here are your 10 modules! Each has lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!'
-        : 'Here are your 10 modules! All modules are unlocked for you. We recommend completing them in order to build strong foundational concepts.',
+        ? 'Here are your 11 modules! Each has lessons and an assignment. Complete them in order - you can\'t skip ahead. This builds a strong foundation!'
+        : 'Here are your 11 modules! All modules are unlocked for you. We recommend completing them in order to build strong foundational concepts.',
       position: 'top-right',
       navigateTo: 'learning-flow',
     },
@@ -101,7 +101,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       id: 'practice',
       title: userType === 'new' ? '🔒 My Practice Journey' : '🎯 My Practice Journey',
       description: userType === 'new' 
-        ? 'Practice with AI stakeholders in realistic scenarios. 4 practice modules - most are locked initially. Elicitation unlocks after Module 3, full access after completing all 10 learning modules.'
+        ? 'Practice with AI stakeholders in realistic scenarios. 4 practice modules - most are locked initially. Elicitation unlocks after Module 3, full access after completing all 11 learning modules.'
         : 'Practice with AI stakeholders in realistic scenarios! You have full access to all 4 practice modules. Build your skills through hands-on practice.',
       position: 'bottom-left',
       navigateTo: 'practice-flow',
@@ -110,7 +110,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       id: 'projects',
       title: userType === 'new' ? '🔒 My Hands-On Project' : '🚀 My Hands-On Project',
       description: userType === 'new'
-        ? 'Apply skills to real projects. This unlocks after you complete all 10 learning modules - it\'s where you put everything together!'
+        ? 'Apply skills to real projects. This unlocks after you complete all 11 learning modules - it\'s where you put everything together!'
         : 'Apply skills to real projects! Create your own BA projects and conduct stakeholder meetings. This is where theory meets practice.',
       position: 'bottom-left',
       navigateTo: 'dashboard',

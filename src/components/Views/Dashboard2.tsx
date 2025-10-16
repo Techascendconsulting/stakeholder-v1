@@ -97,7 +97,7 @@ const Dashboard2: React.FC = () => {
   const determineNextStep = (type: string, learningCount: number, practiceCount: number, projectCount: number) => {
     // For new users, guide them through the journey
     if (type === 'new') {
-      // PHASE 1: Learning Journey (0-10 modules)
+      // PHASE 1: Learning Journey (0-11 modules)
       if (learningCount === 0) {
         setNextStep({
           title: 'Start Your BA Journey',
@@ -111,12 +111,12 @@ const Dashboard2: React.FC = () => {
           description: `Module ${learningCount + 1} of 10 • Build your BA foundation`,
           action: 'Continue Learning',
           route: 'learning-flow',
-          status: `${learningCount}/10 modules`
+          status: `${learningCount}/11 modules`
         });
       } 
       // PHASE 2: Learning Complete - Practice & Projects Unlocked
       else if (learningCount >= 10) {
-        // After completing all 10 learning modules, BOTH practice and projects unlock
+        // After completing all 11 learning modules, BOTH practice and projects unlock
         // Priority: Guide to practice first, but projects are also accessible
         
         if (practiceCount === 0 && projectCount === 0) {
