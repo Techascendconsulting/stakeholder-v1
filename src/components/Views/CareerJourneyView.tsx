@@ -181,7 +181,7 @@ const CareerJourneyView: React.FC = () => {
   };
 
   const handleGoToLearning = (phase: JourneyPhase) => {
-    // Store that user came from Career Journey
+    // Store that user came from Project Journey
     localStorage.setItem('previousView', 'career-journey');
     
     // Navigate directly to the specific learning module page
@@ -191,7 +191,7 @@ const CareerJourneyView: React.FC = () => {
   };
 
   const handleTopicClick = (topic: JourneyTopic) => {
-    // Store that user came from Career Journey
+    // Store that user came from Project Journey
     localStorage.setItem('previousView', 'career-journey');
     
     // Navigate to the topic's view if it has one

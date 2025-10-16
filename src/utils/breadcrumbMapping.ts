@@ -132,10 +132,10 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
     { label: 'Meeting Details', view: 'meeting-details' }
   ],
 
-  // Career Journey
+  // Project Journey
   'career-journey': [
     { label: 'Dashboard', view: 'dashboard' },
-    { label: 'Career Journey', view: 'career-journey' }
+    { label: 'Project Journey', view: 'career-journey' }
   ],
 
   // Agile Hub paths
@@ -221,7 +221,7 @@ export const getBreadcrumbs = (
     const learningIndex = newBreadcrumbs.findIndex(b => b.view === 'learning-flow');
     if (learningIndex > 0) {
       newBreadcrumbs.splice(learningIndex, 0, { 
-        label: 'Career Journey', 
+        label: 'Project Journey', 
         view: 'career-journey' as AppView 
       });
     }

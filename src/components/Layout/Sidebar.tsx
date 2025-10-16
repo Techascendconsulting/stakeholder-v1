@@ -150,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     },
     {
       id: 'career-journey',
-      label: 'BA Career Journey',
+      label: 'BA Project Journey',
       icon: Briefcase
     },
     { 

@@ -41,7 +41,7 @@ export const LearningBreadcrumbs: React.FC<LearningBreadcrumbsProps> = ({
               onClick={() => setCurrentView('career-journey')}
               className="hover:opacity-100 transition-opacity"
             >
-              Career Journey
+              Project Journey
             </button>
             <span>›</span>
           </>
@@ -62,9 +62,9 @@ export const LearningBreadcrumbs: React.FC<LearningBreadcrumbsProps> = ({
         className="inline-flex items-center space-x-2 opacity-80 hover:opacity-100 transition-opacity"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span className="text-sm font-medium">
-          {referrer === 'career-journey' ? 'Back to Career Journey' : 'Back to Learning Journey'}
-        </span>
+              <span className="text-sm font-medium">
+                {referrer === 'career-journey' ? 'Back to Project Journey' : 'Back to Learning Journey'}
+              </span>
       </button>
     </div>
   );
