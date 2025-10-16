@@ -124,6 +124,21 @@ const getPhasePracticeInfo = (phase: JourneyPhase) => {
   return null;
 };
 
+// Helper to get color classes based on phase color
+const getColorClasses = (phaseColor: string) => {
+  const colorMap: Record<string, { text: string; hover: string; bg: string }> = {
+    'purple': { text: 'text-purple-500', hover: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/30' },
+    'blue': { text: 'text-blue-500', hover: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+    'emerald': { text: 'text-emerald-500', hover: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/30' },
+    'amber': { text: 'text-amber-500', hover: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/30' },
+    'green': { text: 'text-green-500', hover: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/30' },
+    'teal': { text: 'text-teal-500', hover: 'text-teal-600', bg: 'bg-teal-50 dark:bg-teal-900/30' },
+    'indigo': { text: 'text-indigo-500', hover: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/30' },
+    'cyan': { text: 'text-cyan-500', hover: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/30' }
+  };
+  return colorMap[phaseColor] || colorMap['purple'];
+};
+
 const CareerJourneyView: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
@@ -480,12 +495,12 @@ const CareerJourneyView: React.FC = () => {
                   <div className={`bg-gradient-to-r ${gradientClass} p-8 text-white relative`}>
                     <button
                       onClick={() => setSelectedPhaseIndex(null)}
-                      className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-200"
+                      className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-200 z-10"
                     >
                       <X className="w-6 h-6" />
                     </button>
 
-                    <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center gap-4 mb-3 pr-14">
                       <phase.icon className="w-12 h-12" />
                       <div className="flex-1">
                         <div className="text-sm font-semibold bg-white bg-opacity-20 px-3 py-1 rounded-full inline-block mb-2">
@@ -493,15 +508,6 @@ const CareerJourneyView: React.FC = () => {
                         </div>
                         <h2 className="text-3xl font-bold">{phase.title}</h2>
                       </div>
-                      {phase.learningModuleId && (
-                        <button
-                          onClick={() => handleGoToLearning(phase)}
-                          className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition-all duration-200 flex items-center gap-2 shadow-lg"
-                        >
-                          <Play className="w-5 h-5" />
-                          Go to Learning
-                        </button>
-                      )}
                     </div>
                     <p className="text-purple-50 text-lg">{phase.realWorldContext}</p>
                   </div>
@@ -602,10 +608,13 @@ const CareerJourneyView: React.FC = () => {
                           const moduleInfo = getPhaseModuleInfo(phase);
                           if (!moduleInfo) return null;
                           
+                          const colors = getColorClasses(phase.color);
+                          const gradientClass = colorClasses[phase.color] || colorClasses['purple'];
+                          
                           return (
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
+                            <div className={`bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200`}>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
                                   <BookOpen className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex-1">
@@ -623,15 +632,15 @@ const CareerJourneyView: React.FC = () => {
                                 {moduleInfo.modules.map((module, idx) => (
                                   <button
                                     key={idx} 
-                                    className="w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all group"
+                                    className={`w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:${colors.bg} transition-all group`}
                                     onClick={() => {
                                       localStorage.setItem('previousView', 'career-journey');
                                       setCurrentView(module.viewId as any);
                                       setSelectedPhaseIndex(null);
                                     }}>
-                                    <Play className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+                                    <Play className={`w-4 h-4 ${colors.text} group-hover:${colors.hover}`} />
                                     <span className="font-medium flex-1 text-left">{module.name}</span>
-                                    <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight className={`w-4 h-4 ${colors.text} group-hover:translate-x-1 transition-transform`} />
                                   </button>
                                 ))}
                               </div>
@@ -663,10 +672,13 @@ const CareerJourneyView: React.FC = () => {
                             </div>
                           );
                           
+                          const colors = getColorClasses(phase.color);
+                          const gradientClass = colorClasses[phase.color] || colorClasses['purple'];
+                          
                           return (
                             <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
                                   <Target className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex-1">
@@ -684,14 +696,14 @@ const CareerJourneyView: React.FC = () => {
                                 {practiceInfo.modules.map((module, idx) => (
                                   <button
                                     key={idx} 
-                                    className="w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-all group"
+                                    className={`w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:${colors.bg} transition-all group`}
                                     onClick={() => {
                                       setCurrentView(module.viewId as any);
                                       setSelectedPhaseIndex(null);
                                     }}>
-                                    <Play className="w-4 h-4 text-purple-500 group-hover:text-purple-600" />
+                                    <Play className={`w-4 h-4 ${colors.text} group-hover:${colors.hover}`} />
                                     <span className="font-medium flex-1 text-left">{module.name}</span>
-                                    <ArrowRight className="w-4 h-4 text-purple-400 group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight className={`w-4 h-4 ${colors.text} group-hover:translate-x-1 transition-transform`} />
                                   </button>
                                 ))}
                               </div>
