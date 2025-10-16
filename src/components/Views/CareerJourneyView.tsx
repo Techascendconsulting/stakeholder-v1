@@ -751,10 +751,10 @@ const CareerJourneyView: React.FC = () => {
                               
                               return (
                                 <div className="space-y-3">
-                                  <div className="flex items-start gap-2">
+                                  <div className="flex items-start gap-3">
                                     <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">1</span>
                                     <div className="flex-1">
-                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">📚 Learn the Concepts</p>
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">Learn the Concepts</p>
                                       <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
                                         {moduleInfo.modules.length === 1 
                                           ? `Study ${moduleInfo.modules[0].name}` 
@@ -764,20 +764,20 @@ const CareerJourneyView: React.FC = () => {
                                     </div>
                                   </div>
                                   
-                                  <div className="flex items-start gap-2">
+                                  <div className="flex items-start gap-3">
                                     <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">2</span>
                                     <div className="flex-1">
-                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">🎯 Practice with AI</p>
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">Practice with AI</p>
                                       <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
                                         Practice these skills with AI stakeholders in realistic scenarios
                                       </p>
                                     </div>
                                   </div>
                                   
-                                  <div className="flex items-start gap-2">
+                                  <div className="flex items-start gap-3">
                                     <span className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">3</span>
                                     <div className="flex-1">
-                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">🚀 Apply to Project</p>
+                                      <p className="text-sm font-semibold text-slate-800 dark:text-white">Apply to Project</p>
                                       <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
                                         Apply what you learned to your hands-on BA project
                                       </p>
