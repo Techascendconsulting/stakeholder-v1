@@ -26,8 +26,8 @@ export interface JourneyPhase {
   learningModuleId?: string; // Primary learning module for navigation
   learningModuleIds?: string[]; // Multiple learning modules for this phase
   learningModuleNames?: string[]; // Display names for multiple modules
-  practiceStageId?: string; // Maps to TrainingHub stage for practice
-  practiceStageTitle?: string; // Display name for practice stage
+  practiceModuleId?: string; // Maps to Practice Journey module
+  practiceModuleTitle?: string; // Display name for practice module
 }
 
 export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
@@ -94,8 +94,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-cyan-600',
     realWorldContext: 'Before you can analyze anything, you need to understand WHY this project exists and WHAT problem it\'s solving.',
     learningModuleId: 'project-initiation',
-    practiceStageId: 'problem_exploration',
-    practiceStageTitle: 'Problem Exploration Practice',
+    practiceModuleId: 'practice-1-elicitation',
+    practiceModuleTitle: 'Elicitation Practice',
     topics: [
       {
         id: 'context-business-case',
@@ -147,6 +147,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-teal-600',
     realWorldContext: 'BAs don\'t work alone. You need to identify who has the information, who makes decisions, and who will be affected by changes.',
     learningModuleId: 'stakeholder-mapping',
+    practiceModuleId: 'practice-1-elicitation',
+    practiceModuleTitle: 'Elicitation Practice',
     topics: [
       {
         id: 'stakeholder-identification',
@@ -199,8 +201,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-orange-600',
     realWorldContext: 'Before proposing solutions, you must understand how things work TODAY - even if it\'s messy, manual, or inefficient.',
     learningModuleId: 'process-mapper',
-    practiceStageId: 'as_is',
-    practiceStageTitle: 'As-Is Process Analysis Practice',
+    practiceModuleId: 'practice-1-elicitation',
+    practiceModuleTitle: 'Elicitation Practice',
     topics: [
       {
         id: 'as-is-document-request',
@@ -262,8 +264,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     learningModuleId: 'process-mapper',
     learningModuleIds: ['module-5-process-mapping', 'module-7-solution-options', 'module-10-mvp'],
     learningModuleNames: ['Module 5: Process Mapping', 'Module 7: Solution Options', 'Module 10: MVP'],
-    practiceStageId: 'to_be',
-    practiceStageTitle: 'To-Be Process Design Practice',
+    practiceModuleId: 'practice-3-mvp',
+    practiceModuleTitle: 'MVP Practice',
     topics: [
       {
         id: 'to-be-solution-options',
@@ -379,6 +381,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-cyan-600',
     realWorldContext: 'You\'ve gathered requirements from stakeholders. Now you need to document them clearly so developers, testers, and designers can understand exactly what needs to be built. In Agile, this means writing user stories with acceptance criteria. In Waterfall, it means detailed requirements specifications.',
     learningModuleId: 'documentation',
+    practiceModuleId: 'practice-2-documentation',
+    practiceModuleTitle: 'Documentation Practice',
     topics: [
       {
         id: 'doc-user-stories',
@@ -449,8 +453,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     gradientTo: 'to-purple-600',
     realWorldContext: 'With documented requirements, you now work with architects and designers to determine HOW the solution will be built. BAs bridge business needs and technical delivery, ensuring designs are feasible and meet the documented requirements.',
     learningModuleId: 'design-hub',
-    practiceStageId: 'solution_design',
-    practiceStageTitle: 'Solution Design Practice',
+    practiceModuleId: 'practice-2-documentation',
+    practiceModuleTitle: 'Documentation Practice',
     topics: [
       {
         id: 'design-solution-arch',
@@ -505,6 +509,8 @@ export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [
     learningModuleId: 'agile-scrum',
     learningModuleIds: ['module-11-agile-scrum', 'module-10-mvp', 'module-8-documentation', 'module-6-requirements-engineering'],
     learningModuleNames: ['Module 11: Agile/Scrum', 'Module 10: MVP', 'Module 8: Documentation', 'Module 6: Requirements Engineering'],
+    practiceModuleId: 'practice-4-scrum',
+    practiceModuleTitle: 'Scrum Practice',
     topics: [
       {
         id: 'agile-backlog',

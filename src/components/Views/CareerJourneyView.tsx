@@ -603,12 +603,18 @@ const CareerJourneyView: React.FC = () => {
                         })()}
 
                         {/* Practice Link */}
-                        {phase.practiceStageId ? (
+                        {phase.practiceModuleId ? (
                           <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
                                onClick={() => {
-                                 // Navigate to training-hub with selected stage
-                                 sessionStorage.setItem('selectedTrainingStage', phase.practiceStageId!);
-                                 setCurrentView('training-hub');
+                                 // Map practice module IDs to their viewIds
+                                 const practiceModuleToViewId: Record<string, string> = {
+                                   'practice-1-elicitation': 'practice-2',
+                                   'practice-2-documentation': 'documentation-practice',
+                                   'practice-3-mvp': 'mvp-practice',
+                                   'practice-4-scrum': 'scrum-practice'
+                                 };
+                                 const viewId = practiceModuleToViewId[phase.practiceModuleId!] || 'practice-flow';
+                                 setCurrentView(viewId as any);
                                }}>
                             <div className="flex items-center gap-3 mb-3">
                               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -619,7 +625,7 @@ const CareerJourneyView: React.FC = () => {
                                   Practice
                                 </div>
                                 <div className="text-sm font-bold text-slate-800 dark:text-white">
-                                  {phase.practiceStageTitle}
+                                  {phase.practiceModuleTitle}
                                 </div>
                               </div>
                             </div>
