@@ -26,8 +26,10 @@ export interface JourneyPhase {
   learningModuleId?: string; // Primary learning module for navigation
   learningModuleIds?: string[]; // Multiple learning modules for this phase
   learningModuleNames?: string[]; // Display names for multiple modules
-  practiceModuleId?: string; // Maps to Practice Journey module
-  practiceModuleTitle?: string; // Display name for practice module
+  practiceModuleId?: string; // Primary practice module (deprecated, use practiceModuleIds)
+  practiceModuleTitle?: string; // Display name for practice module (deprecated)
+  practiceModuleIds?: string[]; // Multiple practice modules for this phase
+  practiceModuleNames?: string[]; // Display names for multiple practice modules
 }
 
 export const CAREER_JOURNEY_PHASES: JourneyPhase[] = [

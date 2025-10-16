@@ -87,6 +87,43 @@ const getPhaseModuleInfo = (phase: JourneyPhase) => {
   return null;
 };
 
+// Helper to get practice module info for a phase
+const getPhasePracticeInfo = (phase: JourneyPhase) => {
+  // Map practice module IDs to their viewIds
+  const practiceModuleToViewId: Record<string, string> = {
+    'practice-1-elicitation': 'practice-2',
+    'practice-2-documentation': 'documentation-practice',
+    'practice-3-mvp': 'mvp-practice',
+    'practice-4-scrum': 'scrum-practice'
+  };
+  
+  // If phase has multiple practice modules defined, use those
+  if (phase.practiceModuleIds && phase.practiceModuleNames) {
+    return {
+      modules: phase.practiceModuleIds.map((id, idx) => ({
+        id,
+        name: phase.practiceModuleNames![idx],
+        viewId: practiceModuleToViewId[id] || 'practice-flow'
+      })),
+      isMultiple: true
+    };
+  }
+  
+  // Otherwise, use single module from practiceModuleId (backward compatibility)
+  if (phase.practiceModuleId && phase.practiceModuleTitle) {
+    return {
+      modules: [{
+        id: phase.practiceModuleId,
+        name: phase.practiceModuleTitle,
+        viewId: practiceModuleToViewId[phase.practiceModuleId] || 'practice-flow'
+      }],
+      isMultiple: false
+    };
+  }
+  
+  return null;
+};
+
 const CareerJourneyView: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
@@ -603,62 +640,64 @@ const CareerJourneyView: React.FC = () => {
                         })()}
 
                         {/* Practice Link */}
-                        {phase.practiceModuleId ? (
-                          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                               onClick={() => {
-                                 // Map practice module IDs to their viewIds
-                                 const practiceModuleToViewId: Record<string, string> = {
-                                   'practice-1-elicitation': 'practice-2',
-                                   'practice-2-documentation': 'documentation-practice',
-                                   'practice-3-mvp': 'mvp-practice',
-                                   'practice-4-scrum': 'scrum-practice'
-                                 };
-                                 const viewId = practiceModuleToViewId[phase.practiceModuleId!] || 'practice-flow';
-                                 setCurrentView(viewId as any);
-                               }}>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                <Target className="w-5 h-5 text-white" />
+                        {(() => {
+                          const practiceInfo = getPhasePracticeInfo(phase);
+                          if (!practiceInfo) return (
+                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-5 opacity-60">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
+                                  <Target className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                    Practice
+                                  </div>
+                                  <div className="text-sm font-bold text-gray-600 dark:text-gray-300">
+                                    General Practice
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex-1">
-                                <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
-                                  Practice
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                No specific practice module available for this phase yet
+                              </p>
+                            </div>
+                          );
+                          
+                          return (
+                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                  <Target className="w-5 h-5 text-white" />
                                 </div>
-                                <div className="text-sm font-bold text-slate-800 dark:text-white">
-                                  {phase.practiceModuleTitle}
+                                <div className="flex-1">
+                                  <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                                    Practice
+                                  </div>
+                                  <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                    {practiceInfo.isMultiple ? `${practiceInfo.modules.length} Modules` : practiceInfo.modules[0].name}
+                                  </div>
                                 </div>
+                              </div>
+                              
+                              {/* List all practice modules */}
+                              <div className="space-y-2">
+                                {practiceInfo.modules.map((module, idx) => (
+                                  <button
+                                    key={idx} 
+                                    className="w-full flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-all group"
+                                    onClick={() => {
+                                      setCurrentView(module.viewId as any);
+                                      setSelectedPhaseIndex(null);
+                                    }}>
+                                    <Play className="w-4 h-4 text-purple-500 group-hover:text-purple-600" />
+                                    <span className="font-medium flex-1 text-left">{module.name}</span>
+                                    <ArrowRight className="w-4 h-4 text-purple-400 group-hover:translate-x-1 transition-transform" />
+                                  </button>
+                                ))}
                               </div>
                             </div>
-                            <p className="text-sm text-slate-700 dark:text-gray-300 mb-3">
-                              Practice these skills with AI stakeholders in realistic scenarios
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-slate-600 dark:text-gray-400">
-                                Click to start practicing
-                              </span>
-                              <ArrowRight className="w-4 h-4 text-purple-500 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-5 opacity-60">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                                <Target className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                  Practice
-                                </div>
-                                <div className="text-sm font-bold text-gray-600 dark:text-gray-300">
-                                  General Practice
-                                </div>
-                              </div>
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                              No specific practice stage available for this phase yet
-                            </p>
-                          </div>
-                        )}
+                          );
+                        })()}
 
                         {/* Hands-On Project Link */}
                         <div className="bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-900/20 dark:to-rose-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer group"
