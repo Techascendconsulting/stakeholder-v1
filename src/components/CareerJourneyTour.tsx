@@ -119,23 +119,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
   return (
     <>
-      {/* Dark Overlay - Makes tour stand out */}
-      <div className="fixed inset-0 bg-black/50 z-[200] pointer-events-none transition-opacity duration-300" />
-      
-      {/* Spotlight effect on highlighted element - Creates cutout */}
-      {highlightedElement && (
-        <div 
-          className="fixed z-[201] pointer-events-none transition-all duration-500 ease-in-out"
-          style={{
-            top: highlightedElement.getBoundingClientRect().top - 8,
-            left: highlightedElement.getBoundingClientRect().left - 8,
-            width: highlightedElement.getBoundingClientRect().width + 16,
-            height: highlightedElement.getBoundingClientRect().height + 16,
-            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-            borderRadius: '24px'
-          }}
-        />
-      )}
+      {/* Simple overlay - lightweight, no performance issues */}
+      <div className="fixed inset-0 bg-black/30 z-[200] pointer-events-none" />
 
       {/* Tour Tooltip - Jira/Monday.com Style (Fixed at bottom) */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[202] w-full max-w-md px-4">
@@ -207,27 +192,15 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         </div>
       </div>
 
-      {/* Global CSS for highlighting - Jira/Monday.com style */}
+      {/* Global CSS for highlighting - Simple and performant */}
       <style>{`
         .tour-highlight {
           position: relative;
           z-index: 202 !important;
-          outline: 3px solid rgb(147, 51, 234) !important;
+          outline: 4px solid rgb(147, 51, 234) !important;
           outline-offset: 4px;
           border-radius: 12px !important;
-          animation: pulse-outline 2s infinite;
           pointer-events: auto !important;
-        }
-        
-        @keyframes pulse-outline {
-          0%, 100% {
-            outline-color: rgb(147, 51, 234);
-            outline-width: 3px;
-          }
-          50% {
-            outline-color: rgb(126, 34, 206);
-            outline-width: 4px;
-          }
         }
       `}</style>
     </>
