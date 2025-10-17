@@ -215,15 +215,27 @@ export class JourneyProgressService {
       };
     }
 
-    // If user has completed learning but no practice, suggest practice
+    // If user has completed learning but no practice, suggest practice scenarios
     if (learningProgress.modulesCompleted > 0 && practiceProgress.meetingsCount === 0) {
       return {
         title: 'Practice What You Learned',
-        description: 'Conduct your first stakeholder meeting to apply your knowledge',
+        description: 'Start with quick practice scenarios before tackling full projects',
         action: 'Start Practice',
         actionView: 'practice-flow',
         priority: 'high',
         icon: 'practice'
+      };
+    }
+
+    // If user has practiced but hasn't started career journey, suggest that
+    if (practiceProgress.meetingsCount > 0 && careerProgress.progressPercentage === 0) {
+      return {
+        title: 'Ready for the Full BA Journey',
+        description: 'You\'ve practiced - now apply it to the complete BA project lifecycle',
+        action: 'Start BA Journey',
+        actionView: 'career-journey',
+        priority: 'high',
+        icon: 'career'
       };
     }
 
@@ -251,14 +263,26 @@ export class JourneyProgressService {
       };
     }
 
-    // Default: explore projects
+    // If user has completed everything but wants hands-on projects
+    if (careerProgress.progressPercentage === 100 && learningProgress.progressPercentage === 100) {
+      return {
+        title: 'Build Your Own Project',
+        description: 'Apply all your skills to a custom hands-on BA project',
+        action: 'Start Project',
+        actionView: 'project-flow',
+        priority: 'medium',
+        icon: 'project'
+      };
+    }
+
+    // Default: more practice
     return {
-      title: 'Start a New Project',
-      description: 'Apply your skills to a hands-on BA project',
-      action: 'Browse Projects',
-      actionView: 'project-flow',
+      title: 'Keep Practicing',
+      description: 'More practice scenarios help reinforce your BA skills',
+      action: 'Practice More',
+      actionView: 'practice-flow',
       priority: 'medium',
-      icon: 'project'
+      icon: 'practice'
     };
   }
 
