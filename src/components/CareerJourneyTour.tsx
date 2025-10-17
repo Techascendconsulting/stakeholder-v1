@@ -189,10 +189,14 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       {/* Simple overlay - lightweight, no performance issues */}
       <div className="fixed inset-0 bg-black/30 z-[200] pointer-events-none" />
 
-      {/* Tour Tooltip - Auto-placed near target */}
+      {/* Tour Tooltip - Auto-placed near target (falls back to bottom-center when no highlight) */}
       <div
-        className="fixed z-[202]"
-        style={tooltipStyle ? { top: tooltipStyle.top, left: tooltipStyle.left, width: 340 } : { visibility: 'hidden' }}
+        className={
+          tooltipStyle || currentStepData.highlightSelector
+            ? 'fixed z-[202]'
+            : 'fixed bottom-8 left-1/2 -translate-x-1/2 z-[202]'
+        }
+        style={tooltipStyle ? { top: tooltipStyle.top, left: tooltipStyle.left, width: 340 } : undefined}
       >
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-[340px]">
           {/* Content */}
