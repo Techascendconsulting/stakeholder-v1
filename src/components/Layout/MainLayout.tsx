@@ -2,8 +2,8 @@ import React, { lazy, Suspense } from 'react';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
-// import Dashboard from '../Views/Dashboard'; // OLD: Archived for MVP
-import Dashboard2 from '../Views/Dashboard2'; // NEW: Clean, purposeful dashboard
+import Dashboard from '../Views/Dashboard'; // Updated with journey integration
+import Dashboard2 from '../Views/Dashboard2'; // OLD: Clean, purposeful dashboard
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
 import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
