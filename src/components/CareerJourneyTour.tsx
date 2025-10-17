@@ -110,7 +110,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             let left = 0;
             let placed = false;
 
-            const tryOrders: Array<'bottom'|'top'|'right'|'left'> = currentStepData.preferredSides ?? ['bottom','top','right','left'];
+            // Use caller preference, but ensure we place tooltip OUTSIDE modal content for steps 2-4
+            const tryOrders: Array<'bottom'|'top'|'right'|'left'> = currentStepData.preferredSides ?? ['right','left','bottom','top'];
             for (const pos of tryOrders) {
               if (pos === 'bottom' && vh - rect.bottom > tooltipHeight + margin) {
                 top = rect.bottom + margin;

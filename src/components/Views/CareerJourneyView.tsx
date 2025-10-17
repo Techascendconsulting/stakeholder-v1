@@ -682,9 +682,17 @@ const CareerJourneyView: React.FC = () => {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => handlePhaseClick(index)}
-                        disabled={isLocked && userType === 'new'}
+                      <div
+                        onClick={() => (isLocked && userType === 'new' ? undefined : handlePhaseClick(index))}
+                        role="button"
+                        aria-disabled={isLocked && userType === 'new'}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!(isLocked && userType === 'new')) handlePhaseClick(index);
+                          }
+                        }}
                         className={`group relative transition-all duration-500 w-full ${
                           isSelected ? 'scale-105' : 'hover:scale-105'
                         } ${isLocked && userType === 'new' ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-2xl'}`}
@@ -783,7 +791,7 @@ const CareerJourneyView: React.FC = () => {
 
                           <div className={`h-1.5 bg-gradient-to-r ${gradientClass}`} />
                         </div>
-                      </button>
+                      </div>
                     </div>
 
                     {/* Phase Dot on Path - Hidden on mobile, visible on desktop */}
