@@ -143,20 +143,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Welcome', 
       icon: Home
     }] : []),
-    { 
-      id: 'how-to-navigate', 
+    {
+      id: 'how-to-navigate',
       label: 'How to Navigate', 
       icon: HelpCircle
-    },
-    {
-      id: 'career-journey',
-      label: 'BA Project Journey',
-      icon: Briefcase
     },
     { 
       id: 'dashboard', 
       label: 'My Dashboard', 
       icon: LayoutDashboard
+    },
+    {
+      id: 'career-journey',
+      label: 'BA Project Journey',
+      icon: Briefcase
     },
     { 
       id: 'learning-flow', 
