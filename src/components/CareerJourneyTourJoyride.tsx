@@ -79,12 +79,19 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
             disableAnimation: false,
             styles: {
               floater: {
-                position: 'fixed',
-                top: '50%',
-                right: '20px',
-                left: 'auto',
-                transform: 'translateY(-50%)',
-                zIndex: 10001
+                position: 'fixed !important',
+                top: '50% !important',
+                right: '20px !important',
+                left: 'auto !important',
+                transform: 'translateY(-50%) !important',
+                zIndex: '10001 !important'
+              },
+              wrapper: {
+                position: 'fixed !important',
+                top: '50% !important',
+                right: '20px !important',
+                left: 'auto !important',
+                transform: 'translateY(-50%) !important'
               }
             }
           }
