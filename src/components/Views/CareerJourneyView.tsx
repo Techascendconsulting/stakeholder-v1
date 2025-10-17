@@ -16,7 +16,11 @@ import {
   Target,
   Rocket,
   ArrowRight,
-  Lightbulb
+  Lightbulb,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  Zap
 } from 'lucide-react';
 
 interface PhaseProgress {
@@ -147,11 +151,62 @@ const CareerJourneyView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
     loadUserData();
   }, [user?.id]);
+
+  // Check for first visit and show welcome overlay
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenCareerJourneyWelcome');
+    if (!hasSeenWelcome) {
+      setShowWelcomeOverlay(true);
+    }
+  }, []);
+
+  // Auto-scroll to current phase on load
+  useEffect(() => {
+    if (!loading && scrollContainerRef.current) {
+      // Calculate current phase index
+      const inProgressPhase = CAREER_JOURNEY_PHASES.findIndex(p => getPhaseStatus(p) === 'in_progress');
+      const notStartedPhase = CAREER_JOURNEY_PHASES.findIndex(p => getPhaseStatus(p) === 'not_started');
+      const currentIdx = inProgressPhase !== -1 ? inProgressPhase : notStartedPhase !== -1 ? notStartedPhase : CAREER_JOURNEY_PHASES.length - 1;
+      
+      // Scroll to current phase after a short delay
+      setTimeout(() => {
+        const phaseElements = scrollContainerRef.current?.querySelectorAll('[data-phase-index]');
+        if (phaseElements && phaseElements[currentIdx]) {
+          phaseElements[currentIdx].scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }, 300);
+    }
+  }, [loading, progress, userType]);
+
+  // Check scroll position for navigation arrows
+  useEffect(() => {
+    const checkScrollPosition = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      checkScrollPosition();
+      container.addEventListener('scroll', checkScrollPosition);
+      return () => container.removeEventListener('scroll', checkScrollPosition);
+    }
+  }, [loading]);
 
   const loadUserData = async () => {
     if (!user?.id) return;
@@ -253,6 +308,70 @@ const CareerJourneyView: React.FC = () => {
     }
   };
 
+  const getPhaseProgress = (phase: JourneyPhase): number => {
+    const phaseProgress = progress.find(p => p.phase_id === phase.id);
+    if (!phaseProgress) return 0;
+    
+    const completedTopics = phaseProgress.completed_topics?.length || 0;
+    const totalTopics = phase.topics.length;
+    
+    return Math.round((completedTopics / totalTopics) * 100);
+  };
+
+  // Scroll navigation handlers
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  // Handle welcome overlay actions  
+  const handleStartTour = () => {
+    setShowWelcomeOverlay(false);
+    localStorage.setItem('hasSeenCareerJourneyWelcome', 'true');
+    // Simple tour: just show the guide section at the bottom
+    const guideSection = document.querySelector('.journey-guide');
+    if (guideSection) {
+      guideSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleSkipWelcome = () => {
+    setShowWelcomeOverlay(false);
+    localStorage.setItem('hasSeenCareerJourneyWelcome', 'true');
+  };
+
+  // Quick action handlers
+  const handleQuickLearn = (phase: JourneyPhase, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from opening
+    localStorage.setItem('previousView', 'career-journey');
+    
+    const moduleInfo = getPhaseModuleInfo(phase);
+    if (moduleInfo && moduleInfo.modules.length > 0) {
+      setCurrentView(moduleInfo.modules[0].viewId as any);
+    }
+  };
+
+  const handleQuickPractice = (phase: JourneyPhase, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from opening
+    localStorage.setItem('previousView', 'career-journey');
+    
+    const practiceInfo = getPhasePracticeInfo(phase);
+    if (practiceInfo && practiceInfo.modules.length > 0) {
+      setCurrentView(practiceInfo.modules[0].viewId as any);
+    } else {
+      // Fallback to general practice
+      setCurrentView('practice-flow');
+    }
+  };
+
+  // Get current phase index
   const getCurrentPhaseIndex = (): number => {
     // Find the first in-progress or not-started phase
     const inProgressPhase = CAREER_JOURNEY_PHASES.findIndex(p => getPhaseStatus(p) === 'in_progress');
@@ -264,14 +383,17 @@ const CareerJourneyView: React.FC = () => {
     return CAREER_JOURNEY_PHASES.length - 1; // All completed, show last
   };
 
-  const getPhaseProgress = (phase: JourneyPhase): number => {
-    const phaseProgress = progress.find(p => p.phase_id === phase.id);
-    if (!phaseProgress) return 0;
-    
-    const completedTopics = phaseProgress.completed_topics?.length || 0;
-    const totalTopics = phase.topics.length;
-    
-    return Math.round((completedTopics / totalTopics) * 100);
+  // Continue current phase
+  const handleContinuePhase = () => {
+    const currentPhaseIdx = getCurrentPhaseIndex();
+    const currentPhase = CAREER_JOURNEY_PHASES[currentPhaseIdx];
+    if (currentPhase) {
+      const moduleInfo = getPhaseModuleInfo(currentPhase);
+      if (moduleInfo && moduleInfo.modules.length > 0) {
+        localStorage.setItem('previousView', 'career-journey');
+        setCurrentView(moduleInfo.modules[0].viewId as any);
+      }
+    }
   };
 
   if (loading) {
@@ -282,6 +404,7 @@ const CareerJourneyView: React.FC = () => {
     );
   }
 
+  // Calculate current phase index for rendering
   const currentPhaseIndex = getCurrentPhaseIndex();
   const selectedPhaseData = selectedPhaseIndex !== null ? CAREER_JOURNEY_PHASES[selectedPhaseIndex] : null;
 
@@ -306,16 +429,92 @@ const CareerJourneyView: React.FC = () => {
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-300/20 dark:bg-pink-600/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
+      {/* Welcome Overlay - First Visit */}
+      {showWelcomeOverlay && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full border-2 border-purple-500 animate-in zoom-in-95 duration-300">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-t-2xl">
+              <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                🗺️ Welcome to Your BA Project Journey!
+              </h2>
+            </div>
+            <div className="p-8">
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
+                This timeline shows the complete BA project lifecycle from onboarding through continuous delivery.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Click any phase to explore</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">See topics, activities, and deliverables for each phase</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <ChevronRight className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Scroll to see all 10 phases</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Use arrows or scroll horizontally to navigate</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Each phase links to Learning & Practice</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Quick access to relevant modules and exercises</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleStartTour}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Show Me Around (30 sec)
+                </button>
+                <button
+                  onClick={handleSkipWelcome}
+                  className="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                >
+                  Skip, I Got It
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Header with gradient and animations */}
       <div className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900 backdrop-blur-sm border-b-2 border-purple-400/50 dark:border-purple-700/50 sticky top-0 z-20 shadow-2xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <button
-            onClick={() => setCurrentView('dashboard')}
-            className="inline-flex items-center space-x-2 text-purple-100 hover:text-white transition-all duration-200 mb-4 hover:translate-x-[-4px]"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setCurrentView('dashboard')}
+              className="inline-flex items-center space-x-2 text-purple-100 hover:text-white transition-all duration-200 hover:translate-x-[-4px]"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Dashboard</span>
+            </button>
+            
+            {/* Help Button */}
+            <button
+              onClick={() => setShowWelcomeOverlay(true)}
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 text-white text-sm font-medium"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">How does this work?</span>
+            </button>
+          </div>
           
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-3">
@@ -350,12 +549,68 @@ const CareerJourneyView: React.FC = () => {
         </div>
       </div>
 
+      {/* "You Are Here" Enhanced Banner */}
+      {CAREER_JOURNEY_PHASES[currentPhaseIndex] && (
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 rounded-xl p-6 shadow-xl border-2 border-orange-300 dark:border-orange-700">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center animate-pulse">
+                  <Zap className="w-6 h-6 text-orange-500" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-orange-100 mb-1">
+                    ⚡ You are here
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Phase {CAREER_JOURNEY_PHASES[currentPhaseIndex].order}: {CAREER_JOURNEY_PHASES[currentPhaseIndex].shortTitle}
+                  </h3>
+                  <p className="text-orange-100 text-sm mt-1">
+                    {getPhaseProgress(CAREER_JOURNEY_PHASES[currentPhaseIndex])}% complete
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleContinuePhase}
+                className="px-6 py-3 bg-white text-orange-600 rounded-lg font-semibold hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2 whitespace-nowrap"
+              >
+                Continue This Phase
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Journey Timeline - Beautiful Curved Path */}
-      <div className="py-12">
-        <div className="overflow-x-auto pb-8 pt-4">
+      <div className="py-12 relative">
+        {/* Left Navigation Arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={scrollLeft}
+            className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full items-center justify-center shadow-2xl hover:scale-110 transition-all"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
+        
+        {/* Right Navigation Arrow with Hint */}
+        {canScrollRight && (
+          <button
+            onClick={scrollRight}
+            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-30 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-2xl hover:scale-110 transition-all group"
+            aria-label="Scroll right"
+          >
+            <span className="text-sm font-semibold whitespace-nowrap">More phases</span>
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+        )}
+        
+        <div className="overflow-x-auto pb-8 pt-4" ref={scrollContainerRef}>
           <div className="relative min-w-max px-8">
-            {/* Curved Path SVG - Purple/Indigo Gradient */}
-            <svg className="absolute top-[260px] left-0 w-full h-2" style={{ zIndex: 0 }}>
+            {/* Curved Path SVG - Purple/Indigo Gradient (Hidden on mobile, visible on desktop) */}
+            <svg className="hidden md:block absolute top-[260px] left-0 w-full h-2" style={{ zIndex: 0 }}>
               <defs>
                 <linearGradient id="careerPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" style={{ stopColor: '#a855f7', stopOpacity: 0.4 }} />
@@ -374,7 +629,8 @@ const CareerJourneyView: React.FC = () => {
               />
             </svg>
 
-            <div className="flex gap-4 relative" style={{ zIndex: 1 }}>
+            {/* Mobile: Vertical Stack | Desktop: Horizontal Scroll */}
+            <div className="flex flex-col md:flex-row gap-4 md:gap-4 relative" style={{ zIndex: 1 }}>
               {CAREER_JOURNEY_PHASES.map((phase, index) => {
                 const status = getPhaseStatus(phase);
                 const isLocked = status === 'locked';
@@ -387,9 +643,9 @@ const CareerJourneyView: React.FC = () => {
                 const gradientClass = colorClasses[phase.color] || colorClasses['purple'];
 
                 return (
-                  <div key={phase.id} className="relative flex flex-col items-center" style={{ width: '280px' }}>
-                    {/* Phase Card - Alternates top/bottom */}
-                    <div className={`transition-all duration-500 ${isEven ? 'mb-32' : 'mt-32 order-2'}`}>
+                  <div key={phase.id} className="relative flex flex-col items-center group/phase w-full md:w-[280px]" data-phase-index={index}>
+                    {/* Phase Card - Mobile: normal stack | Desktop: Alternates top/bottom */}
+                    <div className={`transition-all duration-500 w-full ${isEven ? 'md:mb-32' : 'md:mt-32 md:order-2'}`}>
                       {/* Phase Badge - Outside card at top */}
                       <div className={`flex justify-center mb-3`}>
                         <div className={`inline-flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r ${gradientClass} text-white px-3 py-1.5 rounded-full shadow-md`}>
@@ -458,6 +714,28 @@ const CareerJourneyView: React.FC = () => {
                                 </div>
                               )}
                             </div>
+
+                            {/* Quick Action Buttons - Show on hover (desktop) or always (mobile) */}
+                            {!isLocked && (
+                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-gray-700 opacity-0 group-hover/phase:opacity-100 md:transition-opacity md:duration-200 opacity-100 md:opacity-0">
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={(e) => handleQuickLearn(phase, e)}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r ${gradientClass} text-white rounded-lg text-xs font-semibold hover:shadow-lg transition-all hover:scale-105`}
+                                  >
+                                    <BookOpen className="w-3.5 h-3.5" />
+                                    Learn
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleQuickPractice(phase, e)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-semibold hover:shadow-lg transition-all hover:scale-105"
+                                  >
+                                    <Target className="w-3.5 h-3.5" />
+                                    Practice
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className={`h-1.5 bg-gradient-to-r ${gradientClass}`} />
@@ -465,8 +743,8 @@ const CareerJourneyView: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Phase Dot on Path */}
-                    <div className={`absolute ${isEven ? 'bottom-[80px]' : 'top-[80px]'} left-1/2 transform -translate-x-1/2`}>
+                    {/* Phase Dot on Path - Hidden on mobile, visible on desktop */}
+                    <div className={`hidden md:block absolute ${isEven ? 'bottom-[80px]' : 'top-[80px]'} left-1/2 transform -translate-x-1/2`}>
                       <div className={`relative w-6 h-6 rounded-full bg-gradient-to-br ${gradientClass} shadow-lg border-4 border-white dark:border-gray-900 transition-all duration-300 ${
                         isSelected ? 'scale-150 ring-4 ring-offset-2 ring-purple-200 dark:ring-purple-600' : isCurrent ? 'scale-125 ring-4 ring-offset-2 ring-orange-200 dark:ring-orange-600' : 'hover:scale-125'
                       }`}>
@@ -822,7 +1100,7 @@ const CareerJourneyView: React.FC = () => {
 
       {/* Journey Guide */}
       {!selectedPhaseData && (
-        <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="max-w-4xl mx-auto px-6 py-12 journey-guide">
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
