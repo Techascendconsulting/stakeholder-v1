@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import { CAREER_JOURNEY_PHASES, type JourneyPhase, type JourneyTopic } from '../../data/careerJourneyData';
-import CareerJourneyTour from '../CareerJourneyTour';
+import CareerJourneyTourJoyride from '../CareerJourneyTourJoyride';
 import { 
   CheckCircle, 
   Lock, 
@@ -583,7 +583,7 @@ const CareerJourneyView: React.FC = () => {
 
       {/* Tour Component */}
       {showTour && (
-        <CareerJourneyTour 
+        <CareerJourneyTourJoyride 
           onComplete={handleTourComplete}
           onSkip={handleTourSkip}
           onOpenPhaseModal={handleTourOpenPhaseModal}
@@ -625,7 +625,7 @@ const CareerJourneyView: React.FC = () => {
       )}
 
       {/* Journey Timeline - Beautiful Curved Path */}
-      <div className="py-12 relative">
+      <div className="py-12 relative max-w-full">
         {/* Left Navigation Arrow */}
         {canScrollLeft && (
           <button
@@ -649,10 +649,11 @@ const CareerJourneyView: React.FC = () => {
           </button>
         )}
         
-        <div className="overflow-x-auto pb-8 pt-4" ref={scrollContainerRef}>
-          <div className="relative min-w-max px-8">
+        {/* Constrained horizontal scroll container */}
+        <div className="max-w-full overflow-x-auto pb-8 pt-4" ref={scrollContainerRef}>
+          <div className="relative min-w-max px-8 max-w-none">
             {/* Curved Path SVG - Purple/Indigo Gradient (Hidden on mobile, visible on desktop) */}
-            <svg className="hidden md:block absolute top-[260px] left-0 w-full h-2 pointer-events-none" style={{ zIndex: 0 }}>
+            <svg className="hidden md:block absolute top-[260px] left-0 h-2 pointer-events-none" style={{ zIndex: 0, width: `${CAREER_JOURNEY_PHASES.length * 280}px` }}>
               <defs>
                 <linearGradient id="careerPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" style={{ stopColor: '#a855f7', stopOpacity: 0.4 }} />
