@@ -6,12 +6,12 @@ export type UserPhase = 'learning' | 'practice' | 'hands-on';
  * Determine what phase the user is in based on their progress
  * 
  * Phase 1 (learning): Learning Journey - only Dashboard, Learning Journey, My Resources
- * Phase 2 (practice): After completing all 10 learning modules - unlocks My Practice
- * Phase 3 (hands-on): After completing all practice - unlocks Projects, Mentor, etc.
+ * Phase 2 (practice): After completing 3 learning modules - unlocks Practice
+ * Phase 3 (hands-on): After completing all 10 modules - unlocks Projects, Mentor, etc.
  */
 export async function getUserPhase(userId: string): Promise<UserPhase> {
   try {
-    // Check Learning Journey completion (all 10 modules)
+    // Check Learning Journey completion
     const { data: learningProgress, error } = await supabase
       .from('learning_progress')
       .select('status')
@@ -19,19 +19,24 @@ export async function getUserPhase(userId: string): Promise<UserPhase> {
 
     if (error) throw error;
 
-    const totalModules = 10;
     const completedModules = learningProgress?.filter(p => p.status === 'completed').length || 0;
+    const practiceUnlockThreshold = 3;  // Practice unlocks after 3 modules
+    const handsOnUnlockThreshold = 10;  // Hands-on unlocks after all 10 modules
 
     console.log('📊 User progress phase check:', { 
       completedModules, 
-      totalModules,
-      percentage: (completedModules / totalModules * 100).toFixed(0) + '%'
+      practiceUnlockThreshold,
+      handsOnUnlockThreshold,
+      phase: completedModules >= handsOnUnlockThreshold ? 'hands-on' : completedModules >= practiceUnlockThreshold ? 'practice' : 'learning'
     });
 
-    // If all learning modules completed, move to practice phase
-    if (completedModules >= totalModules) {
-      // TODO: Check practice completion for hands-on phase
-      // For now, practice completion unlocks everything
+    // If all 10 modules completed, move to hands-on phase
+    if (completedModules >= handsOnUnlockThreshold) {
+      return 'hands-on';
+    }
+
+    // If 3+ modules completed, move to practice phase
+    if (completedModules >= practiceUnlockThreshold) {
       return 'practice';
     }
 

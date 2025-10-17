@@ -297,39 +297,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           console.log('📊 User phase:', phase, 'Can access', view, '?', canAccess);
 
           if (!canAccess) {
-            // Determine appropriate lock message based on user_type, phase and actual progress
+            // Generic, user-type aware lock message
             let lockMessage = '';
             
-            if (phase === 'learning') {
-              // Check actual progress to give contextual message
+            if (userType === 'new') {
+              // Check actual progress for contextual encouragement
               const { data: learningProgress } = await supabase
                 .from('learning_progress')
                 .select('status')
                 .eq('user_id', user?.id || '');
               
               const completedModules = learningProgress?.filter((p: any) => p.status === 'completed').length || 0;
-              const modulesNeeded = 10;
-              const remaining = modulesNeeded - completedModules;
               
-              // Add user type context to help users understand the restriction
-              const userTypeContext = userType === 'new' 
-                ? '🎓 New User Learning Path\n\n' 
-                : '';
+              // Generic message based on user type and progress
+              const header = '🎓 New User Learning Path\n\n';
               
-              if (completedModules === 0) {
-                lockMessage = `${userTypeContext}Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\nStart your learning journey to unlock this section.`;
-              } else if (remaining === 1) {
-                lockMessage = `${userTypeContext}Just 1 more module to unlock Practice!\n\nYou're almost there - finish your last learning module.`;
-              } else if (remaining <= 3) {
-                lockMessage = `${userTypeContext}${remaining} more modules to unlock Practice.\n\nYou're making great progress - keep going!`;
+              if (phase === 'learning') {
+                // Trying to access practice section while still in learning phase
+                if (completedModules === 0) {
+                  lockMessage = `${header}This section unlocks as you progress through the Learning Journey.\n\nContinue learning to unlock more features.`;
+                } else {
+                  lockMessage = `${header}Continue your Learning Journey to unlock this section.\n\nKeep going - you're making progress!`;
+                }
+              } else if (phase === 'practice') {
+                // Trying to access hands-on section while in practice phase
+                if (completedModules >= 8) {
+                  lockMessage = `${header}Almost there! Complete your learning modules to unlock this section.\n\nYou're very close!`;
+                } else {
+                  lockMessage = `${header}This section unlocks as you complete more modules.\n\nKeep learning and practicing!`;
+                }
               } else {
-                lockMessage = `${userTypeContext}Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\n${completedModules}/${modulesNeeded} modules completed so far.`;
+                // Generic fallback
+                lockMessage = `${header}This section will unlock as you progress.\n\nContinue your learning journey!`;
               }
-            } else if (phase === 'practice') {
-              const userTypeContext = userType === 'new' 
-                ? '🎓 New User Learning Path\n\n' 
-                : '';
-              lockMessage = `${userTypeContext}Complete all Practice exercises to unlock Projects and Hands-on work.\n\nKeep practicing to unlock this section!`;
+            } else {
+              // Existing users shouldn't see this, but provide fallback
+              lockMessage = 'This section is currently locked.\n\nPlease contact support if you believe this is an error.';
             }
 
             console.log('🚫 BLOCKING navigation to:', view);
