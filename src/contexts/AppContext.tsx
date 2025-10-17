@@ -297,13 +297,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           console.log('📊 User phase:', phase, 'Can access', view, '?', canAccess);
 
           if (!canAccess) {
-            // Determine appropriate lock message based on what they need to unlock
+            // Determine appropriate lock message based on phase and actual progress
             let lockMessage = '';
             
             if (phase === 'learning') {
-              lockMessage = 'Complete all Learning Journey modules to unlock Practice.\n\nYou\'re making great progress - keep going!';
+              // Check actual progress to give contextual message
+              const { data: learningProgress } = await supabase
+                .from('learning_progress')
+                .select('status')
+                .eq('user_id', user?.id || '');
+              
+              const completedModules = learningProgress?.filter((p: any) => p.status === 'completed').length || 0;
+              const modulesNeeded = 10;
+              const remaining = modulesNeeded - completedModules;
+              
+              if (completedModules === 0) {
+                lockMessage = `Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\nStart your learning journey to unlock this section.`;
+              } else if (remaining === 1) {
+                lockMessage = `Just 1 more module to unlock Practice!\n\nYou're almost there - finish your last learning module.`;
+              } else if (remaining <= 3) {
+                lockMessage = `${remaining} more modules to unlock Practice.\n\nYou're making great progress - keep going!`;
+              } else {
+                lockMessage = `Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\n${completedModules}/${modulesNeeded} modules completed so far.`;
+              }
             } else if (phase === 'practice') {
-              lockMessage = 'Complete all Practice exercises to unlock Projects and Hands-on work.\n\nYou\'re almost there!';
+              lockMessage = 'Complete all Practice exercises to unlock Projects and Hands-on work.\n\nKeep practicing to unlock this section!';
             }
 
             console.log('🚫 BLOCKING navigation to:', view);
