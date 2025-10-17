@@ -8,6 +8,7 @@ interface TourStep {
   highlightSelector?: string;
   tooltipPosition: 'bottom-center' | 'top-center' | 'bottom-left' | 'bottom-right';
   action?: () => void; // Action to perform when entering this step
+  preferredSides?: Array<'bottom' | 'top' | 'right' | 'left'>; // Order to try when placing tooltip
 }
 
 interface CareerJourneyTourProps {
@@ -47,14 +48,16 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       title: 'Topics & Activities',
       description: 'Inside the modal, you can see all topics for this phase. Topics with play icons are interactive - click them to start learning.',
       highlightSelector: '.phase-modal-topics',
-      tooltipPosition: 'bottom-center'
+      tooltipPosition: 'bottom-center',
+      preferredSides: ['right', 'left', 'bottom', 'top']
     },
     {
       id: 'modal-learning',
       title: 'Learning & Practice Links',
       description: 'Each phase connects to specific Learning modules and Practice sessions. Click these buttons to jump directly to the content.',
       highlightSelector: '.phase-modal-learning',
-      tooltipPosition: 'bottom-center'
+      tooltipPosition: 'bottom-center',
+      preferredSides: ['right', 'left', 'bottom', 'top']
     },
     {
       id: 'close-and-explore',
@@ -107,47 +110,34 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             let left = 0;
             let placed = false;
 
-            // Bottom center
-            if (vh - rect.bottom > tooltipHeight + margin) {
-              top = rect.bottom + margin;
-              left = Math.min(
-                vw - tooltipWidth - margin,
-                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
-              );
-              placed = true;
-            }
-
-            // Top center
-            if (!placed && rect.top > tooltipHeight + margin) {
-              top = rect.top - tooltipHeight - margin;
-              left = Math.min(
-                vw - tooltipWidth - margin,
-                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
-              );
-              placed = true;
-            }
-
-            // Right
-            if (!placed && vw - rect.right > tooltipWidth + margin) {
-              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
-              left = rect.right + margin;
-              placed = true;
-            }
-
-            // Left
-            if (!placed && rect.left > tooltipWidth + margin) {
-              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
-              left = rect.left - tooltipWidth - margin;
-              placed = true;
+            const tryOrders: Array<'bottom'|'top'|'right'|'left'> = currentStepData.preferredSides ?? ['bottom','top','right','left'];
+            for (const pos of tryOrders) {
+              if (pos === 'bottom' && vh - rect.bottom > tooltipHeight + margin) {
+                top = rect.bottom + margin;
+                left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
+                placed = true; break;
+              }
+              if (pos === 'top' && rect.top > tooltipHeight + margin) {
+                top = rect.top - tooltipHeight - margin;
+                left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
+                placed = true; break;
+              }
+              if (pos === 'right' && vw - rect.right > tooltipWidth + margin) {
+                top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+                left = rect.right + margin;
+                placed = true; break;
+              }
+              if (pos === 'left' && rect.left > tooltipWidth + margin) {
+                top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+                left = rect.left - tooltipWidth - margin;
+                placed = true; break;
+              }
             }
 
             // Fallback: bottom center clamped
             if (!placed) {
               top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.bottom + margin));
-              left = Math.min(
-                vw - tooltipWidth - margin,
-                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
-              );
+              left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
             }
 
             setTooltipStyle({ top, left });
@@ -198,9 +188,9 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         }
         style={tooltipStyle ? { top: tooltipStyle.top, left: tooltipStyle.left, width: 340 } : undefined}
       >
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-[340px]">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-[340px]">
           {/* Content */}
-          <div className="p-6">
+          <div className="p-5">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
@@ -220,7 +210,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             </div>
 
             {/* Footer with Navigation */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
               {/* Progress */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -230,7 +220,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
                   {steps.map((_, index) => (
                     <div
                       key={index}
-                      className={`w-2 h-2 rounded-full transition-all ${
+                      className={`w-2 h-2 rounded-full ${
                         index === currentStep
                           ? 'bg-purple-600 w-6'
                           : index < currentStep
@@ -247,7 +237,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
                 {currentStep > 0 && (
                   <button
                     onClick={handleBack}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                   >
                     Back
                   </button>
@@ -255,7 +245,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
                 
                 <button
                   onClick={handleNext}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition-all flex items-center space-x-1"
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded flex items-center space-x-1"
                 >
                   <span>{isLastStep ? 'Done' : 'Next'}</span>
                   {!isLastStep && <ArrowRight className="w-4 h-4" />}
