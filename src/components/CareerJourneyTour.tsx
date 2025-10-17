@@ -43,8 +43,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
     },
     {
       id: 'open-modal',
-      title: 'Phase Details Modal',
-      description: 'Now let\'s open this card to see all the details inside. Click Next to continue.',
+      title: 'Inside the Phase Card',
+      description: 'Clicking on a card opened this detailed view. Here you can see everything about this phase - topics, deliverables, stakeholders, and direct links to learning content.',
       highlightSelector: '[data-phase-index="0"]',
       tooltipPosition: 'bottom-center',
       fixedPosition: 'top-right',
