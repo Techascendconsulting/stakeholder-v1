@@ -261,7 +261,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         highlight.classList.remove('tour-highlight');
       }
     };
-  }, [currentStep, currentStepData]);
+  }, [currentStep]); // Only depend on currentStep, not currentStepData object
 
   const handleNext = () => {
     if (isLastStep) {
