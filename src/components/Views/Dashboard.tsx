@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight } from 'lucide-react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
+import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
 
 const Dashboard: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -15,6 +16,7 @@ const Dashboard: React.FC = () => {
   const [practiceProgress, setPracticeProgress] = useState<PracticeProgress | null>(null);
   const [nextStep, setNextStep] = useState<NextStepGuidance | null>(null);
   const [userType, setUserType] = useState<'new' | 'existing' | 'admin'>('existing');
+  const [userPhase, setUserPhase] = useState<UserPhase>('learning');
 
   // Scroll to top on mount
   useEffect(() => {
@@ -45,10 +47,12 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       console.log('🔄 Dashboard - Loading journey progress for user:', user.id);
       
-      // Load user type first
+      // Load user type and phase first
       const type = await JourneyProgressService.getUserType(user.id);
+      const phase = await getUserPhase(user.id);
       setUserType(type);
-      console.log('👤 Dashboard - User type:', type);
+      setUserPhase(phase);
+      console.log('👤 Dashboard - User type:', type, 'Phase:', phase);
       
       // Load journey progress data
       const [career, learning, practice] = await Promise.all([
@@ -170,8 +174,10 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* BA Career Journey Progress */}
           {careerProgress && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                 onClick={() => setCurrentView('career-journey')}>
+            <div 
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('career-journey')}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -246,37 +252,79 @@ const Dashboard: React.FC = () => {
 
           {/* Practice Journey Progress */}
           {practiceProgress && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                 onClick={() => setCurrentView('practice-flow')}>
+            <div 
+              className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
+                isPageAccessible('practice-flow', userPhase) 
+                  ? 'hover:shadow-lg cursor-pointer' 
+                  : 'opacity-60 cursor-not-allowed'
+              }`}
+              onClick={() => {
+                if (isPageAccessible('practice-flow', userPhase)) {
+                  setCurrentView('practice-flow');
+                }
+              }}
+            >
+              {!isPageAccessible('practice-flow', userPhase) && (
+                <div className="absolute top-3 right-3">
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                    <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Locked</span>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                    <Target className="w-5 h-5 text-white" />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    isPageAccessible('practice-flow', userPhase)
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                      : 'bg-gray-400 dark:bg-gray-600'
+                  }`}>
+                    {isPageAccessible('practice-flow', userPhase) ? (
+                      <Target className="w-5 h-5 text-white" />
+                    ) : (
+                      <Lock className="w-5 h-5 text-white" />
+                    )}
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Practice Journey</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {practiceProgress.meetingsCount} meetings completed
+                      {isPageAccessible('practice-flow', userPhase)
+                        ? `${practiceProgress.meetingsCount} meetings completed`
+                        : 'Complete 10 learning modules to unlock'
+                      }
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                {isPageAccessible('practice-flow', userPhase) && (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
+                  <span className={`font-semibold ${
+                    isPageAccessible('practice-flow', userPhase)
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}>
                     {practiceProgress.progressPercentage}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all"
+                    className={`h-2 rounded-full transition-all ${
+                      isPageAccessible('practice-flow', userPhase)
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                        : 'bg-gray-400 dark:bg-gray-600'
+                    }`}
                     style={{ width: `${practiceProgress.progressPercentage}%` }}
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {practiceProgress.voiceMeetingsCount} voice • {practiceProgress.transcriptMeetingsCount} transcript
+                  {isPageAccessible('practice-flow', userPhase)
+                    ? `${practiceProgress.voiceMeetingsCount} voice • ${practiceProgress.transcriptMeetingsCount} transcript`
+                    : '🔒 Unlocks after Module 10'
+                  }
                 </p>
               </div>
             </div>
@@ -286,6 +334,7 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* BA Project Journey - Always visible but shows status */}
         <button
           onClick={() => setCurrentView('career-journey')}
           className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -298,6 +347,7 @@ const Dashboard: React.FC = () => {
           <p className="text-purple-100 text-sm mt-2">Follow the complete BA lifecycle from onboarding to delivery</p>
         </button>
 
+        {/* Learning Journey - Always accessible */}
         <button
           onClick={() => setCurrentView('learning-flow')}
           className="p-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -310,16 +360,41 @@ const Dashboard: React.FC = () => {
           <p className="text-blue-100 text-sm mt-2">Master BA skills through 11 comprehensive modules</p>
         </button>
 
+        {/* Practice Journey - Shows lock state for learning phase users */}
         <button
-          onClick={() => setCurrentView('practice-flow')}
-          className="p-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          onClick={() => {
+            if (isPageAccessible('practice-flow', userPhase)) {
+              setCurrentView('practice-flow');
+            }
+          }}
+          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
+            isPageAccessible('practice-flow', userPhase)
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
+              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
+          }`}
           data-tour="quick-action-practice"
         >
+          {!isPageAccessible('practice-flow', userPhase) && (
+            <div className="absolute top-3 right-3">
+              <Lock className="w-5 h-5 text-white/70" />
+            </div>
+          )}
           <div className="flex items-center space-x-3">
-            <Target className="w-6 h-6" />
+            {isPageAccessible('practice-flow', userPhase) ? (
+              <Target className="w-6 h-6" />
+            ) : (
+              <Lock className="w-6 h-6" />
+            )}
             <span className="font-semibold">Practice Journey</span>
           </div>
-          <p className="text-green-100 text-sm mt-2">Conduct AI stakeholder meetings and build confidence</p>
+          <p className={`text-sm mt-2 ${
+            isPageAccessible('practice-flow', userPhase) ? 'text-green-100' : 'text-white/80'
+          }`}>
+            {isPageAccessible('practice-flow', userPhase)
+              ? 'Conduct AI stakeholder meetings and build confidence'
+              : '🔒 Complete 10 learning modules to unlock'
+            }
+          </p>
         </button>
       </div>
     </div>
