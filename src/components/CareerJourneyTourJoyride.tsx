@@ -2,6 +2,7 @@ import React from 'react';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 interface CareerJourneyTourJoyrideProps {
   onComplete: () => void;
