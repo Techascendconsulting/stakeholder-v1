@@ -129,7 +129,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
       description: 'Get help when you need it. Access FAQs, contact support, and meet Verity - your AI assistant (purple button in the corner). You get 20 Verity questions per day.',
       highlightSelector: '[data-tour="verity"]',
       position: 'bottom-right',
-      navigateTo: 'dashboard',
+      navigateTo: 'support',
     },
     {
       id: 'ready',
