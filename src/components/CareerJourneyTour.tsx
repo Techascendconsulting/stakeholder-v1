@@ -96,6 +96,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
     // Small delay to let the page render before finding elements
     const timer = setTimeout(() => {
+      // If current step has a selector, highlight it
       if (currentStepData.highlightSelector) {
         const element = document.querySelector(currentStepData.highlightSelector) as HTMLElement;
         
@@ -229,6 +230,12 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
             setTooltipStyle({ top, left });
           }, 200);
+        }
+      } else {
+        // No highlight selector for this step - remove any existing highlight
+        const previousHighlight = document.querySelector('.tour-highlight');
+        if (previousHighlight) {
+          previousHighlight.classList.remove('tour-highlight');
         }
       }
     }, currentStepData.action ? 800 : 100);
