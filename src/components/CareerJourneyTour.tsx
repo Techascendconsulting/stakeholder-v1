@@ -9,6 +9,7 @@ interface TourStep {
   tooltipPosition: 'bottom-center' | 'top-center' | 'bottom-left' | 'bottom-right';
   action?: () => void; // Action to perform when entering this step
   preferredSides?: Array<'bottom' | 'top' | 'right' | 'left'>; // Order to try when placing tooltip
+  fixedPosition?: 'top-right' | 'middle-right' | 'bottom-right'; // Viewport-pinned positions on the right side
 }
 
 interface CareerJourneyTourProps {
@@ -38,6 +39,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       description: 'Click anywhere on a card to open full details. Let me open one for you...',
       highlightSelector: '[data-phase-index="0"]',
       tooltipPosition: 'bottom-center',
+      fixedPosition: 'top-right',
       action: () => {
         // Open the first phase modal
         setTimeout(() => onOpenPhaseModal(0), 500);
@@ -49,7 +51,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       description: 'Inside the modal, you can see all topics for this phase. Topics with play icons are interactive - click them to start learning.',
       highlightSelector: '.phase-modal-topics',
       tooltipPosition: 'bottom-center',
-      preferredSides: ['right', 'left', 'bottom', 'top']
+      preferredSides: ['right', 'left', 'bottom', 'top'],
+      fixedPosition: 'middle-right'
     },
     {
       id: 'modal-learning',
@@ -57,7 +60,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       description: 'Each phase connects to specific Learning modules and Practice sessions. Click these buttons to jump directly to the content.',
       highlightSelector: '.phase-modal-learning',
       tooltipPosition: 'bottom-center',
-      preferredSides: ['right', 'left', 'bottom', 'top']
+      preferredSides: ['right', 'left', 'bottom', 'top'],
+      fixedPosition: 'bottom-right'
     },
     {
       id: 'close-and-explore',
@@ -109,6 +113,20 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             let top = 0;
             let left = 0;
             let placed = false;
+
+            // Fixed placements for requested steps
+            if (currentStepData.fixedPosition === 'top-right') {
+              setTooltipStyle({ top: margin, left: vw - tooltipWidth - margin });
+              return;
+            }
+            if (currentStepData.fixedPosition === 'middle-right') {
+              setTooltipStyle({ top: Math.max(margin, (vh - tooltipHeight) / 2), left: vw - tooltipWidth - margin });
+              return;
+            }
+            if (currentStepData.fixedPosition === 'bottom-right') {
+              setTooltipStyle({ top: vh - tooltipHeight - margin, left: vw - tooltipWidth - margin });
+              return;
+            }
 
             // Use caller preference, but ensure we place tooltip OUTSIDE modal content for steps 2-4
             const tryOrders: Array<'bottom'|'top'|'right'|'left'> = currentStepData.preferredSides ?? ['right','left','bottom','top'];
