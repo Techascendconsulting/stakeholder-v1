@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import { CAREER_JOURNEY_PHASES, type JourneyPhase, type JourneyTopic } from '../../data/careerJourneyData';
+import CareerJourneyTour from '../CareerJourneyTour';
 import { 
   CheckCircle, 
   Lock, 
@@ -20,7 +21,9 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
-  Zap
+  Zap,
+  Eye,
+  Maximize2
 } from 'lucide-react';
 
 interface PhaseProgress {
@@ -152,6 +155,7 @@ const CareerJourneyView: React.FC = () => {
   const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -335,16 +339,20 @@ const CareerJourneyView: React.FC = () => {
   const handleStartTour = () => {
     setShowWelcomeOverlay(false);
     localStorage.setItem('hasSeenCareerJourneyWelcome', 'true');
-    // Simple tour: just show the guide section at the bottom
-    const guideSection = document.querySelector('.journey-guide');
-    if (guideSection) {
-      guideSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    setShowTour(true);
   };
 
   const handleSkipWelcome = () => {
     setShowWelcomeOverlay(false);
     localStorage.setItem('hasSeenCareerJourneyWelcome', 'true');
+  };
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+  };
+
+  const handleTourSkip = () => {
+    setShowTour(false);
   };
 
   // Quick action handlers
@@ -508,7 +516,7 @@ const CareerJourneyView: React.FC = () => {
             
             {/* Help Button */}
             <button
-              onClick={() => setShowWelcomeOverlay(true)}
+              onClick={() => setShowTour(true)}
               className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 text-white text-sm font-medium"
             >
               <HelpCircle className="w-4 h-4" />
@@ -549,9 +557,17 @@ const CareerJourneyView: React.FC = () => {
         </div>
       </div>
 
+      {/* Tour Component */}
+      {showTour && (
+        <CareerJourneyTour 
+          onComplete={handleTourComplete}
+          onSkip={handleTourSkip}
+        />
+      )}
+
       {/* "You Are Here" Enhanced Banner */}
       {CAREER_JOURNEY_PHASES[currentPhaseIndex] && (
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-6 you-are-here-banner">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 rounded-xl p-6 shadow-xl border-2 border-orange-300 dark:border-orange-700">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -599,7 +615,7 @@ const CareerJourneyView: React.FC = () => {
         {canScrollRight && (
           <button
             onClick={scrollRight}
-            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-30 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-2xl hover:scale-110 transition-all group"
+            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-30 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-2xl hover:scale-110 transition-all group scroll-right-arrow"
             aria-label="Scroll right"
           >
             <span className="text-sm font-semibold whitespace-nowrap">More phases</span>
@@ -657,16 +673,17 @@ const CareerJourneyView: React.FC = () => {
                       <button
                         onClick={() => handlePhaseClick(index)}
                         disabled={isLocked && userType === 'new'}
-                        className={`group relative transition-all duration-500 ${
-                          isSelected ? 'scale-105' : 'hover:scale-102'
-                        } ${isLocked && userType === 'new' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        className={`group relative transition-all duration-500 w-full ${
+                          isSelected ? 'scale-105' : 'hover:scale-105'
+                        } ${isLocked && userType === 'new' ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-2xl'}`}
+                        title={isLocked ? 'Complete previous phase to unlock' : 'Click to view full phase details'}
                       >
                         <div className={`relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl border-2 transition-all duration-500 overflow-hidden ${
                           isSelected ? 'ring-4 ring-purple-200 dark:ring-purple-600 shadow-2xl border-purple-400 dark:border-purple-600' : 
                           isCompleted ? 'border-green-400 dark:border-green-600' :
                           isInProgress ? 'border-orange-400 dark:border-orange-600' :
                           isLocked ? 'border-gray-300 dark:border-gray-600 opacity-60' :
-                          'border-slate-200 dark:border-gray-700 hover:shadow-2xl'
+                          'border-slate-200 dark:border-gray-700 hover:shadow-2xl hover:border-purple-300 dark:hover:border-purple-600'
                         }`}>
                           {/* Subtle gradient overlay */}
                           <div className="absolute inset-0 bg-gradient-to-br opacity-5" style={{
@@ -696,7 +713,7 @@ const CareerJourneyView: React.FC = () => {
                               <span className="text-sm font-semibold text-slate-700 dark:text-gray-300">{phase.topics.length} topics</span>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-2 mb-4">
                               <div className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                                 Key Topics
                               </div>
@@ -715,9 +732,23 @@ const CareerJourneyView: React.FC = () => {
                               )}
                             </div>
 
+                            {/* Click to View Full Details - Always Visible */}
+                            {!isLocked && (
+                              <div className="mb-3">
+                                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-gray-400 font-medium bg-slate-50 dark:bg-gray-700/50 py-2 rounded-lg">
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Click card for full details</span>
+                                  <Maximize2 className="w-3.5 h-3.5" />
+                                </div>
+                              </div>
+                            )}
+
                             {/* Quick Action Buttons - Show on hover (desktop) or always (mobile) */}
                             {!isLocked && (
-                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-gray-700 opacity-0 group-hover/phase:opacity-100 md:transition-opacity md:duration-200 opacity-100 md:opacity-0">
+                              <div className="pt-3 border-t border-slate-100 dark:border-gray-700 opacity-0 group-hover/phase:opacity-100 md:transition-opacity md:duration-200 opacity-100 md:opacity-0">
+                                <div className="text-xs text-center text-slate-500 dark:text-gray-400 mb-2 font-medium">
+                                  Quick Actions:
+                                </div>
                                 <div className="flex gap-2">
                                   <button
                                     onClick={(e) => handleQuickLearn(phase, e)}
