@@ -24,56 +24,79 @@ const CustomTooltip: React.FC<TooltipRenderProps> = ({
   tooltipProps,
   size
 }) => {
+  // Extract style from tooltipProps but override with our custom styling
+  const { style, ...restTooltipProps } = tooltipProps;
+  
   return (
-    <div {...tooltipProps} className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md p-6 relative border-2 border-purple-500">
-      {/* Progress indicator - Top Right */}
-      <div className="absolute top-4 right-4 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-semibold">
-        {index + 1} of {size}
-      </div>
-      
-      {/* Close button - Top Right (next to progress) */}
-      <button
-        {...closeProps}
-        className="absolute top-4 right-20 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Content */}
-      <div className="mt-2">
-        {step.title && (
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-            {step.title}
-          </h3>
-        )}
-        <div className="text-gray-700 dark:text-gray-300">
-          {step.content}
-        </div>
-      </div>
-
-      {/* Footer with buttons */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          {...skipProps}
-          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium"
+    <div 
+      {...restTooltipProps}
+      style={{
+        ...style,
+        maxWidth: '28rem',
+        padding: 0  // Remove default padding
+      }}
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-purple-500 overflow-visible"
+    >
+      <div className="relative p-6">
+        {/* Progress indicator - Top Right - FIXED POSITION */}
+        <div 
+          className="absolute bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-semibold z-50"
+          style={{
+            top: '16px',
+            right: '16px'
+          }}
         >
-          Skip Tour
+          {index + 1} of {size}
+        </div>
+        
+        {/* Close button - Top Right (next to progress) */}
+        <button
+          {...closeProps}
+          className="absolute text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-50"
+          style={{
+            top: '14px',
+            right: '96px'
+          }}
+        >
+          <X className="w-5 h-5" />
         </button>
-        <div className="flex items-center space-x-2">
-          {index > 0 && (
-            <button
-              {...backProps}
-              className="px-4 py-2 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-medium"
-            >
-              Back
-            </button>
+
+        {/* Content */}
+        <div className="mt-2 pr-24">
+          {step.title && (
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+              {step.title}
+            </h3>
           )}
+          <div className="text-gray-700 dark:text-gray-300">
+            {step.content}
+          </div>
+        </div>
+
+        {/* Footer with buttons */}
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
-            {...primaryProps}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold transition-colors"
+            {...skipProps}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium"
           >
-            {continuous ? 'Next' : 'Close'}
+            Skip Tour
           </button>
+          <div className="flex items-center space-x-2">
+            {index > 0 && (
+              <button
+                {...backProps}
+                className="px-4 py-2 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-medium"
+              >
+                Back
+              </button>
+            )}
+            <button
+              {...primaryProps}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold transition-colors"
+            >
+              {continuous ? 'Next' : 'Close'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
