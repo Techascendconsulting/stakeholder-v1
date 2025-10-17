@@ -52,6 +52,7 @@ export function isPageAccessible(page: string, phase: UserPhase): boolean {
   const alwaysAccessible = [
     'dashboard', 
     'learning-flow', 
+    'career-journey',    // BA Project Journey - always accessible to see their progress
     'my-resources', 
     'handbook', 
     'ba-reference',  // Resources section

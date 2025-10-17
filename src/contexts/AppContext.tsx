@@ -256,6 +256,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const alwaysAllowed = [
       'dashboard',
       'learning-flow',    // Learning Journey hub page
+      'career-journey',   // BA Project Journey - always accessible to see their progress
       // practice-flow and project-flow removed - they unlock progressively via isPageAccessible()
       'my-resources',
       'ba-reference',     // Resources section
