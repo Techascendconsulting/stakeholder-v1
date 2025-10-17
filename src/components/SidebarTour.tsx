@@ -63,19 +63,29 @@ const SidebarTour: React.FC<SidebarTourProps> = ({ onComplete, onSkip, isAdmin =
     // Position bubble alongside the sidebar target; no highlight outline for sidebar
     const timer = setTimeout(() => {
       const selector = currentStepData.highlightSelector;
+      console.debug('[SidebarTour] step', { step: currentStepData.id, selector });
       if (!selector) {
-        setTooltipStyle({ top: 100, left: 260 });
+        const fallback = { top: 100, left: 260 };
+        console.debug('[SidebarTour] no selector, using fallback', fallback);
+        setTooltipStyle(fallback);
         return;
       }
       const el = document.querySelector(selector) as HTMLElement | null;
-      if (!el) return;
+      if (!el) {
+        console.warn('[SidebarTour] element not found for selector', selector);
+        return;
+      }
       const rect = el.getBoundingClientRect();
+      const sidebarWidth = rect.right - rect.left;
       const tooltipWidth = 340;
       const tooltipHeight = 140;
       const margin = 16;
       const top = Math.max(margin, Math.min(window.innerHeight - tooltipHeight - margin, rect.top + rect.height / 2 - tooltipHeight / 2));
-      const left = rect.right + margin; // stick to the right of the sidebar
-      setTooltipStyle({ top, left });
+      // If sidebar is collapsed or narrow, still anchor bubble at a safe x
+      const baseLeft = rect.right + margin;
+      const safeLeft = Math.max(200, baseLeft); // ensure bubble stays near left edge but visible
+      console.debug('[SidebarTour] rect', { rect, sidebarWidth, baseLeft, safeLeft, top });
+      setTooltipStyle({ top, left: safeLeft });
     }, 50);
     return () => clearTimeout(timer);
   }, [currentStep]);
