@@ -58,7 +58,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         },
         {
           target: '.phase-modal-topics',
-          placement: 'right',
+          placement: 'left',
           title: 'Topics & Activities',
           content: (
             <div className="space-y-3">
