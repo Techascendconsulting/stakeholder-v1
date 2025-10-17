@@ -180,6 +180,23 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           primaryColor: '#7c3aed',
           textColor: '#111827',
           zIndex: 10000
+        },
+        tooltipContainer: {
+          textAlign: 'left'
+        },
+        tooltipContent: {
+          padding: '20px 20px 0'
+        },
+        tooltipFooter: {
+          marginTop: '15px'
+        },
+        progress: {
+          position: 'absolute',
+          top: '15px',
+          right: '15px',
+          bottom: 'auto',
+          left: 'auto',
+          margin: 0
         }
       }}
       callback={handleJoyrideCallback}
