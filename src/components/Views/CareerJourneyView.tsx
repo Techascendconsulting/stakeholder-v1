@@ -833,7 +833,7 @@ const CareerJourneyView: React.FC = () => {
                     </div>
 
                     {/* Phase Dot on Path - Hidden on mobile, visible on desktop */}
-                    <div className={`hidden md:block absolute ${isEven ? 'bottom-[80px]' : 'top-[80px]'} left-1/2 transform -translate-x-1/2`}>
+                    <div className={`hidden md:block absolute ${isEven ? 'bottom-[80px]' : 'top-[80px]'} left-1/2 transform -translate-x-1/2 z-50`}>
                       <div className={`relative w-6 h-6 rounded-full bg-gradient-to-br ${gradientClass} shadow-lg border-4 border-white dark:border-gray-900 transition-all duration-300 ${
                         isSelected ? 'scale-150 ring-4 ring-offset-2 ring-purple-200 dark:ring-purple-600' : isCurrent ? 'scale-125 ring-4 ring-offset-2 ring-orange-200 dark:ring-orange-600' : 'hover:scale-125'
                       }`}>
@@ -845,9 +845,9 @@ const CareerJourneyView: React.FC = () => {
                         )}
                       </div>
 
-                      {/* "You are here" indicator - Always visible on desktop */}
+                      {/* "You are here" indicator - Always visible on desktop, inherits z-50 from parent */}
                       {isCurrent && (
-                        <div className={`absolute ${isEven ? 'bottom-full mb-4' : 'top-full mt-4'} left-1/2 transform -translate-x-1/2 whitespace-nowrap z-50`}>
+                        <div className={`absolute ${isEven ? 'bottom-full mb-4' : 'top-full mt-4'} left-1/2 transform -translate-x-1/2 whitespace-nowrap`}>
                           <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-bounce">
                             ⚡ You are here
                           </div>
