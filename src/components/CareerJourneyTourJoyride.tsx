@@ -71,49 +71,44 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           )
         },
         {
-          target: '.phase-modal-learning',
-          placement: 'right',
-          title: 'Learning Modules',
+          target: '.phase-modal-topics',
+          placement: 'left',
+          title: 'Topics & Activities',
           content: (
             <div className="space-y-3">
-              <p>Each phase has specific learning modules that prepare you. These modules build essential BA skills through interactive content.</p>
+              <p>Each phase contains specific topics and activities you'll work through. Click on any topic to dive deeper into that area.</p>
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                  ✅ <strong>Action item:</strong> Work through topics in order for best results
+                </p>
+              </div>
+            </div>
+          ),
+          styles: {
+            tooltipContainer: {
+              textAlign: 'left'
+            }
+          }
+        },
+        {
+          target: '.phase-modal-learning',
+          placement: 'left',
+          title: 'Learning & Practice',
+          content: (
+            <div className="space-y-3">
+              <p>This section links to specific learning modules and practice exercises. Each phase connects to relevant content in your Learning and Practice Journeys.</p>
               <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800 mt-3">
                 <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
-                  📚 <strong>Learning path:</strong> Complete modules in order for maximum impact
+                  📚 <strong>Learning path:</strong> Complete modules, practice, then apply to projects
                 </p>
               </div>
             </div>
-          )
-        },
-        {
-          target: '.phase-modal-deliverables',
-          placement: 'right',
-          title: 'Key Deliverables',
-          content: (
-            <div className="space-y-3">
-              <p>These are the actual documents and artifacts you'll create as a BA. Each has templates and examples to guide your work.</p>
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mt-3">
-                <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                  📋 <strong>Pro tip:</strong> Use templates in My Resources to accelerate your work
-                </p>
-              </div>
-            </div>
-          )
-        },
-        {
-          target: '.phase-modal-stakeholders',
-          placement: 'right',
-          title: 'Stakeholder Engagement',
-          content: (
-            <div className="space-y-3">
-              <p>These are the key stakeholders you'll work with. Practice conversations with AI-powered versions to build confidence.</p>
-              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800 mt-3">
-                <p className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
-                  🎭 <strong>Practice tip:</strong> Use My Practice Journey to rehearse these conversations
-                </p>
-              </div>
-            </div>
-          )
+          ),
+          styles: {
+            tooltipContainer: {
+              textAlign: 'left'
+            }
+          }
         },
         {
           target: 'body',
@@ -141,14 +136,15 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, index, type, action, lifecycle } = data;
     
-    console.log('🎯 [CareerJourneyTour] Callback:', { 
-      status, 
-      index, 
-      type, 
-      action, 
-      lifecycle,
-      currentStep: steps[index]?.title 
-    });
+    console.log('🎯 [CareerJourneyTour] Callback:', 
+      '\n  status:', status,
+      '\n  index:', index, 
+      '\n  type:', type,
+      '\n  action:', action,
+      '\n  lifecycle:', lifecycle,
+      '\n  currentStep:', steps[index]?.title,
+      '\n  target:', steps[index]?.target
+    );
     
     // Check if target exists for current step
     if (type === EVENTS.TARGET_NOT_FOUND) {
@@ -157,11 +153,11 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
       console.log('🎯 [CareerJourneyTour] Element check:', element);
     }
     
-    // Log when we're AT step 2 (before modal opens)
+    // Log when we're AT step 2 (modal sections)
     if (index === 2 && lifecycle === 'init') {
       console.log('🎯 [CareerJourneyTour] 📍 AT STEP 2 (init)');
-      const learningElement = document.querySelector('.phase-modal-learning');
-      console.log('🎯 [CareerJourneyTour] .phase-modal-learning exists?', !!learningElement, learningElement);
+      const topicsElement = document.querySelector('.phase-modal-topics');
+      console.log('🎯 [CareerJourneyTour] .phase-modal-topics exists?', !!topicsElement, topicsElement);
     }
     
     // Handle step-by-step progression
@@ -177,15 +173,17 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         // Give modal time to render
         setTimeout(() => {
           console.log('🎯 [CareerJourneyTour] ✅ Modal should be open, advancing to step 2');
+          const topicsElement = document.querySelector('.phase-modal-topics');
           const learningElement = document.querySelector('.phase-modal-learning');
-          console.log('🎯 [CareerJourneyTour] .phase-modal-learning NOW exists?', !!learningElement, learningElement);
+          console.log('🎯 [CareerJourneyTour] .phase-modal-topics NOW exists?', !!topicsElement);
+          console.log('🎯 [CareerJourneyTour] .phase-modal-learning NOW exists?', !!learningElement);
           setStepIndex(nextStepIndex);
-        }, 400);
+        }, 500);
         return;
       }
       
       // Close modal when moving to last step
-      if (nextStepIndex === 5 && action === ACTIONS.NEXT) {
+      if (nextStepIndex === 4 && action === ACTIONS.NEXT) {
         console.log('🎯 [CareerJourneyTour] Closing modal for final step');
         onClosePhaseModal();
       }
@@ -266,8 +264,12 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           arrow: {
             length: 8,
             spread: 12
+          },
+          floater: {
+            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
           }
-        }
+        },
+        offset: 15
       }}
       callback={handleJoyrideCallback}
     />
