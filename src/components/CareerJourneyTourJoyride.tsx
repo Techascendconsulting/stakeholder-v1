@@ -24,6 +24,19 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
 
   React.useEffect(() => {
     const buildSteps = async () => {
+      // Get user type for dynamic content
+      let userType = 'existing';
+      if (user?.id) {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        userType = data?.user_type || 'existing';
+      }
+
+      const isNewUser = userType === 'new';
+
       const s: Step[] = [
         {
           target: 'body',
@@ -44,13 +57,18 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         {
           target: '[data-phase-index="0"]',
           placement: 'right',
-          title: 'Click Any Phase Card',
+          title: isNewUser ? 'Click Unlocked Phase Cards' : 'Click Any Phase Card',
           content: (
             <div className="space-y-3">
-              <p>Each card shows a phase in your BA journey. When the tour finishes, you can click any card to see detailed topics and learning modules.</p>
+              <p>
+                {isNewUser 
+                  ? 'Each card shows a phase in your BA journey. Phases 1 (Onboarding) and 2 (Discovery) are unlocked for you to start. Other phases unlock as you complete the previous one. Click any unlocked card to see detailed topics and learning modules.'
+                  : 'Each card shows a phase in your BA journey. When the tour finishes, you can click any card to see detailed topics and learning modules.'
+                }
+              </p>
               <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mt-3">
                 <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  🎯 <strong>Pro tip:</strong> Start with "Project Initiation"
+                  🎯 <strong>Pro tip:</strong> {isNewUser ? 'Start with Phase 1 (Onboarding)' : 'Start with Phase 2 (Discovery)'}
                 </p>
               </div>
             </div>
