@@ -180,15 +180,23 @@ const CareerJourneyView: React.FC = () => {
       const notStartedPhase = CAREER_JOURNEY_PHASES.findIndex(p => getPhaseStatus(p) === 'not_started');
       const currentIdx = inProgressPhase !== -1 ? inProgressPhase : notStartedPhase !== -1 ? notStartedPhase : CAREER_JOURNEY_PHASES.length - 1;
       
-      // Scroll to current phase after a short delay
+      // Scroll to current phase after a short delay (keep header visible)
       setTimeout(() => {
         const phaseElements = scrollContainerRef.current?.querySelectorAll('[data-phase-index]');
         if (phaseElements && phaseElements[currentIdx]) {
-          phaseElements[currentIdx].scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'center'
-          });
+          // Scroll within the horizontal container only, don't scroll the page vertically
+          const element = phaseElements[currentIdx] as HTMLElement;
+          const container = scrollContainerRef.current;
+          if (container && element) {
+            const elementLeft = element.offsetLeft;
+            const containerWidth = container.clientWidth;
+            const elementWidth = element.clientWidth;
+            const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+            container.scrollTo({
+              left: scrollLeft,
+              behavior: 'smooth'
+            });
+          }
         }
       }, 300);
     }

@@ -208,9 +208,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'requirements-engineering',
         'documentation',
         'documentation-practice',
-    'ba-reference',
-  'handbook',
-    'my-resources',
+        'my-resources',
         'solution-options',
         'design-hub',
         'mvp-hub',
@@ -227,14 +225,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'my-progress-mentor',
         'contact-us',
         'admin-contact-submissions',
-        'faq'
+        'faq',
+        'career-journey',
+        'learning-flow',
+        'practice-flow',
+        'project-flow'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
         return savedView as AppView
       } else {
-        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to dashboard. savedView:', savedView)
-        return 'dashboard'
+        console.log('⚠️ INIT: Invalid or missing saved view, using saved view as-is if exists:', savedView)
+        // Return the saved view even if not in list, to preserve user's last page
+        return (savedView as AppView) || 'dashboard'
       }
     } catch (error) {
       console.log('❌ INIT: Error loading saved view, defaulting to dashboard:', error)
