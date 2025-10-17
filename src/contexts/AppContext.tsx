@@ -292,9 +292,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (userType === 'new') {
           // Get user's current phase (learning, practice, or hands-on)
           const phase = await getUserPhase(user?.id || '');
-          const canAccess = isPageAccessible(view, phase);
+          const canAccess = isPageAccessible(view, phase, userType);
 
-          console.log('📊 User phase:', phase, 'Can access', view, '?', canAccess);
+          console.log('📊 User phase:', phase, 'User type:', userType, 'Can access', view, '?', canAccess);
 
           if (!canAccess) {
             // Generic, user-type aware lock message

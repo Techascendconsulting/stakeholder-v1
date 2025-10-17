@@ -50,10 +50,19 @@ export async function getUserPhase(userId: string): Promise<UserPhase> {
 }
 
 /**
- * Check if a specific page/section is accessible based on user phase
+ * Check if a specific page/section is accessible based on user type and phase
+ * 
+ * IMPORTANT: Existing users bypass ALL restrictions
  */
-export function isPageAccessible(page: string, phase: UserPhase): boolean {
-  // Always accessible pages
+export function isPageAccessible(page: string, phase: UserPhase, userType: 'new' | 'existing' = 'new'): boolean {
+  // EXISTING USERS: Full access to everything, no restrictions
+  if (userType === 'existing') {
+    return true;
+  }
+
+  // NEW USERS: Progressive unlock based on phase
+  
+  // Always accessible pages for new users
   const alwaysAccessible = [
     'dashboard', 
     'learning-flow', 
@@ -77,7 +86,7 @@ export function isPageAccessible(page: string, phase: UserPhase): boolean {
   
   if (learningPages.includes(page)) return true;
 
-  // Practice pages - accessible after learning phase
+  // Practice pages - accessible after 3 modules (practice phase)
   const practicePages = [
     'practice-flow',          // Practice Journey hub page
     'practice', 'practice-2', 'my-practice', 'elicitation-hub', 
@@ -89,7 +98,7 @@ export function isPageAccessible(page: string, phase: UserPhase): boolean {
     return true;
   }
 
-  // Hands-on pages - accessible after practice phase
+  // Hands-on pages - accessible after 10 modules (hands-on phase)
   const handsOnPages = [
     'project-flow',           // Project Journey hub page
     'projects', 'project', 'project-brief', 'project-setup', 'create-project',
@@ -105,6 +114,6 @@ export function isPageAccessible(page: string, phase: UserPhase): boolean {
     return true;
   }
 
-  return false; // Default to locked
+  return false; // Default to locked for new users
 }
 

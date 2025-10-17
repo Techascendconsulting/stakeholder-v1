@@ -267,17 +267,17 @@ const Dashboard: React.FC = () => {
           {practiceProgress && (
             <div 
               className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
-                isPageAccessible('practice-flow', userPhase) 
+                isPageAccessible('practice-flow', userPhase, userType) 
                   ? 'hover:shadow-lg cursor-pointer' 
                   : 'opacity-60 cursor-not-allowed'
               }`}
               onClick={() => {
-                if (isPageAccessible('practice-flow', userPhase)) {
+                if (isPageAccessible('practice-flow', userPhase, userType)) {
                   setCurrentView('practice-flow');
                 }
               }}
             >
-              {!isPageAccessible('practice-flow', userPhase) && (
+              {!isPageAccessible('practice-flow', userPhase, userType) && (
                 <div className="absolute top-3 right-3">
                   <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
                     <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
@@ -288,11 +288,11 @@ const Dashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    isPageAccessible('practice-flow', userPhase)
+                    isPageAccessible('practice-flow', userPhase, userType)
                       ? 'bg-gradient-to-r from-green-500 to-emerald-600'
                       : 'bg-gray-400 dark:bg-gray-600'
                   }`}>
-                    {isPageAccessible('practice-flow', userPhase) ? (
+                    {isPageAccessible('practice-flow', userPhase, userType) ? (
                       <Target className="w-5 h-5 text-white" />
                     ) : (
                       <Lock className="w-5 h-5 text-white" />
@@ -301,14 +301,14 @@ const Dashboard: React.FC = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Practice Journey</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {isPageAccessible('practice-flow', userPhase)
+                      {isPageAccessible('practice-flow', userPhase, userType)
                         ? 'Quick practice exercises'
                         : 'Unlocks after 3 modules'
                       }
                     </p>
             </div>
           </div>
-                {isPageAccessible('practice-flow', userPhase) && (
+                {isPageAccessible('practice-flow', userPhase, userType) && (
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 )}
               </div>
@@ -316,7 +316,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">Exercises</span>
                   <span className={`font-semibold ${
-                    isPageAccessible('practice-flow', userPhase)
+                    isPageAccessible('practice-flow', userPhase, userType)
                       ? 'text-green-600 dark:text-green-400'
                       : 'text-gray-400 dark:text-gray-500'
                   }`}>
@@ -324,7 +324,7 @@ const Dashboard: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {isPageAccessible('practice-flow', userPhase)
+                  {isPageAccessible('practice-flow', userPhase, userType)
                     ? 'Elicitation, Documentation, MVP, Scrum'
                     : '🔒 Complete 3 modules to unlock'
                   }
@@ -336,17 +336,17 @@ const Dashboard: React.FC = () => {
           {/* Project Journey Progress - Hands-On Projects */}
           <div 
             className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
-              isPageAccessible('project-flow', userPhase) 
+              isPageAccessible('project-flow', userPhase, userType) 
                 ? 'hover:shadow-lg cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
             }`}
             onClick={() => {
-              if (isPageAccessible('project-flow', userPhase)) {
+              if (isPageAccessible('project-flow', userPhase, userType)) {
                 setCurrentView('project-flow');
               }
             }}
           >
-            {!isPageAccessible('project-flow', userPhase) && (
+            {!isPageAccessible('project-flow', userPhase, userType) && (
               <div className="absolute top-3 right-3">
                 <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
                   <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
@@ -357,11 +357,11 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  isPageAccessible('project-flow', userPhase)
+                  isPageAccessible('project-flow', userPhase, userType)
                     ? 'bg-gradient-to-r from-orange-500 to-amber-600'
                     : 'bg-gray-400 dark:bg-gray-600'
                 }`}>
-                  {isPageAccessible('project-flow', userPhase) ? (
+                  {isPageAccessible('project-flow', userPhase, userType) ? (
                     <Rocket className="w-5 h-5 text-white" />
                   ) : (
                     <Lock className="w-5 h-5 text-white" />
@@ -370,14 +370,14 @@ const Dashboard: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Project Journey</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {isPageAccessible('project-flow', userPhase)
+                    {isPageAccessible('project-flow', userPhase, userType)
                       ? 'Hands-on real projects'
                       : 'Unlocks after 10 modules'
                     }
                   </p>
                 </div>
               </div>
-              {isPageAccessible('project-flow', userPhase) && (
+              {isPageAccessible('project-flow', userPhase, userType) && (
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               )}
             </div>
@@ -385,15 +385,15 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-400">Status</span>
                 <span className={`font-semibold ${
-                  isPageAccessible('project-flow', userPhase)
+                  isPageAccessible('project-flow', userPhase, userType)
                     ? 'text-orange-600 dark:text-orange-400'
                     : 'text-gray-400 dark:text-gray-500'
                 }`}>
-                  {isPageAccessible('project-flow', userPhase) ? 'Ready' : 'Locked'}
+                  {isPageAccessible('project-flow', userPhase, userType) ? 'Ready' : 'Locked'}
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                {isPageAccessible('project-flow', userPhase)
+                {isPageAccessible('project-flow', userPhase, userType)
                   ? 'Select project, conduct meetings, create deliverables'
                   : '🔒 Complete all 10 modules to unlock'
                 }
@@ -434,24 +434,24 @@ const Dashboard: React.FC = () => {
         {/* Practice Journey - Quick Exercises (Unlocks at 3 modules) */}
         <button
           onClick={() => {
-            if (isPageAccessible('practice-flow', userPhase)) {
+            if (isPageAccessible('practice-flow', userPhase, userType)) {
               setCurrentView('practice-flow');
             }
           }}
           className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
-            isPageAccessible('practice-flow', userPhase)
+            isPageAccessible('practice-flow', userPhase, userType)
               ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
               : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
           }`}
           data-tour="quick-action-practice"
         >
-          {!isPageAccessible('practice-flow', userPhase) && (
+          {!isPageAccessible('practice-flow', userPhase, userType) && (
             <div className="absolute top-3 right-3">
               <Lock className="w-5 h-5 text-white/70" />
             </div>
           )}
           <div className="flex items-center space-x-3">
-            {isPageAccessible('practice-flow', userPhase) ? (
+            {isPageAccessible('practice-flow', userPhase, userType) ? (
               <Target className="w-6 h-6" />
             ) : (
               <Lock className="w-6 h-6" />
@@ -459,9 +459,9 @@ const Dashboard: React.FC = () => {
             <span className="font-semibold">Practice Journey</span>
           </div>
           <p className={`text-sm mt-2 ${
-            isPageAccessible('practice-flow', userPhase) ? 'text-green-100' : 'text-white/80'
+            isPageAccessible('practice-flow', userPhase, userType) ? 'text-green-100' : 'text-white/80'
           }`}>
-            {isPageAccessible('practice-flow', userPhase)
+            {isPageAccessible('practice-flow', userPhase, userType)
               ? 'Quick practice: Elicitation, Docs, MVP, Scrum'
               : '🔒 Complete 3 modules to unlock'
             }
@@ -471,24 +471,24 @@ const Dashboard: React.FC = () => {
         {/* Project Journey - Hands-On Projects (Unlocks at 10 modules) */}
         <button
           onClick={() => {
-            if (isPageAccessible('project-flow', userPhase)) {
+            if (isPageAccessible('project-flow', userPhase, userType)) {
               setCurrentView('project-flow');
             }
           }}
           className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
-            isPageAccessible('project-flow', userPhase)
+            isPageAccessible('project-flow', userPhase, userType)
               ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
               : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
           }`}
           data-tour="quick-action-project"
         >
-          {!isPageAccessible('project-flow', userPhase) && (
+          {!isPageAccessible('project-flow', userPhase, userType) && (
             <div className="absolute top-3 right-3">
               <Lock className="w-5 h-5 text-white/70" />
             </div>
           )}
           <div className="flex items-center space-x-3">
-            {isPageAccessible('project-flow', userPhase) ? (
+            {isPageAccessible('project-flow', userPhase, userType) ? (
               <Rocket className="w-6 h-6" />
             ) : (
               <Lock className="w-6 h-6" />
@@ -496,9 +496,9 @@ const Dashboard: React.FC = () => {
             <span className="font-semibold">Project Journey</span>
           </div>
           <p className={`text-sm mt-2 ${
-            isPageAccessible('project-flow', userPhase) ? 'text-orange-100' : 'text-white/80'
+            isPageAccessible('project-flow', userPhase, userType) ? 'text-orange-100' : 'text-white/80'
           }`}>
-            {isPageAccessible('project-flow', userPhase)
+            {isPageAccessible('project-flow', userPhase, userType)
               ? 'End-to-end projects with stakeholder meetings'
               : '🔒 Complete all 10 modules to unlock'
             }
