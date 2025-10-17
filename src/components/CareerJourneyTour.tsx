@@ -39,6 +39,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       description: 'Click anywhere on a card to open full details. Let me open one for you...',
       highlightSelector: '[data-phase-index="0"]',
       tooltipPosition: 'bottom-center',
+      fixedPosition: 'top-right',
       action: () => {
         // Open the first phase modal
         setTimeout(() => onOpenPhaseModal(0), 500);
@@ -59,7 +60,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       description: 'Scroll down to see the Learning & Practice buttons. Each phase connects to specific modules - click these buttons to jump directly to the content.',
       highlightSelector: '.phase-modal-learning',
       tooltipPosition: 'bottom-center',
-      preferredSides: ['right', 'left', 'bottom', 'top']
+      preferredSides: ['right', 'left', 'bottom', 'top'],
+      fixedPosition: 'bottom-right'
     },
     {
       id: 'close-and-explore',
@@ -113,8 +115,17 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             let placed = false;
 
             // Fixed placements for requested steps
+            if (currentStepData.fixedPosition === 'top-right') {
+              setTooltipStyle({ top: margin, left: vw - tooltipWidth - margin });
+              return;
+            }
             if (currentStepData.fixedPosition === 'middle-right') {
               setTooltipStyle({ top: Math.max(margin, (vh - tooltipHeight) / 2), left: vw - tooltipWidth - margin });
+              return;
+            }
+            if (currentStepData.fixedPosition === 'bottom-right') {
+              // Higher up than absolute bottom
+              setTooltipStyle({ top: vh - tooltipHeight - (margin * 8), left: vw - tooltipWidth - margin });
               return;
             }
 
@@ -265,7 +276,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         </div>
       </div>
 
-      {/* Global CSS for highlighting - Simple and performant */}
+      {/* Global CSS for highlighting - NO ANIMATIONS */}
       <style>{`
         .tour-highlight {
           position: relative;
@@ -274,6 +285,8 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
           outline-offset: 4px;
           border-radius: 12px !important;
           pointer-events: auto !important;
+          transition: none !important;
+          animation: none !important;
         }
       `}</style>
     </>
