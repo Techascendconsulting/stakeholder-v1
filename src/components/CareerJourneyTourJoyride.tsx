@@ -24,6 +24,8 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
 
   React.useEffect(() => {
     const buildSteps = async () => {
+      console.log('🎯 [CareerJourneyTour] Building steps...');
+      
       // Get user type for dynamic content
       let userType = 'existing';
       if (user?.id) {
@@ -37,8 +39,8 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
 
       const s: Step[] = [
         {
-          target: '.career-journey-container',
-          placement: 'bottom',
+          target: 'body',
+          placement: 'center',
           title: 'Your BA Project Journey',
           content: (
             <div className="space-y-3">
@@ -57,7 +59,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         },
         {
           target: '[data-phase-index="0"]',
-          placement: 'right',
+          placement: 'bottom',
           title: 'Phase Cards',
           content: (
             <div className="space-y-3">
@@ -71,21 +73,17 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
                 </p>
               </div>
             </div>
-          ),
-          before: () => {
-            onClosePhaseModal();
-            return new Promise(resolve => setTimeout(resolve, 100));
-          }
+          )
         },
         {
           target: '[data-phase-index="0"]',
-          placement: 'right',
-          title: 'Phase Details',
+          placement: 'bottom',
+          title: 'Opening Phase Details...',
           content: (
             <div className="space-y-3">
               <p className="text-gray-700 dark:text-gray-300">
-                This detailed view shows everything about the phase - topics to master, deliverables to create, 
-                stakeholders to engage, and direct links to learning content.
+                Watch as we open the phase card to show you what's inside. This detailed view contains everything 
+                about the phase - topics, deliverables, stakeholders, and learning modules.
               </p>
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
                 <p className="text-sm font-medium text-green-800 dark:text-green-200">
@@ -93,11 +91,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
                 </p>
               </div>
             </div>
-          ),
-          before: () => {
-            onOpenPhaseModal(0);
-            return new Promise(resolve => setTimeout(resolve, 300));
-          }
+          )
         },
         {
           target: '.phase-modal-learning',
@@ -154,13 +148,13 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           )
         },
         {
-          target: '.phase-modal-close',
-          placement: 'top',
+          target: 'body',
+          placement: 'center',
           title: 'Close & Explore',
           content: (
             <div className="space-y-3">
               <p className="text-gray-700 dark:text-gray-300">
-                Close this modal to explore other phases. Each phase builds on the previous one, 
+                That's it! Close this modal to explore other phases. Each phase builds on the previous one, 
                 creating a complete BA project experience.
               </p>
               <div className="bg-gray-50 dark:bg-gray-900/20 p-3 rounded-lg border border-gray-200 dark:border-gray-800">
@@ -169,23 +163,37 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
                 </p>
               </div>
             </div>
-          ),
-          before: () => {
-            onClosePhaseModal();
-            return new Promise(resolve => setTimeout(resolve, 100));
-          }
+          )
         }
       ];
 
+      console.log('🎯 [CareerJourneyTour] Built', s.length, 'steps');
       setSteps(s);
     };
     buildSteps();
-  }, [user?.id]);
+  }, [user?.id, onOpenPhaseModal, onClosePhaseModal]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+    const { status, index, type, action } = data;
+    
+    console.log('🎯 [CareerJourneyTour] Callback:', { status, index, type, action });
+    
+    // Handle step transitions
+    if (type === 'step:after' && action === 'next') {
+      console.log('🎯 [CareerJourneyTour] Moving to step', index + 1);
+      
+      // Open modal before step 3 (Phase Details)
+      if (index === 1) {
+        console.log('🎯 [CareerJourneyTour] Opening phase modal');
+        setTimeout(() => onOpenPhaseModal(0), 200);
+      }
+    }
+    
+    // Handle completion
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      console.log('🎯 [CareerJourneyTour] Tour finished/skipped');
       setRun(false);
+      onClosePhaseModal();
       if (status === STATUS.FINISHED) onComplete(); else onSkip();
     }
   };
