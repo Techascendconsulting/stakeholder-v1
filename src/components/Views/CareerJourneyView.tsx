@@ -712,12 +712,12 @@ const CareerJourneyView: React.FC = () => {
                         } ${isLocked && userType === 'new' ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-2xl'}`}
                         title={isLocked ? 'Complete previous phase to unlock' : 'Click to view full phase details'}
                       >
-                        <div className={`relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl border-2 transition-all duration-500 overflow-hidden ${
-                          isSelected ? 'ring-4 ring-purple-200 dark:ring-purple-600 shadow-2xl border-purple-400 dark:border-purple-600' : 
-                          isCompleted ? 'border-green-400 dark:border-green-600' :
-                          isInProgress ? 'border-orange-400 dark:border-orange-600' :
+                        <div className={`relative bg-gradient-to-br from-white via-gray-50/50 to-white dark:bg-gray-800 rounded-3xl shadow-2xl border-2 transition-all duration-500 overflow-hidden ${
+                          isSelected ? 'ring-4 ring-purple-300 dark:ring-purple-600 shadow-2xl shadow-purple-200/50 dark:shadow-purple-900/50 border-purple-500 dark:border-purple-600' : 
+                          isCompleted ? 'border-green-500 dark:border-green-600 shadow-green-200/30 dark:shadow-green-900/30' :
+                          isInProgress ? 'border-orange-500 dark:border-orange-600 shadow-orange-200/30 dark:shadow-orange-900/30' :
                           isLocked ? 'border-gray-300 dark:border-gray-600 opacity-60' :
-                          'border-slate-200 dark:border-gray-700 hover:shadow-2xl hover:border-purple-300 dark:hover:border-purple-600'
+                          'border-purple-200 dark:border-gray-700 hover:shadow-2xl hover:shadow-purple-100/50 hover:border-purple-400 dark:hover:border-purple-600'
                         }`}>
                           {/* Subtle gradient overlay */}
                           <div className="absolute inset-0 bg-gradient-to-br opacity-5" style={{
