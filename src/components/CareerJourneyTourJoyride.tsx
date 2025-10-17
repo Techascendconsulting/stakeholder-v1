@@ -89,7 +89,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         {
           target: 'body',
           placement: 'center',
-          title: 'Ready to Explore!',
+          title: 'You're All Set!',
           content: (
             <div className="space-y-3">
               <p>You can now click any phase card to explore. Each phase builds on the previous one.</p>
@@ -99,7 +99,10 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
                 </p>
               </div>
             </div>
-          )
+          ),
+          locale: {
+            last: 'Done'
+          }
         }
       ];
 
