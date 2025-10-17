@@ -406,3 +406,4 @@ export default async function trainingRoutes(fastify: FastifyInstance) {
 
 
 
+

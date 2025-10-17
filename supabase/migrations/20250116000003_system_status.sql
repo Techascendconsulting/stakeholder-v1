@@ -74,3 +74,4 @@ COMMENT ON COLUMN public.system_status.message IS 'User-friendly status message'
 -- TODO: Consider adding severity levels for better alerting
 
 
+

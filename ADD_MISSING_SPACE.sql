@@ -57,3 +57,4 @@ SELECT 'Messages:' as info, COUNT(*) as count FROM messages;
 
 
 
+

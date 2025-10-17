@@ -349,10 +349,20 @@ const CareerJourneyView: React.FC = () => {
 
   const handleTourComplete = () => {
     setShowTour(false);
+    setSelectedPhaseIndex(null); // Close any open modal
   };
 
   const handleTourSkip = () => {
     setShowTour(false);
+    setSelectedPhaseIndex(null); // Close any open modal
+  };
+
+  const handleTourOpenPhaseModal = (phaseIndex: number) => {
+    setSelectedPhaseIndex(phaseIndex);
+  };
+
+  const handleTourClosePhaseModal = () => {
+    setSelectedPhaseIndex(null);
   };
 
   // Quick action handlers
@@ -562,6 +572,8 @@ const CareerJourneyView: React.FC = () => {
         <CareerJourneyTour 
           onComplete={handleTourComplete}
           onSkip={handleTourSkip}
+          onOpenPhaseModal={handleTourOpenPhaseModal}
+          onClosePhaseModal={handleTourClosePhaseModal}
         />
       )}
 
@@ -845,7 +857,7 @@ const CareerJourneyView: React.FC = () => {
 
                   {/* Modal Body */}
                   <div className="p-8 overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div className="mb-8">
+                    <div className="mb-8 phase-modal-topics">
                       <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                         <phase.icon className="w-5 h-5" />
                         Topics & Activities
@@ -924,7 +936,7 @@ const CareerJourneyView: React.FC = () => {
                     )}
 
                     {/* WHERE TO LEARN & PRACTICE THIS PHASE - NEW SECTION */}
-                    <div className="mt-8 pt-8 border-t-2 border-purple-200 dark:border-purple-700">
+                    <div className="mt-8 pt-8 border-t-2 border-purple-200 dark:border-purple-700 phase-modal-learning">
                       <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                         Where to Learn & Practice This Phase

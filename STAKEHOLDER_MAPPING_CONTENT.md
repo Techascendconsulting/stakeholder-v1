@@ -68,3 +68,4 @@ This detective workâ€”asking questions, reading documents, mapping connectionsâ€
 
 Next, once you know who your stakeholders are, you need to understand how much attention each one deserves. That's where stakeholder analysis comes in.
 
+

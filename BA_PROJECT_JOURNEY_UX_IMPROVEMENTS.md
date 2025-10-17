@@ -205,3 +205,4 @@ Enhanced the Career Journey (BA Project Journey) page with comprehensive UX impr
 
 The BA Project Journey page now follows enterprise UX best practices similar to Jira, Linear, and Notion. Users get immediate orientation, clear navigation, and one-click access to learning content.
 
+

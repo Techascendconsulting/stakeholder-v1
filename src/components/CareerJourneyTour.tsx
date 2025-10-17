@@ -7,14 +7,17 @@ interface TourStep {
   description: string;
   highlightSelector?: string;
   tooltipPosition: 'bottom-center' | 'top-center' | 'bottom-left' | 'bottom-right';
+  action?: () => void; // Action to perform when entering this step
 }
 
 interface CareerJourneyTourProps {
   onComplete: () => void;
   onSkip: () => void;
+  onOpenPhaseModal: (phaseIndex: number) => void;
+  onClosePhaseModal: () => void;
 }
 
-const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSkip }) => {
+const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSkip, onOpenPhaseModal, onClosePhaseModal }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -24,34 +27,45 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       id: 'welcome',
       title: 'Your BA Project Journey',
       description: 'This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. Let me show you around!',
-      tooltipPosition: 'bottom-center'
+      tooltipPosition: 'bottom-center',
+      action: () => {
+        // Close any open modal
+        onClosePhaseModal();
+      }
     },
     {
       id: 'phase-card',
       title: 'Click any phase card',
-      description: 'Click anywhere on a card to open full details: topics, deliverables, stakeholders, and learning resources.',
+      description: 'Click anywhere on a card to open full details. Let me open one for you...',
       highlightSelector: '[data-phase-index="0"]',
+      tooltipPosition: 'bottom-center',
+      action: () => {
+        // Open the first phase modal
+        setTimeout(() => onOpenPhaseModal(0), 500);
+      }
+    },
+    {
+      id: 'modal-topics',
+      title: 'Topics & Activities',
+      description: 'Inside the modal, you can see all topics for this phase. Topics with play icons are interactive - click them to start learning.',
+      highlightSelector: '.phase-modal-topics',
       tooltipPosition: 'bottom-center'
     },
     {
-      id: 'you-are-here',
-      title: 'Your current phase',
-      description: 'This banner shows where you are. Click "Continue This Phase" to jump to the relevant learning module.',
-      highlightSelector: '.you-are-here-banner',
+      id: 'modal-learning',
+      title: 'Learning & Practice Links',
+      description: 'Each phase connects to specific Learning modules and Practice sessions. Click these buttons to jump directly to the content.',
+      highlightSelector: '.phase-modal-learning',
       tooltipPosition: 'bottom-center'
     },
     {
-      id: 'scroll-navigation',
-      title: 'Explore all 10 phases',
-      description: 'Scroll right or use navigation arrows to see all phases. Each phase builds on the previous one.',
-      highlightSelector: '[data-phase-index="1"]',
-      tooltipPosition: 'bottom-center'
-    },
-    {
-      id: 'ready',
+      id: 'close-and-explore',
       title: 'You\'re ready!',
-      description: 'Click any phase to explore, or use the orange banner to continue where you left off.',
-      tooltipPosition: 'bottom-center'
+      description: 'Close this modal and explore other phases. Use the orange "You are here" banner to continue where you left off.',
+      tooltipPosition: 'bottom-center',
+      action: () => {
+        onClosePhaseModal();
+      }
     }
   ];
 
@@ -66,6 +80,11 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       previousHighlight.classList.remove('tour-highlight');
     }
 
+    // Execute step action if defined
+    if (currentStepData.action) {
+      currentStepData.action();
+    }
+
     // Small delay to let the page render before finding elements
     const timer = setTimeout(() => {
       if (currentStepData.highlightSelector) {
@@ -76,17 +95,6 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
           
           // Scroll element into view first
           element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-          
-          // Calculate tooltip position to always be at bottom center
-          setTimeout(() => {
-            const rect = element.getBoundingClientRect();
-            
-            // Always position at bottom-center for consistency
-            const top = rect.bottom + 20;
-            const left = rect.left + rect.width / 2 - 200; // 200px = half tooltip width
-            
-            setTooltipPosition({ top, left });
-          }, 500);
         } else {
           console.warn('Tour element not found:', currentStepData.highlightSelector);
           setHighlightedElement(null);
@@ -94,7 +102,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       } else {
         setHighlightedElement(null);
       }
-    }, 100);
+    }, currentStepData.action ? 800 : 100); // Longer delay if action was executed
 
     return () => clearTimeout(timer);
   }, [currentStep, currentStepData]);

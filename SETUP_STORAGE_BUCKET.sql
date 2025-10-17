@@ -47,3 +47,4 @@ SELECT name, public, file_size_limit FROM storage.buckets WHERE id = 'community-
 
 
 
+

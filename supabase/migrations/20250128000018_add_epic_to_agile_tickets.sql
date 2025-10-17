@@ -16,3 +16,4 @@ ALTER TABLE public.agile_tickets ADD COLUMN IF NOT EXISTS epic text;
 
 
 
+

@@ -170,3 +170,4 @@ COMMENT ON COLUMN public.access_requests.status IS 'pending, approved, rejected,
 COMMENT ON COLUMN public.access_requests.reviewed_by IS 'Admin user who reviewed the request';
 
 
+

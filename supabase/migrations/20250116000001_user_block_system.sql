@@ -181,3 +181,4 @@ COMMENT ON COLUMN public.user_profiles.blocked_by IS 'Admin user ID who blocked 
 COMMENT ON COLUMN public.user_profiles.blocked_at IS 'Timestamp when the account was blocked';
 
 
+
