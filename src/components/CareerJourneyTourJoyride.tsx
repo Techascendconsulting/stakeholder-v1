@@ -139,9 +139,30 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   }, [user?.id]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, index, type, action } = data;
+    const { status, index, type, action, lifecycle } = data;
     
-    console.log('🎯 [CareerJourneyTour] Callback:', { status, index, type, action, lifecycle: data.lifecycle });
+    console.log('🎯 [CareerJourneyTour] Callback:', { 
+      status, 
+      index, 
+      type, 
+      action, 
+      lifecycle,
+      currentStep: steps[index]?.title 
+    });
+    
+    // Check if target exists for current step
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      console.error('🎯 [CareerJourneyTour] ❌ TARGET NOT FOUND for step', index, 'selector:', steps[index]?.target);
+      const element = document.querySelector(steps[index]?.target as string);
+      console.log('🎯 [CareerJourneyTour] Element check:', element);
+    }
+    
+    // Log when we're AT step 2 (before modal opens)
+    if (index === 2 && lifecycle === 'init') {
+      console.log('🎯 [CareerJourneyTour] 📍 AT STEP 2 (init)');
+      const learningElement = document.querySelector('.phase-modal-learning');
+      console.log('🎯 [CareerJourneyTour] .phase-modal-learning exists?', !!learningElement, learningElement);
+    }
     
     // Handle step-by-step progression
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
@@ -151,10 +172,13 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
       
       // Before step 2 (modal sections), open the modal
       if (nextStepIndex === 2 && action === ACTIONS.NEXT) {
-        console.log('🎯 [CareerJourneyTour] Opening phase modal for step 2');
+        console.log('🎯 [CareerJourneyTour] 🚀 Opening phase modal for step 2');
         onOpenPhaseModal(0);
         // Give modal time to render
         setTimeout(() => {
+          console.log('🎯 [CareerJourneyTour] ✅ Modal should be open, advancing to step 2');
+          const learningElement = document.querySelector('.phase-modal-learning');
+          console.log('🎯 [CareerJourneyTour] .phase-modal-learning NOW exists?', !!learningElement, learningElement);
           setStepIndex(nextStepIndex);
         }, 400);
         return;
