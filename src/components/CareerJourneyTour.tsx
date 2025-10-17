@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, ArrowLeft, Eye, BookOpen, Target, ChevronRight } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface TourStep {
   id: string;
   title: string;
   description: string;
   highlightSelector?: string;
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center';
-  offset?: { x: number; y: number };
+  tooltipPosition: 'bottom-center' | 'top-center' | 'bottom-left' | 'bottom-right';
 }
 
 interface CareerJourneyTourProps {
@@ -23,55 +22,36 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
   const steps: TourStep[] = [
     {
       id: 'welcome',
-      title: '🗺️ Your BA Project Journey',
-      description: 'This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. Let me show you how it works!',
-      position: 'center'
+      title: 'Your BA Project Journey',
+      description: 'This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. Let me show you around!',
+      tooltipPosition: 'bottom-center'
     },
     {
       id: 'phase-card',
-      title: '📋 Click Cards to View Details',
-      description: 'Click anywhere on a phase card to open a modal with complete details: all topics, activities, deliverables, stakeholders, and learning resources.',
+      title: 'Click any phase card',
+      description: 'Click anywhere on a card to open full details: topics, deliverables, stakeholders, and learning resources.',
       highlightSelector: '[data-phase-index="0"]',
-      position: 'right',
-      offset: { x: 20, y: 0 }
-    },
-    {
-      id: 'click-indicator',
-      title: '👁️ Click Card Indicator',
-      description: 'This message reminds you that clicking the card opens full details. The card will scale up and show a shadow when you hover over it.',
-      highlightSelector: '[data-phase-index="0"]',
-      position: 'right',
-      offset: { x: 20, y: 50 }
-    },
-    {
-      id: 'quick-actions',
-      title: '⚡ Quick Actions (Optional)',
-      description: 'Need to jump straight to learning or practice? These buttons let you skip the modal and go directly to the content. They appear on hover.',
-      highlightSelector: '[data-phase-index="0"]',
-      position: 'right',
-      offset: { x: 20, y: 100 }
+      tooltipPosition: 'bottom-center'
     },
     {
       id: 'you-are-here',
-      title: '📍 Your Current Phase',
-      description: 'This orange banner shows exactly where you are in your journey. Click "Continue This Phase" to jump straight to the relevant learning module.',
+      title: 'Your current phase',
+      description: 'This banner shows where you are. Click "Continue This Phase" to jump to the relevant learning module.',
       highlightSelector: '.you-are-here-banner',
-      position: 'bottom',
-      offset: { x: 0, y: 20 }
+      tooltipPosition: 'bottom-center'
     },
     {
       id: 'scroll-navigation',
-      title: '👉 Explore All 10 Phases',
-      description: 'Scroll horizontally or use these navigation arrows to see all phases. There are 10 total phases from onboarding through continuous delivery.',
-      highlightSelector: '.scroll-right-arrow',
-      position: 'left',
-      offset: { x: -20, y: 0 }
+      title: 'Explore all 10 phases',
+      description: 'Scroll right or use navigation arrows to see all phases. Each phase builds on the previous one.',
+      highlightSelector: '[data-phase-index="1"]',
+      tooltipPosition: 'bottom-center'
     },
     {
       id: 'ready',
-      title: '✨ You\'re All Set!',
-      description: 'You now know how to navigate your BA Project Journey. Click any phase card to see full details, or use quick actions to jump straight to content.',
-      position: 'center'
+      title: 'You\'re ready!',
+      description: 'Click any phase to explore, or use the orange banner to continue where you left off.',
+      tooltipPosition: 'bottom-center'
     }
   ];
 
@@ -80,6 +60,12 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
   // Update highlighted element when step changes
   useEffect(() => {
+    // Remove previous highlight
+    const previousHighlight = document.querySelector('.tour-highlight');
+    if (previousHighlight) {
+      previousHighlight.classList.remove('tour-highlight');
+    }
+
     // Small delay to let the page render before finding elements
     const timer = setTimeout(() => {
       if (currentStepData.highlightSelector) {
@@ -91,43 +77,19 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
           // Scroll element into view first
           element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
           
-          // Then calculate tooltip position after scroll completes
+          // Calculate tooltip position to always be at bottom center
           setTimeout(() => {
             const rect = element.getBoundingClientRect();
-            const offset = currentStepData.offset || { x: 0, y: 0 };
             
-            let top = 0;
-            let left = 0;
-            
-            switch (currentStepData.position) {
-              case 'right':
-                top = rect.top + rect.height / 2 + offset.y - 100; // Adjust for tooltip height
-                left = rect.right + offset.x;
-                break;
-              case 'left':
-                top = rect.top + rect.height / 2 + offset.y - 100;
-                left = rect.left + offset.x - 340; // 340px = tooltip width + margin
-                break;
-              case 'bottom':
-                top = rect.bottom + offset.y;
-                left = rect.left + rect.width / 2 + offset.x - 160; // Center
-                break;
-              case 'top':
-                top = rect.top + offset.y - 220; // Tooltip height
-                left = rect.left + rect.width / 2 + offset.x - 160; // Center
-                break;
-              default:
-                break;
-            }
+            // Always position at bottom-center for consistency
+            const top = rect.bottom + 20;
+            const left = rect.left + rect.width / 2 - 200; // 200px = half tooltip width
             
             setTooltipPosition({ top, left });
           }, 500);
-          
-          return () => {
-            element.classList.remove('tour-highlight');
-          };
         } else {
           console.warn('Tour element not found:', currentStepData.highlightSelector);
+          setHighlightedElement(null);
         }
       } else {
         setHighlightedElement(null);
@@ -175,116 +137,96 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         />
       )}
 
-      {/* Tour Tooltip */}
-      <div 
-        className={`fixed z-[202] transition-all duration-300 ${
-          currentStepData.position === 'center' 
-            ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' 
-            : ''
-        }`}
-        style={currentStepData.position !== 'center' ? tooltipPosition : {}}
-      >
-        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border-2 border-purple-500 ${
-          currentStepData.position === 'center' ? 'w-[500px]' : 'w-[320px]'
-        } animate-in fade-in slide-in-from-bottom-4 duration-300`}>
-          {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-white text-sm font-bold">{currentStepData.title}</span>
-            </div>
-            <button
-              onClick={handleSkip}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
-              aria-label="Close tour"
-            >
-              <X className="w-4 h-4 text-white" />
-            </button>
-          </div>
-
+      {/* Tour Tooltip - Jira/Monday.com Style (Fixed at bottom) */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[202] w-full max-w-md px-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700">
           {/* Content */}
-          <div className="p-5">
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-5">
-              {currentStepData.description}
-            </p>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {/* Back Button */}
-                {currentStep > 0 && (
-                  <button
-                    onClick={handleBack}
-                    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all text-sm font-medium"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Back</span>
-                  </button>
-                )}
-                
-                {/* Progress Dots */}
-                <div className="flex items-center space-x-1.5">
-                  {steps.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        index === currentStep
-                          ? 'w-6 bg-purple-600'
-                          : index < currentStep
-                          ? 'w-1.5 bg-purple-400'
-                          : 'w-1.5 bg-gray-300 dark:bg-gray-600'
-                      }`}
-                    />
-                  ))}
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                    {currentStep + 1}/{steps.length}
-                  </span>
-                </div>
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                  {currentStepData.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {currentStepData.description}
+                </p>
               </div>
-
-              {/* Next/Finish Button */}
               <button
-                onClick={handleNext}
-                className="inline-flex items-center space-x-1.5 px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-sm"
+                onClick={handleSkip}
+                className="ml-4 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+                aria-label="Close tour"
               >
-                <span>{isLastStep ? 'Got it!' : 'Next'}</span>
-                {!isLastStep && <ArrowRight className="w-4 h-4" />}
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
 
-            {/* Skip button */}
-            <button
-              onClick={handleSkip}
-              className="w-full mt-3 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              Skip tour
-            </button>
+            {/* Footer with Navigation */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              {/* Progress */}
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {currentStep + 1} of {steps.length}
+                </span>
+                <div className="flex space-x-1">
+                  {steps.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentStep
+                          ? 'bg-purple-600 w-6'
+                          : index < currentStep
+                          ? 'bg-purple-400'
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex items-center space-x-2">
+                {currentStep > 0 && (
+                  <button
+                    onClick={handleBack}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all"
+                  >
+                    Back
+                  </button>
+                )}
+                
+                <button
+                  onClick={handleNext}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition-all flex items-center space-x-1"
+                >
+                  <span>{isLastStep ? 'Done' : 'Next'}</span>
+                  {!isLastStep && <ArrowRight className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Global CSS for highlighting */}
+      {/* Global CSS for highlighting - Jira/Monday.com style */}
       <style>{`
         .tour-highlight {
           position: relative;
           z-index: 202 !important;
-          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.8), 
-                      0 0 0 6px rgba(168, 85, 247, 0.4),
-                      0 0 20px 10px rgba(168, 85, 247, 0.3) !important;
-          border-radius: 24px !important;
-          animation: pulse-highlight 2s infinite;
+          outline: 3px solid rgb(147, 51, 234) !important;
+          outline-offset: 4px;
+          border-radius: 12px !important;
+          animation: pulse-outline 2s infinite;
           pointer-events: auto !important;
         }
         
-        @keyframes pulse-highlight {
+        @keyframes pulse-outline {
           0%, 100% {
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.8), 
-                        0 0 0 6px rgba(168, 85, 247, 0.4),
-                        0 0 20px 10px rgba(168, 85, 247, 0.3) !important;
+            outline-color: rgb(147, 51, 234);
+            outline-width: 3px;
           }
           50% {
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 1), 
-                        0 0 0 8px rgba(168, 85, 247, 0.6),
-                        0 0 30px 15px rgba(168, 85, 247, 0.5) !important;
+            outline-color: rgb(126, 34, 206);
+            outline-width: 4px;
           }
         }
       `}</style>
