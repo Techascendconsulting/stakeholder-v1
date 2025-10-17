@@ -298,31 +298,53 @@ const CareerJourneyView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-      {/* Header */}
-      <div className="bg-purple-600 dark:bg-purple-900 backdrop-blur-sm border-b border-purple-500 dark:border-purple-700 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
+      {/* Animated Background Elements for WOW effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 bg-blue-300/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-300/20 dark:bg-pink-600/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      {/* Enhanced Header with gradient and animations */}
+      <div className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900 backdrop-blur-sm border-b-2 border-purple-400/50 dark:border-purple-700/50 sticky top-0 z-20 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <button
             onClick={() => setCurrentView('dashboard')}
-            className="inline-flex items-center space-x-2 text-purple-100 hover:text-white transition-colors mb-3"
+            className="inline-flex items-center space-x-2 text-purple-100 hover:text-white transition-all duration-200 mb-4 hover:translate-x-[-4px]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back to Dashboard</span>
           </button>
           
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white flex items-center justify-center gap-3">
-              <Sparkles className="w-8 h-8 text-purple-200" />
-              Business Analyst Journey
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-3">
+              Your BA Project Journey
             </h1>
-            <p className="text-sm text-purple-100 mt-2 max-w-3xl mx-auto">
-              From onboarding to agile delivery: A comprehensive map of the BA lifecycle, bridging gaps between stakeholders and solution teams.
+            <p className="text-base md:text-lg text-purple-100 max-w-4xl mx-auto leading-relaxed font-medium">
+              Follow the complete BA lifecycle from onboarding to continuous delivery
             </p>
-            <div className="mt-4">
-              <span className="text-2xl font-bold text-white">
-                {progress.filter(p => p.status === 'completed').length} / {CAREER_JOURNEY_PHASES.length}
-              </span>
-              <span className="text-xs text-purple-200 ml-2">Phases Completed</span>
+            <div className="mt-5 inline-flex items-center gap-6 bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20">
+              <div className="text-center">
+                <div className="text-3xl font-black text-white">
+                  {progress.filter(p => p.status === 'completed').length}
+                </div>
+                <div className="text-xs text-purple-200 font-semibold uppercase tracking-wide">Completed</div>
+              </div>
+              <div className="w-px h-12 bg-purple-300/30"></div>
+              <div className="text-center">
+                <div className="text-3xl font-black text-white">
+                  {CAREER_JOURNEY_PHASES.length}
+                </div>
+                <div className="text-xs text-purple-200 font-semibold uppercase tracking-wide">Total Phases</div>
+              </div>
+              <div className="w-px h-12 bg-purple-300/30"></div>
+              <div className="text-center">
+                <div className="text-3xl font-black text-yellow-300">
+                  {Math.round((progress.filter(p => p.status === 'completed').length / CAREER_JOURNEY_PHASES.length) * 100)}%
+                </div>
+                <div className="text-xs text-purple-200 font-semibold uppercase tracking-wide">Progress</div>
+              </div>
             </div>
           </div>
         </div>
