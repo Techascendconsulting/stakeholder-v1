@@ -222,42 +222,58 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   };
 
   return (
-    <>
-      {/* Fixed progress indicator - TOP RIGHT of screen */}
-      {run && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            zIndex: 99999
-          }}
-          className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-2xl pointer-events-none"
-        >
-          {stepIndex + 1} of {steps.length}
-        </div>
-      )}
-      
-      <Joyride
-        steps={steps}
-        run={run}
-        stepIndex={stepIndex}
-        continuous
-        showSkipButton
-        showProgress={false}
-        disableScrolling={false}
-        scrollToFirstStep
-        tooltipComponent={CustomTooltip}
-        styles={{
-          options: {
-            primaryColor: '#7c3aed',
-            textColor: '#111827',
-            zIndex: 10000
+    <Joyride
+      steps={steps}
+      run={run}
+      stepIndex={stepIndex}
+      continuous
+      showSkipButton
+      showProgress
+      disableScrolling={false}
+      scrollToFirstStep
+      tooltipComponent={CustomTooltip}
+      styles={{
+        options: {
+          primaryColor: '#7c3aed',
+          textColor: '#111827',
+          zIndex: 10000
+        },
+        tooltipTitle: {
+          textAlign: 'left',
+          marginTop: '20px'
+        },
+        tooltipContent: {
+          padding: '12px 0'
+        },
+        buttonNext: {
+          backgroundColor: '#7c3aed',
+          borderRadius: '8px',
+          padding: '8px 24px'
+        },
+        buttonBack: {
+          color: '#7c3aed',
+          marginRight: '8px'
+        },
+        buttonSkip: {
+          color: '#6b7280'
+        }
+      }}
+      floaterProps={{
+        styles: {
+          floater: {
+            filter: 'none'
           }
-        }}
-        callback={handleJoyrideCallback}
-      />
-    </>
+        }
+      }}
+      locale={{
+        back: 'Back',
+        close: 'Close',
+        last: 'Done',
+        next: 'Next',
+        skip: 'Skip Tour'
+      }}
+      callback={handleJoyrideCallback}
+    />
   );
 };
 
