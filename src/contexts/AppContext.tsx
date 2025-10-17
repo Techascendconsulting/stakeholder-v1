@@ -297,7 +297,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           console.log('📊 User phase:', phase, 'Can access', view, '?', canAccess);
 
           if (!canAccess) {
-            // Determine appropriate lock message based on phase and actual progress
+            // Determine appropriate lock message based on user_type, phase and actual progress
             let lockMessage = '';
             
             if (phase === 'learning') {
@@ -311,17 +311,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               const modulesNeeded = 10;
               const remaining = modulesNeeded - completedModules;
               
+              // Add user type context to help users understand the restriction
+              const userTypeContext = userType === 'new' 
+                ? '🎓 New User Learning Path\n\n' 
+                : '';
+              
               if (completedModules === 0) {
-                lockMessage = `Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\nStart your learning journey to unlock this section.`;
+                lockMessage = `${userTypeContext}Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\nStart your learning journey to unlock this section.`;
               } else if (remaining === 1) {
-                lockMessage = `Just 1 more module to unlock Practice!\n\nYou're almost there - finish your last learning module.`;
+                lockMessage = `${userTypeContext}Just 1 more module to unlock Practice!\n\nYou're almost there - finish your last learning module.`;
               } else if (remaining <= 3) {
-                lockMessage = `${remaining} more modules to unlock Practice.\n\nYou're making great progress - keep going!`;
+                lockMessage = `${userTypeContext}${remaining} more modules to unlock Practice.\n\nYou're making great progress - keep going!`;
               } else {
-                lockMessage = `Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\n${completedModules}/${modulesNeeded} modules completed so far.`;
+                lockMessage = `${userTypeContext}Complete ${modulesNeeded} Learning Journey modules to unlock Practice.\n\n${completedModules}/${modulesNeeded} modules completed so far.`;
               }
             } else if (phase === 'practice') {
-              lockMessage = 'Complete all Practice exercises to unlock Projects and Hands-on work.\n\nKeep practicing to unlock this section!';
+              const userTypeContext = userType === 'new' 
+                ? '🎓 New User Learning Path\n\n' 
+                : '';
+              lockMessage = `${userTypeContext}Complete all Practice exercises to unlock Projects and Hands-on work.\n\nKeep practicing to unlock this section!`;
             }
 
             console.log('🚫 BLOCKING navigation to:', view);
