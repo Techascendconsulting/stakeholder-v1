@@ -228,17 +228,30 @@ const CareerJourneyView: React.FC = () => {
 
     // Load user type
     try {
-      const { data: userData } = await supabase
+      console.log('🔍 Career Journey - Loading user type for:', user.id, user.email);
+      
+      const { data: userData, error: userError } = await supabase
         .from('user_profiles')
-        .select('user_type')
+        .select('user_type, user_id, created_at')
         .eq('user_id', user.id)
         .single();
       
-      if (userData) {
-        setUserType(userData.user_type || 'existing');
+      console.log('🔍 Career Journey - User type query result:', { userData, error: userError });
+      
+      if (userError) {
+        console.warn('⚠️ Career Journey - Could not load user_type, defaulting to existing:', userError);
+        setUserType('existing'); // Safe default: all phases unlocked
+      } else if (userData) {
+        const resolvedType = userData.user_type || 'existing';
+        console.log(`✅ Career Journey - User type set to: "${resolvedType}" (${resolvedType === 'existing' ? 'ALL PHASES UNLOCKED' : 'PROGRESSIVE UNLOCK'})`);
+        setUserType(resolvedType);
+      } else {
+        console.warn('⚠️ Career Journey - No user_profiles record found, defaulting to existing');
+        setUserType('existing'); // Safe default: all phases unlocked
       }
     } catch (error) {
-      console.error('Failed to load user type:', error);
+      console.error('❌ Career Journey - Failed to load user type:', error);
+      setUserType('existing'); // Safe default on error: all phases unlocked
     }
 
     // Sync module completions to career journey phases
@@ -274,8 +287,12 @@ const CareerJourneyView: React.FC = () => {
       return 'in_progress';
     }
 
-    // For existing users: all unlocked
+    // For existing users: all unlocked (NO RESTRICTIONS)
     if (userType === 'existing') {
+      // Log once for first phase to avoid console spam
+      if (phase.order === 1) {
+        console.log('🔓 User type is "existing" - ALL phases unlocked, no progressive restrictions');
+      }
       return 'not_started';
     }
 
