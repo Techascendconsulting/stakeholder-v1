@@ -532,13 +532,19 @@ const CareerJourneyView: React.FC = () => {
               <span className="text-sm font-medium">Back to Dashboard</span>
             </button>
             
-            {/* Help Button */}
+            {/* Help Button - Prominent with pulse on first visit */}
             <button
               onClick={() => setShowTour(true)}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 text-white text-sm font-medium"
+              className="relative inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-200 text-white text-sm font-medium shadow-lg hover:shadow-xl"
             >
+              {!localStorage.getItem('hasSeenCareerJourneyWelcome') && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                </span>
+              )}
               <HelpCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">How does this work?</span>
+              <span>How does this work?</span>
             </button>
           </div>
           
