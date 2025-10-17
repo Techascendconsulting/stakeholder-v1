@@ -3,8 +3,8 @@ import { Message } from '../types';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-  baseURL: 'http://localhost:3001/api/openai-proxy'
+  dangerouslyAllowBrowser: true
+  // Removed baseURL - call OpenAI directly (backend server not required)
 });
 
 export interface AgileTeamMemberContext {

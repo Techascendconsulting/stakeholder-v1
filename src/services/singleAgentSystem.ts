@@ -30,8 +30,8 @@ class SingleAgentSystem {
     this.openai = new OpenAI({
       apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'dummy-key',
       dangerouslyAllowBrowser: true,
-      timeout: 30000, // 30 second timeout
-      baseURL: 'http://localhost:3001/api/openai-proxy', // Use backend proxy to avoid CORS
+      timeout: 30000 // 30 second timeout
+      // Removed baseURL - call OpenAI directly (backend server not required)
     });
   }
 
