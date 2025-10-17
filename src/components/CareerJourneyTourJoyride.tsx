@@ -1,5 +1,5 @@
 import React from 'react';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
+import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joyride';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   const { setCurrentView } = useApp();
   const { user } = useAuth();
   const [run, setRun] = React.useState(true);
+  const [stepIndex, setStepIndex] = React.useState(0);
   const [steps, setSteps] = React.useState<Step[]>([]);
 
   React.useEffect(() => {
@@ -44,13 +45,10 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           title: 'Your BA Project Journey',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. 
-                Each phase builds on the previous one, giving you real-world experience.
-              </p>
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+              <p>This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. Each phase builds on the previous one.</p>
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mt-3">
                 <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                  💡 <strong>Do this next:</strong> Click any phase card to explore its contents
+                  💡 <strong>Do this next:</strong> I'll show you how to explore each phase
                 </p>
               </div>
             </div>
@@ -59,35 +57,14 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         },
         {
           target: '[data-phase-index="0"]',
-          placement: 'bottom',
-          title: 'Phase Cards',
+          placement: 'right',
+          title: 'Click Any Phase Card',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                Each card represents a critical phase in your BA journey. Click anywhere on a card to see 
-                detailed topics, deliverables, stakeholders, and learning modules.
-              </p>
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p>Each card shows a phase in your BA journey. When the tour finishes, you can click any card to see detailed topics, deliverables, and learning modules.</p>
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mt-3">
                 <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   🎯 <strong>Pro tip:</strong> Start with "Project Initiation" to understand the full scope
-                </p>
-              </div>
-            </div>
-          )
-        },
-        {
-          target: '[data-phase-index="0"]',
-          placement: 'bottom',
-          title: 'Opening Phase Details...',
-          content: (
-            <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                Watch as we open the phase card to show you what's inside. This detailed view contains everything 
-                about the phase - topics, deliverables, stakeholders, and learning modules.
-              </p>
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                  ✅ <strong>Action items:</strong> Review topics → Check deliverables → Plan stakeholder meetings
                 </p>
               </div>
             </div>
@@ -99,11 +76,8 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           title: 'Learning Modules',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                These are the specific learning modules that prepare you for this phase. Each module 
-                builds essential BA skills through interactive content and real-world scenarios.
-              </p>
-              <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+              <p>Each phase has specific learning modules that prepare you. These modules build essential BA skills through interactive content.</p>
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800 mt-3">
                 <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
                   📚 <strong>Learning path:</strong> Complete modules in order for maximum impact
                 </p>
@@ -117,13 +91,10 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           title: 'Key Deliverables',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                These are the actual documents and artifacts you'll create as a BA. Each deliverable 
-                has templates and examples to guide your work.
-              </p>
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+              <p>These are the actual documents and artifacts you'll create as a BA. Each has templates and examples to guide your work.</p>
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mt-3">
                 <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                  📋 <strong>Pro tip:</strong> Use the templates in My Resources to accelerate your work
+                  📋 <strong>Pro tip:</strong> Use templates in My Resources to accelerate your work
                 </p>
               </div>
             </div>
@@ -135,11 +106,8 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           title: 'Stakeholder Engagement',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                These are the key stakeholders you'll work with in this phase. Practice conversations 
-                with AI-powered versions of these stakeholders to build confidence.
-              </p>
-              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <p>These are the key stakeholders you'll work with. Practice conversations with AI-powered versions to build confidence.</p>
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800 mt-3">
                 <p className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
                   🎭 <strong>Practice tip:</strong> Use My Practice Journey to rehearse these conversations
                 </p>
@@ -150,15 +118,12 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         {
           target: 'body',
           placement: 'center',
-          title: 'Close & Explore',
+          title: 'Ready to Explore!',
           content: (
             <div className="space-y-3">
-              <p className="text-gray-700 dark:text-gray-300">
-                That's it! Close this modal to explore other phases. Each phase builds on the previous one, 
-                creating a complete BA project experience.
-              </p>
-              <div className="bg-gray-50 dark:bg-gray-900/20 p-3 rounded-lg border border-gray-200 dark:border-gray-800">
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <p>That's it! You can now click any phase card to explore its contents. Each phase builds on the previous one, creating a complete BA project experience.</p>
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   🚀 <strong>Ready to start?</strong> Begin with Project Initiation and work through each phase
                 </p>
               </div>
@@ -171,22 +136,37 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
       setSteps(s);
     };
     buildSteps();
-  }, [user?.id, onOpenPhaseModal, onClosePhaseModal]);
+  }, [user?.id]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, index, type, action } = data;
     
-    console.log('🎯 [CareerJourneyTour] Callback:', { status, index, type, action });
+    console.log('🎯 [CareerJourneyTour] Callback:', { status, index, type, action, lifecycle: data.lifecycle });
     
-    // Handle step transitions
-    if (type === 'step:after' && action === 'next') {
-      console.log('🎯 [CareerJourneyTour] Moving to step', index + 1);
+    // Handle step-by-step progression
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
       
-      // Open modal before step 3 (Phase Details)
-      if (index === 1) {
-        console.log('🎯 [CareerJourneyTour] Opening phase modal');
-        setTimeout(() => onOpenPhaseModal(0), 200);
+      console.log('🎯 [CareerJourneyTour] Moving from step', index, 'to', nextStepIndex);
+      
+      // Before step 2 (modal sections), open the modal
+      if (nextStepIndex === 2 && action === ACTIONS.NEXT) {
+        console.log('🎯 [CareerJourneyTour] Opening phase modal for step 2');
+        onOpenPhaseModal(0);
+        // Give modal time to render
+        setTimeout(() => {
+          setStepIndex(nextStepIndex);
+        }, 400);
+        return;
       }
+      
+      // Close modal when moving to last step
+      if (nextStepIndex === 5 && action === ACTIONS.NEXT) {
+        console.log('🎯 [CareerJourneyTour] Closing modal for final step');
+        onClosePhaseModal();
+      }
+      
+      setStepIndex(nextStepIndex);
     }
     
     // Handle completion
@@ -194,7 +174,11 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
       console.log('🎯 [CareerJourneyTour] Tour finished/skipped');
       setRun(false);
       onClosePhaseModal();
-      if (status === STATUS.FINISHED) onComplete(); else onSkip();
+      if (status === STATUS.FINISHED) {
+        onComplete();
+      } else {
+        onSkip();
+      }
     }
   };
 
@@ -202,52 +186,63 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
     <Joyride
       steps={steps}
       run={run}
+      stepIndex={stepIndex}
       continuous
       showSkipButton
       showProgress
       disableScrolling={false}
-      scrollToFirstStep
+      scrollToFirstStep={true}
+      disableOverlayClose
+      spotlightClicks={false}
       styles={{
         options: {
           primaryColor: '#7c3aed',
           textColor: '#111827',
-          zIndex: 10000
+          zIndex: 10000,
+          arrowColor: '#fff'
         },
         tooltip: {
           borderRadius: 12,
-          padding: 0
+          padding: 20
         },
         tooltipContent: {
-          padding: '20px'
+          padding: '8px 0'
         },
         tooltipTitle: {
           fontSize: '18px',
           fontWeight: '600',
-          marginBottom: '12px',
-          color: '#111827'
-        },
-        tooltipFooter: {
-          marginTop: '16px',
-          paddingTop: '16px',
-          borderTop: '1px solid #e5e7eb'
+          marginBottom: '8px'
         },
         buttonNext: {
           backgroundColor: '#7c3aed',
           borderRadius: '8px',
           fontSize: '14px',
           fontWeight: '500',
-          padding: '8px 16px'
+          padding: '10px 20px'
         },
         buttonBack: {
           color: '#6b7280',
-          marginRight: '8px',
-          fontSize: '14px',
-          fontWeight: '500'
+          marginRight: '12px',
+          fontSize: '14px'
         },
         buttonSkip: {
           color: '#6b7280',
-          fontSize: '14px',
-          fontWeight: '500'
+          fontSize: '14px'
+        },
+        spotlight: {
+          borderRadius: 8
+        },
+        overlay: {
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        }
+      }}
+      floaterProps={{
+        disableAnimation: false,
+        styles: {
+          arrow: {
+            length: 8,
+            spread: 12
+          }
         }
       }}
       callback={handleJoyrideCallback}
