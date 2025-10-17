@@ -4,6 +4,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
 import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
+import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
 
 const Dashboard: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -54,7 +55,11 @@ const Dashboard: React.FC = () => {
       setUserPhase(phase);
       console.log('👤 Dashboard - User type:', type, 'Phase:', phase);
       
-      // Load journey progress data
+      // Sync module completion to career journey phases
+      console.log('🔄 Dashboard - Syncing module progress to career journey phases...');
+      await syncModuleProgressToPhases(user.id);
+      
+      // Load journey progress data (after sync, so it reflects latest module completions)
       const [career, learning, practice] = await Promise.all([
         JourneyProgressService.getCareerJourneyProgress(user.id),
         JourneyProgressService.getLearningProgress(user.id),
@@ -131,7 +136,7 @@ const Dashboard: React.FC = () => {
             ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-300 dark:border-purple-700' 
             : 'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-300 dark:border-blue-700'
         }`}>
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                 nextStep.priority === 'high' ? 'bg-purple-600' : 'bg-blue-600'
@@ -145,7 +150,7 @@ const Dashboard: React.FC = () => {
                   }`}>
                     {nextStep.priority === 'high' ? '⚡ Recommended Next Step' : '💡 Suggested Action'}
                   </span>
-                </div>
+              </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                   {nextStep.title}
                 </h3>
@@ -166,7 +171,7 @@ const Dashboard: React.FC = () => {
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
-        </div>
+      </div>
       )}
 
       {/* Journey Progress Cards */}
@@ -178,7 +183,7 @@ const Dashboard: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('career-journey')}
             >
-              <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
                     <Map className="w-5 h-5 text-white" />
@@ -197,8 +202,8 @@ const Dashboard: React.FC = () => {
                   <span className="text-gray-600 dark:text-gray-400">Progress</span>
                   <span className="font-semibold text-purple-600 dark:text-purple-400">
                     {careerProgress.progressPercentage}%
-                  </span>
-                </div>
+            </span>
+          </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-purple-500 to-indigo-600 h-2 rounded-full transition-all"
@@ -293,8 +298,8 @@ const Dashboard: React.FC = () => {
                         : 'Complete 10 learning modules to unlock'
                       }
                     </p>
-                  </div>
-                </div>
+            </div>
+          </div>
                 {isPageAccessible('practice-flow', userPhase) && (
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 )}
@@ -319,7 +324,7 @@ const Dashboard: React.FC = () => {
                     }`}
                     style={{ width: `${practiceProgress.progressPercentage}%` }}
                   />
-                </div>
+        </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   {isPageAccessible('practice-flow', userPhase)
                     ? `${practiceProgress.voiceMeetingsCount} voice • ${practiceProgress.transcriptMeetingsCount} transcript`
@@ -327,7 +332,7 @@ const Dashboard: React.FC = () => {
                   }
                 </p>
               </div>
-            </div>
+          </div>
           )}
         </div>
       )}
@@ -395,7 +400,7 @@ const Dashboard: React.FC = () => {
               : '🔒 Complete 10 learning modules to unlock'
             }
           </p>
-        </button>
+                </button>
       </div>
     </div>
   );

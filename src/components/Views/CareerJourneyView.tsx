@@ -4,6 +4,7 @@ import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import { CAREER_JOURNEY_PHASES, type JourneyPhase, type JourneyTopic } from '../../data/careerJourneyData';
 import CareerJourneyTourJoyride from '../CareerJourneyTourJoyride';
+import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
 import { 
   CheckCircle, 
   Lock, 
@@ -240,7 +241,11 @@ const CareerJourneyView: React.FC = () => {
       console.error('Failed to load user type:', error);
     }
 
-    // Load career journey progress
+    // Sync module completions to career journey phases
+    console.log('🔄 Career Journey - Syncing module progress to phases...');
+    await syncModuleProgressToPhases(user.id);
+
+    // Load career journey progress (after sync)
     try {
       const { data: progressData, error } = await supabase
         .from('career_journey_progress')
@@ -249,6 +254,7 @@ const CareerJourneyView: React.FC = () => {
 
       if (!error && progressData) {
         setProgress(progressData);
+        console.log('✅ Career Journey - Phase progress loaded:', progressData.length, 'phases');
       }
     } catch (error) {
       console.log('Career journey progress table not found, using defaults');
