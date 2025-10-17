@@ -78,6 +78,41 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   const [stepIndex, setStepIndex] = React.useState(0);
   const [steps, setSteps] = React.useState<Step[]>([]);
 
+  // Debug: Log when tour renders and inspect DOM
+  React.useEffect(() => {
+    if (run) {
+      console.log('🔍 TOUR DEBUG: Tour is running, stepIndex:', stepIndex);
+      setTimeout(() => {
+        // Find and log all Joyride elements
+        const tooltips = document.querySelectorAll('[class*="react-joyride"], [class*="__floater"], [role="status"], [data-test-id]');
+        console.log('🔍 TOUR DEBUG: Found elements:', tooltips.length);
+        tooltips.forEach((el, i) => {
+          console.log(`🔍 TOUR DEBUG Element ${i}:`, {
+            className: el.className,
+            role: el.getAttribute('role'),
+            innerHTML: el.innerHTML?.substring(0, 100),
+            computedStyle: window.getComputedStyle(el).position
+          });
+        });
+        
+        // Try to find progress specifically
+        const progress = document.querySelector('[role="status"]');
+        if (progress) {
+          console.log('🔍 TOUR DEBUG: Progress element found!', {
+            className: progress.className,
+            innerHTML: progress.innerHTML,
+            position: window.getComputedStyle(progress).position,
+            top: window.getComputedStyle(progress).top,
+            right: window.getComputedStyle(progress).right,
+            bottom: window.getComputedStyle(progress).bottom
+          });
+        } else {
+          console.log('❌ TOUR DEBUG: No progress element found with role="status"');
+        }
+      }, 500);
+    }
+  }, [run, stepIndex]);
+
   React.useEffect(() => {
     const buildSteps = async () => {
       // Get user type for dynamic content
