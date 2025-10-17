@@ -89,12 +89,6 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
   // Update highlighted element when step changes
   useEffect(() => {
-    // Remove previous highlight
-    const previousHighlight = document.querySelector('.tour-highlight');
-    if (previousHighlight) {
-      previousHighlight.classList.remove('tour-highlight');
-    }
-
     // Execute step action if defined
     if (currentStepData.action) {
       currentStepData.action();
@@ -104,7 +98,14 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
     const timer = setTimeout(() => {
       if (currentStepData.highlightSelector) {
         const element = document.querySelector(currentStepData.highlightSelector) as HTMLElement;
-        if (element) {
+        
+        // Only update highlight if it's a different element
+        const previousHighlight = document.querySelector('.tour-highlight');
+        if (previousHighlight && previousHighlight !== element) {
+          previousHighlight.classList.remove('tour-highlight');
+        }
+        
+        if (element && !element.classList.contains('tour-highlight')) {
           element.classList.add('tour-highlight');
           
           // Scroll element into view
@@ -164,6 +165,63 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             }
 
             // Fallback: bottom center clamped
+            if (!placed) {
+              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.bottom + margin));
+              left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
+            }
+
+            setTooltipStyle({ top, left });
+          }, 200);
+        } else {
+          // Recalculate tooltip position even if element already highlighted
+          setTimeout(() => {
+            const rect = element.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const tooltipWidth = 340;
+            const tooltipHeight = 140;
+            const margin = 16;
+            let top = 0;
+            let left = 0;
+            let placed = false;
+
+            if (currentStepData.fixedPosition === 'top-right') {
+              setTooltipStyle({ top: margin, left: vw - tooltipWidth - margin });
+              return;
+            }
+            if (currentStepData.fixedPosition === 'middle-right') {
+              setTooltipStyle({ top: Math.max(margin, (vh - tooltipHeight) / 2), left: vw - tooltipWidth - margin });
+              return;
+            }
+            if (currentStepData.fixedPosition === 'bottom-right') {
+              setTooltipStyle({ top: vh - tooltipHeight - (margin * 8), left: vw - tooltipWidth - margin });
+              return;
+            }
+
+            const tryOrders: Array<'bottom'|'top'|'right'|'left'> = currentStepData.preferredSides ?? ['right','left','bottom','top'];
+            for (const pos of tryOrders) {
+              if (pos === 'bottom' && vh - rect.bottom > tooltipHeight + margin) {
+                top = rect.bottom + margin;
+                left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
+                placed = true; break;
+              }
+              if (pos === 'top' && rect.top > tooltipHeight + margin) {
+                top = rect.top - tooltipHeight - margin;
+                left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
+                placed = true; break;
+              }
+              if (pos === 'right' && vw - rect.right > tooltipWidth + margin) {
+                top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+                left = rect.right + margin;
+                placed = true; break;
+              }
+              if (pos === 'left' && rect.left > tooltipWidth + margin) {
+                top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+                left = rect.left - tooltipWidth - margin;
+                placed = true; break;
+              }
+            }
+
             if (!placed) {
               top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.bottom + margin));
               left = Math.min(vw - tooltipWidth - margin, Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2));
