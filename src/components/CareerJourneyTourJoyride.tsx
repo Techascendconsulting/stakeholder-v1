@@ -12,37 +12,21 @@ interface CareerJourneyTourJoyrideProps {
   onClosePhaseModal: () => void;
 }
 
-// Custom tooltip component with progress in top right
+// Custom tooltip component - NO progress indicator (will be separate)
 const CustomTooltip: React.FC<TooltipRenderProps> = ({
   continuous,
   index,
   step,
   backProps,
-  closeProps,
   primaryProps,
   skipProps,
-  tooltipProps,
-  size
+  tooltipProps
 }) => {
   return (
-    <div {...tooltipProps} style={{ ...tooltipProps.style }}>
-      {/* Progress indicator - OUTSIDE the tooltip, positioned absolutely */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '-10px',
-          right: '20px',
-          zIndex: 10000
-        }}
-        className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg"
-      >
-        {index + 1} of {size}
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-purple-500" style={{ position: 'relative', maxWidth: '28rem' }}>
-
-        {/* Content - with padding to avoid progress overlap */}
-        <div style={{ padding: '24px', paddingTop: '48px' }}>
+    <div {...tooltipProps}>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-purple-500" style={{ maxWidth: '28rem' }}>
+        {/* Content */}
+        <div style={{ padding: '24px' }}>
           {step.title && (
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
               {step.title}
@@ -238,25 +222,42 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   };
 
   return (
-    <Joyride
-      steps={steps}
-      run={run}
-      stepIndex={stepIndex}
-      continuous
-      showSkipButton
-      showProgress={false}
-      disableScrolling={false}
-      scrollToFirstStep
-      tooltipComponent={CustomTooltip}
-      styles={{
-        options: {
-          primaryColor: '#7c3aed',
-          textColor: '#111827',
-          zIndex: 10000
-        }
-      }}
-      callback={handleJoyrideCallback}
-    />
+    <>
+      {/* Fixed progress indicator - TOP RIGHT of screen */}
+      {run && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 99999
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-2xl pointer-events-none"
+        >
+          {stepIndex + 1} of {steps.length}
+        </div>
+      )}
+      
+      <Joyride
+        steps={steps}
+        run={run}
+        stepIndex={stepIndex}
+        continuous
+        showSkipButton
+        showProgress={false}
+        disableScrolling={false}
+        scrollToFirstStep
+        tooltipComponent={CustomTooltip}
+        styles={{
+          options: {
+            primaryColor: '#7c3aed',
+            textColor: '#111827',
+            zIndex: 10000
+          }
+        }}
+        callback={handleJoyrideCallback}
+      />
+    </>
   );
 };
 
