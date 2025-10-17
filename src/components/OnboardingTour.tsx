@@ -214,7 +214,22 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
         currentStepData.position === 'bottom-center' ? 'bottom-24 left-1/2 -translate-x-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
       } max-w-sm w-full`}>
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+          {/* Arrow / Pointer */}
+          {currentStepData.position !== 'center' && (
+            <div
+              className={`absolute w-3.5 h-3.5 rotate-45 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 ${
+                // place the arrow on the edge closest to target
+                currentStepData.position.startsWith('bottom')
+                  ? 'top-[-7px] left-1/2 -translate-x-1/2 border-b-0 border-r-0'
+                  : currentStepData.position.startsWith('top')
+                  ? 'bottom-[-7px] left-1/2 -translate-x-1/2 border-t-0 border-l-0'
+                  : currentStepData.position.includes('right')
+                  ? 'left-[-7px] top-1/2 -translate-y-1/2 border-l-0 border-b-0'
+                  : 'right-[-7px] top-1/2 -translate-y-1/2 border-r-0 border-t-0'
+              }`}
+            />
+          )}
           {/* Content */}
           <div className="p-5">
             <div className="flex items-start justify-between mb-4">
