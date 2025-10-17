@@ -239,22 +239,49 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, index, type, action } = data;
     
+    console.log('🔍 TOUR CALLBACK:', { status, index, type, action });
+    
     // Handle step progression
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       const nextStepIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+      console.log('🔍 TOUR: Moving from', index, 'to', nextStepIndex, 'action:', action);
       
-      // Before step 2, open the modal
-      if (nextStepIndex === 2 && action === ACTIONS.NEXT) {
-        onOpenPhaseModal(0);
-        setTimeout(() => {
-          setStepIndex(nextStepIndex);
-        }, 500);
-        return;
+      // FORWARD navigation
+      if (action === ACTIONS.NEXT) {
+        // Going to step 2 (index 2) - open modal
+        if (nextStepIndex === 2) {
+          console.log('🔍 TOUR: Opening modal for step 2');
+          onOpenPhaseModal(0);
+          setTimeout(() => {
+            setStepIndex(nextStepIndex);
+          }, 500);
+          return;
+        }
+        
+        // Going to step 4 (index 4) - close modal
+        if (nextStepIndex === 4) {
+          console.log('🔍 TOUR: Closing modal for step 4');
+          onClosePhaseModal();
+        }
       }
       
-      // Close modal before final step
-      if (nextStepIndex === 4 && action === ACTIONS.NEXT) {
-        onClosePhaseModal();
+      // BACKWARD navigation
+      if (action === ACTIONS.PREV) {
+        // Going back to step 4 (index 3) or step 3 (index 2) - ensure modal is open
+        if (nextStepIndex === 3 || nextStepIndex === 2) {
+          console.log('🔍 TOUR: Re-opening modal for step', nextStepIndex + 1);
+          onOpenPhaseModal(0);
+          setTimeout(() => {
+            setStepIndex(nextStepIndex);
+          }, 500);
+          return;
+        }
+        
+        // Going back to step 2 (index 1) - close modal
+        if (nextStepIndex === 1) {
+          console.log('🔍 TOUR: Closing modal, going back to step 2');
+          onClosePhaseModal();
+        }
       }
       
       setStepIndex(nextStepIndex);
