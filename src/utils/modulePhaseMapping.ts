@@ -155,10 +155,21 @@ export async function initializeCareerJourneyPhases(userId: string): Promise<voi
     console.log('🔄 Initializing career journey phases for user:', userId);
     
     // Check if any phases exist for this user
-    const { data: existingPhases } = await supabase
+    const { data: existingPhases, error: selectError } = await supabase
       .from('career_journey_progress')
       .select('phase_id')
       .eq('user_id', userId);
+    
+    // If table doesn't exist (404), skip gracefully - don't block app loading
+    if (selectError) {
+      const errorCode = (selectError as any)?.code;
+      if (errorCode === '42P01' || errorCode === 'PGRST116' || selectError.message?.includes('404')) {
+        console.log('⚠️ career_journey_progress table not found - skipping initialization (non-blocking)');
+        return;
+      }
+      console.error('❌ Error checking existing phases:', selectError);
+      return; // Don't block on error
+    }
     
     if (existingPhases && existingPhases.length > 0) {
       console.log(`✅ User already has ${existingPhases.length} phase records - skipping initialization`);
@@ -184,12 +195,13 @@ export async function initializeCareerJourneyPhases(userId: string): Promise<voi
       .insert(phaseRecords);
     
     if (error) {
-      console.error('❌ Error initializing phases:', error);
+      console.log('⚠️ Could not initialize phases (non-blocking):', error.message);
     } else {
       console.log(`✅ Successfully initialized ${allPhaseIds.length} career journey phases`);
     }
   } catch (error) {
-    console.error('❌ Error in initializeCareerJourneyPhases:', error);
+    console.log('⚠️ Error in initializeCareerJourneyPhases (non-blocking):', error);
+    // Don't throw - make this non-blocking
   }
 }
 
