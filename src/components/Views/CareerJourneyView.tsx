@@ -652,7 +652,7 @@ const CareerJourneyView: React.FC = () => {
         <div className="overflow-x-auto pb-8 pt-4" ref={scrollContainerRef}>
           <div className="relative min-w-max px-8">
             {/* Curved Path SVG - Purple/Indigo Gradient (Hidden on mobile, visible on desktop) */}
-            <svg className="hidden md:block absolute top-[260px] left-0 w-full h-2 pointer-events-none" style={{ zIndex: 1 }}>
+            <svg className="hidden md:block absolute top-[260px] left-0 w-full h-2 pointer-events-none" style={{ zIndex: 0 }}>
               <defs>
                 <linearGradient id="careerPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" style={{ stopColor: '#a855f7', stopOpacity: 0.4 }} />
