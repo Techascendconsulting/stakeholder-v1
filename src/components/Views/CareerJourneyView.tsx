@@ -741,8 +741,8 @@ const CareerJourneyView: React.FC = () => {
                           isSelected ? 'ring-4 ring-purple-300 dark:ring-purple-600 shadow-2xl shadow-purple-200/50 dark:shadow-purple-900/50 border-purple-500 dark:border-purple-600 bg-gradient-to-br from-white via-gray-50 to-white dark:bg-gray-800' : 
                           // Completed phase - Green background with checkmark feel
                           isCompleted ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 border-green-500 dark:border-green-600 shadow-green-200/50 dark:shadow-green-900/50' :
-                          // Current phase (You are here) - Orange/amber background with pulse
-                          isInProgress ? 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 dark:from-orange-900/30 dark:via-amber-900/30 dark:to-orange-900/30 border-orange-500 dark:border-orange-600 shadow-orange-200/50 dark:shadow-orange-900/50 ring-2 ring-orange-300 dark:ring-orange-700' :
+                          // Current phase (You are here) - Use isCurrent instead of isInProgress for color
+                          (isInProgress || isCurrent) ? 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 dark:from-orange-900/30 dark:via-amber-900/30 dark:to-orange-900/30 border-orange-500 dark:border-orange-600 shadow-orange-200/50 dark:shadow-orange-900/50 ring-2 ring-orange-300 dark:ring-orange-700' :
                           // Locked phase - Gray, muted
                           isLocked ? 'bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 dark:from-gray-800/50 dark:via-gray-700/50 dark:to-gray-800/50 border-gray-300 dark:border-gray-600 opacity-60' :
                           // Not started but unlocked - Original white/clean look

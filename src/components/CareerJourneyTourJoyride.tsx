@@ -25,20 +25,21 @@ const CustomTooltip: React.FC<TooltipRenderProps> = ({
   size
 }) => {
   return (
-    <div {...tooltipProps}>
+    <div {...tooltipProps} style={{ ...tooltipProps.style }}>
+      {/* Progress indicator - OUTSIDE the tooltip, positioned absolutely */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '-10px',
+          right: '20px',
+          zIndex: 10000
+        }}
+        className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg"
+      >
+        {index + 1} of {size}
+      </div>
+      
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 border-purple-500" style={{ position: 'relative', maxWidth: '28rem' }}>
-        {/* Progress indicator - ABSOLUTE TOP RIGHT */}
-        <div 
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            zIndex: 100
-          }}
-          className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-3 py-1.5 rounded-full text-xs font-bold"
-        >
-          {index + 1} of {size}
-        </div>
 
         {/* Content - with padding to avoid progress overlap */}
         <div style={{ padding: '24px', paddingTop: '48px' }}>
