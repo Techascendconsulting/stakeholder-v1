@@ -559,9 +559,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return await singleAgentSystem.processUserMessage(
       userMessage,
       stakeholderContext,
-      conversationContext.project,
-      currentMessages,  // Pass conversation history for context
-      selectedStakeholders.length  // Pass stakeholder count for dynamic context window
+      conversationContext.project
     );
   };
 
@@ -642,9 +640,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const response = await singleAgentSystem.processUserMessage(
         messageContent,
         stakeholderContext,
-        conversationContext.project,
-        currentMessages,  // Pass conversation history for context
-        selectedStakeholders.length  // Pass stakeholder count for dynamic context window
+        conversationContext.project
       );
       
       // Create message object
