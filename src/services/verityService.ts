@@ -50,38 +50,67 @@ export class VerityService {
 The current page is: ${context.pageTitle || 'Unknown Page'} (${context.context}).
 User role: ${context.userRole || 'learner'}`;
 
-      // Call backend API instead of OpenAI directly to avoid CORS issues
-      const response = await fetch('http://localhost:3001/api/verity-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // TRY backend API first, fallback to direct OpenAI if backend unavailable
+      let reply: string;
+      let escalate = false;
+
+      try {
+        console.log('🔄 Verity: Attempting backend API call...');
+        const response = await fetch('http://localhost:3001/api/verity-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: contextualSystemPrompt },
+              ...messages
+            ],
+            context
+          }),
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
+
+        if (!response.ok) {
+          throw new Error(`Backend API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        reply = data.reply || "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
+        escalate = data.escalate || false;
+        console.log('✅ Verity: Backend API response received');
+
+      } catch (backendError) {
+        console.warn('⚠️ Verity: Backend unavailable, falling back to direct OpenAI call');
+        console.warn('Backend error:', backendError);
+
+        // FALLBACK: Call OpenAI directly
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: contextualSystemPrompt },
             ...messages
-          ],
-          context
-        })
-      });
+          ] as any,
+          temperature: 0.7,
+          max_tokens: 500
+        });
 
-      if (!response.ok) {
-        throw new Error(`Backend API error: ${response.status}`);
+        reply = completion.choices[0]?.message?.content || 
+          "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
+        
+        console.log('✅ Verity: Direct OpenAI response received');
       }
 
-      const data = await response.json();
-      const reply = data.reply || 
-        "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
-
       // Detect if escalation is needed
-      const escalate = 
+      escalate = 
+        escalate ||
         reply.includes('[ESCALATE_TO_JOY]') ||
         /help|not working|issue|error|bug|broken/i.test(reply);
 
       // Clean up escalation markers from reply
       const cleanReply = reply.replace(/\[ESCALATE_TO_JOY\]/g, '').trim();
 
-      return { reply: cleanReply, escalate: data.escalate || escalate };
+      return { reply: cleanReply, escalate };
 
     } catch (error) {
       console.error('❌ Verity Service Error:', error);
