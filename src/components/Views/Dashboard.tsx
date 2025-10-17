@@ -46,7 +46,9 @@ const Dashboard: React.FC = () => {
 
     try {
       setLoading(true);
+      console.log('════════════════════════════════════════════════');
       console.log('🔄 Dashboard - Loading journey progress for user:', user.id);
+      console.log('════════════════════════════════════════════════');
       
       // Load user type and phase first
       const type = await JourneyProgressService.getUserType(user.id);
@@ -74,10 +76,16 @@ const Dashboard: React.FC = () => {
       const guidance = await JourneyProgressService.getNextStepGuidance(user.id, type, career, learning, practice);
       setNextStep(guidance);
       
-      console.log('✅ Dashboard - Journey progress loaded:', { career, learning, practice, guidance });
+      console.log('✅ Dashboard - Journey progress loaded:');
+      console.log('  📊 Career Progress:', career);
+      console.log('  📚 Learning Progress:', learning);
+      console.log('  🎯 Practice Progress:', practice);
+      console.log('  🧭 Next Step Guidance:', guidance);
+      console.log('════════════════════════════════════════════════');
 
     } catch (error) {
       console.error('❌ Dashboard - Error loading dashboard data:', error);
+      console.error('════════════════════════════════════════════════');
     } finally {
       setLoading(false);
     }

@@ -43,12 +43,35 @@ export class JourneyProgressService {
    */
   static async getCareerJourneyProgress(userId: string): Promise<JourneyProgress> {
     try {
+      console.log('🔍 [Career Progress] Starting query for user:', userId);
+      
       const { data, error } = await supabase
         .from('career_journey_progress')
         .select('*')
         .eq('user_id', userId);
 
-      if (error || !data) {
+      console.log('🔍 [Career Progress] Query result:', { 
+        hasData: !!data, 
+        dataLength: data?.length || 0,
+        error: error?.message || null,
+        rawData: data 
+      });
+
+      if (error) {
+        console.error('❌ [Career Progress] Database error:', error);
+        // Fallback to default
+        return {
+          currentPhaseIndex: 0,
+          phasesCompleted: 0,
+          totalPhases: CAREER_JOURNEY_PHASES.length,
+          progressPercentage: 0,
+          currentPhaseTitle: CAREER_JOURNEY_PHASES[0].title,
+          nextPhaseTitle: CAREER_JOURNEY_PHASES[1]?.title || null
+        };
+      }
+
+      if (!data || data.length === 0) {
+        console.warn('⚠️ [Career Progress] No progress records found for user. Table might be empty or user has no records.');
         // Fallback to default
         return {
           currentPhaseIndex: 0,
@@ -62,6 +85,12 @@ export class JourneyProgressService {
 
       // Find current phase (first in-progress or not-started)
       const progressMap = new Map(data.map(p => [p.phase_id, p]));
+      console.log('🔍 [Career Progress] Progress map created:', {
+        totalRecords: data.length,
+        phaseIds: Array.from(progressMap.keys()),
+        statuses: data.map(p => `${p.phase_id}: ${p.status}`)
+      });
+
       let currentIndex = 0;
       let completedCount = 0;
 
@@ -69,15 +98,17 @@ export class JourneyProgressService {
         const phaseProgress = progressMap.get(CAREER_JOURNEY_PHASES[i].id);
         if (phaseProgress?.status === 'completed') {
           completedCount++;
+          console.log(`✅ [Career Progress] Phase ${i} (${CAREER_JOURNEY_PHASES[i].id}) is COMPLETED`);
         } else if (!phaseProgress || phaseProgress.status === 'not_started' || phaseProgress.status === 'in_progress') {
           if (currentIndex === 0 || phaseProgress?.status === 'in_progress') {
             currentIndex = i;
+            console.log(`📍 [Career Progress] Current phase set to ${i} (${CAREER_JOURNEY_PHASES[i].id}), status: ${phaseProgress?.status || 'no record'}`);
           }
           break;
         }
       }
 
-      return {
+      const result = {
         currentPhaseIndex: currentIndex,
         phasesCompleted: completedCount,
         totalPhases: CAREER_JOURNEY_PHASES.length,
@@ -85,8 +116,11 @@ export class JourneyProgressService {
         currentPhaseTitle: CAREER_JOURNEY_PHASES[currentIndex].title,
         nextPhaseTitle: CAREER_JOURNEY_PHASES[currentIndex + 1]?.title || null
       };
+
+      console.log('🎯 [Career Progress] Final result:', result);
+      return result;
     } catch (error) {
-      console.error('Error fetching career journey progress:', error);
+      console.error('❌ [Career Progress] Unexpected error:', error);
       return {
         currentPhaseIndex: 0,
         phasesCompleted: 0,
