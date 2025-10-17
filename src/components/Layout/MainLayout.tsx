@@ -171,9 +171,8 @@ const MainLayout: React.FC = () => {
       case 'get-started':
         return <GetStartedView />;
       case 'dashboard':
-        // NEW: Use Dashboard2 (clean, purposeful)
-        // To revert: Replace Dashboard2 with Dashboard
-        return <Dashboard2 />;
+        // Using updated Dashboard with journey integration
+        return <Dashboard />;
         
         // OLD: Cluttered dashboard (uncomment to revert)
         // return <Dashboard />;
