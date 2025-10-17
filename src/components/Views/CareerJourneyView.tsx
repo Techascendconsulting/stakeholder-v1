@@ -279,21 +279,21 @@ const CareerJourneyView: React.FC = () => {
       return 'not_started';
     }
 
-    // For new users: Phases 1 and 2 are always unlocked (starting point)
-    if (phase.order === 1 || phase.order === 2) {
-      return 'not_started'; // First two phases always unlocked for new users
+    // For new users: ONLY Phase 1 is unlocked by default
+    if (phase.order === 1) {
+      return 'not_started'; // Phase 1 always unlocked
     }
 
-    // Check if previous phase is completed
+    // All other phases require previous phase completion
     const previousPhase = CAREER_JOURNEY_PHASES.find(p => p.order === phase.order - 1);
     if (previousPhase) {
       const prevProgress = progress.find(p => p.phase_id === previousPhase.id);
       if (prevProgress?.status === 'completed') {
-        return 'not_started'; // Unlocked
+        return 'not_started'; // Unlocked because previous phase is completed
       }
     }
 
-    return 'locked';
+    return 'locked'; // Locked until previous phase is completed
   };
 
   const handlePhaseClick = (phaseIndex: number) => {
@@ -828,15 +828,25 @@ const CareerJourneyView: React.FC = () => {
                         )}
                       </div>
 
-                      {/* "You are here" indicator */}
+                      {/* "You are here" indicator - Always visible on desktop */}
                       {isCurrent && (
-                        <div className={`absolute ${isEven ? 'bottom-full mb-4' : 'top-full mt-4'} left-1/2 transform -translate-x-1/2 whitespace-nowrap`}>
+                        <div className={`absolute ${isEven ? 'bottom-full mb-4' : 'top-full mt-4'} left-1/2 transform -translate-x-1/2 whitespace-nowrap z-50`}>
                           <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-bounce">
                             ⚡ You are here
                           </div>
                         </div>
                       )}
                     </div>
+                    
+                    {/* Mobile "You are here" indicator - Show on mobile below card */}
+                    {isCurrent && (
+                      <div className="md:hidden mt-3 flex justify-center">
+                        <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg inline-flex items-center gap-2">
+                          <Zap className="w-3 h-3" />
+                          <span>You are here</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
