@@ -350,15 +350,30 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
         </div>
       </div>
 
-      {/* Global CSS for highlighting - NO ANIMATIONS */}
+      {/* Global CSS for highlighting - ABSOLUTELY NO ANIMATIONS OR TRANSITIONS */}
       <style>{`
+        * {
+          outline: 0px solid transparent !important;
+        }
+        
         .tour-highlight {
-          position: relative;
+          position: relative !important;
           z-index: 202 !important;
           outline: 4px solid rgb(147, 51, 234) !important;
-          outline-offset: 4px;
+          outline-offset: 4px !important;
           border-radius: 12px !important;
           pointer-events: auto !important;
+          transition: none !important;
+          animation: none !important;
+          -webkit-transition: none !important;
+          -moz-transition: none !important;
+          -o-transition: none !important;
+          -webkit-animation: none !important;
+          -moz-animation: none !important;
+          -o-animation: none !important;
+        }
+        
+        .tour-highlight * {
           transition: none !important;
           animation: none !important;
         }
