@@ -36,7 +36,15 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
     {
       id: 'phase-card',
       title: 'Click any phase card',
-      description: 'Click anywhere on a card to open full details. Let me open one for you...',
+      description: 'Each card shows a phase in your BA journey. Click anywhere on a card to see full details including topics, deliverables, and learning modules.',
+      highlightSelector: '[data-phase-index="0"]',
+      tooltipPosition: 'bottom-center',
+      fixedPosition: 'top-right'
+    },
+    {
+      id: 'open-modal',
+      title: 'Opening phase details...',
+      description: 'Watch as we open the phase card to show you what\'s inside.',
       highlightSelector: '[data-phase-index="0"]',
       tooltipPosition: 'bottom-center',
       fixedPosition: 'top-right',
@@ -68,6 +76,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       title: 'You\'re ready!',
       description: 'Close this modal and explore other phases. Use the orange "You are here" banner to continue where you left off.',
       tooltipPosition: 'bottom-center',
+      fixedPosition: 'middle-right',
       action: () => {
         onClosePhaseModal();
       }
