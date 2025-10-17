@@ -57,8 +57,8 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           )
         },
         {
-          target: 'body',
-          placement: 'center',
+          target: '.phase-modal-container',
+          placement: 'right',
           title: 'Topics & Activities',
           content: (
             <div className="space-y-3">
@@ -69,32 +69,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
                 </p>
               </div>
             </div>
-          ),
-          styles: {
-            beacon: {
-              display: 'none'
-            }
-          },
-          floaterProps: {
-            disableAnimation: false,
-            styles: {
-              floater: {
-                position: 'fixed !important',
-                top: '50% !important',
-                right: '20px !important',
-                left: 'auto !important',
-                transform: 'translateY(-50%) !important',
-                zIndex: '10001 !important'
-              },
-              wrapper: {
-                position: 'fixed !important',
-                top: '50% !important',
-                right: '20px !important',
-                left: 'auto !important',
-                transform: 'translateY(-50%) !important'
-              }
-            }
-          }
+          )
         },
         {
           target: '.phase-modal-learning',
