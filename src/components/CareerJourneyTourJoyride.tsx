@@ -81,34 +81,50 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   // Debug: Log when tour renders and inspect DOM
   React.useEffect(() => {
     if (run) {
+      console.log('═══════════════════════════════════════');
       console.log('🔍 TOUR DEBUG: Tour is running, stepIndex:', stepIndex);
+      console.log('═══════════════════════════════════════');
       setTimeout(() => {
         // Find and log all Joyride elements
         const tooltips = document.querySelectorAll('[class*="react-joyride"], [class*="__floater"], [role="status"], [data-test-id]');
         console.log('🔍 TOUR DEBUG: Found elements:', tooltips.length);
         tooltips.forEach((el, i) => {
-          console.log(`🔍 TOUR DEBUG Element ${i}:`, {
-            className: el.className,
-            role: el.getAttribute('role'),
-            innerHTML: el.innerHTML?.substring(0, 100),
-            computedStyle: window.getComputedStyle(el).position
-          });
+          const htmlEl = el as HTMLElement;
+          console.log(`🔍 TOUR DEBUG Element ${i}:`);
+          console.log('  className:', htmlEl.className);
+          console.log('  role:', htmlEl.getAttribute('role'));
+          console.log('  innerHTML:', htmlEl.innerHTML?.substring(0, 150));
+          console.log('  position:', window.getComputedStyle(htmlEl).position);
+          console.log('  top:', window.getComputedStyle(htmlEl).top);
+          console.log('  bottom:', window.getComputedStyle(htmlEl).bottom);
         });
         
         // Try to find progress specifically
         const progress = document.querySelector('[role="status"]');
         if (progress) {
-          console.log('🔍 TOUR DEBUG: Progress element found!', {
-            className: progress.className,
-            innerHTML: progress.innerHTML,
-            position: window.getComputedStyle(progress).position,
-            top: window.getComputedStyle(progress).top,
-            right: window.getComputedStyle(progress).right,
-            bottom: window.getComputedStyle(progress).bottom
-          });
+          const htmlProgress = progress as HTMLElement;
+          console.log('✅ TOUR DEBUG: Progress element found!');
+          console.log('  className:', htmlProgress.className);
+          console.log('  innerHTML:', htmlProgress.innerHTML);
+          console.log('  position:', window.getComputedStyle(htmlProgress).position);
+          console.log('  top:', window.getComputedStyle(htmlProgress).top);
+          console.log('  right:', window.getComputedStyle(htmlProgress).right);
+          console.log('  bottom:', window.getComputedStyle(htmlProgress).bottom);
+          console.log('  left:', window.getComputedStyle(htmlProgress).left);
         } else {
           console.log('❌ TOUR DEBUG: No progress element found with role="status"');
+          console.log('   Searching for alternatives...');
+          
+          // Try other possible selectors
+          const alt1 = document.querySelector('.react-joyride__tooltip-progress');
+          const alt2 = document.querySelector('[aria-live="polite"]');
+          const alt3 = document.querySelectorAll('div[style*="position"]');
+          
+          console.log('   .react-joyride__tooltip-progress:', alt1 ? 'FOUND' : 'not found');
+          console.log('   [aria-live="polite"]:', alt2 ? 'FOUND' : 'not found');
+          console.log('   divs with position style:', alt3.length);
         }
+        console.log('═══════════════════════════════════════');
       }, 500);
     }
   }, [run, stepIndex]);
