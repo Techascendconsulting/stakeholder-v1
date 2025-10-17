@@ -57,19 +57,37 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
           )
         },
         {
-          target: '.phase-modal-topics',
-          placement: 'left',
+          target: 'body',
+          placement: 'center',
           title: 'Topics & Activities',
           content: (
             <div className="space-y-3">
-              <p>Each phase contains specific topics and activities. Click on any topic to dive deeper.</p>
+              <p>The modal shows detailed phase information. The first section contains all topics and activities - click on any topic to dive deeper.</p>
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">
                 <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   ✅ <strong>Action:</strong> Work through topics in order
                 </p>
               </div>
             </div>
-          )
+          ),
+          styles: {
+            beacon: {
+              display: 'none'
+            }
+          },
+          floaterProps: {
+            disableAnimation: false,
+            styles: {
+              floater: {
+                position: 'fixed',
+                top: '50%',
+                right: '20px',
+                left: 'auto',
+                transform: 'translateY(-50%)',
+                zIndex: 10001
+              }
+            }
+          }
         },
         {
           target: '.phase-modal-learning',

@@ -846,7 +846,7 @@ const CareerJourneyView: React.FC = () => {
           onClick={() => setSelectedPhaseIndex(null)}
         >
           <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden phase-modal-container"
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
