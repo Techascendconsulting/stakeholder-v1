@@ -203,121 +203,104 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
   return (
     <>
       {/* Overlay - blocks clicks on page content */}
-      <div className="fixed inset-0 bg-black/20 z-[100] transition-opacity duration-300" />
+      <div className="fixed inset-0 bg-black/30 z-[200] pointer-events-none" />
 
       {/* Floating Tour Tooltip - positioned based on step */}
-      <div className={`fixed z-[101] transition-all duration-500 ${
+      <div className={`fixed z-[202] transition-all duration-500 ${
         currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
         currentStepData.position === 'top-right' ? 'top-24 right-8' :
         currentStepData.position === 'bottom-left' ? 'bottom-24 left-8' :
-        currentStepData.position === 'bottom-right' ? 'bottom-32 right-32' : // Position above Verity
+        currentStepData.position === 'bottom-right' ? 'bottom-32 right-32' :
         currentStepData.position === 'bottom-center' ? 'bottom-24 left-1/2 -translate-x-1/2' :
         'top-1/2 right-24 -translate-y-1/2'
       } max-w-sm w-full`}>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border-2 border-purple-500">
-          {/* Compact Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-white" />
-              <span className="text-white text-xs font-bold">{currentStepData.title}</span>
-            </div>
-            <div className="flex items-center space-x-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+          {/* Content */}
+          <div className="p-5">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                  {currentStepData.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {currentStepData.description}
+                </p>
+              </div>
               <button
                 onClick={handleSkip}
-                className="px-2 py-1 text-xs text-white/90 hover:text-white hover:bg-white/20 rounded transition-colors font-medium"
-              >
-                Skip Tour
-              </button>
-              <button
-                onClick={handleSkip}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
+                className="ml-4 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
                 aria-label="Close tour"
               >
-                <X className="w-3.5 h-3.5 text-white" />
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="p-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-              {currentStepData.description}
-            </p>
-
-            {/* Progress & Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {/* Back Button - Same style as Next */}
-                {currentStep > 0 && (
-                  <button
-                    onClick={handleBack}
-                    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow"
-                    title="Go back"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Back</span>
-                  </button>
-                )}
-                
-                {/* Progress Dots */}
-                <div className="flex items-center space-x-1.5">
+            {/* Footer with Navigation */}
+            <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+              {/* Progress */}
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {currentStep + 1} of {steps.length}
+                </span>
+                <div className="flex space-x-1">
                   {steps.map((_, index) => (
                     <div
                       key={index}
-                      className={`h-1 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 rounded-full ${
                         index === currentStep
-                          ? 'w-4 bg-purple-600'
+                          ? 'bg-purple-600 w-6'
                           : index < currentStep
-                          ? 'w-1 bg-purple-400'
-                          : 'w-1 bg-gray-300 dark:bg-gray-600'
+                          ? 'bg-purple-400'
+                          : 'bg-gray-300 dark:bg-gray-600'
                       }`}
                     />
                   ))}
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                    {currentStep + 1}/{steps.length}
-                  </span>
                 </div>
               </div>
 
-              {currentStepData.action ? (
-                <button
-                  onClick={currentStepData.action.onClick}
-                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-xs"
-                >
-                  <span>{currentStepData.action.label}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleNext}
-                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold shadow-lg hover:shadow-xl text-xs"
-                >
-                  <span>{isLastStep ? 'Finish' : 'Next'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
+              {/* Buttons */}
+              <div className="flex items-center space-x-2">
+                {currentStep > 0 && (
+                  <button
+                    onClick={handleBack}
+                    className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                  >
+                    Back
+                  </button>
+                )}
+                
+                {currentStepData.action ? (
+                  <button
+                    onClick={currentStepData.action.onClick}
+                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded flex items-center space-x-1"
+                  >
+                    <span>{currentStepData.action.label}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNext}
+                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded flex items-center space-x-1"
+                  >
+                    <span>{isLastStep ? 'Finish' : 'Next'}</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Global CSS for highlighting */}
+      {/* Global CSS for highlighting - match CareerJourneyTour */}
       <style>{`
         .tour-highlight {
-          position: relative;
-          z-index: 99;
-          box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.4), 0 0 0 8px rgba(168, 85, 247, 0.2);
-          border-radius: 12px;
-          animation: pulse-highlight 2s infinite;
-        }
-        
-        @keyframes pulse-highlight {
-          0%, 100% {
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.4), 0 0 0 8px rgba(168, 85, 247, 0.2);
-          }
-          50% {
-            box-shadow: 0 0 0 6px rgba(168, 85, 247, 0.6), 0 0 0 12px rgba(168, 85, 247, 0.3);
-          }
+          position: relative !important;
+          z-index: 202 !important;
+          outline: 4px solid rgb(147, 51, 234) !important;
+          outline-offset: 4px !important;
+          border-radius: 12px !important;
+          pointer-events: auto !important;
+          transition: none !important;
+          animation: none !important;
         }
       `}</style>
     </>
