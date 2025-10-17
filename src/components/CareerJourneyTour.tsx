@@ -19,8 +19,6 @@ interface CareerJourneyTourProps {
 
 const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSkip, onOpenPhaseModal, onClosePhaseModal }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
 
   const steps: TourStep[] = [
     {
@@ -90,21 +88,22 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       if (currentStepData.highlightSelector) {
         const element = document.querySelector(currentStepData.highlightSelector) as HTMLElement;
         if (element) {
-          setHighlightedElement(element);
           element.classList.add('tour-highlight');
           
-          // Scroll element into view first
+          // Scroll element into view
           element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        } else {
-          console.warn('Tour element not found:', currentStepData.highlightSelector);
-          setHighlightedElement(null);
         }
-      } else {
-        setHighlightedElement(null);
       }
-    }, currentStepData.action ? 800 : 100); // Longer delay if action was executed
+    }, currentStepData.action ? 800 : 100);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Cleanup highlight when component unmounts
+      const highlight = document.querySelector('.tour-highlight');
+      if (highlight) {
+        highlight.classList.remove('tour-highlight');
+      }
+    };
   }, [currentStep, currentStepData]);
 
   const handleNext = () => {
