@@ -184,7 +184,7 @@ const Dashboard: React.FC = () => {
 
       {/* Journey Progress Cards */}
       {(careerProgress || learningProgress || practiceProgress) && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* BA Career Journey Progress */}
           {careerProgress && (
             <div 
@@ -263,7 +263,7 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Practice Journey Progress */}
+          {/* Practice Journey Progress - Quick Exercises */}
           {practiceProgress && (
             <div 
               className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
@@ -302,8 +302,8 @@ const Dashboard: React.FC = () => {
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Practice Journey</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {isPageAccessible('practice-flow', userPhase)
-                        ? `${practiceProgress.meetingsCount} meetings completed`
-                        : 'Complete 10 learning modules to unlock'
+                        ? 'Quick practice exercises'
+                        : 'Unlocks after 3 modules'
                       }
                     </p>
             </div>
@@ -314,40 +314,98 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                  <span className="text-gray-600 dark:text-gray-400">Exercises</span>
                   <span className={`font-semibold ${
                     isPageAccessible('practice-flow', userPhase)
                       ? 'text-green-600 dark:text-green-400'
                       : 'text-gray-400 dark:text-gray-500'
                   }`}>
-                    {practiceProgress.progressPercentage}%
+                    {practiceProgress.meetingsCount || 0}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all ${
-                      isPageAccessible('practice-flow', userPhase)
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                        : 'bg-gray-400 dark:bg-gray-600'
-                    }`}
-                    style={{ width: `${practiceProgress.progressPercentage}%` }}
-                  />
-        </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   {isPageAccessible('practice-flow', userPhase)
-                    ? `${practiceProgress.voiceMeetingsCount} voice • ${practiceProgress.transcriptMeetingsCount} transcript`
-                    : '🔒 Unlocks after Module 10'
+                    ? 'Elicitation, Documentation, MVP, Scrum'
+                    : '🔒 Complete 3 modules to unlock'
                   }
                 </p>
               </div>
           </div>
           )}
+
+          {/* Project Journey Progress - Hands-On Projects */}
+          <div 
+            className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
+              isPageAccessible('project-flow', userPhase) 
+                ? 'hover:shadow-lg cursor-pointer' 
+                : 'opacity-60 cursor-not-allowed'
+            }`}
+            onClick={() => {
+              if (isPageAccessible('project-flow', userPhase)) {
+                setCurrentView('project-flow');
+              }
+            }}
+          >
+            {!isPageAccessible('project-flow', userPhase) && (
+              <div className="absolute top-3 right-3">
+                <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Locked</span>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  isPageAccessible('project-flow', userPhase)
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600'
+                    : 'bg-gray-400 dark:bg-gray-600'
+                }`}>
+                  {isPageAccessible('project-flow', userPhase) ? (
+                    <Rocket className="w-5 h-5 text-white" />
+                  ) : (
+                    <Lock className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Project Journey</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {isPageAccessible('project-flow', userPhase)
+                      ? 'Hands-on real projects'
+                      : 'Unlocks after 10 modules'
+                    }
+                  </p>
+                </div>
+              </div>
+              {isPageAccessible('project-flow', userPhase) && (
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Status</span>
+                <span className={`font-semibold ${
+                  isPageAccessible('project-flow', userPhase)
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-gray-400 dark:text-gray-500'
+                }`}>
+                  {isPageAccessible('project-flow', userPhase) ? 'Ready' : 'Locked'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {isPageAccessible('project-flow', userPhase)
+                  ? 'Select project, conduct meetings, create deliverables'
+                  : '🔒 Complete all 10 modules to unlock'
+                }
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* BA Project Journey - Always visible but shows status */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* BA Career Journey - Always visible */}
         <button
           onClick={() => setCurrentView('career-journey')}
           className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -355,7 +413,7 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center space-x-3">
             <Map className="w-6 h-6" />
-            <span className="font-semibold">BA Project Journey</span>
+            <span className="font-semibold">BA Career Journey</span>
           </div>
           <p className="text-purple-100 text-sm mt-2">Follow the complete BA lifecycle from onboarding to delivery</p>
         </button>
@@ -373,7 +431,7 @@ const Dashboard: React.FC = () => {
           <p className="text-blue-100 text-sm mt-2">Master BA skills through 11 comprehensive modules</p>
         </button>
 
-        {/* Practice Journey - Shows lock state for learning phase users */}
+        {/* Practice Journey - Quick Exercises (Unlocks at 3 modules) */}
         <button
           onClick={() => {
             if (isPageAccessible('practice-flow', userPhase)) {
@@ -404,11 +462,48 @@ const Dashboard: React.FC = () => {
             isPageAccessible('practice-flow', userPhase) ? 'text-green-100' : 'text-white/80'
           }`}>
             {isPageAccessible('practice-flow', userPhase)
-              ? 'Conduct AI stakeholder meetings and build confidence'
-              : '🔒 Complete 10 learning modules to unlock'
+              ? 'Quick practice: Elicitation, Docs, MVP, Scrum'
+              : '🔒 Complete 3 modules to unlock'
             }
           </p>
-                </button>
+        </button>
+
+        {/* Project Journey - Hands-On Projects (Unlocks at 10 modules) */}
+        <button
+          onClick={() => {
+            if (isPageAccessible('project-flow', userPhase)) {
+              setCurrentView('project-flow');
+            }
+          }}
+          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
+            isPageAccessible('project-flow', userPhase)
+              ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
+              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
+          }`}
+          data-tour="quick-action-project"
+        >
+          {!isPageAccessible('project-flow', userPhase) && (
+            <div className="absolute top-3 right-3">
+              <Lock className="w-5 h-5 text-white/70" />
+            </div>
+          )}
+          <div className="flex items-center space-x-3">
+            {isPageAccessible('project-flow', userPhase) ? (
+              <Rocket className="w-6 h-6" />
+            ) : (
+              <Lock className="w-6 h-6" />
+            )}
+            <span className="font-semibold">Project Journey</span>
+          </div>
+          <p className={`text-sm mt-2 ${
+            isPageAccessible('project-flow', userPhase) ? 'text-orange-100' : 'text-white/80'
+          }`}>
+            {isPageAccessible('project-flow', userPhase)
+              ? 'End-to-end projects with stakeholder meetings'
+              : '🔒 Complete all 10 modules to unlock'
+            }
+          </p>
+        </button>
       </div>
     </div>
   );
