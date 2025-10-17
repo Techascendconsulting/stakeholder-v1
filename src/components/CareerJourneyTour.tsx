@@ -89,8 +89,12 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
   // Update highlighted element when step changes
   useEffect(() => {
+    console.log('🎯 TOUR: Step changed to:', currentStep, currentStepData.id);
+    console.log('🎯 TOUR: Highlight selector:', currentStepData.highlightSelector);
+    
     // Execute step action if defined
     if (currentStepData.action) {
+      console.log('🎯 TOUR: Executing action for step:', currentStepData.id);
       currentStepData.action();
     }
 
@@ -99,14 +103,20 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       // If current step has a selector, highlight it
       if (currentStepData.highlightSelector) {
         const element = document.querySelector(currentStepData.highlightSelector) as HTMLElement;
+        console.log('🎯 TOUR: Found element:', element, 'for selector:', currentStepData.highlightSelector);
         
         // Only update highlight if it's a different element
         const previousHighlight = document.querySelector('.tour-highlight');
+        console.log('🎯 TOUR: Previous highlight:', previousHighlight);
+        console.log('🎯 TOUR: Are they the same?', previousHighlight === element);
+        
         if (previousHighlight && previousHighlight !== element) {
+          console.log('🎯 TOUR: REMOVING highlight from previous element');
           previousHighlight.classList.remove('tour-highlight');
         }
         
         if (element && !element.classList.contains('tour-highlight')) {
+          console.log('🎯 TOUR: ADDING highlight to new element');
           element.classList.add('tour-highlight');
           
           // Scroll element into view
@@ -174,6 +184,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
             setTooltipStyle({ top, left });
           }, 200);
         } else {
+          console.log('🎯 TOUR: Element already has highlight, recalculating tooltip position only');
           // Recalculate tooltip position even if element already highlighted
           setTimeout(() => {
             const rect = element.getBoundingClientRect();
@@ -232,9 +243,11 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
           }, 200);
         }
       } else {
+        console.log('🎯 TOUR: No highlight selector for this step - removing any existing highlight');
         // No highlight selector for this step - remove any existing highlight
         const previousHighlight = document.querySelector('.tour-highlight');
         if (previousHighlight) {
+          console.log('🎯 TOUR: REMOVING highlight (no selector for current step)');
           previousHighlight.classList.remove('tour-highlight');
         }
       }
