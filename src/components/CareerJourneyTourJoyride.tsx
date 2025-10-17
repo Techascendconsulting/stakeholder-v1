@@ -72,7 +72,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         },
         {
           target: '.phase-modal-topics',
-          placement: 'left',
+          placement: 'auto',
           title: 'Topics & Activities',
           content: (
             <div className="space-y-3">
@@ -84,15 +84,15 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
               </div>
             </div>
           ),
-          styles: {
-            tooltipContainer: {
-              textAlign: 'left'
-            }
+          floaterProps: {
+            disableFlip: true,
+            placement: 'right',
+            offset: 20
           }
         },
         {
           target: '.phase-modal-learning',
-          placement: 'left',
+          placement: 'auto',
           title: 'Learning & Practice',
           content: (
             <div className="space-y-3">
@@ -104,10 +104,10 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
               </div>
             </div>
           ),
-          styles: {
-            tooltipContainer: {
-              textAlign: 'left'
-            }
+          floaterProps: {
+            disableFlip: true,
+            placement: 'right',
+            offset: 20
           }
         },
         {
@@ -212,10 +212,11 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
       continuous
       showSkipButton
       showProgress
-      disableScrolling={false}
-      scrollToFirstStep={true}
+      disableScrolling={true}
+      scrollToFirstStep={false}
       disableOverlayClose
       spotlightClicks={false}
+      disableScrollParentFix={true}
       styles={{
         options: {
           primaryColor: '#7c3aed',
