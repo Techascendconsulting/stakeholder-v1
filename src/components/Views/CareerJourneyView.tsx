@@ -273,9 +273,9 @@ const CareerJourneyView: React.FC = () => {
       return 'not_started';
     }
 
-    // For new users: check if locked
-    if (phase.order === 1) {
-      return 'not_started'; // First phase always unlocked
+    // For new users: Phases 1 and 2 are always unlocked (starting point)
+    if (phase.order === 1 || phase.order === 2) {
+      return 'not_started'; // First two phases always unlocked for new users
     }
 
     // Check if previous phase is completed
