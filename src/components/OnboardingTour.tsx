@@ -113,7 +113,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
         ? 'Apply skills to real projects. This unlocks after you complete all 11 learning modules - it\'s where you put everything together!'
         : 'Apply skills to real projects! Create your own BA projects and conduct stakeholder meetings. This is where theory meets practice.',
       position: 'bottom-left',
-      navigateTo: 'dashboard',
+      navigateTo: 'project-flow',
     },
     {
       id: 'resources',
