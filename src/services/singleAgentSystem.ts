@@ -58,7 +58,9 @@ class SingleAgentSystem {
   async processUserMessage(
     userMessage: string,
     stakeholderContext: StakeholderContext,
-    projectContext: ProjectContext
+    projectContext: ProjectContext,
+    conversationHistory: any[] = [],
+    totalStakeholders: number = 1
   ): Promise<string> {
     try {
       // Ensure system is initialized
@@ -83,8 +85,8 @@ class SingleAgentSystem {
       // Search Knowledge Base
       const kbResults = await this.searchKnowledgeBase(userMessage);
       
-      // Generate response using KB content and project context
-      const response = await this.generateResponse(userMessage, stakeholderContext, projectContext, kbResults);
+      // Generate response using KB content, project context, and conversation history
+      const response = await this.generateResponse(userMessage, stakeholderContext, projectContext, kbResults, conversationHistory, totalStakeholders);
       
       // Reset error state on success
       this.lastError = null;
@@ -102,7 +104,7 @@ class SingleAgentSystem {
       if (this.retryCount < this.maxRetries) {
         this.retryCount++;
         console.log(`🔄 Retrying (${this.retryCount}/${this.maxRetries})...`);
-        return this.processUserMessage(userMessage, stakeholderContext, projectContext);
+        return this.processUserMessage(userMessage, stakeholderContext, projectContext, conversationHistory, totalStakeholders);
       }
 
       // Return graceful error response
@@ -135,7 +137,9 @@ class SingleAgentSystem {
     userMessage: string,
     stakeholderContext: StakeholderContext,
     projectContext: ProjectContext,
-    kbResults: any[]
+    kbResults: any[],
+    conversationHistory: any[] = [],
+    totalStakeholders: number = 1
   ): Promise<string> {
     try {
       // Always use AI for dynamic responses, but use KB context to inform the AI
@@ -149,6 +153,23 @@ class SingleAgentSystem {
       const model = 'gpt-4o-mini';
       console.log(`🤖 Using ${model} for dynamic AI response generation`);
       
+      // Build conversation history for context
+      // Dynamic context window: More stakeholders = larger window needed
+      // Formula: 10 messages per stakeholder ensures each gets ~10 exchanges remembered
+      // 1 stakeholder: 10 messages (5 user + 5 stakeholder)
+      // 2 stakeholders: 20 messages (keeps ~10 exchanges)
+      // 3 stakeholders: 30 messages (keeps ~10 exchanges)
+      const contextWindowSize = Math.min(10 * totalStakeholders, 40); // Cap at 40 to control costs
+      console.log(`📚 Context window: ${contextWindowSize} messages for ${totalStakeholders} stakeholder(s)`);
+      
+      const historyMessages = conversationHistory.slice(-contextWindowSize).map((msg: any) => {
+        if (msg.speaker === 'user') {
+          return { role: 'user' as const, content: msg.content };
+        } else {
+          return { role: 'assistant' as const, content: msg.content };
+        }
+      });
+
       const response = await this.openai.chat.completions.create({
         model: model,
         messages: [
@@ -156,6 +177,7 @@ class SingleAgentSystem {
             role: 'system',
             content: systemPrompt
           },
+          ...historyMessages,  // Include conversation history for context
           {
             role: 'user',
             content: userMessage

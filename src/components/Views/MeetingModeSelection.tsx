@@ -17,6 +17,13 @@ const MeetingModeSelection: React.FC = () => {
   useEffect(() => {
     const restoreStakeholders = () => {
       try {
+        // If stakeholders are already set in AppContext, use those (most common case)
+        if (selectedStakeholders && selectedStakeholders.length > 0) {
+          console.log("👥 MEETING_MODE_SELECTION: Using stakeholders from AppContext:", selectedStakeholders.length);
+          setIsLoading(false);
+          return;
+        }
+
         // First check sessionStorage for training flow stakeholders
         const trainingStakeholders = sessionStorage.getItem('trainingStakeholders');
         if (trainingStakeholders) {
@@ -27,7 +34,7 @@ const MeetingModeSelection: React.FC = () => {
           return;
         }
         
-        // Fallback to localStorage for regular flow
+        // Check localStorage for regular flow (meetingSetupProgress)
         const raw = localStorage.getItem("meetingSetupProgress");
         if (raw) {
           const setup = JSON.parse(raw);
@@ -38,9 +45,19 @@ const MeetingModeSelection: React.FC = () => {
             const restoredStakeholders = stakeholders.filter(stakeholder => 
               selectedStakeholderIds.includes(stakeholder.id)
             );
-            console.log("👥 MEETING_MODE_SELECTION: Restoring selected stakeholders:", restoredStakeholders.length);
+            console.log("👥 MEETING_MODE_SELECTION: Restoring from meetingSetupProgress:", restoredStakeholders.length);
             setSelectedStakeholders(restoredStakeholders);
+            setIsLoading(false);
+            return;
           }
+        }
+
+        // Final fallback: Check localStorage for selectedStakeholders (from StakeholdersView)
+        const savedStakeholders = localStorage.getItem('selectedStakeholders');
+        if (savedStakeholders) {
+          const stakeholderObjects = JSON.parse(savedStakeholders);
+          console.log("👥 MEETING_MODE_SELECTION: Restoring from localStorage['selectedStakeholders']:", stakeholderObjects.length);
+          setSelectedStakeholders(stakeholderObjects);
         }
       } catch (error) {
         console.error("❌ MEETING_MODE_SELECTION: Error restoring stakeholders:", error);
@@ -50,7 +67,7 @@ const MeetingModeSelection: React.FC = () => {
     };
 
     restoreStakeholders();
-  }, [stakeholders, setSelectedStakeholders]);
+  }, [stakeholders, setSelectedStakeholders, selectedStakeholders]);
 
   const handleModeSelection = (mode: 'transcript' | 'voice-only') => {
     if (mode === 'transcript') {
