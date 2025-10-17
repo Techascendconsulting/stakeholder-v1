@@ -320,7 +320,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       {/* Theme Toggle */}
-      <div className={`mx-4 mb-2 mt-4 ${isCollapsed ? 'mx-2' : ''}`}>
+      <div className={`mx-4 mb-2 mt-4 ${isCollapsed ? 'mx-2' : ''}`} data-tour="theme-toggle">
         <button
           onClick={toggleTheme}
           className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group`}
@@ -348,7 +348,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-1 overflow-y-auto">
+      <nav className="flex-1 p-1 overflow-y-auto" data-tour="main-menu">
         <ul className="space-y-0">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -380,7 +380,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       console.debug('[Sidebar] sectionClick', { id: item.id });
                     }
                   }}
-                  data-tour={item.id === 'my-learning' ? 'learning-journey' : item.id === 'my-practice' ? 'practice-journey' : item.id === 'my-resources' ? 'resources' : undefined}
+                  data-tour={
+                    item.id === 'my-learning' ? 'learning-journey' :
+                    item.id === 'my-practice' ? 'practice-journey' :
+                    item.id === 'my-resources' ? 'resources' :
+                    (item.id === 'admin' || item.id === 'admin-panel') ? 'admin-section' :
+                    undefined
+                  }
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'space-x-3 px-2 py-1.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
@@ -464,7 +470,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       {/* User Section with Profile */}
-      <div className="p-3 border-t border-purple-500/30">
+      <div className="p-3 border-t border-purple-500/30" data-tour="profile-menu">
         <div className="relative">
           <button
             onClick={() => !isCollapsed && setShowUserMenu(!showUserMenu)}
