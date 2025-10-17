@@ -736,16 +736,27 @@ const CareerJourneyView: React.FC = () => {
                         } ${isLocked && userType === 'new' ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-2xl'}`}
                         title={isLocked ? 'Complete previous phase to unlock' : 'Click to view full phase details'}
                       >
-                        <div className={`relative bg-gradient-to-br from-white via-gray-50 to-white dark:bg-gray-800 rounded-xl shadow-2xl border-2 transition-all duration-500 overflow-hidden z-10 ${
-                          isSelected ? 'ring-4 ring-purple-300 dark:ring-purple-600 shadow-2xl shadow-purple-200/50 dark:shadow-purple-900/50 border-purple-500 dark:border-purple-600' : 
-                          isCompleted ? 'border-green-500 dark:border-green-600 shadow-green-200/30 dark:shadow-green-900/30' :
-                          isInProgress ? 'border-orange-500 dark:border-orange-600 shadow-orange-200/30 dark:shadow-orange-900/30' :
-                          isLocked ? 'border-gray-300 dark:border-gray-600 opacity-60' :
-                          'border-purple-200 dark:border-gray-700 hover:shadow-2xl hover:shadow-purple-100/50 hover:border-purple-400 dark:hover:border-purple-600'
+                        <div className={`relative rounded-xl shadow-2xl border-2 transition-all duration-500 overflow-hidden z-10 ${
+                          // Selected state (modal open)
+                          isSelected ? 'ring-4 ring-purple-300 dark:ring-purple-600 shadow-2xl shadow-purple-200/50 dark:shadow-purple-900/50 border-purple-500 dark:border-purple-600 bg-gradient-to-br from-white via-gray-50 to-white dark:bg-gray-800' : 
+                          // Completed phase - Green background with checkmark feel
+                          isCompleted ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 border-green-500 dark:border-green-600 shadow-green-200/50 dark:shadow-green-900/50' :
+                          // Current phase (You are here) - Orange/amber background with pulse
+                          isInProgress ? 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 dark:from-orange-900/30 dark:via-amber-900/30 dark:to-orange-900/30 border-orange-500 dark:border-orange-600 shadow-orange-200/50 dark:shadow-orange-900/50 ring-2 ring-orange-300 dark:ring-orange-700' :
+                          // Locked phase - Gray, muted
+                          isLocked ? 'bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 dark:from-gray-800/50 dark:via-gray-700/50 dark:to-gray-800/50 border-gray-300 dark:border-gray-600 opacity-60' :
+                          // Not started but unlocked - Original white/clean look
+                          'bg-gradient-to-br from-white via-gray-50 to-white dark:bg-gray-800 border-purple-200 dark:border-gray-700 hover:shadow-2xl hover:shadow-purple-100/50 hover:border-purple-400 dark:hover:border-purple-600'
                         }`}>
-                          {/* Subtle gradient overlay */}
+                          {/* Subtle gradient overlay based on status */}
                           <div className="absolute inset-0 bg-gradient-to-br opacity-5" style={{
-                            backgroundImage: `linear-gradient(135deg, ${phase.color === 'purple' ? '#a855f7' : phase.color === 'blue' ? '#3b82f6' : phase.color === 'emerald' ? '#10b981' : phase.color === 'amber' ? '#f59e0b' : phase.color === 'pink' ? '#ec4899' : phase.color === 'indigo' ? '#6366f1' : phase.color === 'cyan' ? '#06b6d4' : '#22c55e'} 0%, transparent 100%)`
+                            backgroundImage: isCompleted 
+                              ? 'linear-gradient(135deg, #10b981 0%, transparent 100%)'  // Green for completed
+                              : isInProgress
+                              ? 'linear-gradient(135deg, #f59e0b 0%, transparent 100%)'  // Orange for current
+                              : isLocked
+                              ? 'linear-gradient(135deg, #6b7280 0%, transparent 100%)'  // Gray for locked
+                              : `linear-gradient(135deg, ${phase.color === 'purple' ? '#a855f7' : phase.color === 'blue' ? '#3b82f6' : phase.color === 'emerald' ? '#10b981' : phase.color === 'amber' ? '#f59e0b' : phase.color === 'pink' ? '#ec4899' : phase.color === 'indigo' ? '#6366f1' : phase.color === 'cyan' ? '#06b6d4' : '#22c55e'} 0%, transparent 100%)`
                           }} />
 
                           <div className="relative p-6">
