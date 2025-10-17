@@ -69,6 +69,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
 
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
+  const [tooltipStyle, setTooltipStyle] = useState<{ top: number; left: number } | null>(null);
 
   // Update highlighted element when step changes
   useEffect(() => {
@@ -92,6 +93,65 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
           
           // Scroll element into view
           element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          // Auto-place tooltip near the element without covering it
+          setTimeout(() => {
+            const rect = element.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const tooltipWidth = 340; // px
+            const tooltipHeight = 140; // approx px
+            const margin = 16;
+
+            // Try placements in priority order: bottom, top, right, left
+            let top = 0;
+            let left = 0;
+            let placed = false;
+
+            // Bottom center
+            if (vh - rect.bottom > tooltipHeight + margin) {
+              top = rect.bottom + margin;
+              left = Math.min(
+                vw - tooltipWidth - margin,
+                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
+              );
+              placed = true;
+            }
+
+            // Top center
+            if (!placed && rect.top > tooltipHeight + margin) {
+              top = rect.top - tooltipHeight - margin;
+              left = Math.min(
+                vw - tooltipWidth - margin,
+                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
+              );
+              placed = true;
+            }
+
+            // Right
+            if (!placed && vw - rect.right > tooltipWidth + margin) {
+              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+              left = rect.right + margin;
+              placed = true;
+            }
+
+            // Left
+            if (!placed && rect.left > tooltipWidth + margin) {
+              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.top));
+              left = rect.left - tooltipWidth - margin;
+              placed = true;
+            }
+
+            // Fallback: bottom center clamped
+            if (!placed) {
+              top = Math.min(vh - tooltipHeight - margin, Math.max(margin, rect.bottom + margin));
+              left = Math.min(
+                vw - tooltipWidth - margin,
+                Math.max(margin, rect.left + rect.width / 2 - tooltipWidth / 2)
+              );
+            }
+
+            setTooltipStyle({ top, left });
+          }, 200);
         }
       }
     }, currentStepData.action ? 800 : 100);
@@ -129,9 +189,12 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
       {/* Simple overlay - lightweight, no performance issues */}
       <div className="fixed inset-0 bg-black/30 z-[200] pointer-events-none" />
 
-      {/* Tour Tooltip - Jira/Monday.com Style (Fixed at bottom) */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[202] w-full max-w-md px-4">
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700">
+      {/* Tour Tooltip - Auto-placed near target */}
+      <div
+        className="fixed z-[202]"
+        style={tooltipStyle ? { top: tooltipStyle.top, left: tooltipStyle.left, width: 340 } : { visibility: 'hidden' }}
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-[340px]">
           {/* Content */}
           <div className="p-6">
             <div className="flex items-start justify-between mb-4">
