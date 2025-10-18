@@ -559,7 +559,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return await singleAgentSystem.processUserMessage(
       userMessage,
       stakeholderContext,
-      conversationContext.project
+      conversationContext.project,
+      currentMessages,  // Pass conversation history for memory
+      selectedStakeholders.length  // Pass stakeholder count for dynamic context window
     );
   };
 

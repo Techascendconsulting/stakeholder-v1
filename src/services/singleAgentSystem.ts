@@ -58,7 +58,9 @@ class SingleAgentSystem {
   async processUserMessage(
     userMessage: string,
     stakeholderContext: StakeholderContext,
-    projectContext: ProjectContext
+    projectContext: ProjectContext,
+    conversationHistory: any[] = [],
+    totalStakeholders: number = 1
   ): Promise<string> {
     try {
       // Ensure system is initialized
@@ -79,12 +81,20 @@ class SingleAgentSystem {
       this.retryCount = 0;
 
       console.log(`📝 Processing message: "${userMessage.substring(0, 50)}..."`);
+      console.log(`🧠 Conversation memory: ${conversationHistory.length} messages in history`);
 
       // Search Knowledge Base
       const kbResults = await this.searchKnowledgeBase(userMessage);
       
-      // Generate response using KB content and project context
-      const response = await this.generateResponse(userMessage, stakeholderContext, projectContext, kbResults);
+      // Generate response using KB content, project context, and conversation history
+      const response = await this.generateResponse(
+        userMessage, 
+        stakeholderContext, 
+        projectContext, 
+        kbResults, 
+        conversationHistory, 
+        totalStakeholders
+      );
       
       // Reset error state on success
       this.lastError = null;
@@ -102,7 +112,7 @@ class SingleAgentSystem {
       if (this.retryCount < this.maxRetries) {
         this.retryCount++;
         console.log(`🔄 Retrying (${this.retryCount}/${this.maxRetries})...`);
-        return this.processUserMessage(userMessage, stakeholderContext, projectContext);
+        return this.processUserMessage(userMessage, stakeholderContext, projectContext, conversationHistory, totalStakeholders);
       }
 
       // Return graceful error response
@@ -135,7 +145,9 @@ class SingleAgentSystem {
     userMessage: string,
     stakeholderContext: StakeholderContext,
     projectContext: ProjectContext,
-    kbResults: any[]
+    kbResults: any[],
+    conversationHistory: any[] = [],
+    totalStakeholders: number = 1
   ): Promise<string> {
     try {
       // Always use AI for dynamic responses, but use KB context to inform the AI
@@ -143,11 +155,40 @@ class SingleAgentSystem {
         ? kbResults.map(r => `${r.entry.short}\n${r.entry.expanded}`).join('\n\n')
         : '';
 
-      const systemPrompt = this.buildSystemPrompt(stakeholderContext, projectContext, kbContext);
+      const systemPrompt = this.buildSystemPrompt(stakeholderContext, projectContext, kbContext, conversationHistory);
       
       // Use GPT-4o-mini for better quality responses
       const model = 'gpt-4o-mini';
       console.log(`🤖 Using ${model} for dynamic AI response generation`);
+      
+      // Dynamic context window: Scale based on number of stakeholders
+      // Formula: More stakeholders = need more context to track who said what
+      // 1 stakeholder: 8 messages (4 exchanges), 2 stakeholders: 16 messages, 3+: 24 messages
+      const baseContextSize = 8;
+      const contextWindowSize = Math.min(baseContextSize * Math.min(totalStakeholders, 3), 24);
+      
+      console.log(`🧠 MEMORY: Using context window of ${contextWindowSize} messages for ${totalStakeholders} stakeholder(s)`);
+      
+      // Build conversation history for context awareness
+      // Convert to OpenAI message format
+      const historyMessages = conversationHistory.slice(-contextWindowSize).map((msg: any) => {
+        // Identify if message is from user or stakeholder
+        // Check if speaker is 'user' string or if it's not a stakeholder (no stakeholderName)
+        const isUserMessage = msg.speaker === 'user' || !msg.stakeholderName;
+        
+        if (isUserMessage) {
+          return { role: 'user' as const, content: msg.content };
+        } else {
+          // Include stakeholder name for multi-stakeholder context
+          const stakeholderName = msg.stakeholderName || 'Stakeholder';
+          return { 
+            role: 'assistant' as const, 
+            content: totalStakeholders > 1 ? `[${stakeholderName}]: ${msg.content}` : msg.content 
+          };
+        }
+      });
+      
+      console.log(`📚 Including ${historyMessages.length} messages from conversation history`);
       
       const response = await this.openai.chat.completions.create({
         model: model,
@@ -156,15 +197,16 @@ class SingleAgentSystem {
             role: 'system',
             content: systemPrompt
           },
+          ...historyMessages,  // Include conversation history for memory and context
           {
             role: 'user',
             content: userMessage
           }
         ],
-        max_tokens: 150, // Much shorter responses
+        max_tokens: 150, // Short, natural responses
         temperature: 0.7, // Balanced creativity
-        presence_penalty: 0.1, // Reduced penalty
-        frequency_penalty: 0.1, // Reduced penalty
+        presence_penalty: 0.2, // Encourage diverse responses
+        frequency_penalty: 0.2, // Reduce repetition
       });
 
       const generatedResponse = response.choices[0]?.message?.content;
@@ -186,9 +228,11 @@ class SingleAgentSystem {
   private buildSystemPrompt(
     stakeholderContext: StakeholderContext,
     projectContext: ProjectContext,
-    kbContext: string
+    kbContext: string,
+    conversationHistory: any[] = []
   ): string {
     const hasKBContext = kbContext && kbContext.trim().length > 0;
+    const hasConversationHistory = conversationHistory.length > 0;
     const timestamp = new Date().toISOString();
     
     const basePrompt = `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}.
@@ -209,11 +253,20 @@ Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
     
-    const responseGuidelines = hasKBContext 
-      ? `You are ${stakeholderContext.name}. Keep responses SHORT and CONVERSATIONAL (1-2 sentences max). Be natural, not formal. Don't dump information - give brief, human-like responses. Use the KB context for accuracy but keep it casual.`
-      : `You are ${stakeholderContext.name}. Keep responses SHORT and CONVERSATIONAL (1-2 sentences max). Be natural, not formal. Don't dump information - give brief, human-like responses. Use the project context but keep it casual.`;
+    // Add conversation memory awareness
+    const memorySection = hasConversationHistory 
+      ? `\n🧠 CONVERSATION MEMORY: You can reference earlier parts of this conversation. If the user asks about something you discussed before, acknowledge it and build upon that context. You remember everything from this meeting.`
+      : '';
+    
+    const responseGuidelines = `\nRESPONSE STYLE:
+- Keep responses SHORT and CONVERSATIONAL (1-2 sentences max)
+- Be natural, not formal - speak like a real person in a meeting
+- Don't dump information - give brief, human-like responses
+- ${hasConversationHistory ? 'Reference previous conversation points when relevant' : 'Respond directly to the question'}
+- ${hasKBContext ? 'Use the KB context for accuracy but keep it casual' : 'Use your role expertise naturally'}
+- Show personality - react naturally to the conversation flow`;
 
-    return `${basePrompt}${kbSection}\n${responseGuidelines}`;
+    return `${basePrompt}${kbSection}${memorySection}${responseGuidelines}`;
   }
 
   private async generateErrorResponse(userMessage: string): Promise<string> {
