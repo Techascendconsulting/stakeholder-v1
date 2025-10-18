@@ -7,6 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { createStakeholderConversationLoop } from "../../services/conversationLoop";
 import { playBrowserTTS } from "../../lib/browserTTS";
+import ProcessDocumentViewer from './ProcessDocumentViewer';
 import { 
   ArrowLeft, 
   Mic, 
@@ -14,13 +15,15 @@ import {
   Users, 
   Clock, 
   MessageSquare, 
-  X
+  X,
+  FileText
 } from "lucide-react";
 
 interface Message {
   who: "You" | string;
   text: string;
   timestamp: string;
+  document?: string; // Optional process document reference
 }
 
 export default function VoiceMeetingV2() {
@@ -28,22 +31,33 @@ export default function VoiceMeetingV2() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Load messages from sessionStorage on mount (persist across refresh)
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = sessionStorage.getItem('voiceMeeting_messages');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [conversationState, setConversationState] = useState<string>("idle");
   const [showTranscript, setShowTranscript] = useState(false);
-  const [meetingDuration, setMeetingDuration] = useState(0);
+  const [meetingDuration, setMeetingDuration] = useState(() => {
+    const saved = sessionStorage.getItem('voiceMeeting_duration');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
   
   // Auto Send vs Review Mode
   const [autoSendMode, setAutoSendMode] = useState(true);
   const [pendingTranscript, setPendingTranscript] = useState<string>("");
-  const [showReviewPanel, setShowReviewPanel] = useState(false);
   
-  // Auto-show transcript when Review mode is active or when review panel appears
+  // Process document viewer state
+  const [isDocumentViewerOpen, setIsDocumentViewerOpen] = useState(false);
+  
+  // Auto-show transcript when Review mode is active
   useEffect(() => {
-    if (!autoSendMode || showReviewPanel) {
+    if (!autoSendMode) {
       setShowTranscript(true);
     }
-  }, [autoSendMode, showReviewPanel]);
+  }, [autoSendMode]);
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
@@ -65,13 +79,43 @@ export default function VoiceMeetingV2() {
   useEffect(() => {
     if (conversationState !== "idle" && conversationState !== "ended") {
       timerRef.current = setInterval(() => {
-        setMeetingDuration(prev => prev + 1);
+        setMeetingDuration(prev => {
+          const newDuration = prev + 1;
+          sessionStorage.setItem('voiceMeeting_duration', newDuration.toString());
+          return newDuration;
+        });
       }, 1000);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [conversationState]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const savedMessages = sessionStorage.getItem('voiceMeeting_messages');
+    if (savedMessages) {
+      try {
+        const parsed = JSON.parse(savedMessages);
+        if (parsed.length > 0) {
+          setShowResumeModal(true);
+        }
+      } catch {}
+    }
+  }, []);
+
+  // Browser refresh/close warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (messages.length > 0 && conversationState !== 'ended') {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [messages.length, conversationState]);
 
   // Format timer
   const formatTime = (seconds: number) => {
@@ -99,7 +143,11 @@ export default function VoiceMeetingV2() {
   }
 
   const addMessage = (msg: Message) => {
-    setMessages((m) => [...m, msg]);
+    setMessages((m) => {
+      const newMessages = [...m, msg];
+      sessionStorage.setItem('voiceMeeting_messages', JSON.stringify(newMessages));
+      return newMessages;
+    });
   };
 
   // Helper: Stop AI speaking immediately (for interruptions)
@@ -161,8 +209,22 @@ export default function VoiceMeetingV2() {
           if (result.isFinal) {
             newFinal += transcript + " ";
             
-            // After final result, wait 3s for more speech (allows thinking time)
+            // Adaptive timeout based on phrase length
             if (silenceTimeout) clearTimeout(silenceTimeout);
+            
+            const currentText = (finalTranscript + newFinal).trim();
+            const wordCount = currentText.split(/\s+/).filter(Boolean).length;
+            
+            // Short phrases (<5 words) → quick send (800ms)
+            // Medium phrases (5-12 words) → moderate (1500ms)  
+            // Long phrases (>12 words) → allow thinking (2500ms)
+            let timeout;
+            if (wordCount < 5) timeout = 800;
+            else if (wordCount < 12) timeout = 1500;
+            else timeout = 2500;
+            
+            console.log(`📊 Words: ${wordCount}, Timeout: ${timeout}ms`);
+            
             silenceTimeout = setTimeout(() => {
               if (!isResolved && finalTranscript.trim()) {
                 isResolved = true;
@@ -175,7 +237,7 @@ export default function VoiceMeetingV2() {
                 console.log('✅ Done:', result);
                 resolve(result);
               }
-            }, 3000);
+            }, timeout);
           } else {
             interim += transcript;
           }
@@ -190,8 +252,18 @@ export default function VoiceMeetingV2() {
       };
 
       recognition.onerror = (event: any) => {
-        console.error('❌ Error:', event.error);
+        console.warn('⚠️ Speech error:', event.error);
+        
         if (silenceTimeout) clearTimeout(silenceTimeout);
+        
+        // Handle different error types
+        if (event.error === 'network' || event.error === 'no-speech') {
+          // Graceful recovery - just log, don't break the loop
+          console.log('Network/no-speech error - will retry naturally');
+        } else if (event.error === 'not-allowed') {
+          alert('Microphone permission required for meeting.');
+        }
+        
         if (!isResolved) {
           isResolved = true;
           isUserSpeakingRef.current = false;
@@ -202,6 +274,7 @@ export default function VoiceMeetingV2() {
       };
 
       recognition.onend = () => {
+        console.log('Speech recognition ended - loop handles restart');
         if (silenceTimeout) clearTimeout(silenceTimeout);
         if (!isResolved) {
           isResolved = true;
@@ -209,9 +282,10 @@ export default function VoiceMeetingV2() {
           setActiveSpeaker(null);
           setLiveTranscript("");
           const result = finalTranscript.trim();
-          console.log('✅ Ended:', result || '(empty)');
+          console.log('✅ Captured:', result || '(empty)');
           resolve(result);
         }
+        // Note: Loop manages its own restart - no auto-restart here to avoid conflicts
       };
 
       try {
@@ -263,42 +337,66 @@ export default function VoiceMeetingV2() {
           messages: [
             {
               role: "system",
-              content: `Stakeholder meeting. Participants: ${participantNames.join(", ")}.
+              content: `CUSTOMER Onboarding Optimization Meeting. Participants: ${participantNames.join(", ")}.
+Return your reply strictly as a single JSON object only.
 
-PROJECT: ${selectedProject.name}
-${selectedProject.description}
+CRITICAL: This is about onboarding NEW CUSTOMERS/CLIENTS to our software platform, NOT employee onboarding.
 
-KNOWN PROBLEMS (you all know these):
-${selectedProject.problemStatement}
+Current Problems:
+- NEW CUSTOMERS take 6 to 8 weeks to get up and running on our platform (target: 3 to 4 weeks)
+- 23% of new CUSTOMERS churn in first 90 days
+- Customer implementation involves 7 internal departments (Sales, Implementation, IT, Support, etc.)
+- 4 disconnected software systems (Salesforce CRM, Monday.com, staging environment, production)
+- Manual handoffs between departments cause 24 to 48 hour delays for CUSTOMERS
+- Costs us $2.3M/year in lost revenue and inefficiency
 
-CURRENT PROCESS PAIN POINTS:
-${selectedProject.asIsProcess}
+Context: We sell enterprise software. When a customer buys, they need to be set up, trained, and go live. That's what we're optimizing.
 
-Stakeholders:
-${selectedStakeholders.map(s => `${s.name} (${s.role}, ${s.department}): ${s.personality || 'Professional stakeholder'}`).join('\n')}
-
-RULES:
-1. ONE stakeholder per turn
-2. If user says a name, THAT person responds
-3. Speak with SPECIFIC knowledge (use actual metrics, pain points, process steps from above)
-4. Be direct and knowledgeable - you've read the project brief
-5. Brief responses (2-3 sentences)
-6. JSON: { "speaker": "<exact name>", "reply": "<text>" }${mandatorySpeaker}`
+Rules:
+- ONE stakeholder responds per turn${mandatorySpeaker ? '' : ' (choose most relevant)'}
+- Talk like a real person: "I'm good, thanks" not "I'm excited to dive into..."
+- Keep replies natural and brief (2-3 sentences)
+- This is about CUSTOMER onboarding (clients buying our software), NOT employee HR
+- Be specific with metrics when relevant
+- HARD RULE: NEVER use dashes in ranges. ALWAYS say "6 to 8 weeks" NEVER "6-8 weeks". Use "to" for all ranges.
+- Output strict JSON: {"speaker":"<exact name>","reply":"<response text>"}${mandatorySpeaker}`
             },
             ...conversationHistory,
             { role: "user", content: userText }
           ],
           response_format: { type: "json_object" },
-          temperature: 0.7,
-          max_tokens: 180,
+          temperature: 0.6,
+          max_tokens: 150,
         }),
       });
 
-      const data = await openaiResponse.json();
-      const payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+      if (!openaiResponse.ok) {
+        const errorText = await openaiResponse.text();
+        console.error('❌ OpenAI API Error:', openaiResponse.status, errorText);
+        throw new Error(`OpenAI error: ${openaiResponse.status}`);
+      }
 
-      let speaker = payload.speaker || participantNames[0];
-      const reply = payload.reply?.trim() || "Let's clarify that.";
+      const data = await openaiResponse.json();
+      
+      // Fallback if model breaks JSON schema
+      let payload = {};
+      try {
+        payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+      } catch (err) {
+        console.warn('⚠️ Non-JSON reply detected, using fallback');
+        payload = { 
+          speaker: participantNames[0], 
+          reply: data.choices?.[0]?.message?.content || "Let's continue." 
+        };
+      }
+
+      let speaker = (typeof payload.speaker === 'string' && payload.speaker.trim()) 
+        ? payload.speaker.trim() 
+        : participantNames[0];
+      const reply = (typeof payload.reply === 'string' && payload.reply.trim())
+        ? payload.reply.trim()
+        : "Let's continue.";
+      const document = payload.document || undefined; // Extract document reference
       
       // FORCE the mentioned stakeholder to respond (override AI if it chose wrong)
       if (mentionedStakeholder) {
@@ -309,12 +407,16 @@ RULES:
       }
       
       const safeSpeaker = participantNames.includes(speaker) ? speaker : participantNames[0];
+      
+      if (document) {
+        console.log('📄 AI referenced document:', document);
+      }
 
       // Map to ElevenLabs voice
       const VOICE_MAP: Record<string, string | undefined> = {
         "Aisha": import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
         "Jess": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS,
-        "David": import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID,
+        "David": "L0Dsvb3SLTyegXwtm47J",
         "James": "pYDLV125o4CgqP8i49Lg",
         "Emily": import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY,
         "Sarah": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH,
@@ -327,7 +429,7 @@ RULES:
       const firstName = safeSpeaker.split(' ')[0];
       const voiceId = VOICE_MAP[firstName] || VOICE_MAP[safeSpeaker] || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
 
-      return { reply, speaker: safeSpeaker, voiceId, stakeholderName: safeSpeaker };
+      return { reply, speaker: safeSpeaker, voiceId, stakeholderName: safeSpeaker, document };
     } catch (error) {
       console.error('❌ getAgentReply error:', error);
       return {
@@ -437,9 +539,9 @@ RULES:
         setLiveTranscript("");
         addMessage({ who: "You", text, timestamp: new Date().toISOString() });
       },
-      onAgentUtterance: ({ text, speaker }) => {
-        console.log('Agent said:', speaker, '-', text.substring(0, 50));
-        addMessage({ who: speaker, text, timestamp: new Date().toISOString() });
+      onAgentUtterance: ({ text, speaker, document }) => {
+        console.log(`🤖 ${speaker}:`, text);
+        addMessage({ who: speaker, text, timestamp: new Date().toISOString(), document });
       },
     });
     
@@ -447,7 +549,7 @@ RULES:
     console.log('✅ Loop ready');
     
     return () => {
-      console.log('Cleaning up loop');
+      console.log('Cleaning up loop - audio/speech only, preserving session');
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -459,8 +561,37 @@ RULES:
         } catch {}
       }
       if (timerRef.current) clearInterval(timerRef.current);
+      // Don't clear messages - they're preserved in sessionStorage
     };
   }, []); // Create loop ONCE on mount
+
+  // End meeting and clear session
+  const handleEndMeeting = () => {
+    console.log('🔚 Ending meeting and clearing session');
+    sessionStorage.removeItem('voiceMeeting_messages');
+    sessionStorage.removeItem('voiceMeeting_duration');
+    setMessages([]);
+    setConversationState('ended');
+    setMeetingDuration(0);
+    setShowExitModal(false);
+    setCurrentView('meeting-mode-selection');
+  };
+
+  // Start fresh meeting (clear saved session)
+  const handleStartFresh = () => {
+    console.log('🆕 Starting fresh meeting');
+    sessionStorage.removeItem('voiceMeeting_messages');
+    sessionStorage.removeItem('voiceMeeting_duration');
+    setMessages([]);
+    setMeetingDuration(0);
+    setShowResumeModal(false);
+  };
+
+  // Resume previous meeting
+  const handleResumeMeeting = () => {
+    console.log('▶️ Resuming previous meeting');
+    setShowResumeModal(false);
+  };
 
   // Handle manual send in Review Mode
   const handleManualSend = async (text: string) => {
@@ -470,11 +601,12 @@ RULES:
       // Get AI response
       const agentReply = await getAgentReply(text);
       
-      // Add AI message
+      // Add AI message (with document if referenced)
       addMessage({ 
         who: agentReply.speaker, 
         text: agentReply.reply, 
-        timestamp: new Date().toISOString() 
+        timestamp: new Date().toISOString(),
+        document: agentReply.document
       });
       
       // Speak the response
@@ -519,7 +651,6 @@ RULES:
         console.log('📝 Captured:', text);
         if (text && text.trim()) {
           setPendingTranscript(text);
-          setShowReviewPanel(true);
         }
         setConversationState('idle');
       } catch (error) {
@@ -550,11 +681,11 @@ RULES:
   };
 
   const handleBack = () => {
-    if (conversationState !== "idle" && conversationState !== "ended") {
-      if (!window.confirm("Leave active meeting?")) return;
-      handleEnd();
+    if (messages.length > 0 && conversationState !== "ended") {
+      setShowExitModal(true);
+    } else {
+      setCurrentView("meeting-mode-selection");
     }
-    setCurrentView("meeting-mode-selection");
   };
 
   const allParticipants = [
@@ -616,7 +747,7 @@ RULES:
                 </button>
                 <span>/</span>
                 <button 
-                  onClick={() => setCurrentView('meeting-mode-selection')}
+                  onClick={handleBack}
                   className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Meeting Setup
@@ -879,54 +1010,63 @@ RULES:
                               </span>
                             </div>
                             <p className={`text-sm leading-relaxed mt-0.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{msg.text}</p>
+                            
+                            {/* Document Reference Button */}
+                            {msg.document && (
+                              <button
+                                onClick={() => setIsDocumentViewerOpen(true)}
+                                className="mt-2 flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-medium transition-all shadow-md hover:shadow-lg"
+                              >
+                                <FileText className="w-3 h-3" />
+                                <span>View {msg.document}</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
                     })}
                     
-                    {/* Review Mode - Inline Edit */}
-                    {showReviewPanel && pendingTranscript && (
-                      <div className={`border-2 border-purple-500 rounded-lg p-3 ${
-                        isDark ? 'bg-purple-900/30' : 'bg-purple-50'
-                      }`}>
-                        <p className={`text-xs font-semibold mb-2 ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>✏️ Review & Edit</p>
-                        <textarea
-                          value={pendingTranscript}
-                          onChange={(e) => setPendingTranscript(e.target.value)}
-                          className={`w-full border rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                            isDark 
-                              ? 'bg-gray-800 border-gray-600 text-white' 
-                              : 'bg-white border-purple-300 text-gray-900'
-                          }`}
-                          rows={2}
-                          autoFocus
-                        />
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => {
-                              setShowReviewPanel(false);
-                              setPendingTranscript("");
-                              loopRef.current?.start();
-                            }}
-                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                              isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                            }`}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => {
-                              const textToSend = pendingTranscript.trim();
-                              if (textToSend) {
-                                setShowReviewPanel(false);
+                    {/* Review Mode - Compact Input */}
+                    {!autoSendMode && (
+                      <div className="mt-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={pendingTranscript}
+                            onChange={(e) => setPendingTranscript(e.target.value)}
+                            placeholder="Type your message or click mic to speak..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey && pendingTranscript.trim()) {
+                                e.preventDefault();
+                                const textToSend = pendingTranscript.trim();
                                 setPendingTranscript("");
                                 addMessage({ who: "You", text: textToSend, timestamp: new Date().toISOString() });
                                 handleManualSend(textToSend);
                               }
                             }}
-                            className="flex-1 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded text-xs font-medium text-white transition-colors"
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                              isDark 
+                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                            }`}
+                          />
+                          <button
+                            onClick={() => {
+                              const textToSend = pendingTranscript.trim();
+                              if (textToSend) {
+                                setPendingTranscript("");
+                                addMessage({ who: "You", text: textToSend, timestamp: new Date().toISOString() });
+                                handleManualSend(textToSend);
+                              }
+                            }}
+                            disabled={!pendingTranscript.trim()}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              pendingTranscript.trim()
+                                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                : isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
                           >
-                            ✅ Send
+                            Send
                           </button>
                         </div>
                       </div>
@@ -1004,6 +1144,13 @@ RULES:
         </div>
       </div>
 
+      {/* Process Document Viewer */}
+      <ProcessDocumentViewer
+        isOpen={isDocumentViewerOpen}
+        onClose={() => setIsDocumentViewerOpen(false)}
+        documentPath="/onboarding_process_document.md"
+      />
+
       {/* Custom animations */}
       <style>{`
         /* Sound bar animations for speaking indicator */
@@ -1023,6 +1170,82 @@ RULES:
         .animate-sound-bar-2 { animation: sound-bar-2 0.6s ease-in-out infinite 0.1s; }
         .animate-sound-bar-3 { animation: sound-bar-3 0.7s ease-in-out infinite 0.2s; }
       `}</style>
+
+      {/* Exit Confirmation Modal */}
+      {showExitModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`max-w-md w-full rounded-xl shadow-2xl p-6 ${
+            isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+          }`}>
+            <h3 className={`text-xl font-bold mb-2 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
+              End Meeting?
+            </h3>
+            <p className={`text-sm mb-6 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Your conversation will be cleared. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowExitModal(false)}
+                className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEndMeeting}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
+              >
+                End Meeting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume Meeting Modal */}
+      {showResumeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`max-w-md w-full rounded-xl shadow-2xl p-6 ${
+            isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+          }`}>
+            <h3 className={`text-xl font-bold mb-2 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
+              Previous Meeting Found
+            </h3>
+            <p className={`text-sm mb-6 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              You have an unfinished meeting with {messages.length} message{messages.length !== 1 ? 's' : ''}. Would you like to continue or start fresh?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleStartFresh}
+                className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                }`}
+              >
+                Start Fresh
+              </button>
+              <button
+                onClick={handleResumeMeeting}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
+              >
+                Resume Meeting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
