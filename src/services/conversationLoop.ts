@@ -69,10 +69,10 @@ export function createStakeholderConversationLoop({
     }
     
     if (!userText || !userText.trim()) {
-      console.log('⚠️ No speech captured, retrying...');
-      // No speech captured—idle listen again unless ending
-      if (!ending) return loopOnce();
-      return end();
+      console.log('⚠️ No speech captured');
+      // Empty string may mean review mode is active - go idle and wait
+      setState(states.IDLE);
+      return;
     }
     
     console.log('👤 User said:', userText);

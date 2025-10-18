@@ -28,6 +28,11 @@ export default function VoiceMeetingV2() {
   const [conversationState, setConversationState] = useState<string>("idle");
   const [showTranscript, setShowTranscript] = useState(false);
   const [meetingDuration, setMeetingDuration] = useState(0);
+  
+  // Auto Send vs Review Mode
+  const [autoSendMode, setAutoSendMode] = useState(true);
+  const [pendingTranscript, setPendingTranscript] = useState<string>("");
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
@@ -101,10 +106,8 @@ export default function VoiceMeetingV2() {
     }
   }
 
-  // ADAPTER 1: Energy-based silence detection (ChatGPT's upgrade)
+  // ADAPTER 1: Fast transcription - NO delays, NO interruption logic
   async function transcribeOnce(): Promise<string> {
-    // console.log('🔍 DEBUG: transcribeOnce() called');
-    
     return new Promise((resolve) => {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
@@ -116,154 +119,103 @@ export default function VoiceMeetingV2() {
 
       const recognition = new SpeechRecognition();
       recognition.lang = "en-GB";
-      recognition.continuous = true;
+      recognition.continuous = true; // Keep listening for complete thoughts
       recognition.interimResults = true;
 
       recognitionRef.current = recognition;
       
       let finalTranscript = "";
-      let interimTranscript = "";
-      let isSilent = false;
-      let silenceTimer: NodeJS.Timeout | null = null;
-      let micStream: MediaStream | null = null;
-      let analyser: AnalyserNode | null = null;
       let isResolved = false;
-
-      // Audio energy detector for real-time silence detection
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        micStream = stream;
-        const audioCtx = new AudioContext();
-        const source = audioCtx.createMediaStreamSource(stream);
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 512;
-        source.connect(analyser);
-
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        let animationFrameId: number | null = null;
-
-        function detectSilence() {
-          if (isResolved) {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            return;
-          }
-          
-          analyser!.getByteFrequencyData(dataArray);
-          const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          const volume = avg / 255;
-
-          // Only log when volume changes significantly (reduce console spam)
-          // console.log('🔍 ENERGY:', volume.toFixed(3));
-
-          // If volume low (user stopped), finalize quickly
-          if (volume < 0.02) {
-            if (!isSilent && finalTranscript.trim()) {
-              console.log('🔇 Silence detected - finalizing in 300ms');
-              isSilent = true;
-              if (silenceTimer) clearTimeout(silenceTimer);
-              
-              silenceTimer = setTimeout(() => {
-                console.log('✅ Finalizing transcript');
-                isResolved = true;
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
-                try {
-                  recognition.stop();
-                } catch {}
-                stream.getTracks().forEach(t => t.stop());
-                setLiveTranscript("");
-                setIsProcessingTranscript(true);
-                isUserSpeakingRef.current = false;
-                setActiveSpeaker(null);
-                resolve(finalTranscript.trim());
-              }, 300);
-            }
-          } else {
-            // User still speaking - cancel silence
-            if (isSilent) {
-              console.log('▶️ User resumed speaking');
-            }
-            isSilent = false;
-            if (silenceTimer) clearTimeout(silenceTimer);
-          }
-
-          if (!isResolved) {
-            animationFrameId = requestAnimationFrame(detectSilence);
-          }
-        }
-
-        detectSilence();
-      }).catch(err => {
-        console.error('❌ Mic access failed:', err);
-        if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        resolve('');
-      });
+      let silenceTimeout: any = null;
 
       recognition.onspeechstart = () => {
-        console.log('🎤 Speech started');
+        console.log('🎤 Listening');
         isUserSpeakingRef.current = true;
         setActiveSpeaker("You");
-        
-        // Reset
-        finalTranscript = "";
-        interimTranscript = "";
         setLiveTranscript("");
-        
-        // INTERRUPT AI if speaking
-        if (conversationStateRef.current === 'speaking') {
-          console.log('⚠️🚨 INTERRUPTION!');
-          stopSpeaking();
-        }
+        // Clear any pending timeout
+        if (silenceTimeout) clearTimeout(silenceTimeout);
       };
 
       recognition.onresult = (event: any) => {
         if (isResolved) return;
         
-        interimTranscript = "";
+        let interim = "";
         let newFinal = "";
 
-        // Use resultIndex to avoid duplicates
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           const transcript = result[0].transcript;
           
           if (result.isFinal) {
             newFinal += transcript + " ";
-            console.log('✅ Final transcript:', transcript);
+            
+            // After final result, wait 1.5s for more speech before finalizing
+            if (silenceTimeout) clearTimeout(silenceTimeout);
+            silenceTimeout = setTimeout(() => {
+              if (!isResolved && finalTranscript.trim()) {
+                isResolved = true;
+                try { recognition.stop(); } catch {}
+                isUserSpeakingRef.current = false;
+                setActiveSpeaker(null);
+                setLiveTranscript("");
+                
+                const result = finalTranscript.trim();
+                console.log('✅ Done:', result);
+                
+                // If Review Mode, show confirmation panel instead of auto-sending
+                if (!autoSendMode) {
+                  setPendingTranscript(result);
+                  setShowReviewPanel(true);
+                  resolve(""); // Empty string = don't send yet
+                } else {
+                  // Auto Send Mode - send immediately
+                  resolve(result);
+                }
+              }
+            }, 1500);
           } else {
-            interimTranscript += transcript;
+            interim += transcript;
           }
         }
 
-        // Accumulate finals
         if (newFinal) {
-          finalTranscript += newFinal.trim() + " ";
+          finalTranscript += newFinal;
         }
 
-        // Show live
-        const display = interimTranscript || finalTranscript;
-        setLiveTranscript(display);
+        // Show live transcript
+        setLiveTranscript(interim || finalTranscript);
       };
 
       recognition.onerror = (event: any) => {
-        console.error('❌ Speech recognition error:', event.error);
-        if (micStream) micStream.getTracks().forEach(t => t.stop());
-        if (silenceTimer) clearTimeout(silenceTimer);
-        resolve(finalTranscript.trim() || '');
-      };
-
-      recognition.onend = () => {
-        // console.log('🔍 DEBUG: ⏹️ ENDED');
-        if (micStream) micStream.getTracks().forEach(t => t.stop());
-        if (silenceTimer) clearTimeout(silenceTimer);
-        if (!isResolved && finalTranscript.trim()) {
+        console.error('❌ Error:', event.error);
+        if (silenceTimeout) clearTimeout(silenceTimeout);
+        if (!isResolved) {
+          isResolved = true;
+          isUserSpeakingRef.current = false;
+          setActiveSpeaker(null);
+          setLiveTranscript("");
           resolve(finalTranscript.trim());
         }
       };
 
+      recognition.onend = () => {
+        if (silenceTimeout) clearTimeout(silenceTimeout);
+        if (!isResolved) {
+          isResolved = true;
+          isUserSpeakingRef.current = false;
+          setActiveSpeaker(null);
+          setLiveTranscript("");
+          const result = finalTranscript.trim();
+          console.log('✅ Ended:', result || '(empty)');
+          resolve(result);
+        }
+      };
+
       try {
-        // console.log('🔍 DEBUG: 🎬 STARTING...');
         recognition.start();
       } catch (e) {
-        console.error('❌ Recognition start failed:', e);
+        console.error('❌ Start failed:', e);
         resolve('');
       }
     });
@@ -280,10 +232,18 @@ export default function VoiceMeetingV2() {
 
       // DETECT MENTIONED NAMES FIRST - before calling AI
       const userTextLower = userText.toLowerCase();
-      const mentionedStakeholder = selectedStakeholders.find(s => 
-        userTextLower.includes(s.name.toLowerCase()) || 
-        userTextLower.includes(s.name.split(' ')[0].toLowerCase())
-      );
+      const mentionedStakeholder = selectedStakeholders.find(s => {
+        const fullName = s.name.toLowerCase();
+        const firstName = s.name.split(' ')[0].toLowerCase();
+        
+        // Check for exact name match with word boundaries
+        const namePattern = new RegExp(`\\b${firstName}\\b|\\b${fullName}\\b`, 'i');
+        return namePattern.test(userText);
+      });
+      
+      if (mentionedStakeholder) {
+        console.log(`🎯 DETECTED: User mentioned "${mentionedStakeholder.name}"`);
+      }
       
       // Build mandatory speaker instruction if name was mentioned
       const mandatorySpeaker = mentionedStakeholder 
@@ -301,25 +261,34 @@ export default function VoiceMeetingV2() {
           messages: [
             {
               role: "system",
-              content: `Simulate stakeholder conversation. Participants: ${participantNames.join(", ")}.
+              content: `Stakeholder meeting. Participants: ${participantNames.join(", ")}.
 
-Project: ${selectedProject.name}
+PROJECT: ${selectedProject.name}
+${selectedProject.description}
+
+KNOWN PROBLEMS (you all know these):
+${selectedProject.problemStatement}
+
+CURRENT PROCESS PAIN POINTS:
+${selectedProject.asIsProcess}
 
 Stakeholders:
-${selectedStakeholders.map(s => `${s.name} (${s.role}): ${s.personality?.substring(0, 80) || s.bio?.substring(0, 80) || 'Professional'}`).join('\n')}
+${selectedStakeholders.map(s => `${s.name} (${s.role}, ${s.department}): ${s.personality || 'Professional stakeholder'}`).join('\n')}
 
 RULES:
-1. ONE stakeholder responds per turn
-2. If user mentions a name, that person MUST respond
-3. Keep responses brief (2-3 sentences)
-4. Return JSON: { "speaker": "<exact name>", "reply": "<text>" }${mandatorySpeaker}`
+1. ONE stakeholder per turn
+2. If user says a name, THAT person responds
+3. Speak with SPECIFIC knowledge (use actual metrics, pain points, process steps from above)
+4. Be direct and knowledgeable - you've read the project brief
+5. Brief responses (2-3 sentences)
+6. JSON: { "speaker": "<exact name>", "reply": "<text>" }${mandatorySpeaker}`
             },
             ...conversationHistory,
             { role: "user", content: userText }
           ],
           response_format: { type: "json_object" },
           temperature: 0.7,
-          max_tokens: 150,
+          max_tokens: 180,
         }),
       });
 
@@ -329,15 +298,11 @@ RULES:
       let speaker = payload.speaker || participantNames[0];
       const reply = payload.reply?.trim() || "Let's clarify that.";
       
-      // ENFORCEMENT: If user explicitly mentions a name, override AI choice
-      const userTextLower = userText.toLowerCase();
-      const mentionedStakeholder = selectedStakeholders.find(s => 
-        userTextLower.includes(s.name.toLowerCase()) || 
-        userTextLower.includes(s.name.split(' ')[0].toLowerCase())
-      );
-      
+      // FORCE the mentioned stakeholder to respond (override AI if it chose wrong)
       if (mentionedStakeholder) {
-        console.log(`🎯 User mentioned "${mentionedStakeholder.name}" - forcing them to respond (AI chose: ${speaker})`);
+        if (speaker !== mentionedStakeholder.name) {
+          console.log(`🎯 OVERRIDE: User mentioned "${mentionedStakeholder.name}" but AI chose "${speaker}" - forcing correct speaker`);
+        }
         speaker = mentionedStakeholder.name;
       }
       
@@ -348,7 +313,7 @@ RULES:
         "Aisha": import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
         "Jess": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS,
         "David": import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID,
-        "James": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES,
+        "James": "pYDLV125o4CgqP8i49Lg",
         "Emily": import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY,
         "Sarah": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH,
         "Srikanth": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH,
@@ -488,6 +453,41 @@ RULES:
     };
   }, []); // CRITICAL FIX: Empty deps array - only create loop ONCE!
 
+  // Handle manual send in Review Mode
+  const handleManualSend = async (text: string) => {
+    try {
+      setConversationState('processing');
+      
+      // Get AI response
+      const agentReply = await getAgentReply(text);
+      
+      // Add AI message
+      addMessage({ 
+        who: agentReply.speaker, 
+        text: agentReply.reply, 
+        timestamp: new Date().toISOString() 
+      });
+      
+      // Speak the response
+      setConversationState('speaking');
+      await speak(agentReply.reply, { 
+        voiceId: agentReply.voiceId, 
+        stakeholderName: agentReply.speaker 
+      });
+      
+      // Return to idle (ready for next input)
+      setConversationState('idle');
+      
+      // If in auto-send mode, restart the loop
+      if (autoSendMode) {
+        loopRef.current?.start();
+      }
+    } catch (error) {
+      console.error('❌ Manual send error:', error);
+      setConversationState('idle');
+    }
+  };
+
   const handleSpeak = async () => {
     // Check microphone permission
     try {
@@ -558,7 +558,10 @@ RULES:
                 </button>
                 <span>/</span>
                 <button 
-                  onClick={() => setCurrentView('projects')}
+                  onClick={() => {
+                    setSelectedProject(null);
+                    setCurrentView('projects');
+                  }}
                   className="hover:text-gray-300 transition-colors"
                 >
                   Projects
@@ -567,15 +570,16 @@ RULES:
                 <button 
                   onClick={() => setCurrentView('project-brief')}
                   className="hover:text-gray-300 transition-colors"
+                  title={selectedProject.name}
                 >
-                  {selectedProject.name.length > 25 ? selectedProject.name.substring(0, 25) + '...' : selectedProject.name}
+                  {selectedProject.name.length > 20 ? selectedProject.name.substring(0, 20) + '...' : selectedProject.name}
                 </button>
                 <span>/</span>
                 <button 
-                  onClick={() => setCurrentView('stakeholders')}
+                  onClick={() => setCurrentView('meeting-mode-selection')}
                   className="hover:text-gray-300 transition-colors"
                 >
-                  Stakeholders
+                  Meeting Setup
                 </button>
                 <span>/</span>
                 <span className="text-gray-400">Voice Meeting</span>
@@ -592,6 +596,33 @@ RULES:
               <Clock className="w-4 h-4" />
               <span>{formatTime(meetingDuration)}</span>
             </div>
+            
+            {/* Send Mode Selection */}
+            <div className="flex items-center gap-2 bg-gray-800/50 rounded-lg p-1">
+              <button
+                onClick={() => setAutoSendMode(true)}
+                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                  autoSendMode 
+                    ? 'bg-green-600 text-white shadow-lg' 
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+                title="Auto Send: Messages send immediately after you finish speaking"
+              >
+                ⚡ Auto Send
+              </button>
+              <button
+                onClick={() => setAutoSendMode(false)}
+                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                  !autoSendMode 
+                    ? 'bg-purple-600 text-white shadow-lg' 
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+                title="Review Mode: Edit your message before sending"
+              >
+                ✏️ Review
+              </button>
+            </div>
+            
             <button
               onClick={() => setShowTranscript(!showTranscript)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
@@ -653,6 +684,53 @@ RULES:
                 </div>
               )}
             </div>
+            
+            {/* Review Panel - Only shown in Review Mode */}
+            {showReviewPanel && pendingTranscript && (
+              <div className="w-full max-w-3xl">
+                <div className="bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border-2 border-purple-500 rounded-lg p-4 shadow-xl">
+                  <div className="mb-3">
+                    <p className="text-xs text-purple-200 font-semibold mb-2">✏️ Review Your Message</p>
+                    <textarea
+                      value={pendingTranscript}
+                      onChange={(e) => setPendingTranscript(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:border-purple-400"
+                      rows={3}
+                      placeholder="Your message..."
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setShowReviewPanel(false);
+                        setPendingTranscript("");
+                        // Restart listening
+                        loopRef.current?.start();
+                      }}
+                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      ❌ Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        const textToSend = pendingTranscript.trim();
+                        if (textToSend) {
+                          setShowReviewPanel(false);
+                          setPendingTranscript("");
+                          // Manually trigger the conversation flow with edited text
+                          addMessage({ who: "You", text: textToSend, timestamp: new Date().toISOString() });
+                          // Get AI response
+                          handleManualSend(textToSend);
+                        }
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg text-sm font-medium transition-colors text-white"
+                    >
+                      ✅ Send Message
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Participant Grid - Compact Layout */}
             <div className={`w-full grid gap-4 ${
