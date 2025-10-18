@@ -161,7 +161,7 @@ export default function VoiceMeetingV2() {
           if (result.isFinal) {
             newFinal += transcript + " ";
             
-            // After final result, wait 1.5s for more speech before finalizing
+            // After final result, wait 3s for more speech (allows thinking time)
             if (silenceTimeout) clearTimeout(silenceTimeout);
             silenceTimeout = setTimeout(() => {
               if (!isResolved && finalTranscript.trim()) {
@@ -175,7 +175,7 @@ export default function VoiceMeetingV2() {
                 console.log('✅ Done:', result);
                 resolve(result);
               }
-            }, 1500);
+            }, 3000);
           } else {
             interim += transcript;
           }
@@ -417,37 +417,37 @@ RULES:
     });
   }
 
-  // Initialize loop ONCE
+  // Initialize loop - recreate when key dependencies change
   useEffect(() => {
-    // console.log('Creating conversation loop');
+    console.log('Creating conversation loop');
     
     const loop = createStakeholderConversationLoop({
       transcribeOnce,
       getAgentReply,
       speak,
       onState: (s) => {
-        // console.log('State:', s);
+        console.log('Loop state:', s);
         setConversationState(s);
         if (s === 'processing') {
           setIsProcessingTranscript(false);
         }
       },
       onUserUtterance: (text) => {
-        // console.log('User:', text);
+        console.log('User said:', text);
         setLiveTranscript("");
         addMessage({ who: "You", text, timestamp: new Date().toISOString() });
       },
       onAgentUtterance: ({ text, speaker }) => {
-        // console.log('Agent:', speaker, text);
+        console.log('Agent said:', speaker, '-', text.substring(0, 50));
         addMessage({ who: speaker, text, timestamp: new Date().toISOString() });
       },
     });
     
     loopRef.current = loop;
-    // console.log('Loop initialized');
+    console.log('✅ Loop ready');
     
     return () => {
-      // console.log('Cleaning up...');
+      console.log('Cleaning up loop');
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -460,7 +460,7 @@ RULES:
       }
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []); // CRITICAL FIX: Empty deps array - only create loop ONCE!
+  }, []); // Create loop ONCE on mount
 
   // Handle manual send in Review Mode
   const handleManualSend = async (text: string) => {
@@ -496,6 +496,9 @@ RULES:
   };
 
   const handleSpeak = async () => {
+    console.log('🎤 SPEAK BUTTON CLICKED - Mode:', autoSendMode ? 'Auto Send' : 'Review');
+    console.log('🎤 Loop ref exists?', !!loopRef.current);
+    
     // Check microphone permission
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -509,9 +512,11 @@ RULES:
     
     // Review Mode: One-shot capture, show review panel
     if (!autoSendMode) {
+      console.log('📝 Review Mode: Capturing one utterance');
       try {
         setConversationState('listening');
         const text = await transcribeOnce();
+        console.log('📝 Captured:', text);
         if (text && text.trim()) {
           setPendingTranscript(text);
           setShowReviewPanel(true);
@@ -523,10 +528,12 @@ RULES:
       }
     } else {
       // Auto Send Mode: Start free-flowing loop
+      console.log('⚡ Auto Send Mode: Starting loop');
       if (loopRef.current) {
+        console.log('✅ Calling loop.start()');
         loopRef.current.start();
       } else {
-        console.error('❌ Loop not initialized');
+        console.error('❌ Loop not initialized - this should never happen!');
       }
     }
   };
