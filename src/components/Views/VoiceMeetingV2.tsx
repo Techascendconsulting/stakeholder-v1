@@ -5,8 +5,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { createStakeholderConversationLoop } from "../../services/conversationLoop";
-import { singleAgentSystem } from "../../services/singleAgentSystem";
-import { synthesizeToBlob } from "../../services/elevenLabsTTS";
 import { playBrowserTTS } from "../../lib/browserTTS";
 import { ArrowLeft, Mic, Users } from "lucide-react";
 
@@ -25,6 +23,7 @@ export default function VoiceMeetingV2() {
   const loopRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isUserSpeakingRef = useRef<boolean>(false);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -60,7 +59,21 @@ export default function VoiceMeetingV2() {
     setMessages((m) => [...m, msg]);
   };
 
-  // ADAPTER 1: Speech-to-text using Web Speech API
+  // Helper: Stop AI speaking immediately (for interruptions)
+  function stopSpeaking() {
+    if (currentAudioRef.current) {
+      try {
+        console.log('⚠️ INTERRUPTION: Stopping AI audio');
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+      } catch (e) {
+        console.error('Error stopping audio:', e);
+      }
+    }
+  }
+
+  // ADAPTER 1: Speech-to-text using Web Speech API with interruption detection
   async function transcribeOnce(): Promise<string> {
     return new Promise((resolve, reject) => {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -72,25 +85,45 @@ export default function VoiceMeetingV2() {
 
       const recognition = new SpeechRecognition();
       recognition.lang = "en-GB";
-      recognition.interimResults = false;
+      recognition.interimResults = true;  // Enable interim results for faster interruption detection
       recognition.continuous = false;
       recognition.maxAlternatives = 1;
 
       recognitionRef.current = recognition;
 
+      // Detect when user STARTS speaking (for interruption)
+      recognition.onspeechstart = () => {
+        console.log('🎤 User started speaking');
+        isUserSpeakingRef.current = true;
+        
+        // If AI is currently speaking, STOP IT IMMEDIATELY
+        if (conversationState === 'speaking') {
+          console.log('⚠️ INTERRUPTION DETECTED: User interrupted AI');
+          stopSpeaking();
+        }
+      };
+
       recognition.onresult = (event: any) => {
+        // Get final transcript
         const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
-        console.log('🎤 Transcribed:', transcript);
-        resolve(transcript);
+        
+        // Only process final results
+        if (event.results?.[0]?.isFinal) {
+          console.log('🎤 Final transcribed:', transcript);
+          isUserSpeakingRef.current = false;
+          resolve(transcript);
+        }
       };
 
       recognition.onerror = (event: any) => {
         console.error('🎤 Recognition error:', event.error);
+        isUserSpeakingRef.current = false;
         reject(new Error(event.error));
       };
 
       recognition.onend = () => {
         console.log('🎤 Recognition ended');
+        isUserSpeakingRef.current = false;
       };
 
       try {
@@ -101,101 +134,217 @@ export default function VoiceMeetingV2() {
     });
   }
 
-  // ADAPTER 2: Agent reply using existing singleAgentSystem
-  async function getAgentReply(userText: string): Promise<{ reply: string; speaker: string; voiceId?: string }> {
+  // ADAPTER 2: AI-driven agent reply - AI selects which stakeholder responds
+  async function getAgentReply(userText: string): Promise<{ reply: string; speaker: string; voiceId?: string; stakeholderName?: string }> {
     console.log('🤖 Getting agent reply for:', userText);
     
-    // Determine which stakeholder should respond
-    // For simplicity: rotate through stakeholders based on message count
-    // Or use AI to decide who should respond (more advanced)
-    const stakeholderIndex = Math.floor(messages.filter(m => m.who !== "You").length % selectedStakeholders.length);
-    const respondingStakeholder = selectedStakeholders[stakeholderIndex];
-    
-    console.log(`👤 ${respondingStakeholder.name} will respond (${stakeholderIndex + 1}/${selectedStakeholders.length})`);
+    try {
+      // Build participant list (names only)
+      const participantNames = selectedStakeholders.map(s => s.name);
+      
+      // Build conversation history
+      const conversationHistory = messages.map(msg => ({
+        role: msg.who === "You" ? "user" : "assistant",
+        content: msg.who === "You" ? msg.text : `[${msg.who}]: ${msg.text}`
+      }));
 
-    const stakeholderContext = {
-      name: respondingStakeholder.name,
-      role: respondingStakeholder.role,
-      department: respondingStakeholder.department,
-      priorities: respondingStakeholder.priorities || [],
-      personality: respondingStakeholder.personality || 'Professional and helpful',
-      expertise: respondingStakeholder.expertise || []
-    };
+      console.log('📋 Participants:', participantNames.join(', '));
 
-    const projectContext = {
-      id: selectedProject.id,
-      name: selectedProject.name,
-      description: selectedProject.description,
-      type: selectedProject.type || 'General',
-      painPoints: selectedProject.painPoints || [],
-      asIsProcess: selectedProject.asIsProcess || ''
-    };
+      // Call OpenAI to decide which stakeholder should respond
+      const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are simulating a realistic stakeholder conversation. Participants in this meeting are: ${participantNames.join(", ")}.
 
-    // Build conversation history
-    const conversationHistory = messages.map(msg => ({
-      speaker: msg.who === "You" ? "user" : msg.who,
-      content: msg.text,
-      stakeholderName: msg.who !== "You" ? msg.who : undefined
-    }));
+Project: ${selectedProject.name}
+Description: ${selectedProject.description}
 
-    const reply = await singleAgentSystem.processUserMessage(
-      userText,
-      stakeholderContext,
-      projectContext,
-      conversationHistory,
-      selectedStakeholders.length
-    );
+Stakeholder Details:
+${selectedStakeholders.map(s => `- ${s.name} (${s.role}, ${s.department}): ${s.bio?.substring(0, 150) || s.personality}`).join('\n')}
 
-    return { 
-      reply, 
-      speaker: respondingStakeholder.name,
-      voiceId: respondingStakeholder.voice
-    };
+Rules:
+- Only ONE stakeholder responds per turn.
+- Choose the most relevant stakeholder based on the user's message and their expertise.
+- If the user explicitly addresses someone by name, that person MUST respond.
+- If the user asks for someone NOT in the participants list, clearly state they are not in this meeting.
+- Do NOT include participant names inside the spoken text (the app shows the name separately).
+- Speak naturally as the chosen stakeholder with their personality.
+- Keep responses conversational and brief (1-3 sentences).
+- Return strict JSON: { "speaker": "<exact name from participants>", "reply": "<spoken text>" }`
+            },
+            ...conversationHistory,
+            {
+              role: "user",
+              content: userText
+            }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        throw new Error(`OpenAI request failed: ${openaiResponse.status}`);
+      }
+
+      const data = await openaiResponse.json();
+      let payload: any = {};
+      
+      try {
+        payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+      } catch {
+        payload = {};
+      }
+
+      console.log('🤖 AI Response:', payload);
+
+      // Validate & sanitize
+      const speaker = typeof payload.speaker === "string" ? payload.speaker : participantNames[0];
+      const reply = typeof payload.reply === "string" && payload.reply.trim()
+        ? payload.reply.trim()
+        : "Let's clarify that and proceed.";
+
+      // Ensure speaker is in the meeting
+      const safeSpeaker = participantNames.includes(speaker) ? speaker : participantNames[0];
+
+      console.log(`👤 ${safeSpeaker} will respond`);
+
+      // Map speaker name to ElevenLabs voice ID
+      const VOICE_MAP: Record<string, string | undefined> = {
+        "Aisha": import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
+        "Jess": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS,
+        "David": import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID,
+        "James": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES,
+        "Emily": import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY,
+        "Sarah": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH,
+        "Srikanth": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH,
+        "Bola": import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA,
+        "Lisa": import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA,
+        "Robert": import.meta.env.VITE_ELEVENLABS_VOICE_ID_ROBERT,
+      };
+
+      // Try to match by first name
+      const firstName = safeSpeaker.split(' ')[0];
+      const voiceId = VOICE_MAP[firstName] || VOICE_MAP[safeSpeaker] || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
+
+      console.log('🎤 Mapped voice ID:', voiceId, 'for:', safeSpeaker);
+
+      return {
+        reply,
+        speaker: safeSpeaker,
+        voiceId,
+        stakeholderName: safeSpeaker
+      };
+
+    } catch (error) {
+      console.error('❌ getAgentReply error:', error);
+      const fallbackSpeaker = selectedStakeholders[0]?.name || "Stakeholder";
+      return {
+        reply: "Sorry, I didn't catch that. Could you repeat?",
+        speaker: fallbackSpeaker,
+        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
+        stakeholderName: fallbackSpeaker
+      };
+    }
   }
 
-  // ADAPTER 3: Text-to-speech using ElevenLabs with fallback
-  async function speak(text: string, options?: { voiceId?: string }): Promise<void> {
-    console.log('🔊 Speaking:', text.substring(0, 50));
+  // ADAPTER 3: Text-to-speech using ElevenLabs with interruption support
+  async function speak(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
+    // Stop any previous audio before starting new one
+    if (currentAudioRef.current) {
+      try {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      } catch {}
+    }
+
+    const voiceId = options?.voiceId || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
+    const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+
+    console.log('🔊 Speaking:', text.substring(0, 50), 'with voice ID:', voiceId, 'for:', options?.stakeholderName);
     
     return new Promise(async (resolve) => {
       try {
-        // Try ElevenLabs first
-        const audioBlob = await synthesizeToBlob(text, { 
-          voiceId: options?.voiceId 
+        // Call ElevenLabs TTS directly
+        const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "xi-api-key": apiKey,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: "eleven_monolingual_v1",
+            voice_settings: { stability: 0.4, similarity_boost: 0.75 },
+          }),
         });
 
-        if (audioBlob) {
-          const url = URL.createObjectURL(audioBlob);
-          const audio = new Audio(url);
-          currentAudioRef.current = audio;
-
-          audio.onended = () => {
-            console.log('✅ Audio finished');
-            URL.revokeObjectURL(url);
-            currentAudioRef.current = null;
-            resolve();
-          };
-
-          audio.onerror = () => {
-            console.error('❌ Audio playback error');
-            URL.revokeObjectURL(url);
-            currentAudioRef.current = null;
-            resolve();
-          };
-
-          await audio.play();
-        } else {
-          // Fallback to browser TTS
-          console.log('⚠️ Using browser TTS fallback');
-          await playBrowserTTS(text);
-          resolve();
+        if (!ttsResponse.ok) {
+          const errorText = await ttsResponse.text();
+          console.error('❌ ElevenLabs TTS failed:', ttsResponse.status, errorText);
+          throw new Error(`TTS failed: ${ttsResponse.status}`);
         }
+
+        const audioBuffer = await ttsResponse.arrayBuffer();
+        const audioBlob = new Blob([audioBuffer], { type: "audio/mpeg" });
+        const url = URL.createObjectURL(audioBlob);
+        const audio = new Audio(url);
+        currentAudioRef.current = audio;
+
+        console.log('✅ Got audio from ElevenLabs, playing...');
+
+        audio.onended = () => {
+          console.log('✅ Audio finished playing normally');
+          URL.revokeObjectURL(url);
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+          }
+          resolve();
+        };
+
+        audio.onerror = (e) => {
+          console.error('❌ Audio playback error:', e);
+          URL.revokeObjectURL(url);
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+          }
+          resolve();
+        };
+
+        // Listen for interruptions
+        const checkInterruption = setInterval(() => {
+          if (isUserSpeakingRef.current && currentAudioRef.current === audio) {
+            console.log('⚠️ INTERRUPTION: User started speaking, stopping AI audio');
+            clearInterval(checkInterruption);
+            audio.pause();
+            URL.revokeObjectURL(url);
+            currentAudioRef.current = null;
+            resolve();
+          }
+        }, 100); // Check every 100ms
+
+        await audio.play();
+
+        // Clean up interval when audio ends
+        audio.addEventListener('ended', () => clearInterval(checkInterruption));
+        audio.addEventListener('pause', () => clearInterval(checkInterruption));
+
       } catch (error) {
-        console.error('❌ TTS error:', error);
+        console.error('❌ TTS error, using browser TTS fallback:', error);
         // Fallback to browser TTS
         try {
           await playBrowserTTS(text);
-        } catch {}
+        } catch (e) {
+          console.error('❌ Browser TTS also failed:', e);
+        }
         resolve();
       }
     });

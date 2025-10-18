@@ -8,12 +8,13 @@ interface AgentReply {
   reply: string;
   speaker?: string;
   voiceId?: string;
+  stakeholderName?: string;
 }
 
 interface ConversationLoopOptions {
   transcribeOnce: () => Promise<string>;
   getAgentReply: (userText: string) => Promise<AgentReply>;
-  speak: (text: string, options?: { voiceId?: string }) => Promise<void>;
+  speak: (text: string, options?: { voiceId?: string; stakeholderName?: string }) => Promise<void>;
   onState?: (state: ConversationState) => void;
   onUserUtterance?: (text: string) => void;
   onAgentUtterance?: (data: { text: string; speaker: string }) => void;
@@ -71,7 +72,7 @@ export function createStakeholderConversationLoop({
 
     // AGENT TURN
     setState(states.PROCESSING);
-    const { reply, speaker, voiceId } = await getAgentReply(userText).catch((e) => {
+    const { reply, speaker, voiceId, stakeholderName } = await getAgentReply(userText).catch((e) => {
       console.error('❌ Conversation Loop: getAgentReply error:', e);
       return {
         reply: "Sorry, I didn't catch that. Could you repeat?",
@@ -84,11 +85,11 @@ export function createStakeholderConversationLoop({
       return;
     }
     
-    console.log('🤖 Conversation Loop: Agent replied:', { reply: reply.substring(0, 50), speaker });
+    console.log('🤖 Conversation Loop: Agent replied:', { reply: reply.substring(0, 50), speaker, stakeholderName });
     onAgentUtterance({ text: reply, speaker: speaker || "Stakeholder" });
 
     setState(states.SPEAKING);
-    await speak(reply, { voiceId }).catch((e) => {
+    await speak(reply, { voiceId, stakeholderName: stakeholderName || speaker }).catch((e) => {
       console.error('❌ Conversation Loop: speak error:', e);
     });
     
