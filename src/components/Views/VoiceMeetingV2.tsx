@@ -1,92 +1,37 @@
-// Teams-style UI: header, message thread, floating mic bar.
-// Flow: Click "Speak" once -> talk -> auto-send -> AI replies with voice -> auto-resume.
-// End with "End Conversation".
-// Integrated with existing app: uses selectedProject, selectedStakeholders, singleAgentSystem, ElevenLabs
+// Voice Meeting V2 - Continuous conversation with auto turn-taking
+// Uses conversation loop pattern with proper multi-stakeholder support
+// Integrated with existing app services
 
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
-import { useVoiceEngine } from "../../hooks/useVoiceEngine";
-import { processVoiceTurn, playAudioBlob } from "../../services/voicePipeline";
+import { createStakeholderConversationLoop } from "../../services/conversationLoop";
+import { singleAgentSystem } from "../../services/singleAgentSystem";
+import { synthesizeToBlob } from "../../services/elevenLabsTTS";
 import { playBrowserTTS } from "../../lib/browserTTS";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mic, Users } from "lucide-react";
 
 interface Message {
-  who: "You" | "Stakeholder";
+  who: "You" | string;
   text: string;
-  stakeholderName?: string;
+  timestamp: string;
 }
-
-const Header = ({ projectName, stakeholderName, onBack }: { projectName: string; stakeholderName: string; onBack: () => void }) => (
-  <div className="w-full bg-[#464775] text-white px-4 py-3 flex items-center justify-between shadow">
-    <div className="flex items-center gap-3">
-      <button
-        onClick={onBack}
-        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-        title="Back"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-semibold text-sm">
-        {stakeholderName.substring(0, 2).toUpperCase()}
-      </div>
-      <div>
-        <h1 className="text-sm sm:text-base font-semibold">{projectName}</h1>
-        <p className="text-xs opacity-90">with {stakeholderName}</p>
-      </div>
-    </div>
-    <span className="text-xs opacity-90 hidden sm:block">Voice Meeting V2</span>
-  </div>
-);
-
-const Bubble = ({ who, text, stakeholderName }: Message) => {
-  const isUser = who === "You";
-  const initials = isUser ? "Y" : (stakeholderName?.substring(0, 2).toUpperCase() || "ST");
-  
-  return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} w-full`}>
-      <div className={`flex items-start gap-2 max-w-[80%]`}>
-        {!isUser && (
-          <div className="w-8 h-8 shrink-0 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold text-gray-700">
-            {initials}
-          </div>
-        )}
-        <div
-          className={`rounded-2xl px-3 py-2 text-sm leading-snug shadow-sm ${
-            isUser
-              ? "bg-[#6264a7] text-white"
-              : "bg-[#e6e6e6] text-black"
-          }`}
-        >
-          <div className="font-semibold mb-0.5">{isUser ? "You" : stakeholderName}</div>
-          <div>{text}</div>
-        </div>
-        {isUser && (
-          <div className="w-8 h-8 shrink-0 rounded-full bg-[#6264a7] flex items-center justify-center text-xs font-semibold text-white">
-            {initials}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export default function VoiceMeetingV2() {
   const { selectedProject, selectedStakeholders, setCurrentView } = useApp();
   const [messages, setMessages] = useState<Message[]>([]);
   const [status, setStatus] = useState("Click Speak to begin your conversation.");
-  const audioPlayingRef = useRef(false);
+  const [conversationState, setConversationState] = useState<string>("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef<any>(null);
+  const recognitionRef = useRef<any>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Use first selected stakeholder (for single stakeholder meetings)
-  // For multiple stakeholders, you could enhance this to rotate or detect who should respond
-  const stakeholder = selectedStakeholders[0];
-
+  // Auto-scroll to latest message
   useEffect(() => {
-    // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Redirect if no project or stakeholder selected
+  // Redirect if no project or stakeholders selected
   useEffect(() => {
     if (!selectedProject || !selectedStakeholders?.length) {
       console.log("🔄 VoiceMeetingV2: No project/stakeholders, redirecting...");
@@ -96,167 +41,399 @@ export default function VoiceMeetingV2() {
 
   if (!selectedProject || !selectedStakeholders?.length) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-xl font-semibold mb-2">No meeting configured</h2>
-          <p className="text-gray-400">Please select a project and stakeholders first.</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No meeting configured</h2>
+          <p className="text-gray-600 dark:text-gray-400">Please select a project and stakeholders first.</p>
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
     );
   }
 
-  const append = (who: "You" | "Stakeholder", text: string, stakeholderName?: string) => {
-    setMessages((m) => [...m, { who, text, stakeholderName }]);
+  const addMessage = (msg: Message) => {
+    setMessages((m) => [...m, msg]);
   };
 
-  const { state, startListening, resumeListening, endConversation } = useVoiceEngine({
-    onTranscribed: async (userText) => {
-      console.log('👤 VoiceMeetingV2: User said:', userText);
-      append("You", userText);
+  // ADAPTER 1: Speech-to-text using Web Speech API
+  async function transcribeOnce(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
-      try {
-        setStatus("Processing your message…");
-        
-        // Build conversation history for context
-        const conversationHistory = messages.map(msg => ({
-          speaker: msg.who === "You" ? "user" : stakeholder.id,
-          content: msg.text,
-          stakeholderName: msg.stakeholderName
-        }));
+      if (!SpeechRecognition) {
+        reject(new Error("Speech recognition not supported"));
+        return;
+      }
 
-        const { reply, audioBlob } = await processVoiceTurn({
-          transcript: userText,
-          stakeholder,
-          project: selectedProject,
-          conversationHistory,
-          totalStakeholders: selectedStakeholders.length
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-GB";
+      recognition.interimResults = false;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+
+      recognitionRef.current = recognition;
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
+        console.log('🎤 Transcribed:', transcript);
+        resolve(transcript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('🎤 Recognition error:', event.error);
+        reject(new Error(event.error));
+      };
+
+      recognition.onend = () => {
+        console.log('🎤 Recognition ended');
+      };
+
+      try {
+        recognition.start();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  // ADAPTER 2: Agent reply using existing singleAgentSystem
+  async function getAgentReply(userText: string): Promise<{ reply: string; speaker: string; voiceId?: string }> {
+    console.log('🤖 Getting agent reply for:', userText);
+    
+    // Determine which stakeholder should respond
+    // For simplicity: rotate through stakeholders based on message count
+    // Or use AI to decide who should respond (more advanced)
+    const stakeholderIndex = Math.floor(messages.filter(m => m.who !== "You").length % selectedStakeholders.length);
+    const respondingStakeholder = selectedStakeholders[stakeholderIndex];
+    
+    console.log(`👤 ${respondingStakeholder.name} will respond (${stakeholderIndex + 1}/${selectedStakeholders.length})`);
+
+    const stakeholderContext = {
+      name: respondingStakeholder.name,
+      role: respondingStakeholder.role,
+      department: respondingStakeholder.department,
+      priorities: respondingStakeholder.priorities || [],
+      personality: respondingStakeholder.personality || 'Professional and helpful',
+      expertise: respondingStakeholder.expertise || []
+    };
+
+    const projectContext = {
+      id: selectedProject.id,
+      name: selectedProject.name,
+      description: selectedProject.description,
+      type: selectedProject.type || 'General',
+      painPoints: selectedProject.painPoints || [],
+      asIsProcess: selectedProject.asIsProcess || ''
+    };
+
+    // Build conversation history
+    const conversationHistory = messages.map(msg => ({
+      speaker: msg.who === "You" ? "user" : msg.who,
+      content: msg.text,
+      stakeholderName: msg.who !== "You" ? msg.who : undefined
+    }));
+
+    const reply = await singleAgentSystem.processUserMessage(
+      userText,
+      stakeholderContext,
+      projectContext,
+      conversationHistory,
+      selectedStakeholders.length
+    );
+
+    return { 
+      reply, 
+      speaker: respondingStakeholder.name,
+      voiceId: respondingStakeholder.voice
+    };
+  }
+
+  // ADAPTER 3: Text-to-speech using ElevenLabs with fallback
+  async function speak(text: string, options?: { voiceId?: string }): Promise<void> {
+    console.log('🔊 Speaking:', text.substring(0, 50));
+    
+    return new Promise(async (resolve) => {
+      try {
+        // Try ElevenLabs first
+        const audioBlob = await synthesizeToBlob(text, { 
+          voiceId: options?.voiceId 
         });
 
-        console.log('🤖 VoiceMeetingV2: Got reply:', reply);
-        append("Stakeholder", reply, stakeholder.name);
-        setStatus("Speaking…");
-        audioPlayingRef.current = true;
-
         if (audioBlob) {
-          // Use ElevenLabs audio
-          playAudioBlob(audioBlob, () => {
-            console.log('✅ VoiceMeetingV2: Audio finished, resuming listening...');
-            audioPlayingRef.current = false;
-            setStatus("Listening…");
-            // auto-resume new turn
-            resumeListening();
-          });
+          const url = URL.createObjectURL(audioBlob);
+          const audio = new Audio(url);
+          currentAudioRef.current = audio;
+
+          audio.onended = () => {
+            console.log('✅ Audio finished');
+            URL.revokeObjectURL(url);
+            currentAudioRef.current = null;
+            resolve();
+          };
+
+          audio.onerror = () => {
+            console.error('❌ Audio playback error');
+            URL.revokeObjectURL(url);
+            currentAudioRef.current = null;
+            resolve();
+          };
+
+          await audio.play();
         } else {
           // Fallback to browser TTS
-          console.log('⚠️ VoiceMeetingV2: Using browser TTS fallback');
-          await playBrowserTTS(reply);
-          audioPlayingRef.current = false;
-          setStatus("Listening…");
-          resumeListening();
+          console.log('⚠️ Using browser TTS fallback');
+          await playBrowserTTS(text);
+          resolve();
         }
-      } catch (e) {
-        console.error('❌ VoiceMeetingV2: Error:', e);
-        setStatus("Something went wrong. Please try again.");
-        // Try to resume listening to avoid dead ends
-        resumeListening();
+      } catch (error) {
+        console.error('❌ TTS error:', error);
+        // Fallback to browser TTS
+        try {
+          await playBrowserTTS(text);
+        } catch {}
+        resolve();
       }
-    },
-    onStateChange: (s) => {
-      console.log('🔄 VoiceMeetingV2: State changed to:', s);
-      if (s === "listening") setStatus("Listening…");
-      if (s === "processing") setStatus("Processing your message…");
-      if (s === "speaking") setStatus("Speaking…");
-      if (s === "ended") setStatus("Conversation ended. You can review your dialogue above.");
-      if (s === "idle") setStatus("Click Speak to begin your conversation.");
-    },
-  });
+    });
+  }
+
+  // Initialize conversation loop
+  useEffect(() => {
+    const loop = createStakeholderConversationLoop({
+      transcribeOnce,
+      getAgentReply,
+      speak,
+      
+      onState: (s) => {
+        setConversationState(s);
+        const statusMap = {
+          idle: "Click Speak to begin your conversation.",
+          listening: "Listening…",
+          processing: "Processing your message…",
+          speaking: "Speaking…",
+          ended: "Conversation ended. You can review your dialogue.",
+        };
+        setStatus(statusMap[s] || "");
+      },
+
+      onUserUtterance: (text) => {
+        addMessage({ 
+          who: "You", 
+          text, 
+          timestamp: new Date().toISOString() 
+        });
+      },
+
+      onAgentUtterance: ({ text, speaker }) => {
+        addMessage({ 
+          who: speaker || "Stakeholder", 
+          text, 
+          timestamp: new Date().toISOString() 
+        });
+      },
+    });
+
+    loopRef.current = loop;
+
+    return () => {
+      // Cleanup on unmount
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {}
+      }
+      if (currentAudioRef.current) {
+        try {
+          currentAudioRef.current.pause();
+        } catch {}
+      }
+    };
+  }, [messages, selectedStakeholders, selectedProject]);
 
   const handleSpeak = () => {
-    if (state === "idle") {
-      console.log('🎤 VoiceMeetingV2: Starting listening...');
-      setStatus("Listening…");
-      startListening();
-    }
+    loopRef.current?.start();
   };
 
   const handleEnd = () => {
-    console.log('🛑 VoiceMeetingV2: Ending conversation...');
-    if (audioPlayingRef.current) {
-      // Let the browser stop the current audio naturally; we only change state
+    loopRef.current?.end();
+    // Stop any ongoing audio
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
     }
-    endConversation();
+    // Stop any ongoing recognition
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {}
+    }
   };
 
   const handleBack = () => {
-    if (state !== "idle" && state !== "ended") {
+    if (conversationState !== "idle" && conversationState !== "ended") {
       const confirmLeave = window.confirm("Are you sure you want to leave? Your conversation is still active.");
       if (!confirmLeave) return;
+      handleEnd();
     }
     setCurrentView("meeting-mode-selection");
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-[#f3f3f3] flex flex-col">
-      <Header 
-        projectName={selectedProject.name} 
-        stakeholderName={stakeholder.name}
-        onBack={handleBack}
-      />
-
-      {/* Thread */}
-      <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 h-[68vh] overflow-y-auto space-y-3">
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-              <div className="text-center">
-                <p className="mb-2">Your conversation will appear here.</p>
-                <p className="text-xs text-gray-400">Click "Speak" below to start talking with {stakeholder.name}</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBack}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Back to Meeting Selection"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {selectedProject.name}
+                </h1>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <Users className="w-4 h-4" />
+                  <span>{selectedStakeholders.map(s => s.name).join(', ')}</span>
+                </div>
               </div>
             </div>
-          ) : (
-            <>
-              {messages.map((m, idx) => (
-                <Bubble key={idx} who={m.who} text={m.text} stakeholderName={m.stakeholderName} />
-              ))}
-              <div ref={messagesEndRef} />
-            </>
-          )}
+            <div className="hidden sm:block">
+              <span className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-full border border-purple-200 dark:border-purple-700">
+                Voice Meeting V2
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Floating mic bar (Teams-like) */}
-      <div className="w-full sticky bottom-0">
-        <div className="mx-auto max-w-3xl mb-5">
-          <div className="bg-white/95 backdrop-blur rounded-full shadow-lg border border-gray-200 px-4 py-3 flex items-center justify-between">
-            {/* Left: status */}
-            <div className="text-xs sm:text-sm text-gray-600 flex-1">{status}</div>
+      {/* Messages Container */}
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-5xl mx-auto h-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 h-full overflow-y-auto p-6">
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center">
+                  <Mic className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-lg text-gray-700 dark:text-gray-300 font-medium mb-2">
+                    Ready to start your conversation
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Click "Speak" below to begin talking with {selectedStakeholders.map(s => s.name).join(', ')}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, idx) => {
+                  const isUser = msg.who === "You";
+                  const stakeholder = selectedStakeholders.find(s => s.name === msg.who);
+                  const initials = isUser 
+                    ? "You" 
+                    : (stakeholder?.name.split(' ').map(n => n[0]).join('').toUpperCase() || "ST");
+                  
+                  return (
+                    <div key={idx} className={`flex ${isUser ? "justify-end" : "justify-start"} w-full`}>
+                      <div className={`flex items-start gap-3 max-w-[75%]`}>
+                        {!isUser && (
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                              {initials}
+                            </div>
+                          </div>
+                        )}
+                        <div
+                          className={`rounded-2xl px-4 py-3 shadow-sm ${
+                            isUser
+                              ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white"
+                              : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600"
+                          }`}
+                        >
+                          {!isUser && (
+                            <div className="font-semibold text-sm mb-1 text-purple-700 dark:text-purple-300">
+                              {msg.who}
+                            </div>
+                          )}
+                          <div className={`text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
+                            {msg.text}
+                          </div>
+                          <div className={`text-xs mt-1 ${isUser ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                        {isUser && (
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                              You
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-            {/* Center: mic */}
+      {/* Floating Control Bar */}
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Status Text */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  conversationState === 'listening' ? 'bg-green-500 animate-pulse' :
+                  conversationState === 'processing' ? 'bg-yellow-500 animate-pulse' :
+                  conversationState === 'speaking' ? 'bg-blue-500 animate-pulse' :
+                  'bg-gray-400'
+                }`} />
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                  {status}
+                </p>
+              </div>
+            </div>
+
+            {/* Speak Button */}
             <button
               onClick={handleSpeak}
-              disabled={state !== "idle"}
-              className={`mx-3 sm:mx-6 h-12 w-12 rounded-full flex items-center justify-center shadow transition-all
-                ${state === "idle" ? "bg-[#6264a7] hover:bg-[#54579a] hover:scale-110" : "bg-gray-300 cursor-not-allowed"}`}
+              disabled={conversationState !== "idle"}
+              className={`relative h-14 w-14 rounded-full flex items-center justify-center shadow-lg transition-all transform ${
+                conversationState === "idle"
+                  ? "bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:scale-110 active:scale-95"
+                  : "bg-gray-300 dark:bg-gray-600 cursor-not-allowed opacity-50"
+              }`}
               title="Speak"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-white"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H9v2h6v-2h-2v-3.08A7 7 0 0 0 19 11h-2Z" />
-              </svg>
+              <Mic className="w-7 h-7 text-white" />
+              {conversationState === "listening" && (
+                <span className="absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-75"></span>
+              )}
             </button>
 
-            {/* Right: End */}
+            {/* End Conversation Button */}
             <button
               onClick={handleEnd}
-              disabled={state === "idle" || state === "ended"}
-              className={`text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full transition-all
-                ${state === "idle" || state === "ended"
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-red-600 text-white hover:bg-red-700 hover:scale-105"}`}
+              disabled={conversationState === "idle" || conversationState === "ended"}
+              className={`px-6 py-3 rounded-lg font-semibold text-sm transition-all transform ${
+                conversationState === "idle" || conversationState === "ended"
+                  ? "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:scale-105 active:scale-95 shadow-md"
+              }`}
             >
               End Conversation
             </button>
@@ -266,4 +443,3 @@ export default function VoiceMeetingV2() {
     </div>
   );
 }
-
