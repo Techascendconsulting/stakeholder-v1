@@ -133,7 +133,13 @@ const StakeholdersView: React.FC = () => {
       localSelectedStakeholders.includes(s.id)
     )
     console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
+    
+    // Save to AppContext
     setSelectedStakeholders(selectedStakeholderObjects)
+    
+    // IMPORTANT: Save to localStorage to persist selection across navigation
+    localStorage.setItem('selectedStakeholders', JSON.stringify(selectedStakeholderObjects))
+    console.log('💾 SAVED: Selected stakeholders to localStorage:', selectedStakeholderObjects.map(s => s.name))
     
     if (hasActiveMeeting && activeMeetingId) {
       console.log('🔄 Continuing existing meeting:', activeMeetingId, '- but allowing mode selection')
