@@ -546,9 +546,18 @@ Rules:
               <span>{formatTime(meetingDuration)}</span>
             </div>
             <button
+              onClick={() => setShowCoaching(!showCoaching)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
+                showCoaching ? 'bg-purple-600 text-white' : 'bg-white/10 hover:bg-white/20'
+              }`}
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">AI Coach</span>
+            </button>
+            <button
               onClick={() => setShowTranscript(!showTranscript)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                showTranscript ? 'bg-purple-600 text-white' : 'bg-white/10 hover:bg-white/20'
+                showTranscript ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20'
               }`}
             >
               <MessageSquare className="w-4 h-4" />
@@ -732,8 +741,52 @@ Rules:
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
+
+        {/* Right: AI Coaching Panel */}
+        {showCoaching && (
+          <div className="w-96 bg-[#1A1A1A] border-l border-gray-700 flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 bg-[#121212]">
+              <h3 className="font-semibold text-white text-sm">AI Coach</h3>
+              <button
+                onClick={() => setShowCoaching(false)}
+                className="p-1 hover:bg-white/10 rounded transition-colors"
+                title="Hide coaching panel"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <DynamicCoachingPanel
+                ref={coachingPanelRef}
+                projectName={selectedProject.name}
+                conversationHistory={messages.map(m => ({
+                  role: m.who === "You" ? "user" : "assistant",
+                  content: m.text,
+                  speaker: m.who
+                }))}
+                sessionStage={""} 
+                onAcknowledgementStateChange={setAwaitingAcknowledgement}
+                onSuggestedRewrite={(rewrite) => console.log('Suggested rewrite:', rewrite)}
+                onSubmitMessage={(msg) => console.log('Coach message:', msg)}
+                onSessionComplete={() => console.log('Session complete')}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Toggle Coaching Button - when hidden */}
+        {!showCoaching && (
+          <button
+            onClick={() => setShowCoaching(true)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-l-lg shadow-lg transition-all z-50"
+            title="Show AI Coach"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Control Dock */}
