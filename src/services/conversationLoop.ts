@@ -48,34 +48,34 @@ export function createStakeholderConversationLoop({
   }
 
   async function loopOnce() {
-    console.log('🔍 DEBUG LOOP: ========== loopOnce() CALLED ==========');
-    console.log('🔍 DEBUG LOOP: active?', active, 'ending?', ending);
+    // console.log('🔍 DEBUG LOOP: ========== loopOnce() CALLED ==========');
+    // console.log('🔍 DEBUG LOOP: active?', active, 'ending?', ending);
     
     // USER TURN
-    console.log('🔍 DEBUG LOOP: Setting state to LISTENING');
+    // console.log('🔍 DEBUG LOOP: Setting state to LISTENING');
     setState(states.LISTENING);
     
-    console.log('🔍 DEBUG LOOP: Calling transcribeOnce()...');
+    // console.log('🔍 DEBUG LOOP: Calling transcribeOnce()...');
     const userText = await transcribeOnce().catch((e) => {
-      console.error('🔍 DEBUG LOOP: ❌ transcribeOnce error:', e);
+      console.error('❌ Transcribe error:', e);
       return "";
     });
     
-    console.log('🔍 DEBUG LOOP: transcribeOnce() returned:', userText);
+    // console.log('🔍 DEBUG LOOP: transcribeOnce() returned:', userText);
     
     if (!active) {
-      console.log('🔍 DEBUG LOOP: 🛑 Not active, stopping');
+      console.log('🛑 Loop stopped (not active)');
       return; // user ended mid-turn
     }
     
     if (!userText || !userText.trim()) {
-      console.log('🔍 DEBUG LOOP: ⚠️ No speech captured, retrying...');
+      console.log('⚠️ No speech captured, retrying...');
       // No speech captured—idle listen again unless ending
       if (!ending) return loopOnce();
       return end();
     }
     
-    console.log('🔍 DEBUG LOOP: ✅ User said:', userText);
+    console.log('👤 User said:', userText);
     onUserUtterance(userText);
 
     // AGENT TURN
@@ -93,49 +93,42 @@ export function createStakeholderConversationLoop({
       return;
     }
     
-    console.log('🤖 Conversation Loop: Agent replied:', { reply: reply.substring(0, 50), speaker, stakeholderName });
+    console.log(`🤖 ${speaker}: ${reply}`);
     onAgentUtterance({ text: reply, speaker: speaker || "Stakeholder" });
 
     setState(states.SPEAKING);
     await speak(reply, { voiceId, stakeholderName: stakeholderName || speaker }).catch((e) => {
-      console.error('❌ Conversation Loop: speak error:', e);
+      console.error('❌ Speak error:', e);
     });
     
     if (!active) {
-      console.log('🛑 Conversation Loop: Not active after speaking, stopping');
+      console.log('🛑 Loop stopped after speaking');
       return;
     }
 
     // Continue unless the user has ended
     if (!ending) {
-      console.log('🔁 Conversation Loop: Continuing to next turn...');
+      // console.log('🔁 Continuing to next turn...');
       return loopOnce();
     }
     return end();
   }
 
   function start() {
-    console.log('🔍 DEBUG LOOP: ========== START() CALLED ==========');
-    console.log('🔍 DEBUG LOOP: Already active?', active);
-    
     if (active) {
-      console.log('🔍 DEBUG LOOP: ⚠️ Already active, ignoring start() call');
+      console.log('⚠️ Loop already active');
       return;
     }
     
-    console.log('🔍 DEBUG LOOP: ▶️ Setting active = true, ending = false');
+    console.log('▶️ Starting conversation');
     active = true;
     ending = false;
-    
-    console.log('🔍 DEBUG LOOP: Setting state to LISTENING');
     setState(states.LISTENING);
-    
-    console.log('🔍 DEBUG LOOP: Calling loopOnce()...');
     loopOnce();
   }
 
   function end() {
-    console.log('🛑 Conversation Loop: Ending...');
+    console.log('⏹️ Ending conversation');
     active = false;
     ending = true;
     setState(states.ENDED);

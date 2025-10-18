@@ -109,7 +109,7 @@ export default function VoiceMeetingV2() {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (!SpeechRecognition) {
-        console.error('🔍 DEBUG: SpeechRecognition NOT SUPPORTED');
+        console.error('❌ SpeechRecognition not supported');
         resolve('');
         return;
       }
@@ -244,7 +244,7 @@ export default function VoiceMeetingV2() {
       };
 
       recognition.onerror = (event: any) => {
-        console.error('🔍 DEBUG: ❌ ERROR:', event.error);
+        console.error('❌ Speech recognition error:', event.error);
         if (micStream) micStream.getTracks().forEach(t => t.stop());
         if (silenceTimer) clearTimeout(silenceTimer);
         resolve(finalTranscript.trim() || '');
@@ -263,7 +263,7 @@ export default function VoiceMeetingV2() {
         // console.log('🔍 DEBUG: 🎬 STARTING...');
         recognition.start();
       } catch (e) {
-        console.error('🔍 DEBUG: ❌ START FAILED:', e);
+        console.error('❌ Recognition start failed:', e);
         resolve('');
       }
     });
@@ -297,28 +297,49 @@ Description: ${selectedProject.description}
 Stakeholders:
 ${selectedStakeholders.map(s => `- ${s.name} (${s.role}, ${s.department}): ${s.bio?.substring(0, 150) || s.personality}`).join('\n')}
 
-Rules:
-- Only ONE stakeholder responds per turn
-- Choose the most relevant stakeholder based on expertise
-- If user addresses someone by name, that person MUST respond
-- If user asks for someone NOT present, state they're not in this meeting
-- Do NOT include names in spoken text (UI shows it)
-- Keep responses brief (1-3 sentences) and conversational
-- Return strict JSON: { "speaker": "<exact name>", "reply": "<text>" }`
+CRITICAL RULES (FOLLOW EXACTLY):
+1. ONLY ONE stakeholder responds per turn
+2. **MANDATORY**: If the user says ANY name (e.g., "David", "James", "David and James"), ONLY that exact person (or first person if multiple) MUST respond. DO NOT let anyone else respond.
+3. Parse the user's message carefully for names mentioned. If a name is detected, that person speaks - NO EXCEPTIONS.
+4. If user asks for someone NOT in the participant list, state they're not in this meeting
+5. DO NOT include stakeholder names in the spoken text (the UI shows who's speaking)
+6. Keep responses conversational and natural (2-4 sentences)
+7. Complete your thought - don't cut off mid-sentence
+
+Response format (strict JSON):
+{ "speaker": "<exact name from participant list>", "reply": "<complete spoken response>" }
+
+Example:
+User: "David, what do you think?"
+Response: { "speaker": "David Chen", "reply": "I think we should prioritize the technical requirements first." }`
             },
             ...conversationHistory,
             { role: "user", content: userText }
           ],
           response_format: { type: "json_object" },
           temperature: 0.7,
+          max_tokens: 200,
         }),
       });
 
       const data = await openaiResponse.json();
       const payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
 
-      const speaker = payload.speaker || participantNames[0];
+      let speaker = payload.speaker || participantNames[0];
       const reply = payload.reply?.trim() || "Let's clarify that.";
+      
+      // ENFORCEMENT: If user explicitly mentions a name, override AI choice
+      const userTextLower = userText.toLowerCase();
+      const mentionedStakeholder = selectedStakeholders.find(s => 
+        userTextLower.includes(s.name.toLowerCase()) || 
+        userTextLower.includes(s.name.split(' ')[0].toLowerCase())
+      );
+      
+      if (mentionedStakeholder) {
+        console.log(`🎯 User mentioned "${mentionedStakeholder.name}" - forcing them to respond (AI chose: ${speaker})`);
+        speaker = mentionedStakeholder.name;
+      }
+      
       const safeSpeaker = participantNames.includes(speaker) ? speaker : participantNames[0];
 
       // Map to ElevenLabs voice
@@ -349,8 +370,9 @@ Rules:
     }
   }
 
-  // ADAPTER 3: ElevenLabs TTS with automatic energy-based interruption
+  // ADAPTER 3: ElevenLabs TTS - Clean playback without interruption
   async function speak(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
+    // Stop any previous audio
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
@@ -360,14 +382,17 @@ Rules:
     const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
     setActiveSpeaker(options?.stakeholderName || null);
-    console.log('🔊 Speaking:', text.substring(0, 50), 'with voice:', voiceId);
+    console.log('🔊 Speaking:', text.substring(0, 50));
     
     return new Promise(async (resolve) => {
       try {
         // Get TTS audio from ElevenLabs
         const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "xi-api-key": apiKey },
+          headers: { 
+            "Content-Type": "application/json", 
+            "xi-api-key": apiKey 
+          },
           body: JSON.stringify({
             text,
             model_id: "eleven_monolingual_v1",
@@ -375,7 +400,9 @@ Rules:
           }),
         });
 
-        if (!ttsResponse.ok) throw new Error(`TTS failed: ${ttsResponse.status}`);
+        if (!ttsResponse.ok) {
+          throw new Error(`TTS failed: ${ttsResponse.status}`);
+        }
 
         const audioBuffer = await ttsResponse.arrayBuffer();
         const audioBlob = new Blob([audioBuffer], { type: "audio/mpeg" });
@@ -383,59 +410,18 @@ Rules:
         const audio = new Audio(url);
         currentAudioRef.current = audio;
 
-        // Monitor mic energy while AI speaks (auto-interruption)
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null);
-        
-        if (stream) {
-          const audioCtx = new AudioContext();
-          const source = audioCtx.createMediaStreamSource(stream);
-          const analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 512;
-          source.connect(analyser);
-          const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-          function monitorInterruption() {
-            if (!currentAudioRef.current || currentAudioRef.current !== audio) {
-              stream.getTracks().forEach(t => t.stop());
-              return;
-            }
-            
-            analyser.getByteFrequencyData(dataArray);
-            const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-            const volume = avg / 255;
-
-            // User started talking (interrupt!)
-            if (volume > 0.05) {
-              console.log('⚠️🚨 AUTO-INTERRUPTION: User speaking (volume:', volume.toFixed(3), ')');
-              audio.pause();
-              URL.revokeObjectURL(url);
-              currentAudioRef.current = null;
-              setActiveSpeaker(null);
-              stream.getTracks().forEach(t => t.stop());
-              resolve();
-            } else {
-              requestAnimationFrame(monitorInterruption);
-            }
-          }
-
-          monitorInterruption();
-        }
-
         audio.onended = () => {
           console.log('✅ Audio finished');
           URL.revokeObjectURL(url);
-          if (stream) stream.getTracks().forEach(t => t.stop());
-          if (currentAudioRef.current === audio) {
-            currentAudioRef.current = null;
-            setActiveSpeaker(null);
-          }
+          currentAudioRef.current = null;
+          setActiveSpeaker(null);
           resolve();
         };
 
         audio.onerror = (e) => {
           console.error('❌ Audio error:', e);
           URL.revokeObjectURL(url);
-          if (stream) stream.getTracks().forEach(t => t.stop());
+          currentAudioRef.current = null;
           setActiveSpeaker(null);
           resolve();
         };
@@ -443,9 +429,14 @@ Rules:
         await audio.play();
 
       } catch (error) {
-        console.error('❌ TTS error, fallback to browser:', error);
+        console.error('❌ TTS error:', error);
         setActiveSpeaker(null);
-        await playBrowserTTS(text).catch(() => {});
+        // Fallback to browser TTS if ElevenLabs fails
+        try {
+          await playBrowserTTS(text);
+        } catch (e) {
+          console.error('❌ Browser TTS also failed:', e);
+        }
         resolve();
       }
     });
@@ -460,28 +451,28 @@ Rules:
       getAgentReply,
       speak,
       onState: (s) => {
-        console.log('🔍 DEBUG: Loop state changed to:', s);
+        // console.log('State:', s);
         setConversationState(s);
         if (s === 'processing') {
           setIsProcessingTranscript(false);
         }
       },
       onUserUtterance: (text) => {
-        console.log('🔍 DEBUG: User utterance captured:', text);
+        // console.log('User:', text);
         setLiveTranscript("");
         addMessage({ who: "You", text, timestamp: new Date().toISOString() });
       },
       onAgentUtterance: ({ text, speaker }) => {
-        console.log('🔍 DEBUG: Agent utterance:', speaker, '-', text.substring(0, 50));
+        // console.log('Agent:', speaker, text);
         addMessage({ who: speaker, text, timestamp: new Date().toISOString() });
       },
     });
     
     loopRef.current = loop;
-    console.log('🔍 DEBUG: Loop created and stored in loopRef');
-
+    // console.log('Loop initialized');
+    
     return () => {
-      console.log('🔍 DEBUG: Component unmounting, cleaning up...');
+      // console.log('Cleaning up...');
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -497,32 +488,26 @@ Rules:
   }, []); // CRITICAL FIX: Empty deps array - only create loop ONCE!
 
   const handleSpeak = async () => {
-    console.log('🔍 DEBUG: ========== SPEAK BUTTON CLICKED ==========');
-    console.log('🔍 DEBUG: Current state:', conversationState);
-    console.log('🔍 DEBUG: Loop ref exists?', !!loopRef.current);
-    
     // Check microphone permission
     try {
-      console.log('🔍 DEBUG: Checking microphone permission...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('🔍 DEBUG: ✅ Microphone permission granted');
+      console.log('✅ Microphone granted');
       stream.getTracks().forEach(track => track.stop()); // Stop the test stream
     } catch (e) {
-      console.error('🔍 DEBUG: ❌ Microphone permission denied:', e);
+      console.error('❌ Microphone denied:', e);
       alert('Microphone permission required. Please allow microphone access and try again.');
       return;
     }
     
     if (loopRef.current) {
-      console.log('🔍 DEBUG: Calling loop.start()...');
       loopRef.current.start();
     } else {
-      console.error('🔍 DEBUG: ❌ Loop ref is null!');
+      console.error('❌ Loop not initialized');
     }
   };
 
   const handleEnd = () => {
-    console.log('🔍 DEBUG: ========== END MEETING CLICKED ==========');
+    console.log('⏹️ Ending meeting');
     loopRef.current?.end();
     stopSpeaking();
     if (recognitionRef.current) {
