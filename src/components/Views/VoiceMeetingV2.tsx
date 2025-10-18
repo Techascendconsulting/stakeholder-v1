@@ -540,6 +540,45 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
+              {/* Breadcrumbs */}
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                <button 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  Dashboard
+                </button>
+                <span>/</span>
+                <button 
+                  onClick={() => setCurrentView('practice-flow')}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  Practice
+                </button>
+                <span>/</span>
+                <button 
+                  onClick={() => setCurrentView('projects')}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  Projects
+                </button>
+                <span>/</span>
+                <button 
+                  onClick={() => setCurrentView('project-brief')}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  {selectedProject.name.length > 25 ? selectedProject.name.substring(0, 25) + '...' : selectedProject.name}
+                </button>
+                <span>/</span>
+                <button 
+                  onClick={() => setCurrentView('stakeholders')}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  Stakeholders
+                </button>
+                <span>/</span>
+                <span className="text-gray-400">Voice Meeting</span>
+              </div>
               <h1 className="text-lg font-semibold">{selectedProject.name}</h1>
               <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
