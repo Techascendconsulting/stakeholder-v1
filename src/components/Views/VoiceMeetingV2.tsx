@@ -154,10 +154,10 @@ export default function VoiceMeetingV2() {
           // Only log when volume changes significantly (reduce console spam)
           // console.log('🔍 ENERGY:', volume.toFixed(3));
 
-          // If volume low (user stopped), finalize after 700ms
+          // If volume low (user stopped), finalize quickly
           if (volume < 0.02) {
             if (!isSilent && finalTranscript.trim()) {
-              console.log('🔇 Silence detected - finalizing in 700ms');
+              console.log('🔇 Silence detected - finalizing in 300ms');
               isSilent = true;
               if (silenceTimer) clearTimeout(silenceTimer);
               
@@ -174,7 +174,7 @@ export default function VoiceMeetingV2() {
                 isUserSpeakingRef.current = false;
                 setActiveSpeaker(null);
                 resolve(finalTranscript.trim());
-              }, 700);
+              }, 300);
             }
           } else {
             // User still speaking - cancel silence
@@ -278,6 +278,18 @@ export default function VoiceMeetingV2() {
         content: msg.who === "You" ? msg.text : `[${msg.who}]: ${msg.text}`
       }));
 
+      // DETECT MENTIONED NAMES FIRST - before calling AI
+      const userTextLower = userText.toLowerCase();
+      const mentionedStakeholder = selectedStakeholders.find(s => 
+        userTextLower.includes(s.name.toLowerCase()) || 
+        userTextLower.includes(s.name.split(' ')[0].toLowerCase())
+      );
+      
+      // Build mandatory speaker instruction if name was mentioned
+      const mandatorySpeaker = mentionedStakeholder 
+        ? `\n\n🚨 MANDATORY: The user specifically mentioned "${mentionedStakeholder.name}" so this person MUST respond. Set "speaker" to "${mentionedStakeholder.name}".`
+        : '';
+
       const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -289,36 +301,25 @@ export default function VoiceMeetingV2() {
           messages: [
             {
               role: "system",
-              content: `You are simulating a realistic stakeholder conversation. Participants: ${participantNames.join(", ")}.
+              content: `Simulate stakeholder conversation. Participants: ${participantNames.join(", ")}.
 
 Project: ${selectedProject.name}
-Description: ${selectedProject.description}
 
 Stakeholders:
-${selectedStakeholders.map(s => `- ${s.name} (${s.role}, ${s.department}): ${s.bio?.substring(0, 150) || s.personality}`).join('\n')}
+${selectedStakeholders.map(s => `${s.name} (${s.role}): ${s.personality?.substring(0, 80) || s.bio?.substring(0, 80) || 'Professional'}`).join('\n')}
 
-CRITICAL RULES (FOLLOW EXACTLY):
-1. ONLY ONE stakeholder responds per turn
-2. **MANDATORY**: If the user says ANY name (e.g., "David", "James", "David and James"), ONLY that exact person (or first person if multiple) MUST respond. DO NOT let anyone else respond.
-3. Parse the user's message carefully for names mentioned. If a name is detected, that person speaks - NO EXCEPTIONS.
-4. If user asks for someone NOT in the participant list, state they're not in this meeting
-5. DO NOT include stakeholder names in the spoken text (the UI shows who's speaking)
-6. Keep responses conversational and natural (2-4 sentences)
-7. Complete your thought - don't cut off mid-sentence
-
-Response format (strict JSON):
-{ "speaker": "<exact name from participant list>", "reply": "<complete spoken response>" }
-
-Example:
-User: "David, what do you think?"
-Response: { "speaker": "David Chen", "reply": "I think we should prioritize the technical requirements first." }`
+RULES:
+1. ONE stakeholder responds per turn
+2. If user mentions a name, that person MUST respond
+3. Keep responses brief (2-3 sentences)
+4. Return JSON: { "speaker": "<exact name>", "reply": "<text>" }${mandatorySpeaker}`
             },
             ...conversationHistory,
             { role: "user", content: userText }
           ],
           response_format: { type: "json_object" },
           temperature: 0.7,
-          max_tokens: 200,
+          max_tokens: 150,
         }),
       });
 
