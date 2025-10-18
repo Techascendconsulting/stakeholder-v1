@@ -6,7 +6,6 @@ import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { createStakeholderConversationLoop } from "../../services/conversationLoop";
 import { playBrowserTTS } from "../../lib/browserTTS";
-import DynamicCoachingPanel from "../DynamicCoachingPanel";
 import { 
   ArrowLeft, 
   Mic, 
@@ -14,10 +13,7 @@ import {
   Users, 
   Clock, 
   MessageSquare, 
-  X,
-  HelpCircle,
-  ChevronRight,
-  ChevronLeft
+  X
 } from "lucide-react";
 
 interface Message {
@@ -35,9 +31,6 @@ export default function VoiceMeetingV2() {
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
-  const [showCoaching, setShowCoaching] = useState(true);
-  const [awaitingAcknowledgement, setAwaitingAcknowledgement] = useState(false);
-  const coachingPanelRef = useRef<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<any>(null);
@@ -137,19 +130,22 @@ export default function VoiceMeetingV2() {
 
       recognitionRef.current = recognition;
       
-      let finalTranscript = '';
+      let finalTranscript = "";
+      let interimTranscript = "";
       let silenceTimer: NodeJS.Timeout | null = null;
-      const SILENCE_DELAY = 1500; // Wait 1.5 seconds of silence before finalizing
+      const SILENCE_DELAY = 1500;
 
       recognition.onspeechstart = () => {
-        console.log('🔍 DEBUG: ✅ SPEECH START EVENT FIRED');
-        console.log('🔍 DEBUG: Current state from ref:', conversationStateRef.current);
-        
+        console.log('🔍 DEBUG: ✅ SPEECH START');
         isUserSpeakingRef.current = true;
         setActiveSpeaker("You");
+        
+        // Reset transcripts
+        finalTranscript = "";
+        interimTranscript = "";
         setLiveTranscript("");
         
-        // Clear any pending silence timer
+        // Clear any pending timer
         if (silenceTimer) {
           clearTimeout(silenceTimer);
           silenceTimer = null;
@@ -172,15 +168,43 @@ export default function VoiceMeetingV2() {
         console.log('🔍 DEBUG: ✅ SOUND START - Sound detected');
       };
 
-      recognition.onsoundend = () => {
-        console.log('🔍 DEBUG: 🔇 SOUND END - Starting silence timer...');
-        // Start silence timer when sound stops
+
+      recognition.onresult = (event: any) => {
+        // Clear silence timer on every new result
         if (silenceTimer) clearTimeout(silenceTimer);
         
+        interimTranscript = "";
+        let newFinal = "";
+
+        // KEY: Use resultIndex to avoid duplicates!
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const result = event.results[i];
+          const transcript = result[0].transcript;
+          
+          if (result.isFinal) {
+            newFinal += transcript + " ";
+            console.log('🔍 DEBUG: ✅ FINAL chunk:', transcript);
+          } else {
+            interimTranscript += transcript;
+            console.log('🔍 DEBUG: 📝 INTERIM:', transcript);
+          }
+        }
+
+        // Append final results only once
+        if (newFinal) {
+          finalTranscript += newFinal.trim() + " ";
+          console.log('🔍 DEBUG: 📚 Accumulated FINAL:', finalTranscript);
+        }
+
+        // Display live text (interim or final)
+        const displayText = interimTranscript || finalTranscript;
+        setLiveTranscript(displayText);
+
+        // Start silence timer — finalize after 1.5s of no speech
         silenceTimer = setTimeout(() => {
-          console.log('🔍 DEBUG: ⏱️ SILENCE TIMEOUT - Finalizing transcript');
+          console.log('🔍 DEBUG: ⏱️ SILENCE TIMEOUT - Finalizing');
           if (finalTranscript.trim()) {
-            console.log('🔍 DEBUG: ✅ AUTO-FINALIZED:', finalTranscript);
+            console.log('🔍 DEBUG: ✅ Sending to AI:', finalTranscript.trim());
             try {
               recognition.stop();
             } catch {}
@@ -191,39 +215,6 @@ export default function VoiceMeetingV2() {
             resolve(finalTranscript.trim());
           }
         }, SILENCE_DELAY);
-      };
-
-      recognition.onresult = (event: any) => {
-        console.log('🔍 DEBUG: ✅ ON RESULT - Got recognition results', event.results.length, 'results');
-        
-        // Accumulate all results
-        let interimTranscript = '';
-        let hasNewFinal = false;
-        
-        for (let i = 0; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          const isFinal = event.results[i].isFinal;
-          const confidence = event.results[i][0].confidence;
-          
-          console.log(`🔍 DEBUG: Result ${i}:`, {
-            transcript,
-            isFinal,
-            confidence,
-            length: transcript.length
-          });
-          
-          if (isFinal) {
-            finalTranscript += transcript;
-            hasNewFinal = true;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-        
-        // Show current transcript (final + interim)
-        const displayText = finalTranscript + interimTranscript;
-        console.log('🔍 DEBUG: 📝 Display:', displayText);
-        setLiveTranscript(displayText);
       };
 
       recognition.onerror = (event: any) => {
@@ -245,6 +236,12 @@ export default function VoiceMeetingV2() {
         console.log('🔍 DEBUG: ⏹️ RECOGNITION ENDED');
         if (silenceTimer) clearTimeout(silenceTimer);
         isUserSpeakingRef.current = false;
+        
+        // Fallback: resolve with whatever we have
+        if (finalTranscript.trim()) {
+          console.log('🔍 DEBUG: Resolving from onend:', finalTranscript.trim());
+          resolve(finalTranscript.trim());
+        }
       };
 
       recognition.onnomatch = () => {
@@ -546,15 +543,6 @@ Rules:
               <span>{formatTime(meetingDuration)}</span>
             </div>
             <button
-              onClick={() => setShowCoaching(!showCoaching)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                showCoaching ? 'bg-purple-600 text-white' : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">AI Coach</span>
-            </button>
-            <button
               onClick={() => setShowTranscript(!showTranscript)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
                 showTranscript ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20'
@@ -572,11 +560,9 @@ Rules:
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left: Main meeting area */}
-        <div className={`flex-1 overflow-y-auto transition-all ${showCoaching ? 'mr-0' : ''}`}>
-          <div className="max-w-5xl mx-auto p-6">
-            <div className="flex flex-col items-center space-y-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto p-6">
+          <div className="flex flex-col items-center space-y-6">
             
             {/* Debug Panel - Always visible during development */}
             <div className="mb-4 w-full max-w-3xl">
@@ -741,52 +727,8 @@ Rules:
                 </div>
               </div>
             )}
-            </div>
           </div>
         </div>
-
-        {/* Right: AI Coaching Panel */}
-        {showCoaching && (
-          <div className="w-96 bg-[#1A1A1A] border-l border-gray-700 flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 bg-[#121212]">
-              <h3 className="font-semibold text-white text-sm">AI Coach</h3>
-              <button
-                onClick={() => setShowCoaching(false)}
-                className="p-1 hover:bg-white/10 rounded transition-colors"
-                title="Hide coaching panel"
-              >
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <DynamicCoachingPanel
-                ref={coachingPanelRef}
-                projectName={selectedProject.name}
-                conversationHistory={messages.map(m => ({
-                  role: m.who === "You" ? "user" : "assistant",
-                  content: m.text,
-                  speaker: m.who
-                }))}
-                sessionStage={""} 
-                onAcknowledgementStateChange={setAwaitingAcknowledgement}
-                onSuggestedRewrite={(rewrite) => console.log('Suggested rewrite:', rewrite)}
-                onSubmitMessage={(msg) => console.log('Coach message:', msg)}
-                onSessionComplete={() => console.log('Session complete')}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Toggle Coaching Button - when hidden */}
-        {!showCoaching && (
-          <button
-            onClick={() => setShowCoaching(true)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-l-lg shadow-lg transition-all z-50"
-            title="Show AI Coach"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-        )}
       </div>
 
       {/* Control Dock */}
@@ -811,15 +753,6 @@ Rules:
 
           {/* Controls */}
           <div className="flex items-center gap-4">
-            {/* Question Bank */}
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all hover:shadow-lg hover:shadow-purple-500/50"
-              title="Question Bank"
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Questions</span>
-            </button>
-
             {/* Interrupt Button - Shows when AI is speaking */}
             {conversationState === 'speaking' && (
               <button
