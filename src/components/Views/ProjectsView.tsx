@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info, XCircle, ArrowLeft } from 'lucide-react'
+import { Breadcrumbs } from '../Common/Breadcrumbs'
 
 const ProjectsView: React.FC = () => {
   const { 
@@ -242,8 +243,16 @@ const ProjectsView: React.FC = () => {
         
         {/* Enhanced Header Section with Back Button */}
         <div className="mb-12">
-          {/* Back to Project Journey */}
+          {/* Breadcrumbs & Back Button */}
           <div className="mb-8">
+            <Breadcrumbs 
+              items={[
+                { label: 'Dashboard', view: 'dashboard' },
+                { label: 'Practice', view: 'practice-flow' },
+                { label: 'Projects', active: true }
+              ]}
+              className="mb-4"
+            />
             <button
               onClick={() => setCurrentView('project-flow')}
               className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors group"

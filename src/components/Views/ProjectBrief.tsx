@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle, Clock, DollarSign, TrendingUp, BarChart3, Sparkles, Zap, Award, Shield, Lightbulb, BookOpen, Star, ChevronRight, PlayCircle, Trophy, Flame, Eye, Info } from 'lucide-react'
+import { Breadcrumbs } from '../Common/Breadcrumbs'
 
 const ProjectBrief: React.FC = () => {
   const { selectedProject, setCurrentView } = useApp()
@@ -110,10 +111,19 @@ const ProjectBrief: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Enhanced Header with Back Button */}
+        {/* Enhanced Header with Breadcrumbs & Back Button */}
         <div className="mb-10">
-          {/* Professional Back Button */}
+          {/* Breadcrumbs & Back Button */}
           <div className="mb-8">
+            <Breadcrumbs 
+              items={[
+                { label: 'Dashboard', view: 'dashboard' },
+                { label: 'Practice', view: 'practice-flow' },
+                { label: 'Projects', view: 'projects' },
+                { label: selectedProject.name.length > 30 ? selectedProject.name.substring(0, 30) + '...' : selectedProject.name, active: true }
+              ]}
+              className="mb-4"
+            />
             <button
               onClick={() => setCurrentView('projects')}
               className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors group"

@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { createStakeholderConversationLoop } from "../../services/conversationLoop";
 import { playBrowserTTS } from "../../lib/browserTTS";
 import { 
@@ -24,6 +25,9 @@ interface Message {
 
 export default function VoiceMeetingV2() {
   const { selectedProject, selectedStakeholders, setCurrentView, user } = useApp();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationState, setConversationState] = useState<string>("idle");
   const [showTranscript, setShowTranscript] = useState(false);
@@ -33,6 +37,13 @@ export default function VoiceMeetingV2() {
   const [autoSendMode, setAutoSendMode] = useState(true);
   const [pendingTranscript, setPendingTranscript] = useState<string>("");
   const [showReviewPanel, setShowReviewPanel] = useState(false);
+  
+  // Auto-show transcript when Review mode is active or when review panel appears
+  useEffect(() => {
+    if (!autoSendMode || showReviewPanel) {
+      setShowTranscript(true);
+    }
+  }, [autoSendMode, showReviewPanel]);
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string>("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
@@ -162,16 +173,7 @@ export default function VoiceMeetingV2() {
                 
                 const result = finalTranscript.trim();
                 console.log('✅ Done:', result);
-                
-                // If Review Mode, show confirmation panel instead of auto-sending
-                if (!autoSendMode) {
-                  setPendingTranscript(result);
-                  setShowReviewPanel(true);
-                  resolve(""); // Empty string = don't send yet
-                } else {
-                  // Auto Send Mode - send immediately
-                  resolve(result);
-                }
+                resolve(result);
               }
             }, 1500);
           } else {
@@ -475,13 +477,11 @@ RULES:
         stakeholderName: agentReply.speaker 
       });
       
-      // Return to idle (ready for next input)
+      // After AI finishes, return to idle
       setConversationState('idle');
       
-      // If in auto-send mode, restart the loop
-      if (autoSendMode) {
-        loopRef.current?.start();
-      }
+      // In Review mode, wait for next manual input (don't auto-restart)
+      // User will click mic button again when ready
     } catch (error) {
       console.error('❌ Manual send error:', error);
       setConversationState('idle');
@@ -493,17 +493,34 @@ RULES:
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       console.log('✅ Microphone granted');
-      stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+      stream.getTracks().forEach(track => track.stop());
     } catch (e) {
       console.error('❌ Microphone denied:', e);
       alert('Microphone permission required. Please allow microphone access and try again.');
       return;
     }
     
-    if (loopRef.current) {
-      loopRef.current.start();
+    // Review Mode: One-shot capture, show review panel
+    if (!autoSendMode) {
+      try {
+        setConversationState('listening');
+        const text = await transcribeOnce();
+        if (text && text.trim()) {
+          setPendingTranscript(text);
+          setShowReviewPanel(true);
+        }
+        setConversationState('idle');
+      } catch (error) {
+        console.error('❌ Review mode error:', error);
+        setConversationState('idle');
+      }
     } else {
-      console.error('❌ Loop not initialized');
+      // Auto Send Mode: Start free-flowing loop
+      if (loopRef.current) {
+        loopRef.current.start();
+      } else {
+        console.error('❌ Loop not initialized');
+      }
     }
   };
 
@@ -532,27 +549,39 @@ RULES:
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col">
+    <div className={`min-h-screen flex flex-col ${
+      isDark 
+        ? 'bg-[#0D0D0D] text-white' 
+        : 'bg-gray-50 text-gray-900'
+    }`}>
       {/* Top Bar */}
-      <div className="bg-gradient-to-b from-[#121212] to-[#1A1A1A] border-b border-gray-800 px-6 py-3">
+      <div className={`px-6 py-3 border-b ${
+        isDark 
+          ? 'bg-gradient-to-b from-[#121212] to-[#1A1A1A] border-gray-800' 
+          : 'bg-white border-gray-200 shadow-sm'
+      }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={handleBack} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <button onClick={handleBack} className={`p-2 rounded-lg transition-colors ${
+              isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+            }`}>
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               {/* Breadcrumbs */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+              <div className={`flex items-center gap-1.5 text-xs mb-1 ${
+                isDark ? 'text-gray-500' : 'text-gray-600'
+              }`}>
                 <button 
                   onClick={() => setCurrentView('dashboard')}
-                  className="hover:text-gray-300 transition-colors"
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Dashboard
                 </button>
                 <span>/</span>
                 <button 
                   onClick={() => setCurrentView('practice-flow')}
-                  className="hover:text-gray-300 transition-colors"
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Practice
                 </button>
@@ -562,14 +591,14 @@ RULES:
                     setSelectedProject(null);
                     setCurrentView('projects');
                   }}
-                  className="hover:text-gray-300 transition-colors"
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Projects
                 </button>
                 <span>/</span>
                 <button 
                   onClick={() => setCurrentView('project-brief')}
-                  className="hover:text-gray-300 transition-colors"
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                   title={selectedProject.name}
                 >
                   {selectedProject.name.length > 20 ? selectedProject.name.substring(0, 20) + '...' : selectedProject.name}
@@ -577,34 +606,38 @@ RULES:
                 <span>/</span>
                 <button 
                   onClick={() => setCurrentView('meeting-mode-selection')}
-                  className="hover:text-gray-300 transition-colors"
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Meeting Setup
                 </button>
                 <span>/</span>
-                <span className="text-gray-400">Voice Meeting</span>
+                <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Voice Meeting</span>
               </div>
-              <h1 className="text-lg font-semibold">{selectedProject.name}</h1>
-              <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+              <h1 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {selectedProject.name}
+              </h1>
+              <div className={`flex items-center gap-2 text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span>Live Meeting</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-400">
+          <div className={`flex items-center gap-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               <span>{formatTime(meetingDuration)}</span>
             </div>
             
             {/* Send Mode Selection */}
-            <div className="flex items-center gap-2 bg-gray-800/50 rounded-lg p-1">
+            <div className={`flex items-center gap-2 rounded-lg p-1 ${
+              isDark ? 'bg-gray-800/50' : 'bg-gray-200'
+            }`}>
               <button
                 onClick={() => setAutoSendMode(true)}
                 className={`px-3 py-1 rounded text-xs font-medium transition-all ${
                   autoSendMode 
                     ? 'bg-green-600 text-white shadow-lg' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    : isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
                 }`}
                 title="Auto Send: Messages send immediately after you finish speaking"
               >
@@ -615,7 +648,7 @@ RULES:
                 className={`px-3 py-1 rounded text-xs font-medium transition-all ${
                   !autoSendMode 
                     ? 'bg-purple-600 text-white shadow-lg' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    : isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
                 }`}
                 title="Review Mode: Edit your message before sending"
               >
@@ -625,9 +658,15 @@ RULES:
             
             <button
               onClick={() => setShowTranscript(!showTranscript)}
+              disabled={!autoSendMode} 
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                showTranscript ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20'
+                !autoSendMode 
+                  ? 'bg-blue-600 text-white cursor-default' 
+                  : showTranscript 
+                    ? 'bg-blue-600 text-white' 
+                    : isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
               }`}
+              title={!autoSendMode ? 'Transcript always shown in Review mode' : showTranscript ? 'Hide transcript' : 'Show transcript'}
             >
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Transcript</span>
@@ -649,14 +688,18 @@ RULES:
             <div className="w-full max-w-3xl" style={{ minHeight: '60px' }}>
               {conversationState === 'listening' && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/60 border border-green-500 rounded-lg p-3 shadow-lg">
+                  <div className={`rounded-lg p-3 shadow-lg border ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-green-500' 
+                      : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
+                  }`}>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
                         <Mic className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-green-200 font-semibold mb-1">Listening</p>
-                        <p className="text-base text-white font-medium truncate">
+                        <p className={`text-xs font-semibold mb-1 ${isDark ? 'text-green-200' : 'text-green-700'}`}>Listening</p>
+                        <p className={`text-base font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {liveTranscript || "Speak now..."}
                         </p>
                       </div>
@@ -667,10 +710,14 @@ RULES:
               
               {isProcessingTranscript && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/50 rounded-lg p-3">
+                  <div className={`rounded-lg p-3 border ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/50' 
+                      : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300'
+                  }`}>
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                      <p className="text-sm text-purple-200 font-medium">Processing...</p>
+                      <p className={`text-sm font-medium ${isDark ? 'text-purple-200' : 'text-purple-700'}`}>Processing...</p>
                     </div>
                   </div>
                 </div>
@@ -678,59 +725,18 @@ RULES:
               
               {conversationState === 'idle' && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-gray-800/40 to-gray-900/40 border border-gray-700 rounded-lg p-3">
-                    <p className="text-sm text-gray-400 text-center">Click "Start Speaking" to begin</p>
+                  <div className={`rounded-lg p-3 border ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-gray-800/40 to-gray-900/40 border-gray-700' 
+                      : 'bg-gray-100 border-gray-300'
+                  }`}>
+                    <p className={`text-sm text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Click the microphone button below to begin speaking
+                    </p>
                   </div>
                 </div>
               )}
             </div>
-            
-            {/* Review Panel - Only shown in Review Mode */}
-            {showReviewPanel && pendingTranscript && (
-              <div className="w-full max-w-3xl">
-                <div className="bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border-2 border-purple-500 rounded-lg p-4 shadow-xl">
-                  <div className="mb-3">
-                    <p className="text-xs text-purple-200 font-semibold mb-2">✏️ Review Your Message</p>
-                    <textarea
-                      value={pendingTranscript}
-                      onChange={(e) => setPendingTranscript(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:border-purple-400"
-                      rows={3}
-                      placeholder="Your message..."
-                    />
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        setShowReviewPanel(false);
-                        setPendingTranscript("");
-                        // Restart listening
-                        loopRef.current?.start();
-                      }}
-                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      ❌ Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        const textToSend = pendingTranscript.trim();
-                        if (textToSend) {
-                          setShowReviewPanel(false);
-                          setPendingTranscript("");
-                          // Manually trigger the conversation flow with edited text
-                          addMessage({ who: "You", text: textToSend, timestamp: new Date().toISOString() });
-                          // Get AI response
-                          handleManualSend(textToSend);
-                        }
-                      }}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg text-sm font-medium transition-colors text-white"
-                    >
-                      ✅ Send Message
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
             
             {/* Participant Grid - Compact Layout */}
             <div className={`w-full grid gap-4 ${
@@ -746,10 +752,12 @@ RULES:
                 return (
                   <div
                     key={idx}
-                    className={`relative bg-gradient-to-br from-[#1A1A1A] to-[#242424] rounded-xl p-4 border-2 transition-colors duration-200 ${
-                      isActive 
-                        ? 'border-purple-500 shadow-lg shadow-purple-500/30' 
-                        : 'border-gray-700'
+                    className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
+                      isDark 
+                        ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isActive ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
+                        : isActive 
+                          ? 'bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-400 shadow-lg shadow-purple-400/30'
+                          : 'bg-gradient-to-br from-white to-gray-50 border-gray-300 shadow-md hover:border-purple-300 hover:shadow-lg'
                     }`}
                   >
                     {/* Avatar */}
@@ -760,14 +768,16 @@ RULES:
                             src={participant.avatar}
                             alt={participant.name}
                             className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
-                              isActive ? 'border-purple-500' : 'border-gray-600'
+                              isActive ? 'border-purple-500' : isDark ? 'border-gray-600' : 'border-gray-300'
                             }`}
                           />
                         ) : (
                           <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
                             isActive 
-                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500' 
-                              : 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600'
+                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 text-white' 
+                              : isDark 
+                                ? 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600 text-white' 
+                                : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-300 text-gray-700'
                           }`}>
                             {participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </div>
@@ -792,9 +802,9 @@ RULES:
                       </div>
                       
                       <div className="text-center">
-                        <p className="font-semibold text-white text-sm">{participant.name}</p>
+                        <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{participant.name}</p>
                         {!participant.isUser && (
-                          <p className="text-xs text-gray-400 mt-0.5">
+                          <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                             {selectedStakeholders.find(s => s.name === participant.name)?.role}
                           </p>
                         )}
@@ -808,16 +818,24 @@ RULES:
             {/* Conversation Transcript - Clean & Compact */}
             {showTranscript && messages.length > 0 && (
               <div className="w-full max-w-3xl mt-4">
-                <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-700">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700/50">
+                <div className={`backdrop-blur-sm rounded-lg border ${
+                  isDark 
+                    ? 'bg-gray-800/90 border-gray-700' 
+                    : 'bg-white border-gray-300 shadow-lg'
+                }`}>
+                  <div className={`flex items-center justify-between px-3 py-2 border-b ${
+                    isDark ? 'border-gray-700/50' : 'border-gray-200'
+                  }`}>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                      <h3 className="text-white font-medium text-sm">Transcript</h3>
-                      <span className="text-gray-400 text-xs">({messages.length})</span>
+                      <h3 className={`font-medium text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Transcript</h3>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>({messages.length})</span>
                     </div>
                     <button 
                       onClick={() => setShowTranscript(false)} 
-                      className="text-gray-400 hover:text-white transition-colors p-1"
+                      className={`transition-colors p-1 ${
+                        isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                      }`}
                       title="Hide transcript"
                     >
                       <X className="w-4 h-4" />
@@ -832,7 +850,7 @@ RULES:
                       return (
                         <div key={idx} className="flex gap-2">
                           {/* Avatar */}
-                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white ${
                             isUser ? 'bg-blue-600' : 'bg-purple-600'
                           }`}>
                             {initials}
@@ -840,16 +858,65 @@ RULES:
                           {/* Message */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2">
-                              <span className="text-xs font-medium text-white">{msg.who}</span>
+                              <span className={`text-xs font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{msg.who}</span>
                               <span className="text-xs text-gray-500">
                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-300 leading-relaxed mt-0.5">{msg.text}</p>
+                            <p className={`text-sm leading-relaxed mt-0.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{msg.text}</p>
                           </div>
                         </div>
                       );
                     })}
+                    
+                    {/* Review Mode - Inline Edit */}
+                    {showReviewPanel && pendingTranscript && (
+                      <div className={`border-2 border-purple-500 rounded-lg p-3 ${
+                        isDark ? 'bg-purple-900/30' : 'bg-purple-50'
+                      }`}>
+                        <p className={`text-xs font-semibold mb-2 ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>✏️ Review & Edit</p>
+                        <textarea
+                          value={pendingTranscript}
+                          onChange={(e) => setPendingTranscript(e.target.value)}
+                          className={`w-full border rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                            isDark 
+                              ? 'bg-gray-800 border-gray-600 text-white' 
+                              : 'bg-white border-purple-300 text-gray-900'
+                          }`}
+                          rows={2}
+                          autoFocus
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => {
+                              setShowReviewPanel(false);
+                              setPendingTranscript("");
+                              loopRef.current?.start();
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                              isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                            }`}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              const textToSend = pendingTranscript.trim();
+                              if (textToSend) {
+                                setShowReviewPanel(false);
+                                setPendingTranscript("");
+                                addMessage({ who: "You", text: textToSend, timestamp: new Date().toISOString() });
+                                handleManualSend(textToSend);
+                              }
+                            }}
+                            className="flex-1 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded text-xs font-medium text-white transition-colors"
+                          >
+                            ✅ Send
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div ref={messagesEndRef} />
                   </div>
                 </div>
@@ -860,7 +927,11 @@ RULES:
       </div>
 
       {/* Control Dock */}
-      <div className="bg-[#121212]/95 backdrop-blur-sm border-t border-gray-800 px-6 py-4">
+      <div className={`backdrop-blur-sm border-t px-6 py-4 ${
+        isDark 
+          ? 'bg-[#121212]/95 border-gray-800' 
+          : 'bg-white/95 border-gray-200'
+      }`}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Status Text */}
           <div className="flex items-center gap-3">
@@ -870,7 +941,7 @@ RULES:
               conversationState === 'speaking' ? 'bg-purple-500 animate-pulse' :
               'bg-gray-600'
             }`} />
-            <span className="text-sm text-gray-300">
+            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {conversationState === 'idle' && 'Ready to start'}
               {conversationState === 'listening' && 'Listening...'}
               {conversationState === 'processing' && 'Processing...'}
@@ -888,7 +959,9 @@ RULES:
               className={`relative h-14 w-14 rounded-full flex items-center justify-center transition-all transform ${
                 conversationState === "idle"
                   ? "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:scale-110 hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
-                  : "bg-gray-700 cursor-not-allowed opacity-50"
+                  : isDark 
+                    ? "bg-gray-700 cursor-not-allowed opacity-50"
+                    : "bg-gray-300 cursor-not-allowed opacity-50"
               }`}
             >
               {conversationState === "idle" ? (
@@ -896,7 +969,7 @@ RULES:
               ) : conversationState === "listening" ? (
                 <Mic className="w-7 h-7 text-white animate-pulse" />
               ) : (
-                <MicOff className="w-7 h-7 text-white" />
+                <MicOff className={`w-7 h-7 ${isDark ? 'text-white' : 'text-gray-600'}`} />
               )}
             </button>
 
@@ -906,8 +979,8 @@ RULES:
               disabled={conversationState === "idle" || conversationState === "ended"}
               className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                 conversationState === "idle" || conversationState === "ended"
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/50"
+                  ? isDark ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/50 text-white"
               }`}
             >
               End Meeting
