@@ -48,26 +48,34 @@ export function createStakeholderConversationLoop({
   }
 
   async function loopOnce() {
+    console.log('🔍 DEBUG LOOP: ========== loopOnce() CALLED ==========');
+    console.log('🔍 DEBUG LOOP: active?', active, 'ending?', ending);
+    
     // USER TURN
+    console.log('🔍 DEBUG LOOP: Setting state to LISTENING');
     setState(states.LISTENING);
+    
+    console.log('🔍 DEBUG LOOP: Calling transcribeOnce()...');
     const userText = await transcribeOnce().catch((e) => {
-      console.error('❌ Conversation Loop: transcribeOnce error:', e);
+      console.error('🔍 DEBUG LOOP: ❌ transcribeOnce error:', e);
       return "";
     });
     
+    console.log('🔍 DEBUG LOOP: transcribeOnce() returned:', userText);
+    
     if (!active) {
-      console.log('🛑 Conversation Loop: Not active, stopping');
+      console.log('🔍 DEBUG LOOP: 🛑 Not active, stopping');
       return; // user ended mid-turn
     }
     
     if (!userText || !userText.trim()) {
-      console.log('⚠️ Conversation Loop: No speech captured');
+      console.log('🔍 DEBUG LOOP: ⚠️ No speech captured, retrying...');
       // No speech captured—idle listen again unless ending
       if (!ending) return loopOnce();
       return end();
     }
     
-    console.log('👤 Conversation Loop: User said:', userText);
+    console.log('🔍 DEBUG LOOP: ✅ User said:', userText);
     onUserUtterance(userText);
 
     // AGENT TURN
@@ -107,14 +115,22 @@ export function createStakeholderConversationLoop({
   }
 
   function start() {
+    console.log('🔍 DEBUG LOOP: ========== START() CALLED ==========');
+    console.log('🔍 DEBUG LOOP: Already active?', active);
+    
     if (active) {
-      console.log('⚠️ Conversation Loop: Already active');
+      console.log('🔍 DEBUG LOOP: ⚠️ Already active, ignoring start() call');
       return;
     }
-    console.log('▶️ Conversation Loop: Starting...');
+    
+    console.log('🔍 DEBUG LOOP: ▶️ Setting active = true, ending = false');
     active = true;
     ending = false;
+    
+    console.log('🔍 DEBUG LOOP: Setting state to LISTENING');
     setState(states.LISTENING);
+    
+    console.log('🔍 DEBUG LOOP: Calling loopOnce()...');
     loopOnce();
   }
 
