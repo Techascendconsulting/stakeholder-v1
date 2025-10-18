@@ -570,24 +570,22 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-6">
-          <div className="flex flex-col items-center space-y-6">
+      <div className="flex-1 flex items-center justify-center">
+        <div className="max-w-6xl mx-auto px-6 py-4 w-full">
+          <div className="flex flex-col items-center space-y-4">
             
-            {/* Fixed Height Status Area - Prevents Layout Shift */}
-            <div className="w-full max-w-3xl" style={{ minHeight: '180px' }}>
+            {/* Compact Status Area - Prevents Layout Shift */}
+            <div className="w-full max-w-3xl" style={{ minHeight: '60px' }}>
               {conversationState === 'listening' && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-2 border-green-500 rounded-2xl p-6 shadow-xl shadow-green-500/20 backdrop-blur-sm">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-                          <Mic className="w-5 h-5 text-white" />
-                        </div>
+                  <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/60 border border-green-500 rounded-lg p-3 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                        <Mic className="w-4 h-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-green-200 font-semibold mb-2">🎤 Listening</p>
-                        <p className="text-xl text-white font-medium min-h-[2.5rem]">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-green-200 font-semibold mb-1">Listening</p>
+                        <p className="text-base text-white font-medium truncate">
                           {liveTranscript || "Speak now..."}
                         </p>
                       </div>
@@ -598,10 +596,10 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
               
               {isProcessingTranscript && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/50 rounded-2xl p-6 shadow-xl shadow-purple-500/20">
-                    <div className="flex items-center justify-center gap-3">
+                  <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/50 rounded-lg p-3">
+                    <div className="flex items-center justify-center gap-2">
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                      <p className="text-lg text-purple-200 font-medium">Processing...</p>
+                      <p className="text-sm text-purple-200 font-medium">Processing...</p>
                     </div>
                   </div>
                 </div>
@@ -609,21 +607,19 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
               
               {conversationState === 'idle' && (
                 <div className="w-full">
-                  <div className="bg-gradient-to-r from-gray-800/40 to-gray-900/40 border border-gray-700 rounded-2xl p-6">
-                    <div className="text-center">
-                      <p className="text-gray-400">Click "Start Speaking" to begin the conversation</p>
-                    </div>
+                  <div className="bg-gradient-to-r from-gray-800/40 to-gray-900/40 border border-gray-700 rounded-lg p-3">
+                    <p className="text-sm text-gray-400 text-center">Click "Start Speaking" to begin</p>
                   </div>
                 </div>
               )}
             </div>
             
-            {/* Participant Grid - Fixed Stable Layout */}
-            <div className={`w-full grid gap-6 ${
-              allParticipants.length <= 2 ? 'grid-cols-2 max-w-2xl mx-auto' :
-              allParticipants.length <= 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto' :
-              'grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto'
-            }`} style={{ minHeight: '400px' }}>
+            {/* Participant Grid - Compact Layout */}
+            <div className={`w-full grid gap-4 ${
+              allParticipants.length <= 2 ? 'grid-cols-2 max-w-xl mx-auto' :
+              allParticipants.length <= 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto' :
+              'grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto'
+            }`}>
               {allParticipants.map((participant, idx) => {
                 const isSpeaking = activeSpeaker === participant.name;
                 const isListening = conversationState === 'listening' && participant.isUser;
@@ -632,25 +628,25 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
                 return (
                   <div
                     key={idx}
-                    className={`relative bg-gradient-to-br from-[#1A1A1A] to-[#242424] rounded-2xl p-6 border-2 transition-colors duration-200 ${
+                    className={`relative bg-gradient-to-br from-[#1A1A1A] to-[#242424] rounded-xl p-4 border-2 transition-colors duration-200 ${
                       isActive 
                         ? 'border-purple-500 shadow-lg shadow-purple-500/30' 
                         : 'border-gray-700'
                     }`}
                   >
                     {/* Avatar */}
-                    <div className="flex flex-col items-center space-y-3">
+                    <div className="flex flex-col items-center space-y-2">
                       <div className="relative">
                         {participant.avatar ? (
                           <img
                             src={participant.avatar}
                             alt={participant.name}
-                            className={`w-24 h-24 rounded-full object-cover border-4 transition-colors duration-200 ${
+                            className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
                               isActive ? 'border-purple-500' : 'border-gray-600'
                             }`}
                           />
                         ) : (
-                          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold border-4 transition-colors duration-200 ${
+                          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
                             isActive 
                               ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500' 
                               : 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600'
@@ -661,26 +657,26 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
                         
                         {/* Mic Indicator - Fixed Position */}
                         {isSpeaking && (
-                          <div className="absolute -bottom-2 -right-2 bg-purple-600 rounded-full p-2 shadow-lg">
+                          <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1.5 shadow-lg">
                             <div className="flex gap-0.5 items-end">
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-1" style={{ height: '10px' }} />
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-2" style={{ height: '14px' }} />
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-3" style={{ height: '8px' }} />
+                              <div className="w-0.5 bg-white rounded-full animate-sound-bar-1" style={{ height: '8px' }} />
+                              <div className="w-0.5 bg-white rounded-full animate-sound-bar-2" style={{ height: '12px' }} />
+                              <div className="w-0.5 bg-white rounded-full animate-sound-bar-3" style={{ height: '6px' }} />
                             </div>
                           </div>
                         )}
                         
                         {isListening && (
-                          <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
-                            <Mic className="w-4 h-4 text-white" />
+                          <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1.5 shadow-lg">
+                            <Mic className="w-3 h-3 text-white" />
                           </div>
                         )}
                       </div>
                       
                       <div className="text-center">
-                        <p className="font-semibold text-white">{participant.name}</p>
+                        <p className="font-semibold text-white text-sm">{participant.name}</p>
                         {!participant.isUser && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-gray-400 mt-0.5">
                             {selectedStakeholders.find(s => s.name === participant.name)?.role}
                           </p>
                         )}
@@ -691,40 +687,47 @@ Response: { "speaker": "David Chen", "reply": "I think we should prioritize the 
               })}
             </div>
 
-            {/* Conversation Transcript - Below Avatars */}
+            {/* Conversation Transcript - Clean & Compact */}
             {showTranscript && messages.length > 0 && (
-              <div className="w-full max-w-4xl mt-8">
-                <div className="bg-[#1C1C1E] rounded-2xl border border-gray-700 shadow-2xl">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+              <div className="w-full max-w-3xl mt-4">
+                <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-700">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700/50">
                     <div className="flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-purple-400" />
-                      <h2 className="font-semibold text-white">Conversation Transcript</h2>
-                      <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded-full">
-                        {messages.length} messages
-                      </span>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                      <h3 className="text-white font-medium text-sm">Transcript</h3>
+                      <span className="text-gray-400 text-xs">({messages.length})</span>
                     </div>
                     <button 
                       onClick={() => setShowTranscript(false)} 
-                      className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors p-1"
+                      title="Hide transcript"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="max-h-[400px] overflow-y-auto p-6 space-y-3">
+                  <div className="overflow-y-auto p-3 space-y-2" style={{ maxHeight: '200px' }}>
                     {messages.map((msg, idx) => {
                       const isUser = msg.who === "You";
+                      const stakeholder = selectedStakeholders.find(s => s.name === msg.who);
+                      const initials = isUser ? 'U' : (stakeholder?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'S');
+                      
                       return (
-                        <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[75%] rounded-2xl px-4 py-3 ${
-                            isUser 
-                              ? 'bg-gradient-to-br from-blue-600 to-blue-700' 
-                              : 'bg-gray-700'
+                        <div key={idx} className="flex gap-2">
+                          {/* Avatar */}
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                            isUser ? 'bg-blue-600' : 'bg-purple-600'
                           }`}>
-                            <p className="text-xs font-semibold mb-1 opacity-80">{msg.who}</p>
-                            <p className="text-sm text-white/95 leading-relaxed">{msg.text}</p>
-                            <p className="text-xs opacity-60 mt-1">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
+                            {initials}
+                          </div>
+                          {/* Message */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-xs font-medium text-white">{msg.who}</span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-300 leading-relaxed mt-0.5">{msg.text}</p>
                           </div>
                         </div>
                       );
