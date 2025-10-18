@@ -69,11 +69,13 @@ const MeetingModeSelection: React.FC = () => {
     restoreStakeholders();
   }, [stakeholders, setSelectedStakeholders, selectedStakeholders]);
 
-  const handleModeSelection = (mode: 'transcript' | 'voice-only') => {
+  const handleModeSelection = (mode: 'transcript' | 'voice-only' | 'voice-v2') => {
     if (mode === 'transcript') {
       setCurrentView('meeting');
     } else if (mode === 'voice-only') {
       setCurrentView('voice-only-meeting');
+    } else if (mode === 'voice-v2') {
+      setCurrentView('voice-meeting-v2');
     }
   };
 
@@ -135,7 +137,7 @@ const MeetingModeSelection: React.FC = () => {
         </div>
 
         {/* Mode Options */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* With Transcripts Mode */}
           <div 
             onClick={() => handleModeSelection('transcript')}
@@ -205,6 +207,43 @@ const MeetingModeSelection: React.FC = () => {
               <div className="mt-6">
                 <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors w-full">
                   Start Voice Meeting
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Voice Meeting V2 - Continuous Conversation */}
+          <div 
+            onClick={() => handleModeSelection('voice-v2')}
+            className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-800/30 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-6 cursor-pointer hover:from-purple-100 hover:to-indigo-200 dark:hover:from-purple-800/40 dark:hover:to-indigo-700/40 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <div className="bg-purple-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-600 transition-colors">
+                <Mic className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-purple-900 dark:text-purple-100 mb-3">Voice Meeting V2</h3>
+              <p className="text-purple-700 dark:text-purple-300 mb-4">
+                Continuous natural conversation with auto-pause detection. Just speak naturally and the AI responds.
+              </p>
+              
+              <div className="space-y-2 text-sm text-purple-600 dark:text-purple-400">
+                <div className="flex items-center justify-center">
+                  <Mic className="w-4 h-4 mr-2" />
+                  <span>Tap once to start</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span>Auto-pause detection</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  <span>Continuous flow</span>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors w-full">
+                  Start Voice V2
                 </button>
               </div>
             </div>

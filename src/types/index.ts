@@ -55,6 +55,7 @@ export type AppView =
   | 'project-setup'
   | 'meeting'
   | 'voice-only-meeting'
+  | 'voice-meeting-v2'
   | 'meeting-summary'
   | 'meeting-details'
   | 'raw-transcript'
