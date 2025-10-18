@@ -117,8 +117,8 @@ const MeetingModeSelection: React.FC = () => {
         <Breadcrumbs 
           items={[
             { label: 'Dashboard', view: 'dashboard' },
-            { label: 'Practice', view: 'practice-flow' },
-            { label: 'Projects', view: 'projects' },
+            { label: 'Projects', view: 'project-flow' },
+            { label: 'Select Project', view: 'projects' },
             { label: selectedProject.name.length > 20 ? selectedProject.name.substring(0, 20) + '...' : selectedProject.name, view: 'project-brief' },
             { label: 'Meeting Setup', active: true }
           ]}

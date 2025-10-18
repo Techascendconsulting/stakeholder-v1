@@ -387,14 +387,21 @@ RULES:
         };
 
         audio.onerror = (e) => {
-          console.error('❌ Audio error:', e);
+          console.error('❌ Audio playback error:', e);
           URL.revokeObjectURL(url);
           currentAudioRef.current = null;
           setActiveSpeaker(null);
           resolve();
         };
 
-        await audio.play();
+        console.log('▶️ Starting audio playback...');
+        await audio.play().catch((playError) => {
+          console.error('❌ Play failed:', playError);
+          URL.revokeObjectURL(url);
+          currentAudioRef.current = null;
+          setActiveSpeaker(null);
+          resolve();
+        });
 
       } catch (error) {
         console.error('❌ TTS error:', error);
@@ -410,9 +417,9 @@ RULES:
     });
   }
 
-  // Initialize loop
+  // Initialize loop ONCE
   useEffect(() => {
-    console.log('🔍 DEBUG: Creating conversation loop (ONCE)');
+    // console.log('Creating conversation loop');
     
     const loop = createStakeholderConversationLoop({
       transcribeOnce,
@@ -580,20 +587,17 @@ RULES:
                 </button>
                 <span>/</span>
                 <button 
-                  onClick={() => setCurrentView('practice-flow')}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                >
-                  Practice
-                </button>
-                <span>/</span>
-                <button 
-                  onClick={() => {
-                    setSelectedProject(null);
-                    setCurrentView('projects');
-                  }}
+                  onClick={() => setCurrentView('project-flow')}
                   className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
                 >
                   Projects
+                </button>
+                <span>/</span>
+                <button 
+                  onClick={() => setCurrentView('projects')}
+                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
+                >
+                  Select Project
                 </button>
                 <span>/</span>
                 <button 
@@ -739,11 +743,14 @@ RULES:
             </div>
             
             {/* Participant Grid - Compact Layout */}
-            <div className={`w-full grid gap-4 ${
-              allParticipants.length <= 2 ? 'grid-cols-2 max-w-xl mx-auto' :
-              allParticipants.length <= 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto' :
-              'grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto'
-            }`}>
+            <div className={`w-full flex justify-center`}>
+              <div className={`grid gap-4 ${
+                allParticipants.length <= 2 ? 'grid-cols-2 max-w-xl' :
+                allParticipants.length === 3 ? 'grid-cols-3 max-w-3xl' :
+                allParticipants.length === 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-4xl' :
+                allParticipants.length === 5 ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 max-w-6xl' :
+                'grid-cols-2 lg:grid-cols-3 max-w-5xl'
+              }`}>
               {allParticipants.map((participant, idx) => {
                 const isSpeaking = activeSpeaker === participant.name;
                 const isListening = conversationState === 'listening' && participant.isUser;
@@ -813,6 +820,7 @@ RULES:
                   </div>
                 );
               })}
+              </div>
             </div>
 
             {/* Conversation Transcript - Clean & Compact */}

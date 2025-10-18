@@ -118,8 +118,8 @@ const ProjectBrief: React.FC = () => {
             <Breadcrumbs 
               items={[
                 { label: 'Dashboard', view: 'dashboard' },
-                { label: 'Practice', view: 'practice-flow' },
-                { label: 'Projects', view: 'projects' },
+                { label: 'Projects', view: 'project-flow' },
+                { label: 'Select Project', view: 'projects' },
                 { label: selectedProject.name.length > 30 ? selectedProject.name.substring(0, 30) + '...' : selectedProject.name, active: true }
               ]}
               className="mb-4"

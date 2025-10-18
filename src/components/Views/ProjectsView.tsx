@@ -14,7 +14,8 @@ const ProjectsView: React.FC = () => {
     meetings,
     userSubscription,
     userProjectCount,
-    userSelectedProjects
+    userSelectedProjects,
+    selectedProject
   } = useApp()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
@@ -248,8 +249,8 @@ const ProjectsView: React.FC = () => {
             <Breadcrumbs 
               items={[
                 { label: 'Dashboard', view: 'dashboard' },
-                { label: 'Practice', view: 'practice-flow' },
-                { label: 'Projects', active: true }
+                { label: 'Projects', view: 'project-flow' },
+                { label: 'Select Project', active: true }
               ]}
               className="mb-4"
             />
@@ -411,7 +412,7 @@ const ProjectsView: React.FC = () => {
             const priorityConfig = getPriorityConfig(businessImpact.priority)
             const requiredTier = getProjectRequirement(project.id)
             const isAccessible = true
-            const isSelected = studentSubscription?.selected_project_id === project.id
+            const isSelected = selectedProject?.id === project.id // Active in current practice flow
             const hasMeetings = meetings.some(m => m.project_id === project.id)
             const ProjectIcon = getProjectIcon(project.id)
             const ComplexityIcon = complexityConfig.icon
