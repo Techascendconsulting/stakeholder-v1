@@ -101,160 +101,170 @@ export default function VoiceMeetingV2() {
     }
   }
 
-  // ADAPTER 1: Speech-to-text with better silence detection
+  // ADAPTER 1: Energy-based silence detection (ChatGPT's upgrade)
   async function transcribeOnce(): Promise<string> {
-    console.log('🔍 DEBUG: transcribeOnce() called');
+    // console.log('🔍 DEBUG: transcribeOnce() called');
     
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
-      console.log('🔍 DEBUG: SpeechRecognition available?', !!SpeechRecognition);
       
       if (!SpeechRecognition) {
         console.error('🔍 DEBUG: SpeechRecognition NOT SUPPORTED');
-        reject(new Error("Speech recognition not supported"));
+        resolve('');
         return;
       }
 
       const recognition = new SpeechRecognition();
       recognition.lang = "en-GB";
+      recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.continuous = true;  // CHANGED: Keep listening continuously
-      recognition.maxAlternatives = 1;
-
-      console.log('🔍 DEBUG: Recognition configured:', {
-        lang: recognition.lang,
-        interimResults: recognition.interimResults,
-        continuous: recognition.continuous
-      });
 
       recognitionRef.current = recognition;
       
       let finalTranscript = "";
       let interimTranscript = "";
+      let isSilent = false;
       let silenceTimer: NodeJS.Timeout | null = null;
-      const SILENCE_DELAY = 1500;
+      let micStream: MediaStream | null = null;
+      let analyser: AnalyserNode | null = null;
+      let isResolved = false;
+
+      // Audio energy detector for real-time silence detection
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        micStream = stream;
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let animationFrameId: number | null = null;
+
+        function detectSilence() {
+          if (isResolved) {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            return;
+          }
+          
+          analyser!.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          const volume = avg / 255;
+
+          // Only log when volume changes significantly (reduce console spam)
+          // console.log('🔍 ENERGY:', volume.toFixed(3));
+
+          // If volume low (user stopped), finalize after 700ms
+          if (volume < 0.02) {
+            if (!isSilent && finalTranscript.trim()) {
+              console.log('🔇 Silence detected - finalizing in 700ms');
+              isSilent = true;
+              if (silenceTimer) clearTimeout(silenceTimer);
+              
+              silenceTimer = setTimeout(() => {
+                console.log('✅ Finalizing transcript');
+                isResolved = true;
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                try {
+                  recognition.stop();
+                } catch {}
+                stream.getTracks().forEach(t => t.stop());
+                setLiveTranscript("");
+                setIsProcessingTranscript(true);
+                isUserSpeakingRef.current = false;
+                setActiveSpeaker(null);
+                resolve(finalTranscript.trim());
+              }, 700);
+            }
+          } else {
+            // User still speaking - cancel silence
+            if (isSilent) {
+              console.log('▶️ User resumed speaking');
+            }
+            isSilent = false;
+            if (silenceTimer) clearTimeout(silenceTimer);
+          }
+
+          if (!isResolved) {
+            animationFrameId = requestAnimationFrame(detectSilence);
+          }
+        }
+
+        detectSilence();
+      }).catch(err => {
+        console.error('❌ Mic access failed:', err);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        resolve('');
+      });
 
       recognition.onspeechstart = () => {
-        console.log('🔍 DEBUG: ✅ SPEECH START');
+        console.log('🎤 Speech started');
         isUserSpeakingRef.current = true;
         setActiveSpeaker("You");
         
-        // Reset transcripts
+        // Reset
         finalTranscript = "";
         interimTranscript = "";
         setLiveTranscript("");
         
-        // Clear any pending timer
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
-        }
-        
-        // INTERRUPT AI if currently speaking (use ref for current value!)
+        // INTERRUPT AI if speaking
         if (conversationStateRef.current === 'speaking') {
-          console.log('⚠️🚨 INTERRUPTION DETECTED - STOPPING AI NOW!');
+          console.log('⚠️🚨 INTERRUPTION!');
           stopSpeaking();
-        } else {
-          console.log('🔍 DEBUG: Not interrupting, state is:', conversationStateRef.current);
         }
       };
-
-      recognition.onaudiostart = () => {
-        console.log('🔍 DEBUG: ✅ AUDIO START - Microphone receiving audio');
-      };
-
-      recognition.onsoundstart = () => {
-        console.log('🔍 DEBUG: ✅ SOUND START - Sound detected');
-      };
-
 
       recognition.onresult = (event: any) => {
-        // Clear silence timer on every new result
-        if (silenceTimer) clearTimeout(silenceTimer);
+        if (isResolved) return;
         
         interimTranscript = "";
         let newFinal = "";
 
-        // KEY: Use resultIndex to avoid duplicates!
+        // Use resultIndex to avoid duplicates
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const result = event.results[i];
           const transcript = result[0].transcript;
           
           if (result.isFinal) {
             newFinal += transcript + " ";
-            console.log('🔍 DEBUG: ✅ FINAL chunk:', transcript);
+            console.log('✅ Final transcript:', transcript);
           } else {
             interimTranscript += transcript;
-            console.log('🔍 DEBUG: 📝 INTERIM:', transcript);
           }
         }
 
-        // Append final results only once
+        // Accumulate finals
         if (newFinal) {
           finalTranscript += newFinal.trim() + " ";
-          console.log('🔍 DEBUG: 📚 Accumulated FINAL:', finalTranscript);
         }
 
-        // Display live text (interim or final)
-        const displayText = interimTranscript || finalTranscript;
-        setLiveTranscript(displayText);
-
-        // Start silence timer — finalize after 1.5s of no speech
-        silenceTimer = setTimeout(() => {
-          console.log('🔍 DEBUG: ⏱️ SILENCE TIMEOUT - Finalizing');
-          if (finalTranscript.trim()) {
-            console.log('🔍 DEBUG: ✅ Sending to AI:', finalTranscript.trim());
-            try {
-              recognition.stop();
-            } catch {}
-            setLiveTranscript("");
-            setIsProcessingTranscript(true);
-            isUserSpeakingRef.current = false;
-            setActiveSpeaker(null);
-            resolve(finalTranscript.trim());
-          }
-        }, SILENCE_DELAY);
+        // Show live
+        const display = interimTranscript || finalTranscript;
+        setLiveTranscript(display);
       };
 
       recognition.onerror = (event: any) => {
-        console.error('🔍 DEBUG: ❌ RECOGNITION ERROR:', event.error);
+        console.error('🔍 DEBUG: ❌ ERROR:', event.error);
+        if (micStream) micStream.getTracks().forEach(t => t.stop());
         if (silenceTimer) clearTimeout(silenceTimer);
-        isUserSpeakingRef.current = false;
-        setActiveSpeaker(null);
-        setLiveTranscript("");
-        
-        // Don't reject on 'no-speech' or 'aborted' - those are normal
-        if (event.error === 'no-speech' || event.error === 'aborted') {
-          resolve('');
-        } else {
-          reject(new Error(event.error));
-        }
+        resolve(finalTranscript.trim() || '');
       };
 
       recognition.onend = () => {
-        console.log('🔍 DEBUG: ⏹️ RECOGNITION ENDED');
+        // console.log('🔍 DEBUG: ⏹️ ENDED');
+        if (micStream) micStream.getTracks().forEach(t => t.stop());
         if (silenceTimer) clearTimeout(silenceTimer);
-        isUserSpeakingRef.current = false;
-        
-        // Fallback: resolve with whatever we have
-        if (finalTranscript.trim()) {
-          console.log('🔍 DEBUG: Resolving from onend:', finalTranscript.trim());
+        if (!isResolved && finalTranscript.trim()) {
           resolve(finalTranscript.trim());
         }
       };
 
-      recognition.onnomatch = () => {
-        console.log('🔍 DEBUG: ⚠️ NO MATCH - Speech detected but not recognized');
-      };
-
       try {
-        console.log('🔍 DEBUG: 🎬 STARTING RECOGNITION...');
+        // console.log('🔍 DEBUG: 🎬 STARTING...');
         recognition.start();
-        console.log('🔍 DEBUG: ✅ Recognition.start() called successfully');
       } catch (e) {
-        console.error('🔍 DEBUG: ❌ FAILED TO START RECOGNITION:', e);
-        reject(e);
+        console.error('🔍 DEBUG: ❌ START FAILED:', e);
+        resolve('');
       }
     });
   }
@@ -339,7 +349,7 @@ Rules:
     }
   }
 
-  // ADAPTER 3: ElevenLabs TTS with interruption support
+  // ADAPTER 3: ElevenLabs TTS with automatic energy-based interruption
   async function speak(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
@@ -349,11 +359,12 @@ Rules:
     const voiceId = options?.voiceId || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
     const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
-    // Set active speaker for visual feedback
     setActiveSpeaker(options?.stakeholderName || null);
+    console.log('🔊 Speaking:', text.substring(0, 50), 'with voice:', voiceId);
     
     return new Promise(async (resolve) => {
       try {
+        // Get TTS audio from ElevenLabs
         const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "xi-api-key": apiKey },
@@ -372,20 +383,48 @@ Rules:
         const audio = new Audio(url);
         currentAudioRef.current = audio;
 
-        const checkInterruption = setInterval(() => {
-          if (isUserSpeakingRef.current && currentAudioRef.current === audio) {
-            clearInterval(checkInterruption);
-            audio.pause();
-            URL.revokeObjectURL(url);
-            currentAudioRef.current = null;
-            setActiveSpeaker(null);
-            resolve();
+        // Monitor mic energy while AI speaks (auto-interruption)
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null);
+        
+        if (stream) {
+          const audioCtx = new AudioContext();
+          const source = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 512;
+          source.connect(analyser);
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+          function monitorInterruption() {
+            if (!currentAudioRef.current || currentAudioRef.current !== audio) {
+              stream.getTracks().forEach(t => t.stop());
+              return;
+            }
+            
+            analyser.getByteFrequencyData(dataArray);
+            const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            const volume = avg / 255;
+
+            // User started talking (interrupt!)
+            if (volume > 0.05) {
+              console.log('⚠️🚨 AUTO-INTERRUPTION: User speaking (volume:', volume.toFixed(3), ')');
+              audio.pause();
+              URL.revokeObjectURL(url);
+              currentAudioRef.current = null;
+              setActiveSpeaker(null);
+              stream.getTracks().forEach(t => t.stop());
+              resolve();
+            } else {
+              requestAnimationFrame(monitorInterruption);
+            }
           }
-        }, 100);
+
+          monitorInterruption();
+        }
 
         audio.onended = () => {
-          clearInterval(checkInterruption);
+          console.log('✅ Audio finished');
           URL.revokeObjectURL(url);
+          if (stream) stream.getTracks().forEach(t => t.stop());
           if (currentAudioRef.current === audio) {
             currentAudioRef.current = null;
             setActiveSpeaker(null);
@@ -393,16 +432,18 @@ Rules:
           resolve();
         };
 
-        audio.onerror = () => {
-          clearInterval(checkInterruption);
+        audio.onerror = (e) => {
+          console.error('❌ Audio error:', e);
           URL.revokeObjectURL(url);
+          if (stream) stream.getTracks().forEach(t => t.stop());
           setActiveSpeaker(null);
           resolve();
         };
 
         await audio.play();
+
       } catch (error) {
-        console.error('❌ TTS error:', error);
+        console.error('❌ TTS error, fallback to browser:', error);
         setActiveSpeaker(null);
         await playBrowserTTS(text).catch(() => {});
         resolve();
@@ -479,22 +520,6 @@ Rules:
       console.error('🔍 DEBUG: ❌ Loop ref is null!');
     }
   };
-  const handleInterrupt = () => {
-    console.log('🔍 DEBUG: ========== INTERRUPT BUTTON CLICKED ==========');
-    console.log('🔍 DEBUG: Current state:', conversationStateRef.current);
-    
-    if (conversationStateRef.current === 'speaking') {
-      console.log('⚠️🚨 MANUAL INTERRUPTION - Stopping AI');
-      stopSpeaking();
-      setActiveSpeaker(null);
-      
-      // Restart recognition immediately
-      if (loopRef.current?.state === 'speaking') {
-        console.log('🔍 DEBUG: Restarting loop to continue listening...');
-        // The loop will auto-continue after speak() resolves
-      }
-    }
-  };
 
   const handleEnd = () => {
     console.log('🔍 DEBUG: ========== END MEETING CLICKED ==========');
@@ -564,59 +589,56 @@ Rules:
         <div className="max-w-6xl mx-auto p-6">
           <div className="flex flex-col items-center space-y-6">
             
-            {/* Debug Panel - Always visible during development */}
-            <div className="mb-4 w-full max-w-3xl">
-              <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-3 text-xs">
-                <p className="text-yellow-300 font-mono">
-                  🔍 DEBUG: State={conversationState} | Speaker={activeSpeaker || 'none'} | 
-                  Live={liveTranscript ? 'YES' : 'NO'} | Processing={isProcessingTranscript ? 'YES' : 'NO'}
-                </p>
-              </div>
-            </div>
-
-            {/* Live Transcript Display - ALWAYS SHOW WHEN LISTENING */}
-            {conversationState === 'listening' && (
-              <div className="mb-8 w-full max-w-3xl">
-                <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-2 border-green-500 rounded-2xl p-8 shadow-2xl shadow-green-500/30 backdrop-blur-sm animate-pulse-ring">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center animate-pulse shadow-lg shadow-green-500/50">
-                        <Mic className="w-6 h-6 text-white" />
+            {/* Fixed Height Status Area - Prevents Layout Shift */}
+            <div className="w-full max-w-3xl" style={{ minHeight: '180px' }}>
+              {conversationState === 'listening' && (
+                <div className="w-full">
+                  <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-2 border-green-500 rounded-2xl p-6 shadow-xl shadow-green-500/20 backdrop-blur-sm">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                          <Mic className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-green-200 font-semibold mb-2">🎤 Listening</p>
+                        <p className="text-xl text-white font-medium min-h-[2.5rem]">
+                          {liveTranscript || "Speak now..."}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-green-200 font-bold mb-3 tracking-wide">🎤 LISTENING - SPEAK NOW:</p>
-                      <p className="text-2xl text-white font-medium min-h-[3rem]">
-                        {liveTranscript || "Waiting for your voice..."}
-                        {liveTranscript && <span className="inline-block w-1 h-6 bg-green-400 ml-2 animate-pulse" />}
-                      </p>
-                      <p className="text-xs text-green-300 mt-3 opacity-75">
-                        Your words will appear here as you speak
-                      </p>
+                  </div>
+                </div>
+              )}
+              
+              {isProcessingTranscript && (
+                <div className="w-full">
+                  <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/50 rounded-2xl p-6 shadow-xl shadow-purple-500/20">
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                      <p className="text-lg text-purple-200 font-medium">Processing...</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-            
-            {/* Processing Indicator */}
-            {isProcessingTranscript && (
-              <div className="mb-8 w-full max-w-3xl">
-                <div className="bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border border-yellow-500/50 rounded-2xl p-6 shadow-2xl shadow-yellow-500/20">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
-                    <p className="text-lg text-yellow-200 font-medium">Processing your message...</p>
+              )}
+              
+              {conversationState === 'idle' && (
+                <div className="w-full">
+                  <div className="bg-gradient-to-r from-gray-800/40 to-gray-900/40 border border-gray-700 rounded-2xl p-6">
+                    <div className="text-center">
+                      <p className="text-gray-400">Click "Start Speaking" to begin the conversation</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             
-            {/* Participant Grid - Always Full Width */}
+            {/* Participant Grid - Fixed Stable Layout */}
             <div className={`w-full grid gap-6 ${
-              allParticipants.length <= 2 ? 'grid-cols-2 max-w-2xl' :
-              allParticipants.length <= 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-5xl' :
-              'grid-cols-2 lg:grid-cols-3 max-w-6xl'
-            }`}>
+              allParticipants.length <= 2 ? 'grid-cols-2 max-w-2xl mx-auto' :
+              allParticipants.length <= 4 ? 'grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto' :
+              'grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto'
+            }`} style={{ minHeight: '400px' }}>
               {allParticipants.map((participant, idx) => {
                 const isSpeaking = activeSpeaker === participant.name;
                 const isListening = conversationState === 'listening' && participant.isUser;
@@ -625,46 +647,46 @@ Rules:
                 return (
                   <div
                     key={idx}
-                    className={`relative bg-gradient-to-br from-[#1A1A1A] to-[#242424] rounded-2xl p-6 border-2 transition-all duration-300 ${
+                    className={`relative bg-gradient-to-br from-[#1A1A1A] to-[#242424] rounded-2xl p-6 border-2 transition-colors duration-200 ${
                       isActive 
-                        ? 'border-purple-500 shadow-lg shadow-purple-500/50' 
+                        ? 'border-purple-500 shadow-lg shadow-purple-500/30' 
                         : 'border-gray-700'
                     }`}
                   >
                     {/* Avatar */}
                     <div className="flex flex-col items-center space-y-3">
-                      <div className={`relative ${isActive ? 'animate-pulse-ring' : ''}`}>
+                      <div className="relative">
                         {participant.avatar ? (
                           <img
                             src={participant.avatar}
                             alt={participant.name}
-                            className={`w-24 h-24 rounded-full object-cover border-4 transition-all ${
-                              isActive ? 'border-purple-500 shadow-xl shadow-purple-500/50' : 'border-gray-600'
+                            className={`w-24 h-24 rounded-full object-cover border-4 transition-colors duration-200 ${
+                              isActive ? 'border-purple-500' : 'border-gray-600'
                             }`}
                           />
                         ) : (
-                          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold border-4 transition-all ${
+                          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold border-4 transition-colors duration-200 ${
                             isActive 
-                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 shadow-xl shadow-purple-500/50' 
+                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500' 
                               : 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600'
                           }`}>
                             {participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </div>
                         )}
                         
-                        {/* Mic Indicator */}
+                        {/* Mic Indicator - Fixed Position */}
                         {isSpeaking && (
-                          <div className="absolute -bottom-2 -right-2 bg-purple-600 rounded-full p-2 shadow-lg animate-bounce">
-                            <div className="flex gap-0.5">
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-1" style={{ height: '12px' }} />
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-2" style={{ height: '16px' }} />
-                              <div className="w-1 bg-white rounded-full animate-sound-bar-3" style={{ height: '10px' }} />
+                          <div className="absolute -bottom-2 -right-2 bg-purple-600 rounded-full p-2 shadow-lg">
+                            <div className="flex gap-0.5 items-end">
+                              <div className="w-1 bg-white rounded-full animate-sound-bar-1" style={{ height: '10px' }} />
+                              <div className="w-1 bg-white rounded-full animate-sound-bar-2" style={{ height: '14px' }} />
+                              <div className="w-1 bg-white rounded-full animate-sound-bar-3" style={{ height: '8px' }} />
                             </div>
                           </div>
                         )}
                         
                         {isListening && (
-                          <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg animate-pulse">
+                          <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
                             <Mic className="w-4 h-4 text-white" />
                           </div>
                         )}
@@ -753,18 +775,6 @@ Rules:
 
           {/* Controls */}
           <div className="flex items-center gap-4">
-            {/* Interrupt Button - Shows when AI is speaking */}
-            {conversationState === 'speaking' && (
-              <button
-                onClick={handleInterrupt}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-all hover:shadow-lg hover:shadow-orange-500/50 animate-pulse"
-                title="Interrupt AI and speak"
-              >
-                <Mic className="w-4 h-4" />
-                <span className="text-sm font-medium">Interrupt</span>
-              </button>
-            )}
-
             {/* Mic Button */}
             <button
               onClick={handleSpeak}
@@ -777,11 +787,10 @@ Rules:
             >
               {conversationState === "idle" ? (
                 <Mic className="w-7 h-7 text-white" />
+              ) : conversationState === "listening" ? (
+                <Mic className="w-7 h-7 text-white animate-pulse" />
               ) : (
                 <MicOff className="w-7 h-7 text-white" />
-              )}
-              {conversationState === "listening" && (
-                <span className="absolute inset-0 rounded-full bg-green-400 animate-ping" />
               )}
             </button>
 
@@ -803,28 +812,22 @@ Rules:
 
       {/* Custom animations */}
       <style>{`
-        @keyframes pulse-ring {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.05); opacity: 0.8; }
-        }
-        .animate-pulse-ring {
-          animation: pulse-ring 2s ease-in-out infinite;
-        }
+        /* Sound bar animations for speaking indicator */
         @keyframes sound-bar-1 {
           0%, 100% { height: 8px; }
-          50% { height: 16px; }
+          50% { height: 14px; }
         }
         @keyframes sound-bar-2 {
           0%, 100% { height: 12px; }
-          50% { height: 20px; }
+          50% { height: 18px; }
         }
         @keyframes sound-bar-3 {
           0%, 100% { height: 6px; }
-          50% { height: 14px; }
+          50% { height: 12px; }
         }
-        .animate-sound-bar-1 { animation: sound-bar-1 0.6s ease-in-out infinite; }
-        .animate-sound-bar-2 { animation: sound-bar-2 0.7s ease-in-out infinite 0.1s; }
-        .animate-sound-bar-3 { animation: sound-bar-3 0.8s ease-in-out infinite 0.2s; }
+        .animate-sound-bar-1 { animation: sound-bar-1 0.5s ease-in-out infinite; }
+        .animate-sound-bar-2 { animation: sound-bar-2 0.6s ease-in-out infinite 0.1s; }
+        .animate-sound-bar-3 { animation: sound-bar-3 0.7s ease-in-out infinite 0.2s; }
       `}</style>
     </div>
   );
