@@ -135,6 +135,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return 'dashboard'
       }
       
+      // SAFETY CHECK: If no saved view exists (first time after onboarding), default to dashboard
+      if (!savedView) {
+        console.log('🔍 INIT: No saved view found, defaulting to dashboard')
+        return 'dashboard'
+      }
+      
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = [
         'welcome',
