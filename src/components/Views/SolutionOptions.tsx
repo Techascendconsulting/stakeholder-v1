@@ -19,7 +19,6 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
-import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -430,13 +429,6 @@ In summary, solution options are the bridge between problem and design. They inv
   if (currentPage === 'overview') {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
-        {/* Context-Aware Breadcrumbs */}
-        <div className="max-w-4xl mx-auto px-6 pt-6">
-          <LearningBreadcrumbs 
-            currentModule="Solution Options" 
-            className="text-purple-600 dark:text-purple-400"
-          />
-        </div>
 
         {/* Simple Header */}
         <div className="border-b border-gray-200 dark:border-gray-700">
@@ -510,13 +502,6 @@ In summary, solution options are the bridge between problem and design. They inv
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Context-Aware Breadcrumbs */}
-      <div className="max-w-4xl mx-auto px-6 pt-6">
-        <LearningBreadcrumbs 
-          currentModule="Solution Options" 
-          className="text-purple-600 dark:text-purple-400"
-        />
-      </div>
 
       {/* Simple Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">

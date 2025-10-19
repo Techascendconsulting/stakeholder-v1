@@ -7,7 +7,6 @@ import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholde
 import MarkCompleteButton from "../MarkCompleteButton";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
-import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 
 const lessons = [
   { 
@@ -295,11 +294,6 @@ const ProjectInitiationView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 px-8 py-12">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Context-Aware Breadcrumbs */}
-        <LearningBreadcrumbs 
-          currentModule="Project Initiation" 
-          className="text-purple-600 dark:text-purple-400"
-        />
 
         {/* Header */}
         <header className="text-center">

@@ -6,7 +6,6 @@ import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
-import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 
 const lessons = [
   { 
@@ -691,11 +690,6 @@ const StakeholderMappingView: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-800 dark:to-pink-800 text-white shadow-lg sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          {/* Context-Aware Breadcrumbs */}
-          <LearningBreadcrumbs 
-            currentModule="Stakeholder Mapping" 
-            className="text-purple-100"
-          />
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

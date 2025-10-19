@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { Search, GitBranch, CheckSquare, FileText, Users, RefreshCw, Lightbulb, Target, Zap } from "lucide-react";
-import LearningBreadcrumbs from "../Common/LearningBreadcrumbs";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import MarkCompleteButton from "../MarkCompleteButton";
@@ -391,11 +390,6 @@ const RequirementsEngineeringView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 md:px-8 py-10 md:py-12">
       <div className="max-w-7xl mx-auto space-y-10">
-        {/* Context-Aware Breadcrumbs */}
-        <LearningBreadcrumbs 
-          currentModule="Requirements Engineering" 
-          className="text-purple-600 dark:text-purple-400"
-        />
 
         {/* Hero */}
         <header className="relative">
