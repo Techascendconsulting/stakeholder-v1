@@ -172,11 +172,22 @@ export const ScrumPracticeView: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {sections.map((section, index) => (
-            <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-center">
+          {sections.map((section, index) => {
+            // Make Agile Hub card visually distinct
+            const isAgileHub = section.title === "Agile Hub";
+            const cardClass = isAgileHub 
+              ? "group bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-teal-900/20 rounded-lg border-2 border-emerald-400 dark:border-emerald-600 p-6 hover:shadow-xl hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 text-center ring-2 ring-emerald-200 dark:ring-emerald-800"
+              : "group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-center";
+            
+            return (
+            <div key={index} className={cardClass}>
               {/* Centered Cartoon Icon */}
               <div className="mb-4 flex justify-center">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 flex items-center justify-center shadow-lg border-4 border-purple-200 dark:border-purple-700">
+                <div className={`w-20 h-20 rounded-full ${
+                  isAgileHub 
+                    ? "bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-800/40 dark:to-green-800/40 border-4 border-emerald-300 dark:border-emerald-600"
+                    : "bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-4 border-purple-200 dark:border-purple-700"
+                } flex items-center justify-center shadow-lg`}>
                   <div className="text-4xl">
                     {section.artwork}
                   </div>
@@ -203,7 +214,8 @@ export const ScrumPracticeView: React.FC = () => {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

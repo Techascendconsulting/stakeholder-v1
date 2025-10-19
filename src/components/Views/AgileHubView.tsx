@@ -8,6 +8,7 @@ import SprintPlanningMeetingView from './SprintPlanningMeetingView';
 import DocumentationView from './DocumentationView';
 import { DatabaseService } from '../../lib/database';
 import { fetchBacklogStories, fetchBacklogEpics, saveStoryToBacklog } from '../../services/backlogService';
+import Breadcrumbs from '../Common/Breadcrumbs';
 
 // Types
 interface AgileTicket {
@@ -1115,15 +1116,16 @@ export const AgileHubView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Back to Project Journey */}
+      {/* Breadcrumbs */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
-        <button
-          onClick={() => setCurrentView('project-flow')}
-          className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to Project Journey</span>
-        </button>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', view: 'project-flow', active: false },
+            { label: 'Practice', view: 'practice-flow', active: false },
+            { label: 'Scrum Practice', view: 'scrum-practice', active: false },
+            { label: 'Agile Hub', view: 'agile-scrum', active: true }
+          ]}
+        />
       </div>
       
       {/* Header */}
