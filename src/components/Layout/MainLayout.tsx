@@ -98,6 +98,7 @@ import { supabase } from '../../lib/supabase';
 import LockMessageToast from '../LockMessageToast';
 // import NavigationGuideView from '../Views/NavigationGuideView'; // Removed: Using interactive tour instead
 import OnboardingTour from '../OnboardingTour';
+import GlobalBreadcrumbs from '../GlobalBreadcrumbs';
 
 
 const MainLayout: React.FC = () => {
@@ -435,6 +436,9 @@ const MainLayout: React.FC = () => {
       )}
       <Sidebar />
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        {/* Global Breadcrumbs - Always visible */}
+        <GlobalBreadcrumbs />
+        
         {lockMessage ? (
           <LockMessageToast
             message={lockMessage}
