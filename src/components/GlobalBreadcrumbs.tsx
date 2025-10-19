@@ -129,6 +129,15 @@ const GlobalBreadcrumbs: React.FC = () => {
     }
   }, []);
 
+  // Create enhanced breadcrumbs that include Scrum Practice sub-pages
+  const enhancedBreadcrumbs = React.useMemo(() => {
+    if (currentView === 'scrum-practice' && scrumSubPage) {
+      // Add the sub-page to the breadcrumbs
+      return [...breadcrumbs, scrumSubPage as any];
+    }
+    return breadcrumbs;
+  }, [breadcrumbs, currentView, scrumSubPage]);
+
   const handleClick = (index: number) => {
     const target = breadcrumbs[index];
     if (target) {
@@ -148,15 +157,6 @@ const GlobalBreadcrumbs: React.FC = () => {
   if (breadcrumbs.length === 0) {
     return null;
   }
-
-  // Create enhanced breadcrumbs that include Scrum Practice sub-pages
-  const enhancedBreadcrumbs = React.useMemo(() => {
-    if (currentView === 'scrum-practice' && scrumSubPage) {
-      // Add the sub-page to the breadcrumbs
-      return [...breadcrumbs, scrumSubPage as any];
-    }
-    return breadcrumbs;
-  }, [breadcrumbs, currentView, scrumSubPage]);
 
   // Collapse breadcrumbs if more than 4 levels
   const shouldCollapse = enhancedBreadcrumbs.length > 4;
