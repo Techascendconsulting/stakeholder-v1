@@ -69,7 +69,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     color: "from-emerald-500 to-green-500",
     onClick: () => {
       setSelectedTheme("from-emerald-500 to-green-500");
-      setCurrentView('agile-hub');
+      setCurrentView('agile-scrum');
     }
   },
 ];
