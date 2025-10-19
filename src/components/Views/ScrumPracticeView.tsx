@@ -61,6 +61,17 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
       console.log("Navigate to retrospective");
     }
   },
+  {
+    title: "Agile Hub",
+    description: "Jira-style workspace to create, organize, and track user stories, epics, and sprints in a real Agile environment.",
+    icon: BarChart3,
+    artwork: "📋✨",
+    color: "from-emerald-500 to-green-500",
+    onClick: () => {
+      setSelectedTheme("from-emerald-500 to-green-500");
+      setCurrentView('agile-hub');
+    }
+  },
 ];
 
 export const ScrumPracticeView: React.FC = () => {
