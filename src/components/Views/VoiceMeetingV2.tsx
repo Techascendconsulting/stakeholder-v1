@@ -8,6 +8,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { createStakeholderConversationLoop } from "../../services/conversationLoop";
 import { playBrowserTTS } from "../../lib/browserTTS";
 import ProcessDocumentViewer from './ProcessDocumentViewer';
+import VoiceMeetingTour from '../VoiceMeetingTour';
 import { 
   ArrowLeft, 
   Mic, 
@@ -16,7 +17,9 @@ import {
   Clock, 
   MessageSquare, 
   X,
-  FileText
+  FileText,
+  ChevronRight,
+  HelpCircle
 } from "lucide-react";
 
 interface Message {
@@ -44,6 +47,7 @@ export default function VoiceMeetingV2() {
   });
   const [showExitModal, setShowExitModal] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   
   // Auto Send vs Review Mode
   const [autoSendMode, setAutoSendMode] = useState(true);
@@ -91,7 +95,7 @@ export default function VoiceMeetingV2() {
     };
   }, [conversationState]);
 
-  // Check for existing session on mount
+  // Check for existing session and tour status on mount
   useEffect(() => {
     const savedMessages = sessionStorage.getItem('voiceMeeting_messages');
     if (savedMessages) {
@@ -101,6 +105,13 @@ export default function VoiceMeetingV2() {
           setShowResumeModal(true);
         }
       } catch {}
+    }
+
+    // Check if user has seen the tour
+    const hasSeenTour = localStorage.getItem('voiceMeetingTourCompleted');
+    if (!hasSeenTour) {
+      // Show tour after a brief delay
+      setTimeout(() => setShowTour(true), 1000);
     }
   }, []);
 
@@ -697,110 +708,146 @@ Rules:
     <div className={`min-h-screen flex flex-col ${
       isDark 
         ? 'bg-[#0D0D0D] text-white' 
-        : 'bg-gray-50 text-gray-900'
+        : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
     }`}>
-      {/* Top Bar */}
-      <div className={`px-6 py-3 border-b ${
+      {/* Modern Navigation Header */}
+      <div className={`${
         isDark 
-          ? 'bg-gradient-to-b from-[#121212] to-[#1A1A1A] border-gray-800' 
-          : 'bg-white border-gray-200 shadow-sm'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={handleBack} className={`p-2 rounded-lg transition-colors ${
-              isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-            }`}>
+          ? 'bg-gradient-to-b from-gray-900 to-gray-900/95 border-gray-800/50' 
+          : 'bg-white/80 backdrop-blur-md border-purple-200 shadow-sm'
+      } border-b`}>
+        <div className="px-6 py-2">
+          {/* Top Row: Back Button + Breadcrumbs */}
+          <div className="flex items-center gap-4 mb-2">
+            <button 
+              onClick={handleBack}
+              className={`p-2 rounded-lg transition-all hover:scale-105 ${
+                isDark 
+                  ? 'hover:bg-gray-800 text-gray-400 hover:text-white' 
+                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+              }`}
+              title="Back to Meeting Setup"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div>
-              {/* Breadcrumbs */}
-              <div className={`flex items-center gap-1.5 text-xs mb-1 ${
-                isDark ? 'text-gray-500' : 'text-gray-600'
-              }`}>
-                <button 
-                  onClick={() => setCurrentView('dashboard')}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                >
-                  Dashboard
-                </button>
-                <span>/</span>
-                <button 
-                  onClick={() => setCurrentView('project-flow')}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                >
-                  Projects
-                </button>
-                <span>/</span>
-                <button 
-                  onClick={() => setCurrentView('projects')}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                >
-                  Select Project
-                </button>
-                <span>/</span>
-                <button 
-                  onClick={() => setCurrentView('project-brief')}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                  title={selectedProject.name}
-                >
-                  {selectedProject.name.length > 20 ? selectedProject.name.substring(0, 20) + '...' : selectedProject.name}
-                </button>
-                <span>/</span>
-                <button 
-                  onClick={handleBack}
-                  className={isDark ? 'hover:text-gray-300 transition-colors' : 'hover:text-gray-800 transition-colors'}
-                >
-                  Meeting Setup
-                </button>
-                <span>/</span>
-                <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Voice Meeting</span>
-              </div>
-              <h1 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {selectedProject.name}
-              </h1>
-              <div className={`flex items-center gap-2 text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span>Live Meeting</span>
-              </div>
+            
+            {/* Breadcrumb Navigation */}
+            <div className={`flex items-center gap-2 text-sm ${
+              isDark ? 'text-gray-500' : 'text-gray-600'
+            }`}>
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className={`hover:underline transition-colors ${
+                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
+                }`}
+              >
+                Dashboard
+              </button>
+              <ChevronRight className="w-4 h-4" />
+              <button 
+                onClick={() => setCurrentView('project-flow')}
+                className={`hover:underline transition-colors ${
+                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
+                }`}
+              >
+                Projects
+              </button>
+              <ChevronRight className="w-4 h-4" />
+              <button 
+                onClick={() => setCurrentView('projects')}
+                className={`hover:underline transition-colors ${
+                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
+                }`}
+              >
+                Select
+              </button>
+              <ChevronRight className="w-4 h-4" />
+              <button 
+                onClick={handleBack}
+                className={`hover:underline transition-colors ${
+                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
+                }`}
+              >
+                Setup
+              </button>
+              <ChevronRight className="w-4 h-4" />
+              <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Meeting</span>
             </div>
           </div>
-          <div className={`flex items-center gap-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+
+          {/* Bottom Row: Project Title + Status */}
+          <div className="flex items-center justify-between" data-tour="meeting-header">
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className={`text-xl font-bold ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {selectedProject.name}
+                </h1>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </div>
+                    <span className={`text-sm font-medium ${
+                      isDark ? 'text-green-400' : 'text-green-600'
+                    }`}>
+                      Live Meeting
+                    </span>
+                  </div>
+                  <span className={`text-sm ${
+                    isDark ? 'text-gray-500' : 'text-gray-400'
+                  }`}>•</span>
+                  <span className={`text-sm ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    {selectedStakeholders.length} stakeholder{selectedStakeholders.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className={`flex items-center gap-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               <span>{formatTime(meetingDuration)}</span>
             </div>
             
             {/* Send Mode Selection */}
-            <div className={`flex items-center gap-2 rounded-lg p-1 ${
-              isDark ? 'bg-gray-800/50' : 'bg-gray-200'
-            }`}>
+            <div 
+              className={`flex items-center gap-1 rounded-lg p-0.5 ${
+                isDark ? 'bg-gray-800/50' : 'bg-gray-200'
+              }`}
+              data-tour="mode-toggle"
+            >
               <button
                 onClick={() => setAutoSendMode(true)}
-                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
                   autoSendMode 
                     ? 'bg-green-600 text-white shadow-lg' 
                     : isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
                 }`}
                 title="Auto Send: Messages send immediately after you finish speaking"
               >
-                ⚡ Auto Send
+                Auto
               </button>
               <button
                 onClick={() => setAutoSendMode(false)}
-                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
                   !autoSendMode 
                     ? 'bg-purple-600 text-white shadow-lg' 
                     : isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'
                 }`}
                 title="Review Mode: Edit your message before sending"
               >
-                ✏️ Review
+                Review
               </button>
             </div>
             
             <button
               onClick={() => setShowTranscript(!showTranscript)}
-              disabled={!autoSendMode} 
+              disabled={!autoSendMode}
+              data-tour="transcript-toggle" 
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
                 !autoSendMode 
                   ? 'bg-blue-600 text-white cursor-default' 
@@ -817,20 +864,30 @@ Rules:
               <Users className="w-4 h-4" />
               <span>{allParticipants.length}</span>
             </div>
+            <button
+              onClick={() => setShowTour(true)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
+                isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+              title="View guided tour"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Tour</span>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="max-w-6xl mx-auto px-6 py-4 w-full">
-          <div className="flex flex-col items-center space-y-4">
+        <div className="max-w-6xl mx-auto px-4 py-2 w-full">
+          <div className="flex flex-col items-center space-y-3">
             
             {/* Compact Status Area - Prevents Layout Shift */}
-            <div className="w-full max-w-3xl" style={{ minHeight: '60px' }}>
+            <div className="w-full max-w-3xl" style={{ minHeight: '50px' }}>
               {conversationState === 'listening' && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-3 shadow-lg border ${
+                  <div className={`rounded-lg p-2 shadow-lg border ${
                     isDark 
                       ? 'bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-green-500' 
                       : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
@@ -852,7 +909,7 @@ Rules:
               
               {isProcessingTranscript && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-3 border ${
+                  <div className={`rounded-lg p-2 border ${
                     isDark 
                       ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/50' 
                       : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300'
@@ -867,7 +924,7 @@ Rules:
               
               {conversationState === 'idle' && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-3 border ${
+                  <div className={`rounded-lg p-2 border ${
                     isDark 
                       ? 'bg-gradient-to-r from-gray-800/40 to-gray-900/40 border-gray-700' 
                       : 'bg-gray-100 border-gray-300'
@@ -881,7 +938,7 @@ Rules:
             </div>
             
             {/* Participant Grid - Compact Layout */}
-            <div className={`w-full flex justify-center`}>
+            <div className={`w-full flex justify-center`} data-tour="participants">
               <div className={`grid gap-4 ${
                 allParticipants.length <= 2 ? 'grid-cols-2 max-w-xl' :
                 allParticipants.length === 3 ? 'grid-cols-3 max-w-3xl' :
@@ -901,8 +958,8 @@ Rules:
                       isDark 
                         ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isActive ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
                         : isActive 
-                          ? 'bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-400 shadow-lg shadow-purple-400/30'
-                          : 'bg-gradient-to-br from-white to-gray-50 border-gray-300 shadow-md hover:border-purple-300 hover:shadow-lg'
+                          ? 'bg-gradient-to-br from-purple-100 to-indigo-100 border-purple-500 shadow-xl shadow-purple-400/40 ring-2 ring-purple-300'
+                          : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400 hover:shadow-lg hover:shadow-purple-200/50'
                     }`}
                   >
                     {/* Avatar */}
@@ -913,7 +970,7 @@ Rules:
                             src={participant.avatar}
                             alt={participant.name}
                             className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
-                              isActive ? 'border-purple-500' : isDark ? 'border-gray-600' : 'border-gray-300'
+                              isActive ? 'border-purple-500 ring-2 ring-purple-300' : isDark ? 'border-gray-600' : 'border-purple-200'
                             }`}
                           />
                         ) : (
@@ -1111,6 +1168,7 @@ Rules:
             <button
               onClick={handleSpeak}
               disabled={conversationState !== "idle"}
+              data-tour="mic-button"
               className={`relative h-14 w-14 rounded-full flex items-center justify-center transition-all transform ${
                 conversationState === "idle"
                   ? "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:scale-110 hover:shadow-lg hover:shadow-green-500/50 active:scale-95"
@@ -1132,6 +1190,7 @@ Rules:
             <button
               onClick={handleEnd}
               disabled={conversationState === "idle" || conversationState === "ended"}
+              data-tour="end-meeting"
               className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                 conversationState === "idle" || conversationState === "ended"
                   ? isDark ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -1245,6 +1304,20 @@ Rules:
             </div>
           </div>
         </div>
+      )}
+
+      {/* Guided Tour */}
+      {showTour && (
+        <VoiceMeetingTour
+          onComplete={() => {
+            setShowTour(false);
+            localStorage.setItem('voiceMeetingTourCompleted', 'true');
+          }}
+          onSkip={() => {
+            setShowTour(false);
+            localStorage.setItem('voiceMeetingTourCompleted', 'true');
+          }}
+        />
       )}
     </div>
   );

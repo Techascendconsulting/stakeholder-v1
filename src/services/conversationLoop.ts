@@ -116,8 +116,9 @@ export function createStakeholderConversationLoop({
   }
 
   function start() {
-    if (active) {
-      console.log('⚠️ Loop already active');
+    // Allow restart if state is idle (e.g., after no-speech error)
+    if (active && state !== states.IDLE) {
+      console.log('⚠️ Loop already active in state:', state);
       return;
     }
     
