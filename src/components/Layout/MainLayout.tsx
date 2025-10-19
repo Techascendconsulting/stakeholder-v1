@@ -431,7 +431,7 @@ const MainLayout: React.FC = () => {
         </div>
       )}
       <Sidebar />
-      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         {lockMessage ? (
           <LockMessageToast
             message={lockMessage}

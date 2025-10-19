@@ -73,3 +73,4 @@ In that sense, AI does not diminish the Business Analyst. It makes the role more
 
 
 
+

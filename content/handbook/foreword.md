@@ -14,3 +14,4 @@ Whether you are new to Business Analysis or a seasoned practitioner, this book w
 
 
 
+

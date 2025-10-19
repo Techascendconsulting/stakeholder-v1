@@ -47,3 +47,4 @@ COMMENT ON COLUMN email_notifications.metadata IS 'Additional notification data 
 
 
 
+

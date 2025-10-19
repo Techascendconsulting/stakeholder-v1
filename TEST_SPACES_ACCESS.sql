@@ -47,3 +47,4 @@ SELECT auth.uid() as current_user_id, auth.role() as current_role;
 
 
 
+

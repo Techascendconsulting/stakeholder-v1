@@ -30,6 +30,8 @@ interface Message {
 }
 
 export default function VoiceMeetingV2() {
+  console.log('🎨 VOICE_MEETING_V2: Component loaded - Version with polished UI (2024-10-19)');
+  
   const { selectedProject, selectedStakeholders, setCurrentView, user } = useApp();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
@@ -705,11 +707,11 @@ Rules:
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col ${
+    <div className={`flex flex-col border-4 border-red-500 ${
       isDark 
         ? 'bg-[#0D0D0D] text-white' 
         : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
-    }`}>
+    }`} style={{ minHeight: '200px', maxHeight: '400px' }}>
       {/* Modern Navigation Header */}
       <div className={`${
         isDark 
@@ -879,7 +881,7 @@ Rules:
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col px-4 py-6">
+      <div className="flex flex-col px-4 py-6">
         <div className="max-w-6xl mx-auto w-full">
           <div className="flex flex-col items-center space-y-4">
             
@@ -926,13 +928,13 @@ Rules:
               
               {conversationState === 'idle' && (
                 <div className="w-full">
-                  <div className={`rounded-xl p-3 border ${
+                  <div className={`rounded-xl p-4 border-2 ${
                     isDark 
                       ? 'bg-gradient-to-r from-gray-800/40 to-gray-900/40 border-gray-700' 
-                      : 'bg-gradient-to-r from-gray-50 to-slate-100 border-gray-300 shadow-sm'
+                      : 'bg-gradient-to-r from-purple-100 to-indigo-100 border-purple-500 shadow-xl'
                   }`}>
-                    <p className={`text-sm text-center ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
-                      Click the microphone button below to begin speaking
+                    <p className={`text-2xl font-bold text-center ${isDark ? 'text-gray-400' : 'text-red-600'}`}>
+                      🚨 MASSIVE CHANGE - BROWSER CACHE ISSUE FIXED 🚨
                     </p>
                   </div>
                 </div>
