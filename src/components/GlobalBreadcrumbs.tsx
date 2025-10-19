@@ -76,9 +76,14 @@ const GlobalBreadcrumbs: React.FC = () => {
     }
   };
 
-  // Don't show breadcrumbs on certain pages or if only one view
-  const hiddenViews: AppView[] = ['login', 'signup', 'welcome'];
-  if (hiddenViews.includes(currentView) || breadcrumbs.length <= 1) {
+  // Don't show breadcrumbs on certain pages
+  const hiddenViews: AppView[] = ['login', 'signup', 'welcome', 'dashboard'];
+  if (hiddenViews.includes(currentView)) {
+    return null;
+  }
+  
+  // Don't show if no breadcrumbs yet
+  if (breadcrumbs.length === 0) {
     return null;
   }
 
