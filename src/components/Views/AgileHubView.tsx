@@ -8,7 +8,7 @@ import SprintPlanningMeetingView from './SprintPlanningMeetingView';
 import DocumentationView from './DocumentationView';
 import { DatabaseService } from '../../lib/database';
 import { fetchBacklogStories, fetchBacklogEpics, saveStoryToBacklog } from '../../services/backlogService';
-import Breadcrumbs from '../Common/Breadcrumbs';
+import { Breadcrumbs } from '../Common/Breadcrumbs';
 
 // Types
 interface AgileTicket {

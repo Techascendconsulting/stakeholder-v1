@@ -6,6 +6,7 @@ import { practiceModules } from './practiceData';
 import { getAllPracticeProgress, initializePracticeProgress } from '../../utils/practiceProgress';
 import type { PracticeProgress } from '../../utils/practiceProgress';
 import { CheckCircle, Lock, Play, ArrowLeft } from 'lucide-react';
+import GlobalBreadcrumbs from '../../components/GlobalBreadcrumbs';
 
 const PracticeModuleList: React.FC = () => {
   const { setCurrentView } = useApp();
