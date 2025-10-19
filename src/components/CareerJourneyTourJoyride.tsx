@@ -237,9 +237,10 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
   }, [user?.id]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, index, type, action } = data;
-    
-    console.log('🔍 TOUR CALLBACK:', { status, index, type, action });
+    try {
+      const { status, index, type, action } = data;
+      
+      console.log('🔍 TOUR CALLBACK:', { status, index, type, action });
     
     // Handle step progression
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
@@ -297,16 +298,21 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         onSkip();
       }
     }
+    } catch (error) {
+      console.error('❌ TOUR ERROR:', error);
+      // Gracefully handle tour errors
+      onSkip();
+    }
   };
 
   return (
     <Joyride
       steps={steps}
       run={run}
+      continuous={true}
+      showProgress={false}
+      showSkipButton={true}
       stepIndex={stepIndex}
-      continuous
-      showSkipButton
-      showProgress
       disableScrolling={false}
       scrollToFirstStep
       tooltipComponent={CustomTooltip}
