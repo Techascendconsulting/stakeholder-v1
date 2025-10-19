@@ -3,15 +3,15 @@ import { ChevronRight } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { AppView } from '../types';
 
-// Map view names to their actual page titles
+// Map view names to their actual page titles (from h1 elements)
 const viewTitleMap: Record<string, string> = {
-  'project-initiation': 'Project Initiation',
+  'project-initiation': '🚀 Project Initiation',
   'requirements-engineering': 'Requirements Engineering',
   'stakeholder-mapping': 'Stakeholder Mapping',
   'voice-meeting-v2': 'Voice Meeting',
-  'meeting-mode-selection': 'Meeting Setup',
-  'projects': 'Projects',
-  'project-brief': 'Project Brief',
+  'meeting-mode-selection': 'Choose Your Meeting Mode',
+  'projects': 'Choose Your Business Challenge',
+  'project-brief': 'Project Brief', // Dynamic: shows selectedProject.name
   'agile-scrum': 'Agile Hub',
   'scrum-practice': 'Scrum Practice',
   'career-journey': 'Career Journey',
@@ -21,7 +21,28 @@ const viewTitleMap: Record<string, string> = {
   'dashboard': 'Dashboard',
   'welcome': 'Welcome',
   'login': 'Login',
-  'signup': 'Sign Up'
+  'signup': 'Sign Up',
+  'stakeholders': 'Stakeholder Selection',
+  'solution-options': 'Solution Options',
+  'mvp-hub': 'Minimum Viable Product (MVP)',
+  'notes': 'Meeting Notes & Analysis',
+  'meeting-history': 'Meeting History',
+  'interview-notes': 'Interview Notes',
+  'individual-agent-meeting': 'Individual Agent Meeting',
+  'custom-stakeholders': 'AI-Generated Stakeholders',
+  'community-lounge': 'BA Community',
+  'ba-academy': 'BA Academy',
+  'analysis': 'Requirements Analysis',
+  'deliverables': 'Deliverables Workspace',
+  'profile': 'Profile Settings',
+  'assessments': 'Assessments',
+  'faq': 'How Can We Help You?',
+  'contact-us': 'Get In Touch',
+  'support-centre': 'How Can We Help You?',
+  'admin-contact-submissions': 'Contact Submissions',
+  'diagram-creation': 'Diagram Creation',
+  'custom-project': 'Create Custom Project',
+  'ba-reference-library': 'BA Reference Library'
 };
 
 // Format view name for display using actual page titles
