@@ -879,22 +879,24 @@ Rules:
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="max-w-6xl mx-auto px-4 py-2 w-full">
-          <div className="flex flex-col items-center space-y-3">
+      <div className="flex-1 flex flex-col px-4 py-6">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="flex flex-col items-center space-y-4">
             
             {/* Compact Status Area - Prevents Layout Shift */}
             <div className="w-full max-w-3xl" style={{ minHeight: '50px' }}>
               {conversationState === 'listening' && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-2 shadow-lg border ${
+                  <div className={`rounded-xl p-3 border ${
                     isDark 
-                      ? 'bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-green-500' 
-                      : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
+                      ? 'bg-gradient-to-r from-green-900/60 to-emerald-900/60 border-green-500 shadow-lg' 
+                      : 'bg-gradient-to-r from-green-50 via-emerald-50 to-green-100 border-green-300 shadow-md shadow-green-200/50'
                   }`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                        <Mic className="w-4 h-4 text-white" />
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                        isDark ? 'bg-green-500' : 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg'
+                      }`}>
+                        <Mic className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`text-xs font-semibold mb-1 ${isDark ? 'text-green-200' : 'text-green-700'}`}>Listening</p>
@@ -909,13 +911,13 @@ Rules:
               
               {isProcessingTranscript && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-2 border ${
+                  <div className={`rounded-xl p-3 border ${
                     isDark 
-                      ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/50' 
-                      : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300'
+                      ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/50 shadow-lg' 
+                      : 'bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-100 border-purple-300 shadow-md shadow-purple-200/50'
                   }`}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                      <div className={`w-2 h-2 rounded-full animate-pulse ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} />
                       <p className={`text-sm font-medium ${isDark ? 'text-purple-200' : 'text-purple-700'}`}>Processing...</p>
                     </div>
                   </div>
@@ -924,12 +926,12 @@ Rules:
               
               {conversationState === 'idle' && (
                 <div className="w-full">
-                  <div className={`rounded-lg p-2 border ${
+                  <div className={`rounded-xl p-3 border ${
                     isDark 
                       ? 'bg-gradient-to-r from-gray-800/40 to-gray-900/40 border-gray-700' 
-                      : 'bg-gray-100 border-gray-300'
+                      : 'bg-gradient-to-r from-gray-50 to-slate-100 border-gray-300 shadow-sm'
                   }`}>
-                    <p className={`text-sm text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-sm text-center ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
                       Click the microphone button below to begin speaking
                     </p>
                   </div>
@@ -1020,53 +1022,55 @@ Rules:
 
             {/* Conversation Transcript - Clean & Compact */}
             {showTranscript && messages.length > 0 && (
-              <div className="w-full max-w-3xl mt-4">
-                <div className={`backdrop-blur-sm rounded-lg border ${
+              <div className="w-full max-w-3xl">
+                <div className={`backdrop-blur-sm rounded-xl border ${
                   isDark 
-                    ? 'bg-gray-800/90 border-gray-700' 
-                    : 'bg-white border-gray-300 shadow-lg'
+                    ? 'bg-gray-800/90 border-gray-700 shadow-xl' 
+                    : 'bg-white/95 border-purple-200 shadow-lg shadow-purple-100/50'
                 }`}>
-                  <div className={`flex items-center justify-between px-3 py-2 border-b ${
-                    isDark ? 'border-gray-700/50' : 'border-gray-200'
+                  <div className={`flex items-center justify-between px-4 py-3 border-b ${
+                    isDark ? 'border-gray-700/50' : 'border-purple-100'
                   }`}>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                      <h3 className={`font-medium text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Transcript</h3>
-                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>({messages.length})</span>
+                      <div className={`w-2 h-2 rounded-full animate-pulse ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} />
+                      <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Transcript</h3>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-purple-600'}`}>({messages.length})</span>
                     </div>
                     <button 
                       onClick={() => setShowTranscript(false)} 
-                      className={`transition-colors p-1 ${
-                        isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                      className={`transition-colors p-1 rounded-lg ${
+                        isDark ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                       title="Hide transcript"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="overflow-y-auto p-3 space-y-2" style={{ maxHeight: '200px' }}>
+                  <div className="overflow-y-auto p-4 space-y-3" style={{ maxHeight: '280px' }}>
                     {messages.map((msg, idx) => {
                       const isUser = msg.who === "You";
                       const stakeholder = selectedStakeholders.find(s => s.name === msg.who);
                       const initials = isUser ? 'U' : (stakeholder?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'S');
                       
                       return (
-                        <div key={idx} className="flex gap-2">
+                        <div key={idx} className="flex gap-3">
                           {/* Avatar */}
-                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white ${
-                            isUser ? 'bg-blue-600' : 'bg-purple-600'
+                          <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white shadow-md ${
+                            isUser 
+                              ? isDark ? 'bg-blue-600' : 'bg-gradient-to-br from-blue-600 to-blue-700' 
+                              : isDark ? 'bg-purple-600' : 'bg-gradient-to-br from-purple-600 to-indigo-600'
                           }`}>
                             {initials}
                           </div>
                           {/* Message */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2">
-                              <span className={`text-xs font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{msg.who}</span>
-                              <span className="text-xs text-gray-500">
+                              <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{msg.who}</span>
+                              <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <p className={`text-sm leading-relaxed mt-0.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{msg.text}</p>
+                            <p className={`text-sm leading-relaxed mt-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{msg.text}</p>
                             
                             {/* Document Reference Button */}
                             {msg.document && (
@@ -1085,7 +1089,7 @@ Rules:
                     
                     {/* Review Mode - Compact Input */}
                     {!autoSendMode && (
-                      <div className="mt-3 space-y-2">
+                      <div className="mt-4 pt-3 border-t border-gray-200/50">
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
@@ -1101,10 +1105,10 @@ Rules:
                                 handleManualSend(textToSend);
                               }
                             }}
-                            className={`flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                            className={`flex-1 px-4 py-2.5 rounded-lg text-sm border focus:outline-none focus:ring-2 transition-all ${
                               isDark 
-                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
-                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-purple-500' 
+                                : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:ring-purple-400 focus:border-purple-400 focus:bg-white'
                             }`}
                           />
                           <button
@@ -1117,9 +1121,11 @@ Rules:
                               }
                             }}
                             disabled={!pendingTranscript.trim()}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                               pendingTranscript.trim()
-                                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                ? isDark 
+                                  ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg'
+                                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-200/50 hover:shadow-xl'
                                 : isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             }`}
                           >
@@ -1139,10 +1145,10 @@ Rules:
       </div>
 
       {/* Control Dock */}
-      <div className={`backdrop-blur-sm border-t px-6 py-4 ${
+      <div className={`backdrop-blur-md border-t px-6 py-4 ${
         isDark 
           ? 'bg-[#121212]/95 border-gray-800' 
-          : 'bg-white/95 border-gray-200'
+          : 'bg-white/95 border-purple-100 shadow-lg shadow-purple-100/50'
       }`}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Status Text */}
@@ -1194,7 +1200,9 @@ Rules:
               className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                 conversationState === "idle" || conversationState === "ended"
                   ? isDark ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/50 text-white"
+                  : isDark 
+                    ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/50 text-white"
+                    : "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 hover:shadow-xl hover:shadow-red-300/50 text-white"
               }`}
             >
               End Meeting
