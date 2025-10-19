@@ -25,6 +25,21 @@ const GlobalBreadcrumbs: React.FC = () => {
       // Prevent duplicates when same view is visited consecutively
       if (last === currentView) return prev;
       
+      // Define root views that should reset the breadcrumb trail
+      const rootViews: AppView[] = ['dashboard', 'learning-flow', 'practice-flow', 'project-flow', 'career-journey'];
+      
+      // If navigating to a root view, start fresh trail
+      if (rootViews.includes(currentView)) {
+        return [currentView];
+      }
+      
+      // Check if user is going back to a previous view in the trail
+      const existingIndex = prev.indexOf(currentView);
+      if (existingIndex !== -1) {
+        // User clicked a breadcrumb to go back - trim trail to that point
+        return prev.slice(0, existingIndex + 1);
+      }
+      
       // Add new view to trail
       return [...prev, currentView];
     });
