@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { MessageSquareText, Mic, Users, Clock, FileText, Volume2 } from 'lucide-react';
-import { Breadcrumbs } from '../Common/Breadcrumbs';
 
 const MeetingModeSelection: React.FC = () => {
   const { 
@@ -113,18 +112,6 @@ const MeetingModeSelection: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-4xl w-full">
-        {/* Breadcrumbs */}
-        <Breadcrumbs 
-          items={[
-            { label: 'Dashboard', view: 'dashboard' },
-            { label: 'Projects', view: 'project-flow' },
-            { label: 'Select Project', view: 'projects' },
-            { label: selectedProject.name.length > 20 ? selectedProject.name.substring(0, 20) + '...' : selectedProject.name, view: 'project-brief' },
-            { label: 'Meeting Setup', active: true }
-          ]}
-          className="mb-6"
-        />
-        
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Choose Your Meeting Mode</h1>
