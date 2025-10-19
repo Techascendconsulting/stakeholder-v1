@@ -14,10 +14,10 @@ const viewTitleMap: Record<string, string> = {
   'project-brief': 'Project Brief', // Dynamic: shows selectedProject.name
   'agile-scrum': 'Agile Hub',
   'scrum-practice': 'Scrum Practice',
-  'career-journey': 'Career Journey',
-  'learning-flow': 'Learning Flow',
-  'practice-flow': 'Practice Flow',
-  'project-flow': 'Project Flow',
+  'career-journey': 'BA Career Journey',
+  'learning-flow': 'Learning Journey',
+  'practice-flow': 'Practice Journey',
+  'project-flow': 'Project Journey',
   'dashboard': 'Dashboard',
   'welcome': 'Welcome',
   'login': 'Login',
@@ -45,6 +45,15 @@ const viewTitleMap: Record<string, string> = {
   'ba-reference-library': 'BA Reference Library'
 };
 
+// Map Scrum Practice sub-pages to their titles
+const scrumPracticeSubPages: Record<string, string> = {
+  'backlog-refinement': 'Backlog Refinement',
+  'sprint-planning': 'Sprint Planning',
+  'daily-scrum': 'Daily Scrum',
+  'sprint-review': 'Sprint Review',
+  'sprint-retrospective': 'Sprint Retrospective'
+};
+
 // Format view name for display using actual page titles
 function formatViewName(view: string): string {
   return viewTitleMap[view] || view
@@ -56,6 +65,17 @@ function formatViewName(view: string): string {
 const GlobalBreadcrumbs: React.FC = () => {
   const { currentView, setCurrentView } = useApp();
   const [breadcrumbs, setBreadcrumbs] = useState<AppView[]>([]);
+  const [scrumSubPage, setScrumSubPage] = useState<string | null>(null);
+
+  // Check for Scrum Practice sub-page in sessionStorage
+  useEffect(() => {
+    const scrumSubPage = sessionStorage.getItem('scrum-practice-sub-page');
+    if (scrumSubPage) {
+      setScrumSubPage(scrumSubPage);
+    } else {
+      setScrumSubPage(null);
+    }
+  }, [currentView]);
 
   // ✅ On view change, update trail & persist
   useEffect(() => {
@@ -68,7 +88,7 @@ const GlobalBreadcrumbs: React.FC = () => {
       if (last === currentView) return prev;
       
       // Define root views that should reset the breadcrumb trail
-      const rootViews: AppView[] = ['dashboard', 'learning-flow', 'practice-flow', 'project-flow', 'career-journey'];
+      const rootViews: AppView[] = ['learning-flow', 'practice-flow', 'project-flow', 'career-journey'];
       
       // If navigating to a root view, start fresh trail
       if (rootViews.includes(currentView)) {
@@ -119,7 +139,7 @@ const GlobalBreadcrumbs: React.FC = () => {
   };
 
   // Don't show breadcrumbs on certain pages
-  const hiddenViews: AppView[] = ['login', 'signup', 'welcome', 'dashboard'];
+  const hiddenViews: AppView[] = ['login', 'signup', 'welcome'];
   if (hiddenViews.includes(currentView)) {
     return null;
   }
@@ -129,11 +149,20 @@ const GlobalBreadcrumbs: React.FC = () => {
     return null;
   }
 
+  // Create enhanced breadcrumbs that include Scrum Practice sub-pages
+  const enhancedBreadcrumbs = React.useMemo(() => {
+    if (currentView === 'scrum-practice' && scrumSubPage) {
+      // Add the sub-page to the breadcrumbs
+      return [...breadcrumbs, scrumSubPage as any];
+    }
+    return breadcrumbs;
+  }, [breadcrumbs, currentView, scrumSubPage]);
+
   // Collapse breadcrumbs if more than 4 levels
-  const shouldCollapse = breadcrumbs.length > 4;
+  const shouldCollapse = enhancedBreadcrumbs.length > 4;
   const displayedBreadcrumbs = shouldCollapse
-    ? [breadcrumbs[0], '...', ...breadcrumbs.slice(-2)]
-    : breadcrumbs;
+    ? [enhancedBreadcrumbs[0], '...', ...enhancedBreadcrumbs.slice(-2)]
+    : enhancedBreadcrumbs;
 
   return (
     <nav
@@ -145,8 +174,11 @@ const GlobalBreadcrumbs: React.FC = () => {
           const isEllipsis = view === '...';
           const isLast = index === displayedBreadcrumbs.length - 1;
           const actualIndex = shouldCollapse && index > 1 
-            ? breadcrumbs.length - (displayedBreadcrumbs.length - index)
+            ? enhancedBreadcrumbs.length - (displayedBreadcrumbs.length - index)
             : index;
+
+          // Handle Scrum Practice sub-page titles
+          const displayTitle = scrumPracticeSubPages[view as string] || formatViewName(view as string);
 
           return (
             <li key={isEllipsis ? 'ellipsis' : index} className="flex items-center gap-2">
@@ -166,7 +198,7 @@ const GlobalBreadcrumbs: React.FC = () => {
                   }`}
                   aria-current={isLast ? 'page' : undefined}
                 >
-                  {formatViewName(view as string)}
+                  {displayTitle}
                 </button>
               )}
             </li>

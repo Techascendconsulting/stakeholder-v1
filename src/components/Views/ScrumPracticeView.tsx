@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, FileText, Users, Calendar, Clock, BarChart3, RotateCcw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
@@ -79,11 +79,26 @@ export const ScrumPracticeView: React.FC = () => {
   const [activeView, setActiveView] = useState<'main' | 'backlog-refinement' | 'sprint-planning'>('main');
   const [selectedTheme, setSelectedTheme] = useState<string>('from-pink-500 to-purple-600');
   
+  // Check for existing sub-page in sessionStorage on mount
+  useEffect(() => {
+    const savedSubPage = sessionStorage.getItem('scrum-practice-sub-page');
+    if (savedSubPage && ['backlog-refinement', 'sprint-planning'].includes(savedSubPage)) {
+      setActiveView(savedSubPage as 'backlog-refinement' | 'sprint-planning');
+    }
+  }, []);
+  
   console.log('🎯 ScrumPracticeView rendered with activeView:', activeView);
 
   const handleSetActiveView = (view: 'main' | 'backlog-refinement' | 'sprint-planning') => {
     console.log('🎯 setActiveView called with:', view);
     setActiveView(view);
+    
+    // Update sessionStorage for breadcrumb tracking
+    if (view === 'main') {
+      sessionStorage.removeItem('scrum-practice-sub-page');
+    } else {
+      sessionStorage.setItem('scrum-practice-sub-page', view);
+    }
   };
   
   const sections = getSections(handleSetActiveView, setSelectedTheme, setCurrentView);
