@@ -24,6 +24,7 @@ import ProjectsView from '../Views/ProjectsView';
 import MeetingView from '../Views/MeetingView';
 import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
 import VoiceMeetingV2 from '../Views/VoiceMeetingV2';
+import VoiceMeetingV2Simple from '../Views/VoiceMeetingV2Simple';
 import { MyMeetingsView } from '../Views/MyMeetingsView';
 import { MeetingSummaryView } from '../Views/MeetingSummaryView';
 import { MeetingDetailsView } from '../Views/MeetingDetailsView';
@@ -318,6 +319,8 @@ const MainLayout: React.FC = () => {
         return <VoiceOnlyMeetingView />;
       case 'voice-meeting-v2':
         return <VoiceMeetingV2 />;
+      case 'voice-meeting-simple':
+        return <VoiceMeetingV2Simple />;
       case 'meeting-summary':
         return <MeetingSummaryView />;
       case 'meeting-details':
