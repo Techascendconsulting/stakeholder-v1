@@ -445,15 +445,13 @@ const MainLayout: React.FC = () => {
       )}
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 h-full bg-gray-50 dark:bg-gray-900 ${
-          currentView === 'voice-meeting-v2' ? 'overflow-hidden' : 'overflow-auto'
-        }`}
+        className="grid grid-rows-[auto,1fr] min-h-screen flex-1 bg-gray-50 dark:bg-gray-900"
       >
         {/* Global Breadcrumbs - Always visible */}
         <GlobalBreadcrumbs />
         
-        {/* Wrapper to isolate scroll area */}
-        <div className={`flex-1 ${currentView === 'voice-meeting-v2' ? 'overflow-hidden' : 'overflow-auto'}`}>
+        {/* Content row that can actually stretch */}
+        <section className={`min-h-0 ${currentView === 'voice-meeting-v2' ? 'overflow-hidden' : 'overflow-auto'}`}>
           {lockMessage ? (
             <LockMessageToast
               message={lockMessage}
@@ -462,7 +460,7 @@ const MainLayout: React.FC = () => {
           ) : (
             renderView()
           )}
-        </div>
+        </section>
       </main>
       
       {/* Verity Assistant - Hide only on pages with conversational AI (not coaching AI) */}
