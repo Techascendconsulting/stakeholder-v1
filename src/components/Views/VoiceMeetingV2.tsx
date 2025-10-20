@@ -705,11 +705,19 @@ Rules:
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen ${
-      isDark 
-        ? 'bg-[#0D0D0D] text-white' 
-        : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
-    }`}>
+    <div 
+      className={`flex flex-col ${
+        isDark 
+          ? 'bg-[#0D0D0D] text-white' 
+          : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
+      }`}
+      style={{
+        height: '100vh',
+        minHeight: '100vh',
+        maxHeight: '100vh',
+        overflow: 'hidden'
+      }}
+    >
       {/* Modern Navigation Header */}
       <div className={`${
         isDark 
