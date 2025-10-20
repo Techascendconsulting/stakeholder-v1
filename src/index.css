@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for layout calculations */
+:root {
+  --header-h: 0px;      /* no fixed header */
+  --crumbs-h: 48px;     /* breadcrumbs height */
+  --sidebar-w: 280px;   /* sidebar width */
+}
+
 /* Global height reset for full-height layouts */
 html, body, #root {
   height: 100%;

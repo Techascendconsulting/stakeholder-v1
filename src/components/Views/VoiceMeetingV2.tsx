@@ -706,12 +706,21 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col h-full min-h-0 w-full ${
+      className={`flex flex-col w-full overflow-hidden ${
         isDark 
           ? 'bg-[#0D0D0D] text-white' 
           : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
-      style={{ overflow: 'hidden' }}
+      style={{
+        position: 'fixed',
+        left: 'var(--sidebar-w)',
+        top: 'calc(var(--header-h) + var(--crumbs-h))',
+        right: 0,
+        bottom: 0,
+        height: 'calc(100dvh - var(--header-h) - var(--crumbs-h))',
+        minHeight: 'calc(100dvh - var(--header-h) - var(--crumbs-h))',
+        zIndex: 900
+      }}
     >
       {/* Modern Navigation Header */}
       <div className={`${
