@@ -144,7 +144,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -172,7 +172,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="relative">
           {/* Vertical Path Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800 rounded-full" />
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-200 via-cyan-200 to-indigo-200 dark:from-blue-800 dark:via-cyan-800 dark:to-indigo-800 rounded-full" />
 
           {/* Learning Modules */}
           <div className="space-y-16">
@@ -205,7 +205,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
-                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
+                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-lg border-4 border-blue-500' : ''}
                         ${isLocked ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 shadow-lg border-4 border-gray-300 dark:border-gray-600 cursor-not-allowed' : ''}
                         ${!isLocked && !isCompleted && !isInProgress ? 'cursor-pointer' : ''}
                       `}
@@ -229,7 +229,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                         border-2 transition-all duration-300
                         ${isCompleted ? 'border-green-500' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
-                        ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
+                        ${status === 'not_started' || isLocked ? 'border-blue-500' : ''}
                         ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
                       `}
                       onClick={() => {
@@ -245,7 +245,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                           px-3 py-1 rounded-full text-xs font-semibold
                           ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                          ${status === 'not_started' || isLocked ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
+                          ${status === 'not_started' || isLocked ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : ''}
                         `}>
                           {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Start'}
                         </span>
@@ -256,7 +256,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-purple-600 dark:text-purple-400">{module.order}.</span> {module.title}
+                        <span className="text-blue-600 dark:text-blue-400">{module.order}.</span> {module.title}
                       </h3>
 
                       {/* Description */}
@@ -278,7 +278,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                               transition-all duration-200
                               ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
                               ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                              ${status === 'not_started' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}
+                              ${status === 'not_started' ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
                             `}
                           >
                             <Play className="w-4 h-4" />
