@@ -706,9 +706,16 @@ Rules:
 
   return (
     <div 
-      className={`h-screen flex flex-col overflow-hidden ${
+      className={`flex flex-col overflow-hidden ${
         isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: '256px',
+        right: 0,
+        bottom: 0
+      }}
     >
       {/* Header */}
       <div className={`${
