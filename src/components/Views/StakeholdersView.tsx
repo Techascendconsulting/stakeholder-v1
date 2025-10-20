@@ -191,43 +191,6 @@ const StakeholdersView: React.FC = () => {
         </div>
 
 
-        {/* Selection Summary */}
-        {(localSelectedStakeholders.length > 0 || hasActiveMeeting) && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Users className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {hasActiveMeeting 
-                      ? 'Meeting In Progress' 
-                      : `${localSelectedStakeholders.length} Stakeholder${localSelectedStakeholders.length !== 1 ? 's' : ''} Selected`
-                    }
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {hasActiveMeeting 
-                      ? 'Resume your in-progress meeting'
-                      : `${localSelectedStakeholders.length === 1 ? 'Individual interview' : 'Group meeting'} ready to begin`
-                    }
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleStartGroupMeeting}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-8 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center space-x-3 shadow-sm hover:shadow-md"
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span>
-                  {hasActiveMeeting 
-                    ? 'Continue Meeting' 
-                    : `Start ${localSelectedStakeholders.length === 1 ? 'Interview' : 'Group Meeting'}`
-                  }
-                </span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Stakeholders Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
