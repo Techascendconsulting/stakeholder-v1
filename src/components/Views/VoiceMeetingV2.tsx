@@ -706,19 +706,20 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col w-full overflow-hidden ${
-        isDark 
-          ? 'bg-[#0D0D0D] text-white' 
-          : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
-      }`}
+      className={isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'}
       style={{
         position: 'fixed',
-        left: 'var(--sidebar-w)',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        height: '100dvh',
-        minHeight: '100dvh',
+        left: '256px',
+        top: '0',
+        right: '0',
+        bottom: '0',
+        width: 'calc(100vw - 256px)',
+        height: '100vh',
+        minHeight: '100vh',
+        maxHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
         zIndex: 900
       }}
     >
