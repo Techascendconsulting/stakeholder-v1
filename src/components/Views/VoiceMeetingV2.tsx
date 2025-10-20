@@ -729,7 +729,7 @@ Rules:
           : 'bg-white/80 backdrop-blur-md border-purple-200 shadow-sm'
       } border-b`}>
         <div className="px-6 py-2">
-          {/* Top Row: Back Button + Breadcrumbs */}
+          {/* Top Row: Back Button Only */}
           <div className="flex items-center gap-4 mb-2">
             <button 
               onClick={handleBack}
@@ -742,49 +742,6 @@ Rules:
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            
-            {/* Breadcrumb Navigation */}
-            <div className={`flex items-center gap-2 text-sm ${
-              isDark ? 'text-gray-500' : 'text-gray-600'
-            }`}>
-              <button 
-                onClick={() => setCurrentView('dashboard')}
-                className={`hover:underline transition-colors ${
-                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
-                }`}
-              >
-                Dashboard
-              </button>
-              <ChevronRight className="w-4 h-4" />
-              <button 
-                onClick={() => setCurrentView('project-flow')}
-                className={`hover:underline transition-colors ${
-                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
-                }`}
-              >
-                Projects
-              </button>
-              <ChevronRight className="w-4 h-4" />
-              <button 
-                onClick={() => setCurrentView('projects')}
-                className={`hover:underline transition-colors ${
-                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
-                }`}
-              >
-                Select
-              </button>
-              <ChevronRight className="w-4 h-4" />
-              <button 
-                onClick={handleBack}
-                className={`hover:underline transition-colors ${
-                  isDark ? 'hover:text-gray-300' : 'hover:text-gray-900'
-                }`}
-              >
-                Setup
-              </button>
-              <ChevronRight className="w-4 h-4" />
-              <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Meeting</span>
-            </div>
           </div>
 
           {/* Bottom Row: Project Title + Status */}
