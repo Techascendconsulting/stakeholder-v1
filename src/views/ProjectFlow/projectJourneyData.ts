@@ -76,8 +76,8 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     viewId: 'agile-scrum'
   },
   {
-    id: 'stage-6-refinement',
-    title: 'Refinement',
+    id: 'stage-6-backlog-refinement',
+    title: 'Backlog Refinement',
     description: 'Conduct backlog refinement sessions to clarify user stories, estimate effort, and prepare for sprint planning.',
     icon: '🔍',
     estimatedTime: '30-40 min',
