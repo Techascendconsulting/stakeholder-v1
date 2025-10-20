@@ -8,18 +8,11 @@ import type { ProjectJourneyProgress } from '../../utils/projectJourneyProgress'
 import { CheckCircle, Lock, Play, ArrowLeft, Rocket } from 'lucide-react';
 
 const ProjectJourneyView: React.FC = () => {
-  const { setCurrentView, selectedProject, setSelectedProject } = useApp();
+  const { setCurrentView, selectedProject } = useApp();
   const { user } = useAuth();
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [progress, setProgress] = useState<Record<string, ProjectJourneyProgress>>({});
   const [loading, setLoading] = useState(true);
-
-  // Clear selected project when entering Project Journey to start fresh
-  useEffect(() => {
-    if (selectedProject) {
-      setSelectedProject(null);
-    }
-  }, []);
 
   useEffect(() => {
     loadUserData();
