@@ -12,6 +12,7 @@ const viewTitleMap: Record<string, string> = {
   'meeting-mode-selection': 'Choose Your Meeting Mode',
   'projects': 'Choose Your Business Challenge',
   'project-brief': 'Project Brief', // Dynamic: shows selectedProject.name
+  'stage-selection': 'Select Meeting Stage',
   'agile-scrum': 'Agile Hub',
   'scrum-practice': 'Scrum Practice',
   'career-journey': 'BA Career Journey',

@@ -525,18 +525,11 @@ const ProjectBrief: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => setCurrentView('stakeholders')}
+              onClick={() => setCurrentView('stage-selection')}
               className="flex items-center justify-center space-x-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-8 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <Users className="w-6 h-6" />
-              <span>Meet Stakeholders</span>
+              <span>Continue to Stage Selection</span>
               <ArrowRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentView('deliverables')}
-              className="flex items-center justify-center space-x-3 bg-white dark:bg-gray-800 text-gray-700 font-semibold py-4 px-8 rounded-xl border border-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-all duration-200"
-            >
-              <span>View Deliverables</span>
             </button>
           </div>
         </div>

@@ -45,6 +45,7 @@ const IndividualAgentMeeting = lazy(() => import('../Views/IndividualAgentMeetin
 import ProjectView from '../Views/ProjectView';
 import ProjectJourneyView from '../Views/ProjectJourneyView';
 import ProjectBrief from '../Views/ProjectBrief';
+import StageSelectionView from '../Views/StageSelectionView';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
@@ -313,6 +314,8 @@ const MainLayout: React.FC = () => {
         return <ProjectsView />;
       case 'project-brief':
         return <ProjectBrief />;
+      case 'stage-selection':
+        return <StageSelectionView />;
       case 'project-setup':
         return selectedProject ? <ProjectView projectId={selectedProject.id} /> : <ProjectsView />;
       case 'meeting-mode-selection':
