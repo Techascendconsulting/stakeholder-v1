@@ -73,7 +73,7 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     estimatedTime: '45-60 min',
     difficulty: 'Advanced',
     order: 5,
-    viewId: 'documentation-practice'
+    viewId: 'agile-scrum'
   },
   {
     id: 'stage-6-agile-delivery',
