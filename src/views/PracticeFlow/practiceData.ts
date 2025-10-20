@@ -21,9 +21,9 @@ export const practiceModules: PracticeModule[] = [
     order: 1
   },
   {
-    id: 'practice-2-documentation',
-    title: 'Documentation Practice',
-    description: 'Create professional BA documents including BRDs, user stories, and acceptance criteria. Build your documentation portfolio.',
+    id: 'practice-2-requirement-specification',
+    title: 'Requirement Specification Practice',
+    description: 'Write clear requirement specifications: user stories, acceptance criteria, and business rules. Build a strong BA portfolio.',
     icon: '📝',
     estimatedTime: '45-60 min',
     difficulty: 'Intermediate',

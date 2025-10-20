@@ -66,8 +66,8 @@ const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {activeTab === "teaching" ? "Learn Documentation" : 
-               activeTab === "walkthrough" ? "Documentation Walkthrough" : ""}
+              {activeTab === "teaching" ? "Learn Requirement Specification" : 
+               activeTab === "walkthrough" ? "Requirement Specification Walkthrough" : ""}
             </h1>
           </div>
           <div className="flex space-x-2">
@@ -104,6 +104,7 @@ const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }
 };
 
 export default DocumentationView;
+
 
 
 
