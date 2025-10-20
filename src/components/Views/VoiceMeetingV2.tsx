@@ -706,22 +706,9 @@ Rules:
 
   return (
     <div 
-      className={isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'}
-      style={{
-        position: 'fixed',
-        left: '256px',
-        top: '0',
-        right: '0',
-        bottom: '0',
-        width: 'calc(100vw - 256px)',
-        height: '100vh',
-        minHeight: '100vh',
-        maxHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        zIndex: 900
-      }}
+      className={`h-screen flex flex-col overflow-hidden ${
+        isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
+      }`}
     >
       {/* Modern Navigation Header */}
       <div className={`${
