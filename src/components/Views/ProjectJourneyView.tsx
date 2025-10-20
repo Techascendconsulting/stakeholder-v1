@@ -129,7 +129,7 @@ const ProjectJourneyView: React.FC = () => {
           </button>
           
           <div className="flex items-center space-x-3">
-            <Rocket className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <Rocket className="w-8 h-8 text-green-600 dark:text-green-400" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Project Journey
@@ -145,9 +145,9 @@ const ProjectJourneyView: React.FC = () => {
       {/* Journey Info Banner */}
       {!selectedProject && (
         <div className="max-w-6xl mx-auto px-6 pt-6">
-          <div className="bg-gradient-to-r from-purple-100 via-indigo-100 to-blue-100 dark:from-purple-900/30 dark:via-indigo-900/30 dark:to-blue-900/30 border-2 border-purple-300 dark:border-purple-600 rounded-xl p-4">
+          <div className="bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-teal-900/30 border-2 border-green-300 dark:border-green-600 rounded-xl p-4">
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+              <div className="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
                 💡
               </div>
               <div>
@@ -167,7 +167,7 @@ const ProjectJourneyView: React.FC = () => {
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="relative">
           {/* Vertical Path Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800 rounded-full" />
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-200 via-emerald-200 to-teal-200 dark:from-green-800 dark:via-emerald-800 dark:to-teal-800 rounded-full" />
 
           {/* Project Journey Stages */}
           <div className="space-y-16">
@@ -193,7 +193,7 @@ const ProjectJourneyView: React.FC = () => {
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
-                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
+                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 shadow-lg border-4 border-green-500' : ''}
                         ${isLocked ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 shadow-lg border-4 border-gray-300 dark:border-gray-600 cursor-not-allowed' : ''}
                         ${!isLocked && !isCompleted && !isInProgress ? 'cursor-pointer' : ''}
                       `}
@@ -201,7 +201,7 @@ const ProjectJourneyView: React.FC = () => {
                       {isCompleted ? (
                         <CheckCircle className="w-8 h-8" />
                       ) : (
-                        <span>{stage.icon}</span>
+                        <span>{stage.order}</span>
                       )}
                     </button>
                     {isLocked && (
@@ -217,7 +217,7 @@ const ProjectJourneyView: React.FC = () => {
                         border-2 transition-all duration-300
                         ${isCompleted ? 'border-green-500' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
-                        ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
+                        ${status === 'not_started' || isLocked ? 'border-green-500' : ''}
                         ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
                       `}
                       onClick={() => isClickable && handleStageClick(stage)}
@@ -228,7 +228,7 @@ const ProjectJourneyView: React.FC = () => {
                           px-3 py-1 rounded-full text-xs font-semibold
                           ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                          ${status === 'not_started' || isLocked ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
+                          ${status === 'not_started' || isLocked ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                         `}>
                           {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Ready to Start'}
                         </span>
@@ -239,7 +239,7 @@ const ProjectJourneyView: React.FC = () => {
 
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-purple-600 dark:text-purple-400">{stage.order}.</span> {stage.title}
+                        <span className="text-green-600 dark:text-green-400">{stage.order}.</span> {stage.title}
                       </h3>
 
                       {/* Description */}
@@ -263,7 +263,7 @@ const ProjectJourneyView: React.FC = () => {
                               transition-all duration-200
                               ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
                               ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                              ${status === 'not_started' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}
+                              ${status === 'not_started' ? 'bg-green-600 text-white hover:bg-green-700' : ''}
                             `}
                           >
                             <Play className="w-4 h-4" />
@@ -282,7 +282,7 @@ const ProjectJourneyView: React.FC = () => {
 
       {/* Footer Help Text */}
       <div className="max-w-6xl mx-auto px-6 pb-12">
-        <div className="text-center py-8 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-purple-200 dark:border-purple-800">
+        <div className="text-center py-8 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-green-200 dark:border-green-800">
           <p className="text-gray-600 dark:text-gray-400">
             💡 <strong>Tip:</strong> Complete each stage in order to build your BA portfolio. You can always come back to review or update your work.
           </p>
