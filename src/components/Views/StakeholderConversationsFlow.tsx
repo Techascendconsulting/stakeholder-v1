@@ -113,7 +113,7 @@ const StakeholderConversationsFlow: React.FC = () => {
                   ${isCompleted ? 'border-green-500' : 'border-green-300 dark:border-green-700'}
                   ${canClick ? 'hover:shadow-2xl hover:scale-[1.02] cursor-pointer' : 'opacity-60 cursor-not-allowed'}
                 `}
-                onClick={() => canClick && handleStepClick(step.number, step.viewId)}
+                onClick={() => canClick ? handleStepClick(step.number, step.viewId) : undefined}
               >
                 {/* Step Number and Status */}
                 <div className="flex items-start space-x-6">
@@ -157,7 +157,7 @@ const StakeholderConversationsFlow: React.FC = () => {
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         ⏱️ {step.estimatedTime}
                       </span>
-                      {canClick && (
+                      {canClick ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -173,8 +173,7 @@ const StakeholderConversationsFlow: React.FC = () => {
                           <span>{isCompleted ? 'Review Step' : 'Start Step'}</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
-                      )}
-                      {isLocked && (
+                      ) : (
                         <span className="text-sm text-gray-500 dark:text-gray-400 italic">
                           Complete previous step to unlock
                         </span>
