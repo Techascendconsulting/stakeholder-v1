@@ -451,7 +451,7 @@ const MainLayout: React.FC = () => {
         <GlobalBreadcrumbs />
         
         {/* Content row that can actually stretch */}
-        <section className={`min-h-0 ${currentView === 'voice-meeting-v2' ? 'overflow-hidden' : 'overflow-auto'}`}>
+        <section className={`${currentView === 'voice-meeting-v2' ? 'h-full overflow-hidden' : 'min-h-0 overflow-auto'}`}>
           {lockMessage ? (
             <LockMessageToast
               message={lockMessage}
