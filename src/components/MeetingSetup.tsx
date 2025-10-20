@@ -53,11 +53,17 @@ export default function MeetingSetup({
   const [selectedMeetingType, setSelectedMeetingType] = useState<MeetingType | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
   const [selectedStage, setSelectedStage] = useState<any>(null);
-  const [currentStep, setCurrentStep] = useState<'brief' | 'meeting-type' | 'stakeholders' | 'stage' | 'ready'>('brief');
+  const [currentStep, setCurrentStep] = useState<'brief' | 'stakeholders' | 'meeting-type' | 'stage' | 'ready'>('brief');
+
+  const handleStakeholderContinue = () => {
+    if (selectedStakeholders.length > 0) {
+      setCurrentStep('meeting-type');
+    }
+  };
 
   const handleMeetingTypeSelect = (meetingType: MeetingType) => {
     setSelectedMeetingType(meetingType);
-    setCurrentStep('stakeholders');
+    setCurrentStep('stage');
   };
 
   const handleStakeholderToggle = (stakeholder: Stakeholder) => {
@@ -72,8 +78,10 @@ export default function MeetingSetup({
   };
 
   const handleContinue = () => {
-    if (selectedStakeholders.length > 0) {
-      setCurrentStep('stage');
+    if (currentStep === 'brief') {
+      setCurrentStep('stakeholders');
+    } else if (currentStep === 'stakeholders') {
+      handleStakeholderContinue();
     }
   };
 

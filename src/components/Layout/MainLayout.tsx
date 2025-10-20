@@ -44,7 +44,6 @@ const ElevenLabsMultiAgentMeeting = lazy(() => import('../Views/ElevenLabsMultiA
 const IndividualAgentMeeting = lazy(() => import('../Views/IndividualAgentMeeting'));
 import ProjectView from '../Views/ProjectView';
 import ProjectJourneyView from '../Views/ProjectJourneyView';
-import StakeholderConversationsFlow from '../Views/StakeholderConversationsFlow';
 import ProjectBrief from '../Views/ProjectBrief';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
@@ -193,8 +192,6 @@ const MainLayout: React.FC = () => {
         return <ProjectFlowView />;
       case 'project-journey':
         return <ProjectJourneyView />;
-      case 'stakeholder-conversations-flow':
-        return <StakeholderConversationsFlow />;
       case 'core-learning':
         // NEW: Use CoreLearning2View (Overview + Individual Topic Pages)
         // To revert: Replace CoreLearning2View with CoreLearningView
