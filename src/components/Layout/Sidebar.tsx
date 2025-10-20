@@ -173,6 +173,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Hands-On Project', 
       icon: FolderOpen
     },
+    { 
+      id: 'project-journey',
+      label: 'Project Journey', 
+      icon: Rocket
+    },
     // { 
     //   id: 'create-project',
     //   label: 'Create Project', 
