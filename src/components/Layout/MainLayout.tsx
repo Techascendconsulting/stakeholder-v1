@@ -444,24 +444,29 @@ const MainLayout: React.FC = () => {
         </div>
       )}
       <Sidebar />
-      <main
-        className="grid grid-rows-[auto,1fr] min-h-screen flex-1 bg-gray-50 dark:bg-gray-900"
-      >
-        {/* Global Breadcrumbs - Always visible */}
-        <GlobalBreadcrumbs />
-        
-        {/* Content row that can actually stretch */}
-        <section className={`${currentView === 'voice-meeting-v2' ? 'h-full overflow-hidden' : 'min-h-0 overflow-auto'}`}>
-          {lockMessage ? (
-            <LockMessageToast
-              message={lockMessage}
-              onClose={clearLockMessage}
-            />
-          ) : (
-            renderView()
-          )}
-        </section>
-      </main>
+      {currentView === 'voice-meeting-v2' ? (
+        // Voice meeting: no grid, no wrapper - just render directly
+        renderView()
+      ) : (
+        <main
+          className="grid grid-rows-[auto,1fr] min-h-screen flex-1 bg-gray-50 dark:bg-gray-900"
+        >
+          {/* Global Breadcrumbs - Always visible */}
+          <GlobalBreadcrumbs />
+          
+          {/* Content row that can actually stretch */}
+          <section className="min-h-0 overflow-auto">
+            {lockMessage ? (
+              <LockMessageToast
+                message={lockMessage}
+                onClose={clearLockMessage}
+              />
+            ) : (
+              renderView()
+            )}
+          </section>
+        </main>
+      )}
       
       {/* Verity Assistant - Hide only on pages with conversational AI (not coaching AI) */}
       {!['voice-only-meeting', 'voice-meeting-v2', 'meeting', 'documentation'].includes(currentView) && (
