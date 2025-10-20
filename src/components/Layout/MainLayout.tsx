@@ -444,20 +444,24 @@ const MainLayout: React.FC = () => {
         </div>
       )}
       <Sidebar />
-      <main className={`flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 ${
-        currentView === 'voice-meeting-v2' ? 'h-screen' : ''
-      }`}>
+      <main
+        className="flex flex-col flex-1 h-screen overflow-hidden bg-gray-50 dark:bg-gray-900"
+        style={{ minHeight: '100vh' }}
+      >
         {/* Global Breadcrumbs - Always visible */}
         <GlobalBreadcrumbs />
         
-        {lockMessage ? (
-          <LockMessageToast
-            message={lockMessage}
-            onClose={clearLockMessage}
-          />
-        ) : (
-          renderView()
-        )}
+        {/* Wrapper to isolate scroll area */}
+        <div className="flex-1 overflow-hidden">
+          {lockMessage ? (
+            <LockMessageToast
+              message={lockMessage}
+              onClose={clearLockMessage}
+            />
+          ) : (
+            renderView()
+          )}
+        </div>
       </main>
       
       {/* Verity Assistant - Hide only on pages with conversational AI (not coaching AI) */}

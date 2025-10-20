@@ -706,15 +706,14 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col ${
+      className={`flex flex-col flex-1 w-full ${
         isDark 
           ? 'bg-[#0D0D0D] text-white' 
           : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
       style={{
-        height: '100vh',
-        minHeight: '100vh',
-        maxHeight: '100vh',
+        height: '100%',
+        minHeight: '100%',
         overflow: 'hidden'
       }}
     >
