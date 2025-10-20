@@ -48,7 +48,7 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     estimatedTime: '40-60 min',
     difficulty: 'Intermediate',
     order: 3,
-    viewId: 'stakeholder-conversations-flow',
+    viewId: 'stakeholders',
     reminderBefore: {
       title: 'Apply Stakeholder Mapping',
       message: 'Use your stakeholder mapping knowledge to identify key stakeholders by their power, interest, and influence on the project.',
