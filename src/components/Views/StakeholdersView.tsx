@@ -186,7 +186,7 @@ const StakeholdersView: React.FC = () => {
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Stakeholder Selection</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl">
-            Select one or more stakeholders for your requirements gathering session. You can conduct individual interviews or group meetings with multiple participants.
+            Select one or more stakeholders for your requirements elicitation session. You can conduct individual interviews or group meetings with multiple participants.
           </p>
         </div>
 
