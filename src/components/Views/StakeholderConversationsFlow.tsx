@@ -45,10 +45,10 @@ const StakeholderConversationsFlow: React.FC = () => {
     {
       number: 2,
       title: 'Conduct Meeting',
-      description: 'Have AI-powered conversations with your selected stakeholders to gather requirements and understand pain points. You can choose your meeting format (voice or transcript) when you start.',
+      description: 'Have AI-powered conversations with your selected stakeholders to gather requirements and understand pain points.',
       icon: '💬',
       estimatedTime: '30-45 min',
-      viewId: 'meeting-mode-selection'
+      viewId: 'voice-meeting-v2'
     }
   ];
 
