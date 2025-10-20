@@ -43,6 +43,7 @@ const ScrumPracticeView = lazy(() => import('../Views/ScrumPracticeView'));
 const ElevenLabsMultiAgentMeeting = lazy(() => import('../Views/ElevenLabsMultiAgentMeeting'));
 const IndividualAgentMeeting = lazy(() => import('../Views/IndividualAgentMeeting'));
 import ProjectView from '../Views/ProjectView';
+import ProjectJourneyView from '../Views/ProjectJourneyView';
 import ProjectBrief from '../Views/ProjectBrief';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
@@ -189,6 +190,8 @@ const MainLayout: React.FC = () => {
         return <PracticeFlowView />;
       case 'project-flow':
         return <ProjectFlowView />;
+      case 'project-journey':
+        return <ProjectJourneyView />;
       case 'core-learning':
         // NEW: Use CoreLearning2View (Overview + Individual Topic Pages)
         // To revert: Replace CoreLearning2View with CoreLearningView
