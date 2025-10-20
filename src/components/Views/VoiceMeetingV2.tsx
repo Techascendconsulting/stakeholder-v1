@@ -714,9 +714,28 @@ Rules:
         top: 0,
         left: '256px',
         right: 0,
-        bottom: 0
+        bottom: 0,
+        border: '5px solid red',
+        zIndex: 9999
       }}
     >
+      {/* DEBUG INFO */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        background: 'yellow',
+        color: 'black',
+        padding: '10px',
+        zIndex: 99999,
+        fontSize: '12px',
+        fontFamily: 'monospace'
+      }}>
+        <div>Container Height: {typeof window !== 'undefined' ? window.innerHeight : 0}px</div>
+        <div>Position: absolute</div>
+        <div>Top: 0 | Bottom: 0</div>
+        <div>Left: 256px | Right: 0</div>
+      </div>
       {/* Header */}
       <div className={`${
         isDark 
