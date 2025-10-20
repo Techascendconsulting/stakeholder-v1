@@ -12,6 +12,11 @@ export interface ProjectJourneyStage {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   order: number;
   viewId: string;
+  reminderBefore?: {
+    title: string;
+    message: string;
+    icon: string;
+  };
 }
 
 export const projectJourneyStages: ProjectJourneyStage[] = [
@@ -43,7 +48,12 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     estimatedTime: '40-60 min',
     difficulty: 'Intermediate',
     order: 3,
-    viewId: 'stakeholders'
+    viewId: 'stakeholders',
+    reminderBefore: {
+      title: 'Apply Stakeholder Mapping',
+      message: 'Use your stakeholder mapping knowledge to identify key stakeholders by their power, interest, and influence on the project.',
+      icon: '🗺️'
+    }
   },
   {
     id: 'stage-4-process-mapping',
@@ -63,7 +73,12 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     estimatedTime: '25-35 min',
     difficulty: 'Advanced',
     order: 5,
-    viewId: 'solution-options'
+    viewId: 'solution-options',
+    reminderBefore: {
+      title: 'Consider Design Thinking',
+      message: 'Apply design thinking principles: empathize with users, ideate multiple solutions, and prototype before committing to one approach.',
+      icon: '🎨'
+    }
   },
   {
     id: 'stage-6-requirements-doc',

@@ -182,7 +182,32 @@ const ProjectJourneyView: React.FC = () => {
               const isLeft = index % 2 === 0;
 
               return (
-                <div key={stage.id} className="relative">
+                <React.Fragment key={stage.id}>
+                  {/* Reminder Banner (if exists) */}
+                  {stage.reminderBefore && (
+                    <div className="relative mb-16">
+                      {/* Centered reminder card */}
+                      <div className="max-w-md mx-auto">
+                        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-teal-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-4 shadow-md">
+                          <div className="flex items-start space-x-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                              {stage.reminderBefore.icon}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-1">
+                                💡 Remember: {stage.reminderBefore.title}
+                              </h4>
+                              <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                                {stage.reminderBefore.message}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="relative">
                   {/* Stage Node */}
                   <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
                     <button
@@ -273,7 +298,8 @@ const ProjectJourneyView: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                  </div>
+                </React.Fragment>
               );
             })}
           </div>
