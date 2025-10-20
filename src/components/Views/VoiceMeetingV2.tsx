@@ -706,15 +706,23 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col flex-1 w-full ${
+      className={`${
         isDark 
           ? 'bg-[#0D0D0D] text-white' 
           : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
       style={{
-        height: '100%',
-        minHeight: '100%',
-        overflow: 'hidden'
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        zIndex: 10
       }}
     >
       {/* Modern Navigation Header */}
