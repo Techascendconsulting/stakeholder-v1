@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global height reset for full-height layouts */
+html, body, #root {
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Joyride tour progress indicator - TOP RIGHT */
 .__floater__body [role="status"] {
   position: absolute !important;

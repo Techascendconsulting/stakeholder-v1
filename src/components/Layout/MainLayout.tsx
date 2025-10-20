@@ -436,7 +436,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className={`flex h-screen w-full bg-gray-50 dark:bg-gray-900 ${isAdmin && currentView === 'admin' ? 'admin-dark-purple' : ''}`}>
+    <div className={`flex flex-row w-full h-full min-h-screen bg-gray-50 dark:bg-gray-900 ${isAdmin && currentView === 'admin' ? 'admin-dark-purple' : ''}`}>
       {/* Debug indicator for admin theme */}
       {isAdmin && currentView === 'admin' && (
         <div className="fixed top-4 right-4 z-50 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -445,10 +445,9 @@ const MainLayout: React.FC = () => {
       )}
       <Sidebar />
       <main
-        className={`flex flex-col flex-1 h-screen bg-gray-50 dark:bg-gray-900 ${
+        className={`flex flex-col flex-1 h-full bg-gray-50 dark:bg-gray-900 ${
           currentView === 'voice-meeting-v2' ? 'overflow-hidden' : 'overflow-auto'
         }`}
-        style={{ minHeight: '100vh' }}
       >
         {/* Global Breadcrumbs - Always visible */}
         <GlobalBreadcrumbs />
