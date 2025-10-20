@@ -43,12 +43,12 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
   {
     id: 'stage-3-stakeholder-conversations',
     title: 'Stakeholder Conversations',
-    description: 'Complete the full meeting workflow: Review brief → Select stage → Choose stakeholders → Pick meeting type → Conduct AI-powered interviews.',
+    description: 'Complete the full meeting workflow: Select project → Review brief → Select stage → Choose stakeholders → Pick meeting type → Conduct AI-powered interviews.',
     icon: '💬',
     estimatedTime: '40-60 min',
     difficulty: 'Intermediate',
     order: 3,
-    viewId: 'project-brief',
+    viewId: 'projects',
     reminderBefore: {
       title: 'Apply Stakeholder Mapping',
       message: 'Use your stakeholder mapping knowledge to identify key stakeholders by their power, interest, and influence on the project.',
