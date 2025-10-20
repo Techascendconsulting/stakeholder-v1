@@ -112,14 +112,22 @@ const ProjectBrief: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Enhanced Header with Breadcrumbs & Back Button */}
         <div className="mb-10">
-          {/* Back Button */}
-          <div className="mb-8">
+          {/* Back Button & Continue Button */}
+          <div className="mb-8 flex items-center justify-between">
             <button
               onClick={() => setCurrentView('projects')}
               className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               <span className="font-medium">Back to Project Selection</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('stage-selection')}
+              className="flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <span>Continue to Stage Selection</span>
+              <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>

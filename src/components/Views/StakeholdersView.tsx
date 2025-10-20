@@ -156,15 +156,31 @@ const StakeholdersView: React.FC = () => {
   return (
     <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center space-x-4 mb-8">
+        {/* Header with Action Buttons */}
+        <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => setCurrentView('project-brief')}
+            onClick={() => setCurrentView('stage-selection')}
             className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Project Brief</span>
+            <span>Back to Stage Selection</span>
           </button>
+          
+          {localSelectedStakeholders.length > 0 && (
+            <button
+              onClick={handleStartGroupMeeting}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center space-x-3 shadow-sm hover:shadow-md"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span>
+                {hasActiveMeeting 
+                  ? 'Continue Meeting' 
+                  : `Start ${localSelectedStakeholders.length === 1 ? 'Interview' : 'Group Meeting'}`
+                }
+              </span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         <div className="mb-10">

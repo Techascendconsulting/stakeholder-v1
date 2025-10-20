@@ -35,6 +35,7 @@ import { ProfileView } from '../Views/ProfileView';
 import AnalysisView from '../Views/AnalysisView';
 import CustomProjectView from '../Views/CustomProjectView';
 import CustomStakeholdersView from '../Views/CustomStakeholdersView';
+import StakeholdersView from '../Views/StakeholdersView';
 import ScrumEssentialsView from '../Views/ScrumEssentialsView';
 import ScrumLearningView from '../Views/ScrumLearningView';
 import { AgileHubView } from '../Views/AgileHubView';
@@ -316,6 +317,8 @@ const MainLayout: React.FC = () => {
         return <ProjectBrief />;
       case 'stage-selection':
         return <StageSelectionView />;
+      case 'stakeholders':
+        return <StakeholdersView />;
       case 'project-setup':
         return selectedProject ? <ProjectView projectId={selectedProject.id} /> : <ProjectsView />;
       case 'meeting-mode-selection':
