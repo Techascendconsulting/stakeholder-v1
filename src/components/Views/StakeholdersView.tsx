@@ -191,57 +191,6 @@ const StakeholdersView: React.FC = () => {
           </p>
         </div>
 
-        {/* Project-Stakeholder Alignment */}
-        {selectedProject.relevantStakeholders && (
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200 dark:border-blue-800 p-6 mb-8">
-            <div className="flex items-start space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Building className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Key Stakeholders for {selectedProject.name}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  These stakeholders have been carefully selected based on their expertise and relevance to this specific project type.
-                  <br />
-                  <strong className="text-red-600">DEBUG: Total stakeholders in system: {stakeholders.length}, Relevant for this project: {selectedProject.relevantStakeholders.length}</strong>
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {selectedProject.relevantStakeholders.map(stakeholderId => {
-                    const stakeholder = stakeholders.find(s => s.id === stakeholderId);
-                    return stakeholder ? (
-                      <div key={stakeholder.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={stakeholder.photo}
-                            alt={stakeholder.name}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {stakeholder.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                              {stakeholder.role}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* DEBUG INFO */}
-        {!selectedProject.relevantStakeholders && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <p className="text-red-800 font-semibold">⚠️ DEBUG: No relevantStakeholders found for this project - showing all stakeholders</p>
-          </div>
-        )}
 
         {/* Selection Summary */}
         {(localSelectedStakeholders.length > 0 || hasActiveMeeting) && (
@@ -282,14 +231,6 @@ const StakeholdersView: React.FC = () => {
         )}
 
         {/* Stakeholders Grid */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-          <p className="text-yellow-800 font-semibold">
-            🔍 DEBUG: Showing {stakeholders.filter(stakeholder => {
-              if (!selectedProject?.relevantStakeholders) return true;
-              return selectedProject.relevantStakeholders.includes(stakeholder.id);
-            }).length} of {stakeholders.length} total stakeholders for project: {selectedProject?.name}
-          </p>
-        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
           {stakeholders
             .filter(stakeholder => {
