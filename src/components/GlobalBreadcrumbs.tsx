@@ -19,6 +19,7 @@ const viewTitleMap: Record<string, string> = {
   'practice-flow': 'Practice Journey',
   'project-flow': 'Project Journey',
   'project-journey': 'Project Journey',
+  'stakeholder-conversations-flow': 'Stakeholder Conversations',
   'dashboard': 'Dashboard',
   'welcome': 'Welcome',
   'login': 'Login',
