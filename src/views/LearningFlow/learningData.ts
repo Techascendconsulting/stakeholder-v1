@@ -4834,10 +4834,10 @@ Use a decision matrix to score and compare options objectively.`
     assignmentDescription: 'Evaluate 3 solution options for a business problem using a decision matrix. Recommend the best option and justify your choice.'
   },
 
-  // MODULE 7: Documentation (User Stories & ACs)
+  // MODULE 8: Requirement Specification (User Stories & ACs)
   {
     id: 'module-8-documentation',
-    title: 'Documentation',
+    title: 'Requirement Specification',
     description: 'Write clear, testable user stories and acceptance criteria',
     icon: '✍️',
     color: 'teal',
