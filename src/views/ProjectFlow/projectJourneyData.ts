@@ -76,14 +76,64 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     viewId: 'agile-scrum'
   },
   {
-    id: 'stage-6-agile-delivery',
-    title: 'Agile Delivery Practice',
-    description: 'Practice Scrum ceremonies, manage backlogs, plan sprints, and experience Agile delivery firsthand.',
-    icon: '⚡',
-    estimatedTime: '40-50 min',
+    id: 'stage-6-refinement',
+    title: 'Refinement',
+    description: 'Conduct backlog refinement sessions to clarify user stories, estimate effort, and prepare for sprint planning.',
+    icon: '🔍',
+    estimatedTime: '30-40 min',
     difficulty: 'Advanced',
     order: 6,
-    viewId: 'scrum-practice'
+    viewId: 'agile-scrum'
+  },
+  {
+    id: 'stage-7-sprint-planning',
+    title: 'Sprint Planning',
+    description: 'Plan your sprint by selecting user stories, defining sprint goals, and committing to deliverables.',
+    icon: '📅',
+    estimatedTime: '40-50 min',
+    difficulty: 'Advanced',
+    order: 7,
+    viewId: 'agile-scrum'
+  },
+  {
+    id: 'stage-8-sprint-review',
+    title: 'Sprint Review',
+    description: 'Demonstrate completed work to stakeholders, gather feedback, and update the product backlog.',
+    icon: '🎯',
+    estimatedTime: '30-40 min',
+    difficulty: 'Advanced',
+    order: 8,
+    viewId: 'agile-scrum'
+  },
+  {
+    id: 'stage-9-sprint-retrospective',
+    title: 'Sprint Retrospective',
+    description: 'Reflect on the sprint process, identify improvements, and create action items for the next sprint.',
+    icon: '🔄',
+    estimatedTime: '25-35 min',
+    difficulty: 'Advanced',
+    order: 9,
+    viewId: 'agile-scrum'
+  },
+  {
+    id: 'stage-10-continuous-delivery',
+    title: 'Continuous Delivery',
+    description: 'Practice continuous delivery workflows, manage releases, and ensure quality throughout the delivery pipeline.',
+    icon: '🚀',
+    estimatedTime: '35-45 min',
+    difficulty: 'Advanced',
+    order: 10,
+    viewId: 'agile-scrum'
+  },
+  {
+    id: 'stage-11-project-challenges',
+    title: 'Project Challenges',
+    description: 'Navigate real-world project challenges, handle stakeholder conflicts, and adapt to changing requirements.',
+    icon: '💪',
+    estimatedTime: '40-50 min',
+    difficulty: 'Advanced',
+    order: 11,
+    viewId: 'agile-scrum'
   }
 ];
 
