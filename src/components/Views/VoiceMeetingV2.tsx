@@ -846,9 +846,9 @@ Rules:
       </div>
 
       {/* Main Content Area */}
-      <div className="px-4 py-6">
-        <div className="max-w-6xl mx-auto w-full">
-          <div className="flex flex-col items-center space-y-4">
+      <div className="flex-1 flex flex-col px-4 py-6 min-h-0">
+        <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
+          <div className="flex-1 flex flex-col items-center justify-center space-y-4">
             
             {/* Compact Status Area - Prevents Layout Shift */}
             <div className="w-full max-w-3xl" style={{ minHeight: '50px' }}>
