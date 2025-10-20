@@ -714,11 +714,11 @@ Rules:
       style={{
         position: 'fixed',
         left: 'var(--sidebar-w)',
-        top: 'calc(var(--header-h) + var(--crumbs-h))',
+        top: 0,
         right: 0,
         bottom: 0,
-        height: 'calc(100dvh - var(--header-h) - var(--crumbs-h))',
-        minHeight: 'calc(100dvh - var(--header-h) - var(--crumbs-h))',
+        height: '100dvh',
+        minHeight: '100dvh',
         zIndex: 900
       }}
     >
