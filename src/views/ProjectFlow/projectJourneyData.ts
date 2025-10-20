@@ -36,63 +36,53 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     viewId: 'project-brief'
   },
   {
-    id: 'stage-3-stakeholder-initiation',
-    title: 'Initiation & Stakeholders',
-    description: 'Learn about the project, identify key stakeholders, and prepare for stakeholder meetings.',
-    icon: '👥',
-    estimatedTime: '20-30 min',
-    difficulty: 'Intermediate',
-    order: 3,
-    viewId: 'project-initiation'
-  },
-  {
-    id: 'stage-4-stakeholder-conversations',
+    id: 'stage-3-stakeholder-conversations',
     title: 'Stakeholder Conversations',
     description: 'Complete the full meeting workflow: Select stakeholders → Choose meeting type → Conduct AI-powered interviews to gather requirements and understand pain points.',
     icon: '💬',
     estimatedTime: '40-60 min',
     difficulty: 'Intermediate',
-    order: 4,
+    order: 3,
     viewId: 'stakeholders'
   },
   {
-    id: 'stage-5-process-mapping',
+    id: 'stage-4-process-mapping',
     title: 'Process Mapping',
     description: 'Map out the current (As-Is) business process and design the improved (To-Be) process flow.',
     icon: '🔄',
     estimatedTime: '30-40 min',
     difficulty: 'Intermediate',
-    order: 5,
+    order: 4,
     viewId: 'process-mapper'
   },
   {
-    id: 'stage-6-solution-options',
+    id: 'stage-5-solution-options',
     title: 'Solution Options',
     description: 'Analyze different solution approaches, evaluate trade-offs, and recommend the best path forward.',
     icon: '💡',
     estimatedTime: '25-35 min',
     difficulty: 'Advanced',
-    order: 6,
+    order: 5,
     viewId: 'solution-options'
   },
   {
-    id: 'stage-7-requirements-doc',
+    id: 'stage-6-requirements-doc',
     title: 'Requirements Documentation',
     description: 'Create user stories, acceptance criteria, and professional BA documentation for your solution.',
     icon: '📝',
     estimatedTime: '45-60 min',
     difficulty: 'Advanced',
-    order: 7,
+    order: 6,
     viewId: 'documentation-practice'
   },
   {
-    id: 'stage-8-agile-delivery',
+    id: 'stage-7-agile-delivery',
     title: 'Agile Delivery Practice',
     description: 'Practice Scrum ceremonies, manage backlogs, plan sprints, and experience Agile delivery firsthand.',
     icon: '⚡',
     estimatedTime: '40-50 min',
     difficulty: 'Advanced',
-    order: 8,
+    order: 7,
     viewId: 'scrum-practice'
   }
 ];
