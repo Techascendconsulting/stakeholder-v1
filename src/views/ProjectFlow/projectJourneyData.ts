@@ -46,73 +46,53 @@ export const projectJourneyStages: ProjectJourneyStage[] = [
     viewId: 'project-initiation'
   },
   {
-    id: 'stage-4-select-stakeholders',
-    title: 'Select Stakeholders',
-    description: 'Choose which stakeholders to interview based on their roles and relevance to the project.',
-    icon: '👥',
-    estimatedTime: '5-10 min',
+    id: 'stage-4-stakeholder-conversations',
+    title: 'Stakeholder Conversations',
+    description: 'Complete the full meeting workflow: Select stakeholders → Choose meeting type → Conduct AI-powered interviews to gather requirements and understand pain points.',
+    icon: '💬',
+    estimatedTime: '40-60 min',
     difficulty: 'Intermediate',
     order: 4,
     viewId: 'stakeholders'
   },
   {
-    id: 'stage-5-meeting-setup',
-    title: 'Meeting Setup',
-    description: 'Choose your meeting type (voice or transcript) and prepare for stakeholder conversations.',
-    icon: '⚙️',
-    estimatedTime: '5 min',
-    difficulty: 'Intermediate',
-    order: 5,
-    viewId: 'meeting-mode-selection'
-  },
-  {
-    id: 'stage-6-conduct-meeting',
-    title: 'Conduct Meeting',
-    description: 'Have AI-powered conversations with stakeholders to gather requirements, understand pain points, and validate assumptions.',
-    icon: '💬',
-    estimatedTime: '30-45 min',
-    difficulty: 'Intermediate',
-    order: 6,
-    viewId: 'voice-meeting-v2'
-  },
-  {
-    id: 'stage-7-process-mapping',
+    id: 'stage-5-process-mapping',
     title: 'Process Mapping',
     description: 'Map out the current (As-Is) business process and design the improved (To-Be) process flow.',
     icon: '🔄',
     estimatedTime: '30-40 min',
     difficulty: 'Intermediate',
-    order: 7,
+    order: 5,
     viewId: 'process-mapper'
   },
   {
-    id: 'stage-8-solution-options',
+    id: 'stage-6-solution-options',
     title: 'Solution Options',
     description: 'Analyze different solution approaches, evaluate trade-offs, and recommend the best path forward.',
     icon: '💡',
     estimatedTime: '25-35 min',
     difficulty: 'Advanced',
-    order: 8,
+    order: 6,
     viewId: 'solution-options'
   },
   {
-    id: 'stage-9-requirements-doc',
+    id: 'stage-7-requirements-doc',
     title: 'Requirements Documentation',
     description: 'Create user stories, acceptance criteria, and professional BA documentation for your solution.',
     icon: '📝',
     estimatedTime: '45-60 min',
     difficulty: 'Advanced',
-    order: 9,
+    order: 7,
     viewId: 'documentation-practice'
   },
   {
-    id: 'stage-10-agile-delivery',
+    id: 'stage-8-agile-delivery',
     title: 'Agile Delivery Practice',
     description: 'Practice Scrum ceremonies, manage backlogs, plan sprints, and experience Agile delivery firsthand.',
     icon: '⚡',
     estimatedTime: '40-50 min',
     difficulty: 'Advanced',
-    order: 10,
+    order: 8,
     viewId: 'scrum-practice'
   }
 ];
