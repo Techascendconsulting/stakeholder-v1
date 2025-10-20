@@ -84,26 +84,8 @@ const ProjectJourneyView: React.FC = () => {
       return 'in_progress';
     }
 
-    // For existing users: all unlocked
-    if (userType === 'existing') {
-      return 'not_started';
-    }
-
-    // For new users: check if locked
-    if (stage.order === 1) {
-      return 'not_started'; // First stage always unlocked
-    }
-
-    // Check if previous stage is completed
-    const previousStage = projectJourneyStages.find(s => s.order === stage.order - 1);
-    if (previousStage) {
-      const prevProgress = progress[previousStage.id];
-      if (prevProgress?.status === 'completed') {
-        return 'not_started'; // Unlocked
-      }
-    }
-
-    return 'locked';
+    // All stages are always available for selection
+    return 'not_started';
   };
 
   if (loading) {
@@ -173,10 +155,9 @@ const ProjectJourneyView: React.FC = () => {
           <div className="space-y-16">
             {projectJourneyStages.map((stage, index) => {
               const status = getStageStatus(stage);
-              const isLocked = status === 'locked';
               const isCompleted = status === 'completed';
               const isInProgress = status === 'in_progress';
-              const isClickable = !isLocked || userType === 'existing'; // Existing users can click all
+              const isClickable = true; // All stages are always clickable
 
               // Alternate left and right
               const isLeft = index % 2 === 0;
@@ -211,16 +192,13 @@ const ProjectJourneyView: React.FC = () => {
                   {/* Stage Node */}
                   <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
                     <button
-                      onClick={() => isClickable && handleStageClick(stage)}
-                      disabled={isLocked && userType === 'new'}
+                      onClick={() => handleStageClick(stage)}
                       className={`
                         w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
-                        transition-all duration-300 transform hover:scale-110
+                        transition-all duration-300 transform hover:scale-110 cursor-pointer
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
                         ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 shadow-lg border-4 border-green-500' : ''}
-                        ${isLocked ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 shadow-lg border-4 border-gray-300 dark:border-gray-600 cursor-not-allowed' : ''}
-                        ${!isLocked && !isCompleted && !isInProgress ? 'cursor-pointer' : ''}
                       `}
                     >
                       {isCompleted ? (
@@ -229,9 +207,6 @@ const ProjectJourneyView: React.FC = () => {
                         <span>{stage.order}</span>
                       )}
                     </button>
-                    {isLocked && (
-                      <Lock className="w-4 h-4 absolute -top-1 -right-1 text-gray-500 bg-white dark:bg-gray-800 rounded-full p-0.5" />
-                    )}
                   </div>
 
                   {/* Stage Card */}
@@ -242,8 +217,8 @@ const ProjectJourneyView: React.FC = () => {
                         border-2 transition-all duration-300
                         ${isCompleted ? 'border-green-500' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
-                        ${status === 'not_started' || isLocked ? 'border-green-500' : ''}
-                        ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
+                        ${status === 'not_started' ? 'border-green-500' : ''}
+                        hover:shadow-2xl hover:scale-105 cursor-pointer
                       `}
                       onClick={() => isClickable && handleStageClick(stage)}
                     >
@@ -253,9 +228,9 @@ const ProjectJourneyView: React.FC = () => {
                           px-3 py-1 rounded-full text-xs font-semibold
                           ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                          ${status === 'not_started' || isLocked ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
+                          ${status === 'not_started' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                         `}>
-                          {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Ready to Start'}
+                          {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : 'Ready to Start'}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {stage.difficulty}
@@ -277,24 +252,22 @@ const ProjectJourneyView: React.FC = () => {
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           ⏱️ {stage.estimatedTime}
                         </span>
-                        {!isLocked && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleStageClick(stage);
-                            }}
-                            className={`
-                              flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
-                              transition-all duration-200
-                              ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
-                              ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                              ${status === 'not_started' ? 'bg-green-600 text-white hover:bg-green-700' : ''}
-                            `}
-                          >
-                            <Play className="w-4 h-4" />
-                            <span>{isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start Stage'}</span>
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStageClick(stage);
+                          }}
+                          className={`
+                            flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
+                            transition-all duration-200
+                            ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
+                            ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
+                            ${status === 'not_started' ? 'bg-green-600 text-white hover:bg-green-700' : ''}
+                          `}
+                        >
+                          <Play className="w-4 h-4" />
+                          <span>{isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start Stage'}</span>
+                        </button>
                       </div>
                     </div>
                   </div>

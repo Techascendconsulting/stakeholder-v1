@@ -44,19 +44,11 @@ const StakeholderConversationsFlow: React.FC = () => {
     },
     {
       number: 2,
-      title: 'Choose Meeting Type',
-      description: 'Select your preferred meeting format: Voice-powered conversation or Transcript-based interview.',
-      icon: '⚙️',
-      estimatedTime: '2-5 min',
-      viewId: 'meeting-mode-selection'
-    },
-    {
-      number: 3,
       title: 'Conduct Meeting',
-      description: 'Have AI-powered conversations with your selected stakeholders to gather requirements and understand pain points.',
+      description: 'Have AI-powered conversations with your selected stakeholders to gather requirements and understand pain points. You can choose your meeting format (voice or transcript) when you start.',
       icon: '💬',
       estimatedTime: '30-45 min',
-      viewId: 'voice-meeting-v2'
+      viewId: 'meeting-mode-selection'
     }
   ];
 
