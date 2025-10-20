@@ -5,8 +5,8 @@
 /* CSS Variables for layout calculations */
 :root {
   --header-h: 0px;      /* no fixed header */
-  --crumbs-h: 48px;     /* breadcrumbs height */
-  --sidebar-w: 280px;   /* sidebar width */
+  --crumbs-h: 0px;      /* breadcrumbs hidden on voice meeting */
+  --sidebar-w: 256px;   /* sidebar width (w-64 = 16rem = 256px) */
 }
 
 /* Global height reset for full-height layouts */
