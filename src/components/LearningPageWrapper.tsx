@@ -115,26 +115,28 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
         <div className="max-w-4xl mx-auto px-6 pb-12">
           <MarkCompleteButton moduleId={moduleId} moduleTitle={moduleTitle} />
           
-          {/* Optional assignment section for existing users */}
-          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                📝 Optional: Test Your Knowledge
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Want to validate your learning? Submit an assignment for feedback!
-              </p>
+          {/* Optional assignment section - SKIP for Requirements Specification (uses BA Framework) */}
+          {moduleId !== 'module-8-documentation' && (
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  📝 Optional: Test Your Knowledge
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Want to validate your learning? Submit an assignment for feedback!
+                </p>
+              </div>
+              <AssignmentPlaceholder
+                moduleId={moduleId}
+                moduleTitle={moduleTitle}
+                title={assignmentTitle}
+                description={assignmentDescription}
+                isCompleted={moduleProgress?.assignment_completed || false}
+                canAccess={true}
+                onComplete={handleCompleteAssignment}
+              />
             </div>
-            <AssignmentPlaceholder
-              moduleId={moduleId}
-              moduleTitle={moduleTitle}
-              title={assignmentTitle}
-              description={assignmentDescription}
-              isCompleted={moduleProgress?.assignment_completed || false}
-              canAccess={true}
-              onComplete={handleCompleteAssignment}
-            />
-          </div>
+          )}
         </div>
       )}
     </div>
