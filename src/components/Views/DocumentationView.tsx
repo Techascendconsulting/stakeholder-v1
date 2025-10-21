@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { ArrowLeft } from 'lucide-react';
 import TeachingLayer from '../training/TeachingLayer';
-import WalkthroughSelector from '../training/WalkthroughSelector';
+import BAThinkingWalkthrough from '../training/BAThinkingWalkthrough';
 import { StakeholderBotProvider } from '../../context/StakeholderBotContext';
 
 interface DocumentationViewProps {
@@ -53,7 +53,7 @@ const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }
           {/* Compact Content */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm bg-white dark:bg-gray-800">
             {activeTab === "teaching" && <TeachingLayer onStartPractice={() => setActiveTab("walkthrough")} />}
-            {activeTab === "walkthrough" && <WalkthroughSelector onStartPractice={() => {}} onBack={() => setActiveTab("teaching")} />}
+            {activeTab === "walkthrough" && <BAThinkingWalkthrough onComplete={() => {}} onBack={() => setActiveTab("teaching")} />}
           </div>
         </div>
       </StakeholderBotProvider>
@@ -96,7 +96,7 @@ const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
           {activeTab === "teaching" && <TeachingLayer onStartPractice={() => setActiveTab("walkthrough")} />}
-          {activeTab === "walkthrough" && <WalkthroughSelector onStartPractice={() => {}} onBack={() => setActiveTab("teaching")} />}
+          {activeTab === "walkthrough" && <BAThinkingWalkthrough onComplete={() => {}} onBack={() => setActiveTab("teaching")} />}
         </div>
       </div>
     </StakeholderBotProvider>
