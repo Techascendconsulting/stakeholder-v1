@@ -65,6 +65,8 @@ const AdminUserManagement: React.FC = () => {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showResetDeviceModal, setShowResetDeviceModal] = useState(false);
   const [selectedUserForAction, setSelectedUserForAction] = useState<{ id: string; email: string } | null>(null);
+  const [deviceComparison, setDeviceComparison] = useState<any>(null);
+  const [verifyingDevice, setVerifyingDevice] = useState(false);
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -233,22 +235,29 @@ const AdminUserManagement: React.FC = () => {
   const handleUnlockUser = async (userId: string, email: string) => {
     setSelectedUserForAction({ id: userId, email });
     setShowUnlockModal(true);
+    setVerifyingDevice(true);
+    
+    // Get device comparison data
+    const comparison = await deviceLockService.compareDevicesForAdmin(userId);
+    setDeviceComparison(comparison);
+    setVerifyingDevice(false);
   };
 
-  const confirmUnlockUser = async () => {
+  const confirmUnlockUser = async (resetDevice: boolean) => {
     if (!selectedUserForAction) return;
 
     try {
       setLoading(true);
       
-      // Unlock account AND clear device binding so user can login from any device
-      // Otherwise they'll just get locked again when they try to login
+      const updateData: any = { locked: false };
+      
+      if (resetDevice) {
+        updateData.registered_device = null; // Clear device for device change
+      }
+      
       const { error } = await supabase
         .from('user_profiles')
-        .update({ 
-          locked: false,
-          registered_device: null  // CRITICAL: Clear device so they can login
-        })
+        .update(updateData)
         .eq('user_id', selectedUserForAction.id);
 
       if (error) {
@@ -263,7 +272,11 @@ const AdminUserManagement: React.FC = () => {
           user?.id || '',
           'unlock_account',
           selectedUserForAction.id,
-          { email: selectedUserForAction.email, action: 'account_unlocked_and_device_reset' }
+          { 
+            email: selectedUserForAction.email, 
+            action: resetDevice ? 'account_unlocked_and_device_reset' : 'account_unlocked_same_device',
+            device_reset: resetDevice
+          }
         );
         console.log('✅ Activity logged successfully');
       } catch (logError) {
@@ -274,6 +287,7 @@ const AdminUserManagement: React.FC = () => {
       loadUsers();
       setShowUnlockModal(false);
       setSelectedUserForAction(null);
+      setDeviceComparison(null);
     } catch (error) {
       console.error('Error unlocking account:', error);
     } finally {
@@ -1131,13 +1145,13 @@ const AdminUserManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Unlock Account Modal */}
+      {/* Unlock Account Modal with Device Verification */}
       {showUnlockModal && selectedUserForAction && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Unlock className="w-5 h-5 mr-2 text-green-600" />
-              Unlock Account
+              Unlock Account - Device Verification
             </h3>
             
             <div className="space-y-4 mb-6">
@@ -1146,37 +1160,115 @@ const AdminUserManagement: React.FC = () => {
                 <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
               </div>
               
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
-                <p className="text-sm text-green-900 dark:text-green-100 font-medium mb-2">What happens:</p>
-                <ul className="text-sm text-green-800 dark:text-green-200 space-y-1 ml-4">
-                  <li>• Account will be unlocked</li>
-                  <li>• Device binding will be cleared</li>
-                  <li>• User can login from ANY device</li>
-                  <li>• First device they login with becomes new registered device</li>
-                  <li>• This resolves the lock completely</li>
-                </ul>
-              </div>
+              {/* Device Verification Results */}
+              {verifyingDevice ? (
+                <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Verifying device...</p>
+                </div>
+              ) : deviceComparison ? (
+                <>
+                  {/* System Recommendation */}
+                  <div className={`p-4 rounded-lg border ${
+                    deviceComparison.recommendation === 'unlock_only' 
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'
+                      : deviceComparison.recommendation === 'reset_device'
+                      ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700'
+                      : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'
+                  }`}>
+                    <p className="text-sm font-bold mb-2 flex items-center">
+                      <Shield className="w-4 h-4 mr-2" />
+                      System Recommendation:
+                    </p>
+                    {deviceComparison.recommendation === 'unlock_only' && (
+                      <p className="text-sm text-green-800 dark:text-green-200">
+                        <strong>Same Device Detected ({deviceComparison.similarity}% match)</strong> - User likely using different browser. Safe to unlock without device reset.
+                      </p>
+                    )}
+                    {deviceComparison.recommendation === 'reset_device' && (
+                      <p className="text-sm text-orange-800 dark:text-orange-200">
+                        <strong>Different Device Detected ({deviceComparison.similarity}% match)</strong> - Possible device change or account sharing. Verify before resetting.
+                      </p>
+                    )}
+                    {deviceComparison.recommendation === 'unknown' && (
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        <strong>Uncertain ({deviceComparison.similarity}% match)</strong> - Manual verification recommended.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Device Details */}
+                  {deviceComparison.deviceInfo && (
+                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">Detected Device Info:</p>
+                      <div className="grid grid-cols-3 gap-3 text-xs">
+                        <div>
+                          <p className="text-gray-600 dark:text-gray-400">Platform:</p>
+                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.platform}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 dark:text-gray-400">CPU Cores:</p>
+                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.cores}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 dark:text-gray-400">GPU:</p>
+                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.gpu}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warning about device changes */}
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                    <p className="text-sm text-red-900 dark:text-red-100 font-medium mb-2">Device Change Policy:</p>
+                    <ul className="text-xs text-red-800 dark:text-red-200 space-y-1">
+                      <li>• Device changes should be RARE (new laptop, lost device, etc.)</li>
+                      <li>• Frequent device changes (>2 per year) indicate account sharing</li>
+                      <li>• User will be warned this is a ONE-TIME courtesy</li>
+                      <li>• Future violations may result in permanent termination</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Unable to verify device</p>
+                </div>
+              )}
             </div>
             
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-between items-center">
               <button
                 onClick={() => {
                   setShowUnlockModal(false);
                   setSelectedUserForAction(null);
+                  setDeviceComparison(null);
                 }}
                 className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                 disabled={loading}
               >
                 Cancel
               </button>
-              <button
-                onClick={confirmUnlockUser}
-                disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
-              >
-                <Unlock className="w-4 h-4" />
-                <span>{loading ? 'Unlocking...' : 'Unlock Account'}</span>
-              </button>
+              <div className="flex space-x-3">
+                {/* Unlock without device reset (same device) */}
+                <button
+                  onClick={() => confirmUnlockUser(false)}
+                  disabled={loading || verifyingDevice}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  <Unlock className="w-4 h-4" />
+                  <span>{loading ? 'Unlocking...' : 'Unlock (Same Device)'}</span>
+                </button>
+                
+                {/* Unlock with device reset (device change) */}
+                <button
+                  onClick={() => confirmUnlockUser(true)}
+                  disabled={loading || verifyingDevice}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  <EyeOff className="w-4 h-4" />
+                  <span>{loading ? 'Unlocking...' : 'Unlock + Reset Device'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

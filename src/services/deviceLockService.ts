@@ -466,6 +466,95 @@ class DeviceLockService {
       return null;
     }
   }
+
+  /**
+   * Compare current device with registered device for admin verification
+   * Returns detailed device information for admin decision-making
+   */
+  async compareDevicesForAdmin(userId: string): Promise<{
+    isSameDevice: boolean;
+    similarity: number;
+    registeredDevice: string | null;
+    deviceInfo: {
+      platform: string;
+      cores: string;
+      gpu: string;
+    } | null;
+    recommendation: 'unlock_only' | 'reset_device' | 'unknown';
+  }> {
+    try {
+      // Get registered device from database
+      const { data: user, error } = await supabase
+        .from('user_profiles')
+        .select('registered_device')
+        .eq('user_id', userId)
+        .single();
+
+      if (error || !user?.registered_device) {
+        return {
+          isSameDevice: false,
+          similarity: 0,
+          registeredDevice: null,
+          deviceInfo: null,
+          recommendation: 'reset_device'
+        };
+      }
+
+      // Get current device fingerprint
+      const currentDeviceId = await this.getDeviceId();
+      if (!currentDeviceId) {
+        return {
+          isSameDevice: false,
+          similarity: 0,
+          registeredDevice: user.registered_device,
+          deviceInfo: null,
+          recommendation: 'unknown'
+        };
+      }
+
+      // Check if same device
+      const isSame = this.isSameCoreDevice(user.registered_device, currentDeviceId);
+      const similarity = this.calculateDeviceSimilarity(user.registered_device, currentDeviceId);
+
+      // Get device info from FingerprintJS for display
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const components = result.components;
+
+      const deviceInfo = {
+        platform: components.platform?.value || 'Unknown',
+        cores: components.hardwareConcurrency?.value?.toString() || 'Unknown',
+        gpu: components.vendor?.value || 'Unknown'
+      };
+
+      // Recommendation based on similarity
+      let recommendation: 'unlock_only' | 'reset_device' | 'unknown';
+      if (similarity > 0.9) {
+        recommendation = 'unlock_only'; // Very likely same device, different browser
+      } else if (similarity > 0.5) {
+        recommendation = 'unknown'; // Uncertain - admin should decide
+      } else {
+        recommendation = 'reset_device'; // Definitely different device
+      }
+
+      return {
+        isSameDevice: isSame,
+        similarity: Math.round(similarity * 100),
+        registeredDevice: user.registered_device,
+        deviceInfo,
+        recommendation
+      };
+    } catch (error) {
+      console.error('Error comparing devices:', error);
+      return {
+        isSameDevice: false,
+        similarity: 0,
+        registeredDevice: null,
+        deviceInfo: null,
+        recommendation: 'unknown'
+      };
+    }
+  }
 }
 
 // Export singleton instance
