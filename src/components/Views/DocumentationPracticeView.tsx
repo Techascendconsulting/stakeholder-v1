@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { ArrowLeft, ArrowRight, FileText, Sparkles, Zap, Award, Target } from 'lucide-react';
-import PracticeAndCoachingLayer from '../training/PracticeAndCoachingLayer';
+import BAFrameworkPractice from '../training/BAFrameworkPractice';
 import AdvancedLayer from '../training/AdvancedLayer';
 import { StakeholderBotProvider } from '../../context/StakeholderBotContext';
 
@@ -133,7 +133,7 @@ const DocumentationPracticeView: React.FC = () => {
         {/* Content Area */}
         <div className="max-w-7xl mx-auto px-6 pb-8">
           <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-800 overflow-hidden">
-            {activeTab === "practice" && <PracticeAndCoachingLayer onSwitchToAdvanced={switchToAdvancedTab} />}
+            {activeTab === "practice" && <BAFrameworkPractice onComplete={switchToAdvancedTab} />}
             {activeTab === "advanced" && <AdvancedLayer />}
           </div>
         </div>
