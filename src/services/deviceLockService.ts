@@ -48,29 +48,35 @@ class DeviceLockService {
       
       // Build stable device ID from CORE hardware components only
       // These components should remain the same across different browsers on the same device
+      // ONLY use the most stable components - exclude vendorFlavors as it can change
       const coreHardwareComponents = [
-        components.platform?.value || '',           // OS platform (Windows/Mac/Linux) - STABLE
-        components.hardwareConcurrency?.value || '', // CPU cores - STABLE
-        components.vendor?.value || '',              // GPU vendor - STABLE
-        components.vendorFlavors?.value || ''        // Additional vendor info - STABLE
+        components.platform?.value?.toString() || '',           // OS platform (Windows/Mac/Linux) - STABLE
+        components.hardwareConcurrency?.value?.toString() || '', // CPU cores - STABLE
+        components.vendor?.value?.toString() || ''               // GPU vendor - STABLE
       ].filter(Boolean);
       
       // REMOVED: screenResolution, timezone, languages - these change too frequently
+      // REMOVED: vendorFlavors - can change with GPU driver updates or browser updates
       // These components can change when:
       // - Connecting external monitors (screenResolution)
       // - Traveling or daylight saving (timezone) 
       // - Changing browser language settings (languages)
+      // - GPU driver updates (vendorFlavors)
       
       // Create hash of CORE hardware components only
       const hardwareString = coreHardwareComponents.join('|');
       const stableId = await this.simpleHash(hardwareString);
       
-      console.log('🔐 DEVICE LOCK - Generated CORE hardware-based device ID:', stableId);
-      console.log('🔐 DEVICE LOCK - CORE Hardware components (stable across browsers):', {
+      console.log('🔐 DEVICE LOCK - Generated ULTRA-STABLE device ID:', stableId);
+      console.log('🔐 DEVICE LOCK - Hardware string used:', hardwareString);
+      console.log('🔐 DEVICE LOCK - CORE Hardware components (ultra-stable):', {
         platform: components.platform?.value,
         cores: components.hardwareConcurrency?.value,
-        gpu_vendor: components.vendor?.value,
-        gpu_flavors: components.vendorFlavors?.value
+        gpu_vendor: components.vendor?.value
+      });
+      console.log('🔐 DEVICE LOCK - Excluded for stability:', {
+        gpu_flavors: components.vendorFlavors?.value,
+        reason: 'Can change with driver/browser updates'
       });
       
       return stableId;
