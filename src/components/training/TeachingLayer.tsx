@@ -120,7 +120,7 @@ Epics are the "parent" containers that hold multiple user stories. Each epic rep
 
 **The Epic-Story-AC Hierarchy:**
 
-```
+\`\`\`
 Epic: Customer Account Management
 ├── Story: As a customer, I want to register for an account so I can access personalized features
 │   └── AC: Registration form validation, email confirmation, account activation
@@ -128,7 +128,7 @@ Epic: Customer Account Management
 │   └── AC: Username/password validation, security measures, session management
 └── Story: As a customer, I want to update my profile so I can keep my information current
     └── AC: Profile editing, data validation, change confirmation
-```
+\`\`\`
 
 This hierarchy makes it easy to understand how individual stories contribute to larger business capabilities, making your requirements documentation more strategic and easier to manage.`,
     icon: <Star className="w-6 h-6" />,
