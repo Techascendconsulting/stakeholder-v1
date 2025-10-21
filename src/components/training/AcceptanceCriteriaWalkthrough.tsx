@@ -110,6 +110,17 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
     return ((currentRule + 1) / rules.length) * 100;
   };
 
+  const getUserStoryForScenario = () => {
+    if (scenarioId === 'childcare-voucher') {
+      return 'As a parent applying for childcare vouchers, I want to save my application progress midway, so that I don\'t have to start over if I need to gather documents or take a break.';
+    } else if (scenarioId === 'student-homework') {
+      return 'As a Year 11 student uploading homework, I want to see clear error messages when my file upload fails, so that I know exactly what went wrong and can fix it before the deadline.';
+    } else if (scenarioId === 'shopping-checkout') {
+      return 'As a tenant paying rent online, I want instant confirmation that my payment went through, so that I know my rent is paid and I can see my payment history clearly.';
+    }
+    return 'As a user, I want to complete this action, so that I can achieve my goal.';
+  };
+
   return (
     <div className="content-root min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
       <div className="container mx-auto px-4 py-8">
@@ -163,6 +174,29 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
               className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${getProgressPercentage()}%` }}
             />
+          </div>
+        </div>
+
+        {/* User Story Context */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 rounded-lg p-5">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2 flex items-center">
+                  <Target className="w-4 h-4 mr-1" />
+                  User Story for this Walkthrough:
+                </h3>
+                <p className="text-sm text-blue-800 dark:text-blue-100 italic leading-relaxed">
+                  "{getUserStoryForScenario()}"
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+                  You're writing acceptance criteria to define when this story is "done"
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
