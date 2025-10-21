@@ -4,9 +4,10 @@ import { X, Mail, Shield, ArrowRight, Copy, CheckCircle, GraduationCap } from 'l
 interface RequestAccessModalProps {
   onClose: () => void;
   onBackToHome?: () => void;
+  onSignIn?: () => void;
 }
 
-const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBackToHome }) => {
+const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBackToHome, onSignIn }) => {
   const [copied, setCopied] = React.useState(false);
   const email = 'hello@baworkxp.com';
   
@@ -137,20 +138,40 @@ const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBack
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-3">
-            <a
-              href={`mailto:${email}?subject=Access%20Request%20-%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AInterest: (Individual / Training Platform Partnership)%0D%0AOrganization (if applicable):%0D%0AHow I heard about you:%0D%0A%0D%0AThank you!`}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <Mail className="w-5 h-5" />
-              <span>Open Email Client</span>
-            </a>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
-            >
-              Close
-            </button>
+          <div className="space-y-3">
+            <div className="flex space-x-3">
+              <a
+                href={`mailto:${email}?subject=Access%20Request%20-%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AInterest: (Individual / Training Platform Partnership)%0D%0AOrganization (if applicable):%0D%0AHow I heard about you:%0D%0A%0D%0AThank you!`}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Mail className="w-5 h-5" />
+                <span>Open Email Client</span>
+              </a>
+              <button
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+              >
+                Close
+              </button>
+            </div>
+            
+            {/* Sign In Option */}
+            {onSignIn && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="text-center mb-3">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Already have an account?
+                  </p>
+                </div>
+                <button
+                  onClick={onSignIn}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                  <span>Sign In</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Response Time */}

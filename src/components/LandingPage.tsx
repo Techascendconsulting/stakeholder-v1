@@ -127,7 +127,14 @@ const LandingPage: React.FC = () => {
   }
   
   if (showRequestAccess) {
-    return <RequestAccessModal onClose={() => setShowRequestAccess(false)} onBackToHome={() => setShowRequestAccess(false)} />
+    return <RequestAccessModal 
+      onClose={() => setShowRequestAccess(false)} 
+      onBackToHome={() => setShowRequestAccess(false)}
+      onSignIn={() => {
+        setShowRequestAccess(false);
+        setShowAuth(true);
+      }}
+    />
   }
 
   // Updated features to match actual app with detailed modal content
