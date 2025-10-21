@@ -3,6 +3,10 @@ import { CheckCircle, ArrowRight, Target, Lightbulb, AlertCircle, Home, ChevronR
 import { RULES, RULE_ORDER, RuleKey } from '../../config/rules';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { ENABLE_AI_FEEDBACK } from '../../config/app';
+import { localValidation } from '../../utils/localValidation';
+import { checkResponseWithAI } from '../../services/aiFeedbackService';
+import FeedbackPanel from './FeedbackPanel';
 
 interface BAThinkingWalkthroughProps {
   onComplete: () => void;
@@ -18,50 +22,20 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
   const [selectedOption, setSelectedOption] = useState<'A' | 'B' | 'C' | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [applyText, setApplyText] = useState('');
-  const [reflectionChoice, setReflectionChoice] = useState<'yes' | 'no' | 'not-sure' | null>(null);
+  const [reflectionChoice, setReflectionChoice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [localHint, setLocalHint] = useState<string | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [exampleAnswer, setExampleAnswer] = useState<string | null>(null);
 
   const currentRuleKey = RULE_ORDER[currentRuleIndex] as RuleKey;
   const currentRule = RULES[currentRuleKey];
   const isLastRule = currentRuleIndex === RULE_ORDER.length - 1;
   const progress = ((currentRuleIndex + 1) / RULE_ORDER.length) * 100;
 
-  // Auto-save apply response
-  useEffect(() => {
-    if (phase === 'apply' && applyText.trim() && user) {
-      const timeoutId = setTimeout(() => {
-        saveResponse();
-      }, 2000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [applyText, phase, user]);
-
-  const saveResponse = async () => {
-    if (!user || !applyText.trim()) return;
-
-    try {
-      setSaving(true);
-      const { error } = await supabase
-        .from('story_responses')
-        .upsert({
-          user_id: user.id,
-          rule_name: currentRuleKey,
-          response_text: applyText,
-          reflection_choice: reflectionChoice,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,rule_name',
-        });
-
-      if (error) {
-        console.error('Error saving response:', error);
-      }
-    } catch (error) {
-      console.error('Failed to save response:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleLearnSelect = (option: 'A' | 'B' | 'C') => {
     setSelectedOption(option);
@@ -75,14 +49,54 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
     }
   };
 
-  const handleNextFromApply = async () => {
+  const handleSubmitApply = async () => {
     if (!applyText.trim()) {
-      alert('Please write your answer before continuing.');
+      alert('Please write your answer before submitting.');
       return;
     }
 
-    // Save final response
-    await saveResponse();
+    setSubmitted(true);
+    setLocalHint(null);
+    setAiFeedback(null);
+    setExampleAnswer(null);
+
+    // Step 1: Local validation (instant)
+    const localResult = localValidation(currentRule.name, applyText);
+    
+    if (!localResult.ok) {
+      setLocalHint(localResult.hint || 'Please review your answer.');
+    }
+
+    // Step 2: AI feedback (if enabled)
+    if (ENABLE_AI_FEEDBACK) {
+      setLoadingAI(true);
+      try {
+        const aiResult = await checkResponseWithAI(
+          currentRule.name,
+          currentRule.learn.referenceStory,
+          applyText
+        );
+        setAiFeedback(aiResult.feedback);
+        setAiScore(aiResult.score);
+      } catch (error) {
+        console.error('AI feedback error:', error);
+      } finally {
+        setLoadingAI(false);
+      }
+    }
+
+    // Step 3: Show example answer
+    setExampleAnswer(currentRule.apply.exampleAnswer);
+  };
+
+  const handleNextFromApply = async () => {
+    if (!reflectionChoice) {
+      alert('Please select how close your answer was to the example.');
+      return;
+    }
+
+    // Save final response with all data
+    await saveResponseFinal();
 
     if (isLastRule) {
       // Show capstone
@@ -95,6 +109,40 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
       setShowFeedback(false);
       setApplyText('');
       setReflectionChoice(null);
+      setSubmitted(false);
+      setLocalHint(null);
+      setAiFeedback(null);
+      setExampleAnswer(null);
+      setAiScore(null);
+    }
+  };
+
+  const saveResponseFinal = async () => {
+    if (!user || !applyText.trim()) return;
+
+    try {
+      setSaving(true);
+      const { error } = await supabase
+        .from('story_responses')
+        .upsert({
+          user_id: user.id,
+          rule_name: currentRuleKey,
+          response_text: applyText,
+          reflection_choice: reflectionChoice,
+          score: aiScore,
+          ai_feedback: aiFeedback,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,rule_name',
+        });
+
+      if (error) {
+        console.error('Error saving response:', error);
+      }
+    } catch (error) {
+      console.error('Failed to save response:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -340,67 +388,57 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
                   value={applyText}
                   onChange={(e) => setApplyText(e.target.value)}
                   placeholder="Type your answer here..."
-                  className="w-full min-h-[120px] px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                  disabled={submitted}
+                  className="w-full min-h-[120px] px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none disabled:opacity-60 disabled:cursor-not-allowed"
                   rows={4}
                 />
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {saving ? '💾 Saving...' : applyText.trim() ? '✓ Auto-saved' : 'Start typing to auto-save'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {applyText.length} characters
                   </p>
                 </div>
+
+                {/* Submit Button */}
+                {!submitted && applyText.trim() && (
+                  <div className="mt-4">
+                    <button
+                      onClick={handleSubmitApply}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg font-semibold"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      <span>Check My Answer</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Reflection Question */}
-              {applyText.trim() && (
-                <div className="p-6 bg-purple-50 dark:bg-purple-900/20 border-t border-purple-200 dark:border-purple-800">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Quick Reflection: Does your answer focus on what the user can do?
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {[
-                      { value: 'yes', label: '✅ Yes', color: 'green' },
-                      { value: 'no', label: '❌ No', color: 'red' },
-                      { value: 'not-sure', label: '🤔 Not sure', color: 'yellow' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setReflectionChoice(option.value as any)}
-                        className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                          reflectionChoice === option.value
-                            ? `border-${option.color}-500 bg-${option.color}-50 dark:bg-${option.color}-900/20 text-${option.color}-800 dark:text-${option.color}-200`
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-purple-300 dark:hover:border-purple-600'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+              {/* Feedback Panel */}
+              {submitted && (
+                <div className="px-6 pb-6">
+                  <FeedbackPanel
+                    localHint={localHint || undefined}
+                    aiFeedback={aiFeedback || undefined}
+                    exampleAnswer={exampleAnswer || undefined}
+                    loading={loadingAI}
+                    onReflectionSelect={setReflectionChoice}
+                    onNext={handleNextFromApply}
+                  />
                 </div>
               )}
 
-              {/* Navigation */}
-              <div className="p-6 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={handlePrevious}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  >
-                    Previous
-                  </button>
-
-                  <button
-                    onClick={handleNextFromApply}
-                    disabled={!applyText.trim()}
-                    className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 shadow-lg"
-                  >
-                    <span>{isLastRule ? 'Complete Framework' : 'Next Rule'}</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+              {/* Navigation (only Previous button when not submitted) */}
+              {!submitted && (
+                <div className="p-6 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-start">
+                    <button
+                      onClick={handlePrevious}
+                      className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                      Previous
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}

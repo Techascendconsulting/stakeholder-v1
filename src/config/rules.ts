@@ -20,6 +20,7 @@ export interface RuleLearn {
 export interface RuleApply {
   scenario: string;
   prompt: string;
+  exampleAnswer: string;
 }
 
 export interface Rule {
@@ -53,6 +54,7 @@ export const RULES: Record<string, Rule> = {
         "As a tenant officer, I want to record when a tenant moves out so I can trigger the inspection.",
       prompt:
         "In one sentence, write the user goal. Start with 'The user can…' or 'The user should be able to…'",
+      exampleAnswer: "The user can record tenant move-out dates to automatically trigger property inspections.",
     },
   },
 
@@ -78,6 +80,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a maintenance officer, I want an inspection to start once a void property is marked 'ready'.",
       prompt: "Describe the condition that triggers the action.",
+      exampleAnswer: "When a void property's status is changed to 'ready', the inspection workflow is automatically triggered.",
     },
   },
 
@@ -103,6 +106,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a HR assistant, I want to add a new employee and submit their details for review.",
       prompt: "Write the main success flow in short, clear steps.",
+      exampleAnswer: "User enters employee details → clicks Submit → system validates data → confirmation appears: 'Employee added successfully. Pending review' → employee appears in pending list.",
     },
   },
 
@@ -129,6 +133,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a manager, I can approve requests in bulk instead of individually.",
       prompt: "Describe a valid alternate path that still completes successfully.",
+      exampleAnswer: "The user can select multiple requests and click 'Approve Selected' to approve them all at once, instead of approving each one individually.",
     },
   },
 
@@ -155,6 +160,7 @@ export const RULES: Record<string, Rule> = {
         "As a finance officer, I can't approve expenses above ₦500,000 without director review.",
       prompt:
         "Write one validation or business rule clearly and concisely (no system phrasing).",
+      exampleAnswer: "Expenses above ₦500,000 require director approval before they can be processed.",
     },
   },
 
@@ -181,6 +187,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a compliance officer, I should be able to edit only compliance forms I created.",
       prompt: "Define who can or can't perform this action.",
+      exampleAnswer: "Only compliance officers can edit compliance forms, and they can only edit forms they personally created.",
     },
   },
 
@@ -206,6 +213,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a tenant, I want to see a 'Saved successfully' notice after updating my contact info.",
       prompt: "Describe what the user sees or experiences on success.",
+      exampleAnswer: "The user sees a green checkmark with the message 'Contact information saved successfully' at the top of the page.",
     },
   },
 
@@ -231,6 +239,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a user, if payment fails, I should see a retry option with reason for failure.",
       prompt: "Describe what happens when something goes wrong.",
+      exampleAnswer: "The user sees a red error message: 'Payment failed. Card declined.' with a 'Try Again' button to retry the payment.",
     },
   },
 
@@ -256,6 +265,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a student, I want to see a friendly message if I haven't submitted assignments yet.",
       prompt: "Describe what should appear before any data exists.",
+      exampleAnswer: "The page displays: 'No assignments submitted yet. Your submitted work will appear here once you upload your first assignment.'",
     },
   },
 
@@ -282,6 +292,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a user, I want to undo a comment immediately after posting it.",
       prompt: "Describe how users can safely reverse or cancel their action.",
+      exampleAnswer: "The user can click 'Undo' within 30 seconds of posting to remove the comment and return it to the draft state.",
     },
   },
 };

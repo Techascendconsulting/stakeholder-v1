@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS story_responses (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   rule_name TEXT NOT NULL,
   response_text TEXT NOT NULL,
-  reflection_choice TEXT, -- 'yes', 'no', 'not-sure'
+  reflection_choice TEXT, -- 'Very close', 'Somewhat', 'Not close'
+  score INTEGER, -- AI score 1-5
+  ai_feedback TEXT, -- AI coaching feedback
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
