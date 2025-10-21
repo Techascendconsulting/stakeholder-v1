@@ -47,6 +47,7 @@ import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
 import RequestAccessModal from './RequestAccessModal'
+import { getFormattedMemberCount } from '../utils/memberCounter'
 
 const LandingPage: React.FC = () => {
   const { user } = useAuth()
@@ -56,6 +57,7 @@ const LandingPage: React.FC = () => {
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
+  const [memberCount, setMemberCount] = useState(getFormattedMemberCount())
 
   useEffect(() => {
     setIsVisible(true)
@@ -483,7 +485,7 @@ const LandingPage: React.FC = () => {
             <div className={`text-center lg:text-left transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-full text-sm font-medium mb-8 animate-bounce shadow-lg">
                 <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                Join 2,847+ Successful Business Analysts
+                Join {memberCount} Successful Business Analysts
               </div>
             
               <h1 className="text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
