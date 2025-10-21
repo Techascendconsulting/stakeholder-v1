@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle, ArrowRight, RotateCcw, FileText, User, Target, Lightbulb, AlertCircle } from "lucide-react";
+import { CheckCircle, ArrowRight, RotateCcw, FileText, User, Target, Lightbulb, AlertCircle, ChevronRight, Home } from "lucide-react";
 import { getEpicSelectionScenario } from "../../data/epicSelectionSteps";
 
 interface UserStoryWalkthroughProps {
@@ -409,6 +409,26 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
   if (currentStep >= steps.length) {
     return (
       <div className="max-w-3xl mx-auto p-6">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+          <button
+            onClick={onBack}
+            className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <Home className="w-4 h-4 mr-1" />
+            Requirements Specification
+          </button>
+          <ChevronRight className="w-4 h-4" />
+          <button
+            onClick={onBack}
+            className="hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            Training Pods
+          </button>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-gray-900 dark:text-white font-medium">User Story Walkthrough</span>
+        </nav>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4 shadow-lg">
@@ -530,6 +550,26 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
   
   return (
     <div className="max-w-3xl mx-auto p-6">
+      {/* Breadcrumbs */}
+      <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <Home className="w-4 h-4 mr-1" />
+          Requirements Specification
+        </button>
+        <ChevronRight className="w-4 h-4" />
+        <button
+          onClick={onBack}
+          className="hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          Training Pods
+        </button>
+        <ChevronRight className="w-4 h-4" />
+        <span className="text-gray-900 dark:text-white font-medium">User Story Walkthrough</span>
+      </nav>
+
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-4 shadow-lg">

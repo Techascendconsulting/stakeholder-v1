@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle, ArrowRight, RotateCcw, FileText, Eye, Target, AlertCircle, Lightbulb, Users, Zap, Award, Bell } from "lucide-react";
+import { CheckCircle, ArrowRight, RotateCcw, FileText, Eye, Target, AlertCircle, Lightbulb, Users, Zap, Award, Bell, ChevronRight, Home } from "lucide-react";
 import { WalkthroughContent } from "../../content/userStoryWalkthrough";
 
 interface AcceptanceCriteriaWalkthroughProps {
@@ -113,6 +113,26 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
   return (
     <div className="content-root min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-4xl mx-auto">
+          <button
+            onClick={onBack}
+            className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <Home className="w-4 h-4 mr-1" />
+            Requirements Specification
+          </button>
+          <ChevronRight className="w-4 h-4" />
+          <button
+            onClick={onBack}
+            className="hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            Training Pods
+          </button>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-gray-900 dark:text-white font-medium">Acceptance Criteria Walkthrough</span>
+        </nav>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
