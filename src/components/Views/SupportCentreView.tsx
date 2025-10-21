@@ -2747,7 +2747,7 @@ Create a portfolio with:
                 pageTitle="Help"
               />
               <a
-                href="mailto:hello@baworkxp.com"
+                href="mailto:support@baworkxp.com"
                 className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center space-x-2"
               >
                 <Mail className="w-5 h-5" />

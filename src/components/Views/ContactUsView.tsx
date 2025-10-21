@@ -284,8 +284,8 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-1">Email Us</h4>
-                      <a href="mailto:hello@baworkxp.com" className="text-purple-600 hover:text-purple-700 transition-colors">
-                        hello@baworkxp.com
+                      <a href="mailto:support@baworkxp.com" className="text-purple-600 hover:text-purple-700 transition-colors">
+                        support@baworkxp.com
                       </a>
                       <p className="text-sm text-gray-500 mt-1">We'll respond within 24 hours</p>
                     </div>

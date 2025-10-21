@@ -199,11 +199,11 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
             </p>
             
             <a 
-              href="mailto:hello@baworkxp.com?subject=Account%20Blocked%20-%20Review%20Request"
+              href="mailto:support@baworkxp.com?subject=Account%20Blocked%20-%20Review%20Request"
               className="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center px-6 py-3 rounded-lg font-semibold transition-colors mb-3"
             >
               <Mail className="w-4 h-4 inline mr-2" />
-              Email hello@baworkxp.com
+              Email support@baworkxp.com
             </a>
             
             <button
@@ -270,8 +270,8 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                 </p>
                 <p className="text-sm text-purple-700 dark:text-purple-300 mt-2">
                   Request access: {' '}
-                  <a href="mailto:hello@baworkxp.com" className="font-semibold underline hover:text-purple-900 dark:hover:text-purple-100">
-                    hello@baworkxp.com
+                  <a href="mailto:support@baworkxp.com" className="font-semibold underline hover:text-purple-900 dark:hover:text-purple-100">
+                    support@baworkxp.com
                   </a>
                 </p>
               </div>
@@ -387,7 +387,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                   BA WorkXP is currently invite-only for individuals and training platforms.
                 </p>
                 <a
-                  href="mailto:hello@baworkxp.com?subject=Access%20Request%20for%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AOrganization:%0D%0AReferral/How I heard about you:%0D%0A%0D%0AThank you!"
+                  href="mailto:support@baworkxp.com?subject=Access%20Request%20for%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AOrganization:%0D%0AReferral/How I heard about you:%0D%0A%0D%0AThank you!"
                   className="inline-flex items-center space-x-2 text-sm text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold hover:underline"
                 >
                   <Mail className="w-4 h-4" />
@@ -409,11 +409,11 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                 Request access for yourself or explore partnership opportunities for your organization:
               </p>
               <a
-                href="mailto:hello@baworkxp.com?subject=Partnership%20Inquiry%20-%20BA%20WorkXP"
+                href="mailto:support@baworkxp.com?subject=Partnership%20Inquiry%20-%20BA%20WorkXP"
                 className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all"
               >
                 <Mail className="w-5 h-5" />
-                <span>Email hello@baworkxp.com</span>
+                <span>Email support@baworkxp.com</span>
               </a>
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-sm text-gray-500 dark:text-gray-500 mb-2">Already have an account?</p>

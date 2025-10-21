@@ -198,7 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           )
           
           return {
-            error: new Error(`Account blocked. ${userProfile.block_reason || 'Contact hello@baworkxp.com for assistance.'}`)
+            error: new Error(`Account blocked. ${userProfile.block_reason || 'Contact support@baworkxp.com for assistance.'}`)
           }
         }
         
@@ -492,7 +492,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             // Sign out
             await supabase.auth.signOut();
-            alert('Your account has been blocked. Contact hello@baworkxp.com if you believe this is an error.');
+            alert('Your account has been blocked. Contact support@baworkxp.com if you believe this is an error.');
             return;
           }
           

@@ -49,10 +49,10 @@ const DeviceLockAlert: React.FC<DeviceLockAlertProps> = ({
                 <p className="text-sm text-red-700 dark:text-red-300">
                   Contact support at{' '}
                   <a 
-                    href="mailto:hello@baworkxp.com" 
+                    href="mailto:support@baworkxp.com" 
                     className="underline hover:no-underline"
                   >
-                    hello@baworkxp.com
+                    support@baworkxp.com
                   </a>{' '}
                   to unlock your account.
                 </p>

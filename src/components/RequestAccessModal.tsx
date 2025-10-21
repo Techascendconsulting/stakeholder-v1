@@ -9,7 +9,7 @@ interface RequestAccessModalProps {
 
 const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBackToHome, onSignIn }) => {
   const [copied, setCopied] = React.useState(false);
-  const email = 'hello@baworkxp.com';
+  const email = 'support@baworkxp.com';
   
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(email);

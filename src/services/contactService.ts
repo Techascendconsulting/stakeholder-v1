@@ -15,7 +15,7 @@ export interface ContactSubmission {
 }
 
 // Hidden email configuration
-const NOTIFICATION_EMAIL = 'hello@baworkxp.com';
+const NOTIFICATION_EMAIL = 'support@baworkxp.com';
 
 /**
  * Submit a contact form and send notification email

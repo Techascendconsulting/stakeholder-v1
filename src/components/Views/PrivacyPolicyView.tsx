@@ -133,7 +133,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = ({ onBack }) => {
               <p className="ml-5">• Sharing your testimonials, success stories, or case studies in our marketing materials (with your name or anonymized);</p>
               <p className="ml-5">• Processing sensitive personal data if inadvertently provided by you;</p>
               <p className="ml-5">• Any other processing where explicit consent is required by applicable law.</p>
-              <p className="ml-4 mt-1">You may withdraw your consent at any time by contacting privacy@baworkxp.com or adjusting your account settings. Withdrawal of consent does not affect the lawfulness of processing based on consent before withdrawal.</p>
+              <p className="ml-4 mt-1">You may withdraw your consent at any time by contacting support@baworkxp.com or adjusting your account settings. Withdrawal of consent does not affect the lawfulness of processing based on consent before withdrawal.</p>
               
               <p className="mt-2"><strong>(d) Legal Obligations:</strong> To comply with legal and regulatory requirements, including:</p>
               <p className="ml-5">• Complying with court orders, subpoenas, legal processes, and law enforcement requests;</p>
@@ -226,7 +226,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = ({ onBack }) => {
               <p className="ml-3">(h) <strong>User-Generated Content:</strong> Your deliverables, portfolio items, and User-Generated Content are retained for as long as your account is active. After account closure, such content is retained for ninety (90) days to allow for recovery in case of accidental deletion, after which it is permanently deleted unless longer retention is required by law or contract.</p>
               <p className="ml-3">(i) <strong>Anonymized Data:</strong> Data that has been fully anonymized and cannot be used to identify you is not Personal Data and may be retained indefinitely for research, analytics, AI training, and other legitimate business purposes.</p>
               <p>7.3 <strong>Deletion Process:</strong> When the applicable retention period expires, we securely delete or anonymize your Personal Data in accordance with industry standards. Deletion includes removing data from active databases, backup systems, archives, and disaster recovery systems. Due to technical limitations of backup systems, complete deletion may take up to ninety (90) days. Anonymized data that cannot be used to identify you is not deleted and may be retained for statistical purposes.</p>
-              <p>7.4 <strong>User-Initiated Deletion:</strong> You may request deletion of your Personal Data at any time by submitting a request to privacy@baworkxp.com (see Section 11 for your data protection rights). We will process your deletion request within thirty (30) days, subject to our right to retain data as required by law, for legitimate business purposes (such as fraud prevention, resolving disputes, or enforcing our agreements), or as described in Section 7.2 above.</p>
+              <p>7.4 <strong>User-Initiated Deletion:</strong> You may request deletion of your Personal Data at any time by submitting a request to support@baworkxp.com (see Section 11 for your data protection rights). We will process your deletion request within thirty (30) days, subject to our right to retain data as required by law, for legitimate business purposes (such as fraud prevention, resolving disputes, or enforcing our agreements), or as described in Section 7.2 above.</p>
             </div>
           </section>
 
@@ -245,7 +245,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = ({ onBack }) => {
               <p className="ml-3">(h) <strong>Incident Response:</strong> We maintain an incident response plan to detect, respond to, and recover from security incidents. In the event of a data breach that poses a risk to your rights and freedoms, we will notify you and relevant supervisory authorities as required by applicable law.</p>
               <p className="ml-3">(i) <strong>Physical Security:</strong> Our data centers employ physical security measures including 24/7 surveillance, access control systems, environmental controls, and redundant power and network infrastructure.</p>
               <p className="ml-3">(j) <strong>Backup and Disaster Recovery:</strong> We maintain regular backups of Personal Data and have disaster recovery and business continuity plans to ensure data availability and resilience.</p>
-              <p>8.2 <strong>No Absolute Security:</strong> Despite our security measures, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security of your Personal Data. You acknowledge and accept the inherent risks of internet-based data transmission and storage. If you have reason to believe that your account security has been compromised, you must immediately notify us at security@baworkxp.com and change your password.</p>
+              <p>8.2 <strong>No Absolute Security:</strong> Despite our security measures, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security of your Personal Data. You acknowledge and accept the inherent risks of internet-based data transmission and storage. If you have reason to believe that your account security has been compromised, you must immediately notify us at support@baworkxp.com and change your password.</p>
               <p>8.3 <strong>Your Responsibility:</strong> You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to immediately notify us of any unauthorized use of your account or any other breach of security.</p>
             </div>
           </section>
@@ -253,7 +253,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = ({ onBack }) => {
           {/* Continue with remaining sections... */}
           <div className="bg-gray-50 p-3 mt-6 text-center border border-gray-200">
             <p className="text-[9px] text-gray-600">
-              [Privacy Policy continues with additional sections including: Cookies and Tracking Technologies; Marketing Communications; Surveys and Research; Children's Privacy; Your Data Protection Rights (GDPR); California Privacy Rights (CCPA); Other Jurisdictional Rights; Changes to Privacy Policy; Contact Information and Complaints; and Acceptance of Policy. Complete document spans 25+ pages. For full version, contact privacy@baworkxp.com]
+              [Privacy Policy continues with additional sections including: Cookies and Tracking Technologies; Marketing Communications; Surveys and Research; Children's Privacy; Your Data Protection Rights (GDPR); California Privacy Rights (CCPA); Other Jurisdictional Rights; Changes to Privacy Policy; Contact Information and Complaints; and Acceptance of Policy. Complete document spans 25+ pages. For full version, contact support@baworkxp.com]
             </p>
           </div>
 
@@ -269,11 +269,11 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = ({ onBack }) => {
           <section className="bg-gray-50 p-3 mt-4 border border-gray-200">
             <p className="font-bold text-[10px] mb-1">DATA CONTROLLER CONTACT INFORMATION</p>
             <p className="text-[9px]"><strong>BA Work XP Limited</strong></p>
-            <p className="text-[9px]">Data Protection Officer (DPO): privacy@baworkxp.com</p>
-            <p className="text-[9px]">Email: privacy@baworkxp.com | security@baworkxp.com</p>
+            <p className="text-[9px]">Data Protection Officer (DPO): support@baworkxp.com</p>
+            <p className="text-[9px]">Email: support@baworkxp.com</p>
             <p className="text-[9px]">Address: United Kingdom (full address provided upon request)</p>
             <p className="text-[9px] mt-2 text-gray-600"><strong>UK ICO Registration:</strong> [Registration Number Available Upon Request]</p>
-            <p className="text-[9px] mt-1 text-gray-600">For data protection inquiries, complaints, or to exercise your rights, contact privacy@baworkxp.com. We will respond within 30 days as required by law.</p>
+            <p className="text-[9px] mt-1 text-gray-600">For data protection inquiries, complaints, or to exercise your rights, contact support@baworkxp.com. We will respond within 30 days as required by law.</p>
           </section>
 
         </div>
