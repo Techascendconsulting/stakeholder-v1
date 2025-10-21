@@ -1223,7 +1223,7 @@ const AdminUserManagement: React.FC = () => {
                     <p className="text-sm text-red-900 dark:text-red-100 font-medium mb-2">Device Change Policy:</p>
                     <ul className="text-xs text-red-800 dark:text-red-200 space-y-1">
                       <li>• Device changes should be RARE (new laptop, lost device, etc.)</li>
-                      <li>• Frequent device changes (>2 per year) indicate account sharing</li>
+                      <li>• Frequent device changes (&gt;2 per year) indicate account sharing</li>
                       <li>• User will be warned this is a ONE-TIME courtesy</li>
                       <li>• Future violations may result in permanent termination</li>
                     </ul>
