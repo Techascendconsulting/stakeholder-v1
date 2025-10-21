@@ -25,36 +25,86 @@ interface Rule {
 }
 
 const getRulesForScenario = (scenarioId?: string): Rule[] => {
-  // Use the new walkthrough content
-  return WalkthroughContent.acWalkthrough.map((rule, index) => ({
-    id: index + 1,
-    title: rule.rule,
-    description: rule.why,
-    icon: <Target className="w-6 h-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    scenario: `Rule ${index + 1} of 8: ${rule.rule}`,
-    options: [
-      {
-        value: "A",
-        text: rule.badExample,
-        correct: false,
-        explanation: "This is a bad example - it violates the rule"
-      },
-      {
-        value: "B", 
-        text: rule.goodExamples[0],
-        correct: true,
-        explanation: "This is a good example - it follows the rule"
-      },
-      {
-        value: "C",
-        text: rule.goodExamples[1] || "Another good example",
-        correct: true,
-        explanation: "This is also a good example"
-      }
-    ]
-  }));
+  // Use the new walkthrough content with detailed, teaching-focused explanations
+  return WalkthroughContent.acWalkthrough.map((rule, index) => {
+    let badExplanation = "";
+    let goodExplanation1 = "";
+    let goodExplanation2 = "";
+
+    // Detailed explanations for each rule
+    switch(index) {
+      case 0: // One expectation per AC
+        badExplanation = "This combines THREE separate expectations (auto-save, resume, and no errors) into one AC. If testing fails, you won't know which part broke. Each expectation should be its own AC so it can be tested independently.";
+        goodExplanation1 = "Perfect! This AC tests ONE thing: auto-save triggers and shows confirmation. It's specific, testable, and if it fails, you know exactly what broke.";
+        goodExplanation2 = "Excellent! This AC focuses on ONE behavior: resuming at the last saved step. It's clear, testable, and separate from the auto-save trigger.";
+        break;
+      case 1: // Make it observable and measurable
+        badExplanation = "'Quickly' is subjective and vague. What's quick to one person might be slow to another. How do testers verify this? Without an observable action or specific measurement, this AC is untestable.";
+        goodExplanation1 = "Perfect! This AC is observable - the tester can SEE the confirmation message. It's measurable - either the message appears or it doesn't. No subjectivity, clear pass/fail.";
+        goodExplanation2 = "Great! This provides an observable outcome that anyone can verify. The confirmation is either there or it isn't - no room for interpretation.";
+        break;
+      case 2: // State preconditions and postconditions
+        badExplanation = "This is too vague. Resume from where? What progress? Starting from what state? Without the precondition (Given), testers can't reproduce the scenario reliably. Always state the starting condition.";
+        goodExplanation1 = "Excellent! This follows Given-When-Then: GIVEN (previously saved Step 3) sets the starting state, WHEN (I return) is the action, THEN (land on Step 3 with prefilled fields) is the expected result. Fully reproducible!";
+        goodExplanation2 = "Perfect! The Given clause establishes the precondition, making this AC reproducible. Any tester can set up the same starting state and verify the outcome.";
+        break;
+      case 3: // Cover unhappy and edge paths
+        badExplanation = "This only covers the happy path. What about when upload FAILS? Most bugs hide in error cases. Real users will try unsupported files, oversized files, no internet connection, etc. ACs must cover these.";
+        goodExplanation1 = "Perfect! This covers an unhappy path: unsupported file type. It specifies the error message AND the system behavior (do not upload). This is where most real-world bugs are caught.";
+        goodExplanation2 = "Excellent! This covers an edge case: file too large. It defines the limit (10 MB), the error message, and the expected behavior. Prevents system crashes and poor UX.";
+        break;
+      case 4: // Avoid UI/implementation details
+        badExplanation = "This describes HOW the UI looks (green button, top right position) instead of WHAT behavior happens. If designers change the button color or position, this AC becomes outdated. Focus on behavior, not UI specifics.";
+        goodExplanation1 = "Perfect! This describes the BEHAVIOR (auto-save after inactivity, visible confirmation) without dictating UI specifics. Designers have freedom to implement it beautifully while still meeting the requirement.";
+        goodExplanation2 = "Great! Focuses on the outcome and behavior, not the specific UI implementation. This gives the team flexibility while ensuring the user gets the value.";
+        break;
+      case 5: // Include data rules and limits
+        badExplanation = "No limits specified! This opens security risks (users could upload gigabytes), performance issues (system crashes), and UX problems (users wait forever). Always define boundaries for data inputs.";
+        goodExplanation1 = "Perfect! This sets a clear boundary (10 MB max) and defines what happens when violated (rejection + error). Prevents system abuse, crashes, and unclear UX. Testable and secure.";
+        goodExplanation2 = "Excellent! Defines allowed formats explicitly. QA can test with .exe, .zip, .mp4 files and verify they're rejected. Prevents security issues and bad UX.";
+        break;
+      case 6: // Cover validation and business rules
+        badExplanation = "Accepting ANY date value is dangerous. Users could enter future dates for birthdate, dates from year 1, or invalid formats. Business rules must be explicitly stated in ACs to ensure proper validation.";
+        goodExplanation1 = "Perfect! This AC defines a clear business rule: date of birth cannot be in the future. It's logical, testable, and prevents nonsensical data. QA knows exactly what to validate.";
+        goodExplanation2 = "Excellent! This captures a business rule with a conditional: expense must not exceed limit UNLESS justification is provided. Clear logic for testers and developers.";
+        break;
+      case 7: // Trace to the user and value
+        badExplanation = "This describes a technical change (database index) without explaining the user benefit. ACs should focus on what the USER experiences and values, not backend implementation. Developers need to know WHY, not just WHAT.";
+        goodExplanation1 = "Perfect! This AC describes the outcome from the USER's perspective: filter by priority, see matching tickets, see total count. The user gets value. The technical implementation is flexible.";
+        goodExplanation2 = "Excellent! Describes what the user can do and what value they get, without mentioning technical details. Keeps focus on user outcomes.";
+        break;
+    }
+
+    return {
+      id: index + 1,
+      title: rule.rule,
+      description: rule.why,
+      icon: <Target className="w-6 h-6" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      scenario: `Rule ${index + 1} of 8: ${rule.rule}`,
+      options: [
+        {
+          value: "A",
+          text: rule.badExample,
+          correct: false,
+          explanation: badExplanation
+        },
+        {
+          value: "B", 
+          text: rule.goodExamples[0],
+          correct: true,
+          explanation: goodExplanation1
+        },
+        {
+          value: "C",
+          text: rule.goodExamples[1] || "Another good example",
+          correct: true,
+          explanation: goodExplanation2
+        }
+      ]
+    };
+  });
 };
 
 export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack, scenarioId }: AcceptanceCriteriaWalkthroughProps) {
