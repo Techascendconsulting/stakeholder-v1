@@ -140,14 +140,14 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
                   onClick={() => handleSelectWalkthrough(pod.id, 'user-story')}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
                 >
-                  Start US Walkthrough
+                  Start User Story Walkthrough
                 </button>
 
                 <button
                   onClick={() => handleSelectWalkthrough(pod.id, 'acceptance-criteria')}
                   className="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
                 >
-                  Start AC Walkthrough
+                  Start Acceptance Criteria Walkthrough
                 </button>
               </div>
             </div>
@@ -168,6 +168,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
     </div>
   );
 }
+
 
 
 
