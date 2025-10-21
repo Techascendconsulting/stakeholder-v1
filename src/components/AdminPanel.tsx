@@ -16,7 +16,12 @@ import {
   Mail,
   Bell,
   Shield,
-  XCircle
+  XCircle,
+  Inbox,
+  Lock,
+  AlertTriangle,
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 import { useAdmin } from '../contexts/AdminContext';
 import { useApp } from '../contexts/AppContext';
@@ -46,7 +51,7 @@ const AdminPanel: React.FC = () => {
   const { isAdmin, hasPermission } = useAdmin();
   const { setCurrentView } = useApp();
   console.log('🔧 ADMIN PANEL: Current view from context:', setCurrentView);
-  const [activeTab, setActiveTab] = useState<'users' | 'content' | 'settings' | 'communication' | 'data'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'content' | 'settings' | 'communication' | 'data' | 'support'>('users');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -70,6 +75,13 @@ const AdminPanel: React.FC = () => {
     message: '',
     targetAudience: 'all',
     duration: 7
+  });
+
+  // Support Inbox State
+  const [supportStats, setSupportStats] = useState({
+    lockedAccounts: 0,
+    deviceChangeRequests: 0,
+    recentActivity: [] as any[]
   });
 
   useEffect(() => {
@@ -283,6 +295,7 @@ const AdminPanel: React.FC = () => {
 
   const tabs = [
     { id: 'users', label: 'User Management', icon: Users, permission: 'user_management' },
+    { id: 'support', label: 'Support Inbox', icon: Inbox, permission: 'user_management' },
     { id: 'content', label: 'Content Management', icon: BookOpen, permission: 'admin_management' },
     { id: 'settings', label: 'System Settings', icon: Settings, permission: 'system_settings' },
     { id: 'communication', label: 'Communication', icon: MessageSquare, permission: 'admin_management' },

@@ -110,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   // Admin-specific menu items
   const adminMenuItems: MenuItem[] = [
     { 
-      id: 'dashboard', 
+      id: 'admin', 
       label: 'Admin Dashboard', 
       icon: LayoutDashboard
     },

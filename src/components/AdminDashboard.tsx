@@ -276,53 +276,65 @@ const AdminDashboard: React.FC = () => {
 
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* User Growth */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
+              {/* User Growth - Clickable */}
+              <button
+                onClick={() => setActiveTab('users')}
+                className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left w-full"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Users</p>
                     <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{systemStats.totalUsers}</p>
-                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">All registered users</p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Click to manage users</p>
                   </div>
                   <Users className="h-12 w-12 text-blue-500 dark:text-blue-400 opacity-80" />
                 </div>
-              </div>
+              </button>
 
-              {/* Active Users */}
-              <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-lg border border-green-200 dark:border-green-700">
+              {/* Active Users - Clickable */}
+              <button
+                onClick={() => setActiveTab('user-activity')}
+                className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left w-full"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-green-600 dark:text-green-400">Active Users (7d)</p>
                     <p className="text-3xl font-bold text-green-900 dark:text-green-100">{systemStats.activeSessions}</p>
-                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">{Math.round((systemStats.activeSessions / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">Click to view activity</p>
                   </div>
                   <CheckCircle className="h-12 w-12 text-green-500 dark:text-green-400 opacity-80" />
                 </div>
-              </div>
+              </button>
 
-              {/* Locked Accounts */}
-              <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-lg border border-red-200 dark:border-red-700">
+              {/* Locked Accounts - Clickable */}
+              <button
+                onClick={() => setActiveTab('users')}
+                className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-lg border border-red-200 dark:border-red-700 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left w-full"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-red-600 dark:text-red-400">Locked Accounts</p>
                     <p className="text-3xl font-bold text-red-900 dark:text-red-100">{systemStats.lockedAccounts}</p>
-                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">{Math.round((systemStats.lockedAccounts / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</p>
+                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">Click to unlock accounts</p>
                   </div>
                   <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 opacity-80" />
                 </div>
-              </div>
+              </button>
 
-              {/* Admin Users */}
-              <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700">
+              {/* Admin Users - Clickable */}
+              <button
+                onClick={() => setActiveTab('users')}
+                className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left w-full"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Admin Users</p>
                     <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{systemStats.adminUsers}</p>
-                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Super, Senior, Regular</p>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Click to manage admins</p>
                   </div>
                   <Shield className="h-12 w-12 text-purple-500 dark:text-purple-400 opacity-80" />
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* System Status & Recent Activity */}
