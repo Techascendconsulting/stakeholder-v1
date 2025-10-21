@@ -19,6 +19,7 @@ import { adminService, UserAdminRole, AdminActivityLog } from '../services/admin
 import { deviceLockService } from '../services/deviceLockService';
 import { supabase } from '../lib/supabase';
 import { userActivityService, RecentActivityLog } from '../services/userActivityService';
+import { adminAnalyticsService } from '../services/adminAnalyticsService';
 import AdminUserManagement from './AdminUserManagement';
 
 const AdminDashboard: React.FC = () => {
@@ -40,11 +41,29 @@ const AdminDashboard: React.FC = () => {
     adminUsers: 0
   });
 
+  const [analyticsData, setAnalyticsData] = useState({
+    totalMeetings: 0,
+    completedMeetings: 0,
+    totalDeliverables: 0,
+    avgMeetingDuration: 0,
+    subscriptionBreakdown: { free: 0, premium: 0, enterprise: 0 },
+    revenueMetrics: { total: 0, monthly: 0 },
+    moduleCompletions: 0,
+    practiceCompletions: 0
+  });
+
   useEffect(() => {
     if (isAdmin) {
       loadAdminData();
     }
   }, [isAdmin]);
+
+  // Load analytics data when analytics tab is active
+  useEffect(() => {
+    if (activeTab === 'analytics' && hasPermission('analytics')) {
+      loadAnalyticsData();
+    }
+  }, [activeTab]);
 
   // Refresh activity logs when switching to activity tabs
   useEffect(() => {
@@ -99,6 +118,22 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      console.log('📊 Loading real analytics data from database...');
+      
+      const analytics = await adminAnalyticsService.getAnalyticsData();
+      setAnalyticsData(analytics);
+      
+      console.log('✅ Analytics data loaded:', analytics);
+    } catch (error) {
+      console.error('❌ Error loading analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadSystemStats = async () => {
     try {
       // Get all users with their details
@@ -144,8 +179,83 @@ const AdminDashboard: React.FC = () => {
         activeSessions,
         adminUsers
       });
+
+      // Load analytics data
+      await loadAnalyticsData();
     } catch (error) {
       console.error('Error loading system stats:', error);
+    }
+  };
+
+  const loadAnalyticsData = async () => {
+    try {
+      // Get real meeting data
+      const { data: meetings, error: meetingsError } = await supabase
+        .from('user_meetings')
+        .select('*');
+
+      // Get deliverables data
+      const { data: deliverables, error: deliverablesError } = await supabase
+        .from('user_deliverables')
+        .select('*');
+
+      // Get user profiles for subscription breakdown
+      const { data: profiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('subscription_tier, subscription_status');
+
+      // Get module progress data
+      const { data: moduleProgress, error: moduleError } = await supabase
+        .from('module_progress')
+        .select('*')
+        .eq('completed', true);
+
+      // Get practice progress data
+      const { data: practiceProgress, error: practiceError } = await supabase
+        .from('practice_progress')
+        .select('*')
+        .eq('completed', true);
+
+      // Calculate metrics
+      const totalMeetings = meetings?.length || 0;
+      const completedMeetings = meetings?.filter(m => m.status === 'completed').length || 0;
+      const totalDeliverables = deliverables?.length || 0;
+      
+      const avgDuration = meetings && meetings.length > 0
+        ? meetings.reduce((sum, m) => sum + (m.duration || 0), 0) / meetings.length
+        : 0;
+
+      const subscriptionBreakdown = {
+        free: profiles?.filter(p => p.subscription_tier === 'free').length || 0,
+        premium: profiles?.filter(p => p.subscription_tier === 'premium').length || 0,
+        enterprise: profiles?.filter(p => p.subscription_tier === 'enterprise').length || 0
+      };
+
+      // Revenue calculation (premium users only, £300 per 6 months)
+      const premiumUsers = subscriptionBreakdown.premium;
+      const totalRevenue = premiumUsers * 300;
+      const monthlyRevenue = Math.round(totalRevenue / 6);
+
+      setAnalyticsData({
+        totalMeetings,
+        completedMeetings,
+        totalDeliverables,
+        avgMeetingDuration: Math.round(avgDuration),
+        subscriptionBreakdown,
+        revenueMetrics: { total: totalRevenue, monthly: monthlyRevenue },
+        moduleCompletions: moduleProgress?.length || 0,
+        practiceCompletions: practiceProgress?.length || 0
+      });
+
+      console.log('📊 Analytics Data Loaded:', {
+        totalMeetings,
+        completedMeetings,
+        totalDeliverables,
+        subscriptionBreakdown,
+        revenue: totalRevenue
+      });
+    } catch (error) {
+      console.error('Error loading analytics data:', error);
     }
   };
 
@@ -431,111 +541,118 @@ const AdminDashboard: React.FC = () => {
 
             {/* Learning Progress Analytics */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Progress Analytics</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning & Activity Analytics</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Training Modules Completed</div>
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg border border-indigo-200 dark:border-indigo-700">
+                  <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mb-1">{analyticsData.moduleCompletions}</div>
+                  <div className="text-sm text-indigo-700 dark:text-indigo-300">Module Completions</div>
+                  <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">All users combined</div>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Practice Sessions</div>
+                <div className="p-4 bg-gradient-to-r from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-lg border border-cyan-200 dark:border-cyan-700">
+                  <div className="text-2xl font-bold text-cyan-900 dark:text-cyan-100 mb-1">{analyticsData.totalMeetings}</div>
+                  <div className="text-sm text-cyan-700 dark:text-cyan-300">Total Meetings</div>
+                  <div className="text-xs text-cyan-600 dark:text-cyan-400 mt-1">{analyticsData.completedMeetings} completed</div>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Meetings Conducted</div>
+                <div className="p-4 bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg border border-teal-200 dark:border-teal-700">
+                  <div className="text-2xl font-bold text-teal-900 dark:text-teal-100 mb-1">{analyticsData.totalDeliverables}</div>
+                  <div className="text-sm text-teal-700 dark:text-teal-300">Deliverables Created</div>
+                  <div className="text-xs text-teal-600 dark:text-teal-400 mt-1">User stories, docs, etc.</div>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Deliverables Created</div>
+                <div className="p-4 bg-gradient-to-r from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20 rounded-lg border border-pink-200 dark:border-pink-700">
+                  <div className="text-2xl font-bold text-pink-900 dark:text-pink-100 mb-1">{analyticsData.avgMeetingDuration}</div>
+                  <div className="text-sm text-pink-700 dark:text-pink-300">Avg Meeting (min)</div>
+                  <div className="text-xs text-pink-600 dark:text-pink-400 mt-1">{analyticsData.avgMeetingsPerUser} per user</div>
                 </div>
               </div>
             </div>
 
-            {/* System Performance Analytics */}
+            {/* Subscription Tier Breakdown */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Performance Analytics</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Distribution</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{analyticsData.subscriptionBreakdown.free}</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300">Free Tier Users</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{Math.round((analyticsData.subscriptionBreakdown.free / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">{analyticsData.subscriptionBreakdown.premium}</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">Premium Users</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">{Math.round((analyticsData.subscriptionBreakdown.premium / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                  <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">{analyticsData.subscriptionBreakdown.enterprise}</div>
+                  <div className="text-sm text-purple-700 dark:text-purple-300">Enterprise Users</div>
+                  <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">{Math.round((analyticsData.subscriptionBreakdown.enterprise / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Analytics */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Analytics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg border border-green-200 dark:border-green-700">
+                  <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">{analyticsData.projectsStarted}</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Projects Started</div>
+                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">Active engagements</div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                  <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">{analyticsData.projectsCompleted}</div>
+                  <div className="text-sm text-emerald-700 dark:text-emerald-300">Projects Completed</div>
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{analyticsData.projectsStarted > 0 ? Math.round((analyticsData.projectsCompleted / analyticsData.projectsStarted) * 100) : 0}% completion rate</div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg border border-amber-200 dark:border-amber-700">
+                  <div className="text-3xl font-bold text-amber-900 dark:text-amber-100 mb-1">{analyticsData.engagementRate}%</div>
+                  <div className="text-sm text-amber-700 dark:text-amber-300">Engagement Rate</div>
+                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">Users with progress</div>
+                </div>
+              </div>
+
+              {/* Top Projects */}
+              {analyticsData.topProjects.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Security Metrics</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                      <span className="text-sm text-red-900 dark:text-red-100">Device Lock Events</span>
-                      <span className="text-lg font-bold text-red-900 dark:text-red-100">{systemStats.lockedAccounts}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <span className="text-sm text-orange-900 dark:text-orange-100">Failed Login Attempts</span>
-                      <span className="text-lg font-bold text-orange-900 dark:text-orange-100">0</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <span className="text-sm text-blue-900 dark:text-blue-100">Admin Actions (24h)</span>
-                      <span className="text-lg font-bold text-blue-900 dark:text-blue-100">{activityLogs.length}</span>
-                    </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Most Popular Projects</h4>
+                  <div className="space-y-2">
+                    {analyticsData.topProjects.map((project, index) => (
+                      <div key={project.project_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm font-bold text-gray-900 dark:text-white">#{index + 1}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{project.project_id}</span>
+                        </div>
+                        <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{project.count} users</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">System Health</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <span className="text-sm text-green-900 dark:text-green-100">System Uptime</span>
-                      <span className="text-lg font-bold text-green-900 dark:text-green-100">99.9%</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <span className="text-sm text-blue-900 dark:text-blue-100">Database Response</span>
-                      <span className="text-lg font-bold text-blue-900 dark:text-blue-100">45ms</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <span className="text-sm text-purple-900 dark:text-purple-100">Error Rate</span>
-                      <span className="text-lg font-bold text-purple-900 dark:text-purple-100">0.1%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Business Intelligence */}
+            {/* Meeting Performance Insights */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Business Intelligence</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg">
-                  <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mb-1">Peak: 2-4 PM</div>
-                  <div className="text-sm text-indigo-700 dark:text-indigo-300">Peak Usage Time</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-r from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20 rounded-lg">
-                  <div className="text-2xl font-bold text-pink-900 dark:text-pink-100 mb-1">Global</div>
-                  <div className="text-sm text-pink-700 dark:text-pink-300">Geographic Distribution</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg">
-                  <div className="text-2xl font-bold text-teal-900 dark:text-teal-100 mb-1">24h</div>
-                  <div className="text-sm text-teal-700 dark:text-teal-300">Avg. Response Time</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg">
-                  <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-1">98%</div>
-                  <div className="text-sm text-amber-700 dark:text-amber-300">User Satisfaction</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Cohort Analysis */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Cohort Analysis</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">{systemStats.totalUsers}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Cohort Size</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meeting Performance</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <span className="text-sm text-blue-900 dark:text-blue-100">Completion Rate</span>
+                    <span className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                      {analyticsData.totalMeetings > 0 ? Math.round((analyticsData.completedMeetings / analyticsData.totalMeetings) * 100) : 0}%
+                    </span>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">{systemStats.activeSessions}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Active Users</div>
-                  </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">{Math.round((systemStats.activeSessions / Math.max(systemStats.totalUsers, 1)) * 100)}%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Retention Rate</div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="text-sm text-green-900 dark:text-green-100">In Progress</span>
+                    <span className="text-lg font-bold text-green-900 dark:text-green-100">{analyticsData.inProgressMeetings}</span>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                  * Advanced cohort analysis will be available with more historical data
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <span className="text-sm text-purple-900 dark:text-purple-100">Avg Duration</span>
+                    <span className="text-lg font-bold text-purple-900 dark:text-purple-100">{analyticsData.avgMeetingDuration} min</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <span className="text-sm text-indigo-900 dark:text-indigo-100">Per User Average</span>
+                    <span className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{analyticsData.avgMeetingsPerUser}</span>
+                  </div>
                 </div>
               </div>
             </div>
