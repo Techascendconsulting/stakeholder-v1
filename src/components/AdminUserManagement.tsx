@@ -67,6 +67,11 @@ const AdminUserManagement: React.FC = () => {
   const [selectedUserForAction, setSelectedUserForAction] = useState<{ id: string; email: string } | null>(null);
   const [deviceComparison, setDeviceComparison] = useState<any>(null);
   const [verifyingDevice, setVerifyingDevice] = useState(false);
+  
+  // Block/Unblock modal states
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [showUnblockModal, setShowUnblockModal] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -354,87 +359,84 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleBlockUser = async (userId: string, email: string, isBlocked: boolean) => {
+    setSelectedUserForAction({ id: userId, email });
     if (isBlocked) {
-      // Unblocking - simple confirmation
-      if (!confirm(`✅ Unblock ${email}?\n\nThey will regain full access to the platform.`)) {
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        
-        // Call database function to unblock
-        const { error } = await supabase.rpc('unblock_user', {
-          target_user_id: userId
-        });
-
-        if (error) {
-          console.error('Error unblocking user:', error);
-          alert(`Failed to unblock user. ${error.message || 'Please try again.'}`);
-          return;
-        }
-
-        // Log the action
-        await adminService.logActivity(
-          user?.id || '',
-          'user_unblocked',
-          userId,
-          { email, action: 'unblocked', success: true }
-        );
-
-        alert(`✅ User ${email} has been unblocked successfully.`);
-        await loadUsers();
-        
-      } catch (error) {
-        console.error('Error unblocking user:', error);
-        alert('Failed to unblock user. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+      setShowUnblockModal(true);
     } else {
-      // Blocking - ask for reason
-      const reason = prompt(
-        `🚫 Block ${email}?\n\nThis will:\n• Sign them out immediately\n• Prevent all login attempts\n• Block all API/database access\n• Show them a blocked account message\n\nEnter reason for blocking (required):`,
-        'Policy violation'
-      );
+      setBlockReason('');
+      setShowBlockModal(true);
+    }
+  };
+
+  const confirmBlockUser = async () => {
+    if (!selectedUserForAction || !blockReason.trim()) return;
+
+    try {
+      setLoading(true);
       
-      if (!reason || !reason.trim()) {
-        alert('Block cancelled - reason is required');
+      // Call database function to block with reason
+      const { error } = await supabase.rpc('block_user', {
+        target_user_id: selectedUserForAction.id,
+        reason: blockReason.trim()
+      });
+
+      if (error) {
+        console.error('Error blocking user:', error);
         return;
       }
+
+      // Log the action with reason
+      await adminService.logActivity(
+        user?.id || '',
+        'user_blocked',
+        selectedUserForAction.id,
+        { email: selectedUserForAction.email, reason: blockReason.trim(), action: 'blocked', success: true }
+      );
+
+      await loadUsers();
+      setShowBlockModal(false);
+      setSelectedUserForAction(null);
+      setBlockReason('');
       
-      try {
-        setLoading(true);
-        
-        // Call database function to block with reason
-        const { error } = await supabase.rpc('block_user', {
-          target_user_id: userId,
-          reason: reason.trim()
-        });
+    } catch (error) {
+      console.error('Error blocking user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (error) {
-          console.error('Error blocking user:', error);
-          alert(`Failed to block user. ${error.message || 'Please try again.'}`);
-          return;
-        }
+  const confirmUnblockUserAction = async () => {
+    if (!selectedUserForAction) return;
 
-        // Log the action with reason
-        await adminService.logActivity(
-          user?.id || '',
-          'user_blocked',
-          userId,
-          { email, reason: reason.trim(), action: 'blocked', success: true }
-        );
+    try {
+      setLoading(true);
+      
+      // Call database function to unblock
+      const { error } = await supabase.rpc('unblock_user', {
+        target_user_id: selectedUserForAction.id
+      });
 
-        alert(`🚫 User ${email} has been blocked.\n\nReason: ${reason}\n\nThey will be signed out immediately if currently logged in.`);
-        await loadUsers();
-        
-      } catch (error) {
-        console.error('Error blocking user:', error);
-        alert('Failed to block user. Please try again.');
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('Error unblocking user:', error);
+        return;
       }
+
+      // Log the action
+      await adminService.logActivity(
+        user?.id || '',
+        'user_unblocked',
+        selectedUserForAction.id,
+        { email: selectedUserForAction.email, action: 'unblocked', success: true }
+      );
+
+      await loadUsers();
+      setShowUnblockModal(false);
+      setSelectedUserForAction(null);
+      
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1386,6 +1388,120 @@ const AdminUserManagement: React.FC = () => {
               >
                 <EyeOff className="w-4 h-4" />
                 <span>{loading ? 'Resetting...' : 'Reset Device'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block User Modal */}
+      {showBlockModal && selectedUserForAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <UserX className="w-5 h-5 mr-2 text-red-600" />
+              Block User
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2">User to block:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
+              </div>
+              
+              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                <p className="text-sm text-red-900 dark:text-red-100 font-medium mb-2">This will:</p>
+                <ul className="text-xs text-red-800 dark:text-red-200 space-y-1">
+                  <li>• Sign them out immediately if logged in</li>
+                  <li>• Prevent all future login attempts</li>
+                  <li>• Block all API and database access</li>
+                  <li>• Display blocked account message on login</li>
+                </ul>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Reason for blocking (required):
+                </label>
+                <textarea
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  placeholder="e.g., Policy violation, Account sharing, Terms of Service breach..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowBlockModal(false);
+                  setSelectedUserForAction(null);
+                  setBlockReason('');
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmBlockUser}
+                disabled={loading || !blockReason.trim()}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                <UserX className="w-4 h-4" />
+                <span>{loading ? 'Blocking...' : 'Block User'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unblock User Modal */}
+      {showUnblockModal && selectedUserForAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <UserCheck className="w-5 h-5 mr-2 text-green-600" />
+              Unblock User
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2">User to unblock:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
+              </div>
+              
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                <p className="text-sm text-green-900 dark:text-green-100 font-medium mb-2">This will:</p>
+                <ul className="text-xs text-green-800 dark:text-green-200 space-y-1">
+                  <li>• Restore full platform access</li>
+                  <li>• Allow them to login immediately</li>
+                  <li>• Enable all API and database access</li>
+                  <li>• Remove blocked account restrictions</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowUnblockModal(false);
+                  setSelectedUserForAction(null);
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUnblockUserAction}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>{loading ? 'Unblocking...' : 'Unblock User'}</span>
               </button>
             </div>
           </div>
