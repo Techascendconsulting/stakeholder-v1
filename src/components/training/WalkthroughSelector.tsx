@@ -145,7 +145,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
 
                 <button
                   onClick={() => handleSelectWalkthrough(pod.id, 'acceptance-criteria')}
-                  className="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2.5 px-4 rounded-md transition-colors duration-200"
                 >
                   Start Acceptance Criteria Walkthrough
                 </button>
