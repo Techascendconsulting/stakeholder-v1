@@ -293,14 +293,14 @@ const AdminDashboard: React.FC = () => {
 
               {/* Active Users - Clickable */}
               <button
-                onClick={() => setCurrentView('admin-panel')}
+                onClick={() => setActiveTab('user-activity')}
                 className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left w-full"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-green-600 dark:text-green-400">Active Users (7d)</p>
                     <p className="text-3xl font-bold text-green-900 dark:text-green-100">{systemStats.activeSessions}</p>
-                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">Click to view users</p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">Click to view activity</p>
                   </div>
                   <CheckCircle className="h-12 w-12 text-green-500 dark:text-green-400 opacity-80" />
                 </div>
