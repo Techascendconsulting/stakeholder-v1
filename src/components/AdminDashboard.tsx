@@ -44,12 +44,17 @@ const AdminDashboard: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState({
     totalMeetings: 0,
     completedMeetings: 0,
+    inProgressMeetings: 0,
     totalDeliverables: 0,
     avgMeetingDuration: 0,
     subscriptionBreakdown: { free: 0, premium: 0, enterprise: 0 },
-    revenueMetrics: { total: 0, monthly: 0 },
     moduleCompletions: 0,
-    practiceCompletions: 0
+    practiceCompletions: 0,
+    projectsStarted: 0,
+    projectsCompleted: 0,
+    topProjects: [] as Array<{ project_id: string; count: number }>,
+    engagementRate: 0,
+    avgMeetingsPerUser: 0
   });
 
   useEffect(() => {
@@ -184,78 +189,6 @@ const AdminDashboard: React.FC = () => {
       await loadAnalyticsData();
     } catch (error) {
       console.error('Error loading system stats:', error);
-    }
-  };
-
-  const loadAnalyticsData = async () => {
-    try {
-      // Get real meeting data
-      const { data: meetings, error: meetingsError } = await supabase
-        .from('user_meetings')
-        .select('*');
-
-      // Get deliverables data
-      const { data: deliverables, error: deliverablesError } = await supabase
-        .from('user_deliverables')
-        .select('*');
-
-      // Get user profiles for subscription breakdown
-      const { data: profiles, error: profilesError } = await supabase
-        .from('user_profiles')
-        .select('subscription_tier, subscription_status');
-
-      // Get module progress data
-      const { data: moduleProgress, error: moduleError } = await supabase
-        .from('module_progress')
-        .select('*')
-        .eq('completed', true);
-
-      // Get practice progress data
-      const { data: practiceProgress, error: practiceError } = await supabase
-        .from('practice_progress')
-        .select('*')
-        .eq('completed', true);
-
-      // Calculate metrics
-      const totalMeetings = meetings?.length || 0;
-      const completedMeetings = meetings?.filter(m => m.status === 'completed').length || 0;
-      const totalDeliverables = deliverables?.length || 0;
-      
-      const avgDuration = meetings && meetings.length > 0
-        ? meetings.reduce((sum, m) => sum + (m.duration || 0), 0) / meetings.length
-        : 0;
-
-      const subscriptionBreakdown = {
-        free: profiles?.filter(p => p.subscription_tier === 'free').length || 0,
-        premium: profiles?.filter(p => p.subscription_tier === 'premium').length || 0,
-        enterprise: profiles?.filter(p => p.subscription_tier === 'enterprise').length || 0
-      };
-
-      // Revenue calculation (premium users only, £300 per 6 months)
-      const premiumUsers = subscriptionBreakdown.premium;
-      const totalRevenue = premiumUsers * 300;
-      const monthlyRevenue = Math.round(totalRevenue / 6);
-
-      setAnalyticsData({
-        totalMeetings,
-        completedMeetings,
-        totalDeliverables,
-        avgMeetingDuration: Math.round(avgDuration),
-        subscriptionBreakdown,
-        revenueMetrics: { total: totalRevenue, monthly: monthlyRevenue },
-        moduleCompletions: moduleProgress?.length || 0,
-        practiceCompletions: practiceProgress?.length || 0
-      });
-
-      console.log('📊 Analytics Data Loaded:', {
-        totalMeetings,
-        completedMeetings,
-        totalDeliverables,
-        subscriptionBreakdown,
-        revenue: totalRevenue
-      });
-    } catch (error) {
-      console.error('Error loading analytics data:', error);
     }
   };
 
