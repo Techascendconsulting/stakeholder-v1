@@ -35,17 +35,17 @@ export const RULES: Record<string, Rule> = {
       referenceStory:
         "As a parent applying for childcare vouchers, I want to save my application progress midway so I don't have to start over.",
       question:
-        "Which user story keeps the focus on what the user wants, not what the system does?",
+        "Which statement focuses on what the USER wants, not the system?",
       options: {
-        A: "The system saves user progress automatically when inactive.",
-        B: "The user can save their application progress and resume later.",
-        C: "Auto-save occurs every 60 seconds in the backend.",
+        A: "The database stores form data in temporary tables.",
+        B: "The user can save their progress and return later without losing data.",
+        C: "Auto-save reduces server load by batching requests.",
       },
       correct: "B",
       feedback: {
-        A: "System-focused, not user-focused. Start with what the user can do, not what the system does.",
-        B: "Correct — written from the user's perspective. The user is the subject, and the benefit is clear.",
-        C: "Technical detail, not a user goal. This belongs in implementation notes, not the user story.",
+        A: "Wrong — This describes database architecture, not what the user experiences or wants. Users don't care about temporary tables.",
+        B: "Correct — Written from the user's perspective. Focuses on what the user CAN DO (save progress) and the BENEFIT (not losing data).",
+        C: "Wrong — This describes a technical performance optimization. Users don't care about server load; they care about not losing their work.",
       },
     },
     apply: {
@@ -61,17 +61,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As a finance officer, I want expense approvals to start when a manager submits a claim.",
-      question: "Which statement best defines the trigger for this action?",
+      question: "What EVENT causes the approval process to start?",
       options: {
-        A: "When the claim is submitted, approval begins.",
-        B: "After approval, the system saves data.",
-        C: "Users can manually start approvals any time.",
+        A: "When the Submit Claim button is clicked.",
+        B: "Every Monday at 9 AM, the system checks for pending claims.",
+        C: "The approval process runs continuously in the background.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — it identifies the event that starts the process. This is the trigger: submission initiates approval.",
-        B: "That describes after-effects, not the trigger. This is what happens AFTER the process completes.",
-        C: "That removes the rule-based trigger logic. Approvals should start automatically based on submission, not manual intervention.",
+        A: "Correct — A specific user action (clicking Submit) triggers the approval. Clear cause-and-effect relationship.",
+        B: "Wrong — This is a scheduled batch process, not an event-driven trigger. The reference story says approval starts WHEN submitted, not on a schedule.",
+        C: "Wrong — Continuous background processing has no clear trigger. The story requires a specific event (submission) to initiate approval.",
       },
     },
     apply: {
@@ -86,17 +86,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As a parent, I want to submit my childcare voucher application online so it reaches the review team.",
-      question: "Which version best describes a complete successful flow?",
+      question: "What is the COMPLETE happy path from start to finish?",
       options: {
-        A: "User clicks Submit, data saves, confirmation appears.",
-        B: "System validates input fields.",
-        C: "Back-end sends email notifications.",
+        A: "User fills form → clicks Submit → sees 'Application received' confirmation → application appears in review queue.",
+        B: "User receives an email notification after 24 hours.",
+        C: "The review team logs into their dashboard daily.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — it describes the visible steps of success from start to finish. User action → system response → user feedback.",
-        B: "Too narrow; only one validation step. This misses the full journey from user action to confirmation.",
-        C: "Focuses on system behaviour, not user journey. Email notifications are internal; users care about the confirmation they see.",
+        A: "Correct — Shows the full user journey: input → action → feedback → outcome. Every step is visible to the user.",
+        B: "Wrong — This is a delayed notification, not the primary flow. The primary flow should show immediate steps the user experiences.",
+        C: "Wrong — This describes what the review team does, not what the submitting user experiences. Focus on the user from the reference story.",
       },
     },
     apply: {
@@ -112,17 +112,17 @@ export const RULES: Record<string, Rule> = {
       referenceStory:
         "As a parent, I want to upload supporting documents later if I don't have them now.",
       question:
-        "Which statement correctly describes an alternative flow, not an error?",
+        "Which is a valid ALTERNATIVE way to achieve the goal (not an error)?",
       options: {
-        A: "The user uploads documents later and the form updates successfully.",
-        B: "The system shows an error if no documents uploaded.",
-        C: "The app crashes during upload.",
+        A: "User skips document upload now → saves application as draft → uploads documents later → submits successfully.",
+        B: "User must upload all documents immediately or the form is rejected.",
+        C: "System permanently locks the form if no documents are attached.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — valid alternate route that still succeeds. The user achieves their goal through a different path.",
-        B: "That's validation, not an alternative flow. Validation enforces rules; alternative flows provide flexibility.",
-        C: "That's a failure case, not success. Alternative flows are valid paths to success, not errors.",
+        A: "Correct — Valid alternate route that still ends in success. User achieves the same goal (complete application) through a flexible path.",
+        B: "Wrong — This is a rigid requirement, not an alternative flow. Alternative flows provide flexibility, not restrictions.",
+        C: "Wrong — This is a failure/error condition. Alternative flows are SUCCESSFUL paths, just different from the primary flow.",
       },
     },
     apply: {
@@ -137,17 +137,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As an HR manager, I want to reject leave requests that exceed remaining allowance.",
-      question: "Which statement is a validation rule?",
+      question: "Which rule ENFORCES the business constraint?",
       options: {
-        A: "Leave requests over the limit are rejected.",
-        B: "System emails HR for every new request.",
-        C: "Manager can update profile data.",
+        A: "Leave requests cannot exceed the employee's remaining leave balance.",
+        B: "The HR dashboard displays all pending leave requests in a table.",
+        C: "Employees receive a confirmation email when leave is approved.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — defines what must be true or enforced. This is a business rule that prevents invalid data.",
-        B: "That's workflow, not validation. Emails are notifications, not rules that enforce data integrity.",
-        C: "Unrelated action, not rule. This describes a permission, not a validation constraint.",
+        A: "Correct — This is a validation rule. It defines a constraint that MUST be checked before allowing the action. Prevents invalid data.",
+        B: "Wrong — This describes UI display, not a validation rule. Showing data in a table doesn't enforce any business constraint.",
+        C: "Wrong — This is a notification, not a validation rule. Emails inform users but don't prevent invalid actions.",
       },
     },
     apply: {
@@ -164,17 +164,17 @@ export const RULES: Record<string, Rule> = {
       referenceStory:
         "As a team lead, I want to see only requests from my department.",
       question:
-        "Which option correctly applies a role or permission constraint?",
+        "Which statement defines WHO can access WHAT?",
       options: {
-        A: "All users can see every request.",
-        B: "Only team leads can view their department's requests.",
-        C: "System sorts requests alphabetically.",
+        A: "Team leads can view and manage requests from their own department only.",
+        B: "Requests are displayed in chronological order on the dashboard.",
+        C: "The system sends weekly summary reports to all managers.",
       },
-      correct: "B",
+      correct: "A",
       feedback: {
-        A: "Too broad — ignores role restriction. This violates the principle of least privilege and could expose sensitive data.",
-        B: "Correct — defines who can access what. Clear role-based access control that protects data and respects hierarchy.",
-        C: "That's interface, not permission. Sorting is a UI feature, not an access control rule.",
+        A: "Correct — Defines WHO (team leads) can do WHAT (view and manage) with WHAT SCOPE (their own department). Clear role-based access control.",
+        B: "Wrong — This describes UI sorting/display, not permissions. It doesn't define who can or cannot access specific data.",
+        C: "Wrong — This is an automated notification feature, not a permission rule. It doesn't restrict or grant access to anyone.",
       },
     },
     apply: {
@@ -189,17 +189,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As a user, I want to see a confirmation once my report is submitted.",
-      question: "Which statement describes success feedback?",
+      question: "What should the user SEE when their action succeeds?",
       options: {
-        A: "'Report submitted successfully' message appears.",
-        B: "App freezes after submission.",
-        C: "System runs background validations.",
+        A: "Green checkmark appears with message: 'Report submitted successfully. Reference #12345'",
+        B: "Nothing happens on screen, but the report is saved in the database.",
+        C: "The page refreshes and shows a blank form.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — user sees a visible confirmation. Clear, immediate, and reassuring. Users know their action succeeded.",
-        B: "That's an error. Freezing indicates a problem, not success. This would cause user anxiety and support tickets.",
-        C: "That's process detail, not feedback. Background processes are invisible to users; feedback must be visible.",
+        A: "Correct — Clear, visible, immediate confirmation with helpful details (reference number). Users know exactly what happened.",
+        B: "Wrong — Silent success is bad UX. Users don't know if it worked, failed, or is still processing. This creates anxiety and duplicate submissions.",
+        C: "Wrong — Refreshing to a blank form is confusing. Users don't know if their report was submitted or lost. No confirmation provided.",
       },
     },
     apply: {
@@ -214,17 +214,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As a user, I want to be notified if my upload fails so I can retry.",
-      question: "Which example best handles an error gracefully?",
+      question: "What should happen when the upload FAILS?",
       options: {
-        A: "Show clear message and retry option.",
-        B: "Fail silently with no response.",
-        C: "Force user to restart the app.",
+        A: "Red error message: 'Upload failed. File too large (max 10MB)' + Retry button.",
+        B: "Page goes blank and user has to refresh browser to try again.",
+        C: "Upload silently fails and user never knows what happened.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — user knows what failed and what to do next. Clear error message + recovery path = good UX and fewer support tickets.",
-        B: "No feedback = frustration. Users don't know if their action failed, succeeded, or is still processing. This destroys trust.",
-        C: "Harsh recovery path. Restarting the app loses user data and context. Errors should be recoverable without drastic measures.",
+        A: "Correct — Clear error message (what failed + why) + recovery action (Retry button). User understands the problem and knows how to fix it.",
+        B: "Wrong — Terrible UX. Blank page looks like a crash, not a recoverable error. User loses context and doesn't know what went wrong.",
+        C: "Wrong — Silent failures are the worst UX. User thinks upload worked but it didn't. This causes confusion, distrust, and support tickets.",
       },
     },
     apply: {
@@ -239,17 +239,17 @@ export const RULES: Record<string, Rule> = {
     learn: {
       referenceStory:
         "As a recruiter, I want to see guidance text when there are no applicants yet.",
-      question: "Which option best represents an empty state?",
+      question: "What should appear when NO data exists yet?",
       options: {
-        A: "'No applicants yet — new applications appear here.'",
-        B: "Table loads with old data.",
-        C: "Page stays blank.",
+        A: "Helpful message: 'No applicants yet. New applications will appear here when received.'",
+        B: "Spinning loader that never stops.",
+        C: "Error message: 'Failed to load applicants. Please try again.'",
       },
       correct: "A",
       feedback: {
-        A: "Correct — sets expectation before data exists. Users understand this is normal and know what to expect when data arrives.",
-        B: "Misleading; not empty. Showing old data when expecting new data confuses users and makes them question data freshness.",
-        C: "Poor UX; lacks guidance. A blank page looks broken and doesn't tell users what to expect or do next.",
+        A: "Correct — Sets clear expectation that this is normal (not an error) and explains what will happen when data arrives. Good empty state UX.",
+        B: "Wrong — Endless loader implies something is broken or stuck. Empty state is NOT a loading state; it's the normal initial condition.",
+        C: "Wrong — Error messages are for failures, not empty states. No applicants is NORMAL, not an error. This creates false alarm and confusion.",
       },
     },
     apply: {
@@ -265,17 +265,17 @@ export const RULES: Record<string, Rule> = {
       referenceStory:
         "As a finance admin, I want to cancel a pending invoice before it's approved.",
       question:
-        "Which statement best describes a cancel or undo function?",
+        "How should the user be able to REVERSE their action?",
       options: {
-        A: "User clicks Cancel and invoice returns to draft.",
-        B: "Invoice automatically deletes itself.",
-        C: "Approval continues regardless.",
+        A: "User clicks 'Cancel Invoice' → Invoice status changes to 'Draft' → User can edit or delete it.",
+        B: "Once submitted, invoices cannot be changed under any circumstances.",
+        C: "Admin must contact IT support to manually delete the invoice from the database.",
       },
       correct: "A",
       feedback: {
-        A: "Correct — controlled reversal of an action. The user maintains control and can recover from mistakes without data loss.",
-        B: "Deletion isn't a safe undo. Users might cancel by mistake and lose their work. Undo should preserve data in a recoverable state.",
-        C: "No reversal logic. Users should always have the ability to change their mind before commitment, especially for important actions.",
+        A: "Correct — User has direct control to reverse their action. Invoice returns to a safe, editable state. No data loss, no support needed.",
+        B: "Wrong — Too rigid. Users make mistakes and should be able to correct them before approval. No undo = frustration and workarounds.",
+        C: "Wrong — Requiring IT support for user mistakes is terrible UX. Undo should be self-service, immediate, and not require technical intervention.",
       },
     },
     apply: {
