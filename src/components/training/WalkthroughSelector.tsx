@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building, GraduationCap, BookOpenCheck, FileEdit } from 'lucide-react';
+import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building, GraduationCap, BookOpenCheck, FileEdit, ChevronRight } from 'lucide-react';
 import UserStoryWalkthrough from './UserStoryWalkthrough';
 import AcceptanceCriteriaWalkthrough from './AcceptanceCriteriaWalkthrough';
 
@@ -82,6 +82,19 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   // Render the selector
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-10">
+      {/* Breadcrumbs */}
+      <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <Home className="w-4 h-4 mr-1" />
+          Requirements Specification
+        </button>
+        <ChevronRight className="w-4 h-4" />
+        <span className="text-gray-900 dark:text-white font-medium">Training Pods</span>
+      </nav>
+
       {/* Header */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
@@ -154,20 +167,10 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
           </div>
         ))}
       </div>
-
-      {/* Back Button */}
-      <div className="text-center">
-        <button
-          onClick={onBack}
-          className="flex items-center space-x-2 px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mx-auto"
-        >
-          <ArrowRight className="w-4 h-4 rotate-180" />
-          <span>Back to Learning</span>
-        </button>
-      </div>
     </div>
   );
 }
+
 
 
 
