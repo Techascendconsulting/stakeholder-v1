@@ -48,6 +48,7 @@ import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
+import TermsOfServiceView from './Views/TermsOfServiceView'
 import { getFormattedMemberCount } from '../utils/memberCounter'
 
 const LandingPage: React.FC = () => {
@@ -57,6 +58,7 @@ const LandingPage: React.FC = () => {
   const [showFAQ, setShowFAQ] = useState(false)
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
+  const [showTermsOfService, setShowTermsOfService] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [memberCount, setMemberCount] = useState(getFormattedMemberCount())
@@ -143,6 +145,10 @@ const LandingPage: React.FC = () => {
 
   if (showPrivacyPolicy) {
     return <PrivacyPolicyView onBack={() => setShowPrivacyPolicy(false)} />
+  }
+
+  if (showTermsOfService) {
+    return <TermsOfServiceView onBack={() => setShowTermsOfService(false)} />
   }
 
   // Updated features to match actual app with detailed modal content
@@ -1211,8 +1217,13 @@ const LandingPage: React.FC = () => {
                     Privacy Policy
                   </button>
                 </li>
-                <li className="hover:text-white cursor-pointer transition-colors transform hover:translate-x-2 duration-300">
-                  Terms of Service
+                <li>
+                  <button
+                    onClick={() => setShowTermsOfService(true)}
+                    className="hover:text-white transition-colors transform hover:translate-x-2 duration-300 block"
+                  >
+                    Terms of Service
+                  </button>
                 </li>
               </ul>
             </div>
