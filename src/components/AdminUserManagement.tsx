@@ -241,10 +241,14 @@ const AdminUserManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      // Only unlock the account, keep device lock active
+      // Unlock account AND clear device binding so user can login from any device
+      // Otherwise they'll just get locked again when they try to login
       const { error } = await supabase
         .from('user_profiles')
-        .update({ locked: false })
+        .update({ 
+          locked: false,
+          registered_device: null  // CRITICAL: Clear device so they can login
+        })
         .eq('user_id', selectedUserForAction.id);
 
       if (error) {
@@ -259,7 +263,7 @@ const AdminUserManagement: React.FC = () => {
           user?.id || '',
           'unlock_account',
           selectedUserForAction.id,
-          { email: selectedUserForAction.email, action: 'account_unlocked' }
+          { email: selectedUserForAction.email, action: 'account_unlocked_and_device_reset' }
         );
         console.log('✅ Activity logged successfully');
       } catch (logError) {
@@ -728,7 +732,9 @@ const AdminUserManagement: React.FC = () => {
         });
       }
       
-      if (targetUser.registered_device) {
+      // Only show Reset Device if account is NOT locked (for legitimate device changes)
+      // If locked, use "Unlock Account" which handles both
+      if (targetUser.registered_device && !targetUser.locked) {
         actions.push({
           label: 'Reset Device',
           onClick: () => handleClearDeviceBinding(targetUser.id, targetUser.email),
@@ -1140,13 +1146,14 @@ const AdminUserManagement: React.FC = () => {
                 <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
               </div>
               
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                <p className="text-sm text-yellow-900 dark:text-yellow-100 font-medium mb-2">What happens:</p>
-                <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1 ml-4">
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                <p className="text-sm text-green-900 dark:text-green-100 font-medium mb-2">What happens:</p>
+                <ul className="text-sm text-green-800 dark:text-green-200 space-y-1 ml-4">
                   <li>• Account will be unlocked</li>
-                  <li>• User can attempt to log in again</li>
-                  <li>• They must use their registered device</li>
-                  <li>• If they use a different device, account locks again</li>
+                  <li>• Device binding will be cleared</li>
+                  <li>• User can login from ANY device</li>
+                  <li>• First device they login with becomes new registered device</li>
+                  <li>• This resolves the lock completely</li>
                 </ul>
               </div>
             </div>
