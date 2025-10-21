@@ -468,19 +468,49 @@ class DeviceLockService {
   }
 
   /**
+   * Parse device ID string to extract hardware components
+   */
+  private parseDeviceId(deviceId: string): {
+    platform: string;
+    cores: string;
+    gpu: string;
+  } {
+    try {
+      // Device ID format: platform_cores_gpu_...
+      const parts = deviceId.split('_');
+      return {
+        platform: parts[0] || 'Unknown',
+        cores: parts[1] || 'Unknown',
+        gpu: parts[2] || 'Unknown'
+      };
+    } catch {
+      return {
+        platform: 'Unknown',
+        cores: 'Unknown',
+        gpu: 'Unknown'
+      };
+    }
+  }
+
+  /**
    * Compare current device with registered device for admin verification
    * Returns detailed device information for admin decision-making
    */
   async compareDevicesForAdmin(userId: string): Promise<{
     isSameDevice: boolean;
     similarity: number;
-    registeredDevice: string | null;
-    deviceInfo: {
+    registeredDeviceInfo: {
+      platform: string;
+      cores: string;
+      gpu: string;
+    } | null;
+    currentDeviceInfo: {
       platform: string;
       cores: string;
       gpu: string;
     } | null;
     recommendation: 'unlock_only' | 'reset_device' | 'unknown';
+    explanation: string;
   }> {
     try {
       // Get registered device from database
@@ -494,11 +524,15 @@ class DeviceLockService {
         return {
           isSameDevice: false,
           similarity: 0,
-          registeredDevice: null,
-          deviceInfo: null,
-          recommendation: 'reset_device'
+          registeredDeviceInfo: null,
+          currentDeviceInfo: null,
+          recommendation: 'reset_device',
+          explanation: 'No registered device found. User needs to register a new device.'
         };
       }
+
+      // Parse registered device info
+      const registeredDeviceInfo = this.parseDeviceId(user.registered_device);
 
       // Get current device fingerprint
       const currentDeviceId = await this.getDeviceId();
@@ -506,52 +540,60 @@ class DeviceLockService {
         return {
           isSameDevice: false,
           similarity: 0,
-          registeredDevice: user.registered_device,
-          deviceInfo: null,
-          recommendation: 'unknown'
+          registeredDeviceInfo,
+          currentDeviceInfo: null,
+          recommendation: 'unknown',
+          explanation: 'Unable to detect current device. Manual verification required.'
         };
       }
 
-      // Check if same device
-      const isSame = this.isSameCoreDevice(user.registered_device, currentDeviceId);
-      const similarity = this.calculateDeviceSimilarity(user.registered_device, currentDeviceId);
-
-      // Get device info from FingerprintJS for display
+      // Get current device info from FingerprintJS for display
       const fp = await FingerprintJS.load();
       const result = await fp.get();
       const components = result.components;
 
-      const deviceInfo = {
+      const currentDeviceInfo = {
         platform: components.platform?.value || 'Unknown',
         cores: components.hardwareConcurrency?.value?.toString() || 'Unknown',
         gpu: components.vendor?.value || 'Unknown'
       };
 
+      // Check if same device
+      const isSame = this.isSameCoreDevice(user.registered_device, currentDeviceId);
+      const similarity = this.calculateDeviceSimilarity(user.registered_device, currentDeviceId);
+
       // Recommendation based on similarity
       let recommendation: 'unlock_only' | 'reset_device' | 'unknown';
+      let explanation: string;
+
       if (similarity > 0.9) {
-        recommendation = 'unlock_only'; // Very likely same device, different browser
+        recommendation = 'unlock_only';
+        explanation = 'Same device detected. User likely switched browser (Chrome → Firefox, etc.). Safe to unlock without device reset.';
       } else if (similarity > 0.5) {
-        recommendation = 'unknown'; // Uncertain - admin should decide
+        recommendation = 'unknown';
+        explanation = 'Partial match detected. Could be same device with hardware changes or different device. Verify with user before deciding.';
       } else {
-        recommendation = 'reset_device'; // Definitely different device
+        recommendation = 'reset_device';
+        explanation = 'Different device detected. If legitimate (new laptop, lost device), reset device binding. Otherwise, possible account sharing.';
       }
 
       return {
         isSameDevice: isSame,
         similarity: Math.round(similarity * 100),
-        registeredDevice: user.registered_device,
-        deviceInfo,
-        recommendation
+        registeredDeviceInfo,
+        currentDeviceInfo,
+        recommendation,
+        explanation
       };
     } catch (error) {
       console.error('Error comparing devices:', error);
       return {
         isSameDevice: false,
         similarity: 0,
-        registeredDevice: null,
-        deviceInfo: null,
-        recommendation: 'unknown'
+        registeredDeviceInfo: null,
+        currentDeviceInfo: null,
+        recommendation: 'unknown',
+        explanation: 'Error comparing devices. Manual verification required.'
       };
     }
   }

@@ -275,7 +275,9 @@ const AdminUserManagement: React.FC = () => {
           { 
             email: selectedUserForAction.email, 
             action: resetDevice ? 'account_unlocked_and_device_reset' : 'account_unlocked_same_device',
-            device_reset: resetDevice
+            device_reset: resetDevice,
+            similarity: deviceComparison?.similarity || 0,
+            recommendation: deviceComparison?.recommendation || 'manual'
           }
         );
         console.log('✅ Activity logged successfully');
@@ -1178,45 +1180,73 @@ const AdminUserManagement: React.FC = () => {
                   }`}>
                     <p className="text-sm font-bold mb-2 flex items-center">
                       <Shield className="w-4 h-4 mr-2" />
-                      System Recommendation:
+                      System Analysis: {deviceComparison.similarity}% Match
                     </p>
-                    {deviceComparison.recommendation === 'unlock_only' && (
-                      <p className="text-sm text-green-800 dark:text-green-200">
-                        <strong>Same Device Detected ({deviceComparison.similarity}% match)</strong> - User likely using different browser. Safe to unlock without device reset.
-                      </p>
-                    )}
-                    {deviceComparison.recommendation === 'reset_device' && (
-                      <p className="text-sm text-orange-800 dark:text-orange-200">
-                        <strong>Different Device Detected ({deviceComparison.similarity}% match)</strong> - Possible device change or account sharing. Verify before resetting.
-                      </p>
-                    )}
-                    {deviceComparison.recommendation === 'unknown' && (
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        <strong>Uncertain ({deviceComparison.similarity}% match)</strong> - Manual verification recommended.
-                      </p>
-                    )}
+                    <p className={`text-sm ${
+                      deviceComparison.recommendation === 'unlock_only'
+                        ? 'text-green-800 dark:text-green-200'
+                        : deviceComparison.recommendation === 'reset_device'
+                        ? 'text-orange-800 dark:text-orange-200'
+                        : 'text-yellow-800 dark:text-yellow-200'
+                    }`}>
+                      {deviceComparison.explanation}
+                    </p>
                   </div>
 
-                  {/* Device Details */}
-                  {deviceComparison.deviceInfo && (
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">Detected Device Info:</p>
-                      <div className="grid grid-cols-3 gap-3 text-xs">
-                        <div>
-                          <p className="text-gray-600 dark:text-gray-400">Platform:</p>
-                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.platform}</p>
+                  {/* Device Comparison - Side by Side */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Registered Device */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                      <p className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Original Device (Registered)
+                      </p>
+                      {deviceComparison.registeredDeviceInfo ? (
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <p className="text-blue-600 dark:text-blue-400">Platform:</p>
+                            <p className="font-mono text-blue-900 dark:text-blue-100">{deviceComparison.registeredDeviceInfo.platform}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-600 dark:text-blue-400">CPU Cores:</p>
+                            <p className="font-mono text-blue-900 dark:text-blue-100">{deviceComparison.registeredDeviceInfo.cores}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-600 dark:text-blue-400">GPU:</p>
+                            <p className="font-mono text-blue-900 dark:text-blue-100">{deviceComparison.registeredDeviceInfo.gpu}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-gray-600 dark:text-gray-400">CPU Cores:</p>
-                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.cores}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600 dark:text-gray-400">GPU:</p>
-                          <p className="font-mono text-gray-900 dark:text-white">{deviceComparison.deviceInfo.gpu}</p>
-                        </div>
-                      </div>
+                      ) : (
+                        <p className="text-xs text-blue-600 dark:text-blue-400">No device registered</p>
+                      )}
                     </div>
-                  )}
+
+                    {/* Current Device */}
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                      <p className="text-sm font-bold text-purple-900 dark:text-purple-100 mb-3 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Current Device (Attempting Login)
+                      </p>
+                      {deviceComparison.currentDeviceInfo ? (
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <p className="text-purple-600 dark:text-purple-400">Platform:</p>
+                            <p className="font-mono text-purple-900 dark:text-purple-100">{deviceComparison.currentDeviceInfo.platform}</p>
+                          </div>
+                          <div>
+                            <p className="text-purple-600 dark:text-purple-400">CPU Cores:</p>
+                            <p className="font-mono text-purple-900 dark:text-purple-100">{deviceComparison.currentDeviceInfo.cores}</p>
+                          </div>
+                          <div>
+                            <p className="text-purple-600 dark:text-purple-400">GPU:</p>
+                            <p className="font-mono text-purple-900 dark:text-purple-100">{deviceComparison.currentDeviceInfo.gpu}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-purple-600 dark:text-purple-400">Unable to detect</p>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Warning about device changes */}
                   <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
@@ -1236,37 +1266,69 @@ const AdminUserManagement: React.FC = () => {
               )}
             </div>
             
-            <div className="flex justify-between items-center">
-              <button
-                onClick={() => {
-                  setShowUnlockModal(false);
-                  setSelectedUserForAction(null);
-                  setDeviceComparison(null);
-                }}
-                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <div className="flex space-x-3">
-                {/* Unlock without device reset (same device) */}
+            {/* Action Buttons with Explanations */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Option 1: Unlock Only (Same Device) */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-600">
+                  <div className="flex items-start space-x-2 mb-3">
+                    <Unlock className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 dark:text-blue-100">Option 1: Unlock Account Only</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                        • Account is unlocked<br/>
+                        • Device binding stays the same<br/>
+                        • User logs back in on their registered device<br/>
+                        • Use when: Same device, different browser
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => confirmUnlockUser(false)}
+                    disabled={loading || verifyingDevice}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center space-x-2 transition-all"
+                  >
+                    <Unlock className="w-4 h-4" />
+                    <span>{loading ? 'Processing...' : 'Unlock Only'}</span>
+                  </button>
+                </div>
+
+                {/* Option 2: Unlock + Reset Device */}
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border-2 border-orange-300 dark:border-orange-600">
+                  <div className="flex items-start space-x-2 mb-3">
+                    <EyeOff className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-orange-900 dark:text-orange-100">Option 2: Unlock + Reset Device</p>
+                      <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                        • Account is unlocked<br/>
+                        • Device binding is cleared<br/>
+                        • User can register a new device<br/>
+                        • Use when: Legitimate device change
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => confirmUnlockUser(true)}
+                    disabled={loading || verifyingDevice}
+                    className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center space-x-2 transition-all"
+                  >
+                    <EyeOff className="w-4 h-4" />
+                    <span>{loading ? 'Processing...' : 'Unlock + Reset'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
                 <button
-                  onClick={() => confirmUnlockUser(false)}
-                  disabled={loading || verifyingDevice}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  onClick={() => {
+                    setShowUnlockModal(false);
+                    setSelectedUserForAction(null);
+                    setDeviceComparison(null);
+                  }}
+                  className="px-6 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
+                  disabled={loading}
                 >
-                  <Unlock className="w-4 h-4" />
-                  <span>{loading ? 'Unlocking...' : 'Unlock (Same Device)'}</span>
-                </button>
-                
-                {/* Unlock with device reset (device change) */}
-                <button
-                  onClick={() => confirmUnlockUser(true)}
-                  disabled={loading || verifyingDevice}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center space-x-2"
-                >
-                  <EyeOff className="w-4 h-4" />
-                  <span>{loading ? 'Unlocking...' : 'Unlock + Reset Device'}</span>
+                  Cancel
                 </button>
               </div>
             </div>
