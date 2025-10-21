@@ -404,22 +404,14 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
                   </button>
                 </div>
 
-                <div className="flex space-x-3">
-                  <button
-                    onClick={onBack}
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Back to Training
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={!isSelectedCorrect}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <span>{isLastRule ? 'Start Practice' : 'Next Rule'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  onClick={handleNext}
+                  disabled={!isSelectedCorrect}
+                  className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
+                >
+                  <span>{isLastRule ? 'Start Practice' : 'Next Rule'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
