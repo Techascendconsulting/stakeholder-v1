@@ -42,12 +42,14 @@ export default function FeedbackPanel({
     <div className="space-y-4 animate-fadeIn">
       {/* Local Hint Box (Instant, fades out when AI arrives) */}
       {localHint && showLocalHint && !aiFeedback && (
-        <div className="rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-600 p-4 text-sm transition-all duration-500">
-          <div className="flex items-start space-x-2">
-            <span className="text-yellow-600 dark:text-yellow-400 text-lg">⚡</span>
+        <div className="rounded-2xl bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-2 border-yellow-400/50 dark:border-yellow-600/50 p-5 shadow-lg shadow-yellow-500/20 transition-all duration-500">
+          <div className="flex items-start space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-white text-xl shadow-lg">
+              ⚡
+            </div>
             <div className="flex-1">
-              <span className="font-semibold text-yellow-900 dark:text-yellow-200">Quick Tip:</span>
-              <span className="text-yellow-800 dark:text-yellow-300 ml-2">{localHint}</span>
+              <p className="font-bold text-yellow-900 dark:text-yellow-100 mb-1">Quick Tip:</p>
+              <p className="text-yellow-800 dark:text-yellow-200 leading-relaxed">{localHint}</p>
             </div>
           </div>
         </div>
@@ -55,22 +57,27 @@ export default function FeedbackPanel({
 
       {/* AI Loading State */}
       {loading && (
-        <div className="rounded-lg border border-purple-300 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-600 p-4 text-sm">
-          <div className="flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
-            <span className="text-purple-700 dark:text-purple-300 font-medium">AI Coach is analyzing your response...</span>
+        <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 border-2 border-purple-300/50 dark:border-purple-600/50 p-5 shadow-lg animate-pulse">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-200 dark:border-purple-700 border-t-purple-600 dark:border-t-purple-400"></div>
+              <div className="absolute inset-0 rounded-full bg-purple-400/20 blur-md"></div>
+            </div>
+            <span className="text-purple-800 dark:text-purple-200 font-semibold">AI Coach is analyzing your response...</span>
           </div>
         </div>
       )}
 
       {/* AI Coach Feedback Box (Appears after loading) */}
       {aiFeedback && !loading && (
-        <div className="rounded-lg border border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-600 p-4 text-sm animate-slideUp">
-          <div className="flex items-start space-x-2">
-            <span className="text-blue-600 dark:text-blue-400 text-lg">🧠</span>
+        <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-400/50 dark:border-blue-600/50 p-6 shadow-xl shadow-blue-500/20 animate-slideUp">
+          <div className="flex items-start space-x-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white text-2xl shadow-lg">
+              🧠
+            </div>
             <div className="flex-1">
-              <span className="font-semibold text-blue-900 dark:text-blue-200">AI Coach:</span>
-              <span className="text-blue-800 dark:text-blue-300 ml-2">{aiFeedback}</span>
+              <p className="font-bold text-blue-900 dark:text-blue-100 mb-2 text-base">AI Coach Says:</p>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">{aiFeedback}</p>
             </div>
           </div>
         </div>
@@ -78,12 +85,16 @@ export default function FeedbackPanel({
 
       {/* Example Answer Box */}
       {exampleAnswer && !loading && (
-        <div className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm animate-fadeIn">
-          <div className="flex items-start space-x-2">
-            <span className="text-gray-500 dark:text-gray-400 text-lg">💡</span>
+        <div className="rounded-2xl backdrop-blur-md bg-white/90 dark:bg-gray-800/90 border-2 border-gray-200/50 dark:border-gray-600/50 p-6 shadow-xl animate-fadeIn">
+          <div className="flex items-start space-x-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl shadow-lg">
+              💡
+            </div>
             <div className="flex-1">
-              <p className="font-semibold text-gray-900 dark:text-white mb-2">Example Answer:</p>
-              <p className="text-gray-700 dark:text-gray-300 italic leading-relaxed">"{exampleAnswer}"</p>
+              <p className="font-bold text-gray-900 dark:text-white mb-3 text-base">Example Answer:</p>
+              <p className="text-gray-800 dark:text-gray-200 italic leading-relaxed text-base bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-4 rounded-xl border border-gray-200 dark:border-gray-600">
+                "{exampleAnswer}"
+              </p>
             </div>
           </div>
         </div>
@@ -91,19 +102,20 @@ export default function FeedbackPanel({
 
       {/* Reflection Section */}
       {exampleAnswer && !loading && (
-        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 animate-fadeIn">
-          <label className="block font-semibold text-gray-900 dark:text-white mb-3 text-sm">
-            How close was your answer to the example?
+        <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-300/50 dark:border-purple-600/50 p-6 shadow-lg animate-fadeIn">
+          <label className="block font-bold text-gray-900 dark:text-white mb-4 text-base flex items-center space-x-2">
+            <span className="text-xl">🤔</span>
+            <span>How close was your answer to the example?</span>
           </label>
           <div className="flex flex-wrap gap-3">
             {reflectionOptions.map((option) => (
               <button
                 key={option}
                 onClick={() => handleReflectionClick(option)}
-                className={`px-4 py-2 rounded-full border-2 transition-all duration-200 text-sm font-medium ${
+                className={`px-6 py-3 rounded-xl border-2 transition-all duration-300 font-semibold ${
                   selectedReflection === option
-                    ? 'border-purple-600 bg-purple-600 text-white shadow-md scale-105'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/30'
+                    ? 'border-purple-600 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 scale-105'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:scale-105'
                 }`}
               >
                 {option}
@@ -118,10 +130,11 @@ export default function FeedbackPanel({
         <div className="flex justify-end pt-2 animate-fadeIn">
           <button
             onClick={onNext}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="group px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white rounded-2xl hover:shadow-2xl hover:shadow-indigo-500/50 transition-all duration-300 flex items-center space-x-3 font-bold text-lg relative overflow-hidden"
           >
-            <span className="font-semibold">Next Rule</span>
-            <ArrowRight className="w-5 h-5" />
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative z-10">Next Rule</span>
+            <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
           </button>
         </div>
       )}

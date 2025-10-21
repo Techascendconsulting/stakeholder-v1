@@ -161,56 +161,82 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
   const isCorrect = selectedOption === currentRule.learn.correct;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 dark:from-slate-900 dark:via-purple-900 dark:to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-300/20 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Breadcrumbs - Modern floating style */}
+        <nav className="flex items-center space-x-2 text-sm mb-8 max-w-4xl mx-auto">
           <button
             onClick={onBack}
-            className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex items-center px-3 py-1.5 rounded-full bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all duration-200"
           >
-            <Home className="w-4 h-4 mr-1" />
+            <Home className="w-3.5 h-3.5 mr-1.5" />
             Requirements Specification
           </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 dark:text-white font-medium">BA Thinking Framework</span>
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <span className="px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium shadow-lg">
+            BA Thinking Framework
+          </span>
         </nav>
 
-        {/* Header */}
-        <div className="text-center mb-8 max-w-5xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-            <Target className="w-8 h-8 text-white" />
+        {/* Header - 2025 style with glassmorphism */}
+        <div className="text-center mb-10 max-w-4xl mx-auto">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 rounded-3xl mb-6 shadow-2xl shadow-purple-500/30 relative group">
+            <Target className="w-10 h-10 text-white relative z-10" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-400 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 dark:from-purple-100 dark:via-indigo-100 dark:to-purple-100 bg-clip-text text-transparent mb-3">
             BA Thinking Framework
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Master the 10 core rules of Agile BA thinking through interactive learning
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="max-w-5xl mx-auto mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Rule {currentRuleIndex + 1} of {RULE_ORDER.length} - {phase === 'learn' ? 'Learn' : 'Apply'}
-            </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {Math.round(progress)}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Progress Bar - Modern glassmorphic design */}
+        <div className="max-w-4xl mx-auto mb-10">
+          <div className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">
+                  {currentRuleIndex + 1}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {currentRule.name}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {phase === 'learn' ? '📚 Learning Phase' : '✍️ Apply Phase'}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  {Math.round(progress)}%
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Complete</p>
+              </div>
+            </div>
+            <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 rounded-full transition-all duration-700 ease-out shadow-lg"
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-shimmer"></div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* LEARN PHASE */}
         {phase === 'learn' && (
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="max-w-4xl mx-auto">
+            <div className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-3xl shadow-2xl overflow-hidden border border-white/50 dark:border-gray-700/50 transform transition-all duration-500 hover:shadow-purple-500/20 hover:shadow-3xl">
               {/* Reference Story */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 p-6">
                 <div className="flex items-start space-x-4">
@@ -223,28 +249,36 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
               </div>
 
               {/* Rule Header */}
-              <div className="p-6 border-b-2 border-purple-700 dark:border-0 dark:bg-gradient-to-r dark:from-purple-600 dark:to-indigo-600">
-                <div className="flex items-center space-x-3 mb-3">
-                  <span className="text-2xl">🎯</span>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Rule {currentRuleIndex + 1}: {currentRule.name}
-                  </h2>
+              <div className="relative px-8 py-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 dark:from-purple-700 dark:via-indigo-700 dark:to-purple-700">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+                <div className="flex items-center space-x-4 relative z-10">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
+                    🎯
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1">
+                      Rule {currentRuleIndex + 1}: {currentRule.name}
+                    </h2>
+                    <p className="text-purple-100 text-sm">Choose the best answer to continue</p>
+                  </div>
                 </div>
               </div>
 
               {/* Question */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="px-8 py-6 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20">
                 <div className="flex items-start space-x-3">
-                  <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-1" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
+                    <Lightbulb className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-1.5">
                     {currentRule.learn.question}
                   </h3>
                 </div>
               </div>
 
               {/* Options */}
-              <div className="p-6">
-                <div className="space-y-3">
+              <div className="p-8">
+                <div className="space-y-4">
                   {(['A', 'B', 'C'] as const).map((optionKey) => {
                     const isSelected = selectedOption === optionKey;
                     const isCorrectOption = optionKey === currentRule.learn.correct;
@@ -255,36 +289,36 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
                         key={optionKey}
                         onClick={() => handleLearnSelect(optionKey)}
                         disabled={showFeedback && isCorrect}
-                        className={`w-full p-5 rounded-lg border-2 text-left transition-all duration-200 ${
+                        className={`group relative w-full p-6 rounded-2xl text-left transition-all duration-300 ${
                           showFeedback
                             ? isSelected
                               ? isCorrectOption
-                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                                : 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                              : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60'
+                                ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-500 shadow-lg shadow-green-500/20'
+                                : 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border-2 border-red-500 shadow-lg shadow-red-500/20'
+                              : 'border-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 opacity-50'
                             : isSelected
-                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/10'
+                            ? 'bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 border-2 border-purple-500 shadow-lg shadow-purple-500/20 scale-[1.02]'
+                            : 'border-2 border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg hover:scale-[1.01] hover:bg-purple-50/50 dark:hover:bg-purple-900/20'
                         }`}
                       >
-                        <div className="flex items-start space-x-3">
-                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 font-bold ${
+                        <div className="flex items-start space-x-4">
+                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-lg transition-all duration-300 ${
                             showFeedback
                               ? isSelected
                                 ? isCorrectOption
-                                  ? 'border-green-500 bg-green-500 text-white'
-                                  : 'border-red-500 bg-red-500 text-white'
-                                : 'border-gray-300 dark:border-gray-600 text-gray-400'
+                                  ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg'
+                                  : 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
                               : isSelected
-                              ? 'border-purple-500 bg-purple-500 text-white'
-                              : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                              ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-800/50'
                           }`}>
                             {showFeedback && isSelected && isCorrectOption && '✓'}
                             {showFeedback && isSelected && !isCorrectOption && '✗'}
                             {!showFeedback || !isSelected ? optionKey : ''}
                           </div>
                           <div className="flex-1">
-                            <p className="text-base text-gray-800 dark:text-gray-200">{currentRule.learn.options[optionKey]}</p>
+                            <p className="text-base leading-relaxed text-gray-900 dark:text-gray-100">{currentRule.learn.options[optionKey]}</p>
                           </div>
                         </div>
                       </button>
@@ -295,35 +329,52 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
 
               {/* Feedback */}
               {showFeedback && selectedOption && (
-                <div className="p-6 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start space-x-3">
-                    <AlertCircle className={`w-5 h-5 mt-0.5 ${isCorrect ? 'text-green-600' : 'text-red-600'}`} />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        {isCorrect ? '✅ Correct!' : '❌ Not quite'}
-                      </h3>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {currentRule.learn.feedback[selectedOption]}
-                      </p>
-                      {!isCorrect && (
-                        <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
-                          <p className="text-sm text-green-800 dark:text-green-200">
-                            <strong>Correct answer: {currentRule.learn.correct}</strong> - {currentRule.learn.options[currentRule.learn.correct]}
-                          </p>
-                        </div>
-                      )}
+                <div className="mx-8 mb-8 animate-slideUp">
+                  <div className={`rounded-2xl p-6 border-2 ${
+                    isCorrect 
+                      ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-green-500/50 shadow-xl shadow-green-500/20' 
+                      : 'bg-gradient-to-br from-rose-50 to-red-50 dark:from-red-900/30 dark:to-rose-900/30 border-red-500/50 shadow-xl shadow-red-500/20'
+                  }`}>
+                    <div className="flex items-start space-x-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                        isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                      }`}>
+                        {isCorrect ? '✓' : '✗'}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className={`font-bold text-lg mb-3 ${
+                          isCorrect ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'
+                        }`}>
+                          {isCorrect ? 'Excellent! That\'s correct' : 'Not quite - let\'s learn from this'}
+                        </h3>
+                        <p className={`leading-relaxed mb-4 ${
+                          isCorrect ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+                        }`}>
+                          {currentRule.learn.feedback[selectedOption]}
+                        </p>
+                        {!isCorrect && (
+                          <div className="mt-4 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-green-300 dark:border-green-700 shadow-md">
+                            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium mb-2">
+                              ✓ Correct answer: <span className="text-green-600 dark:text-green-400 font-bold">{currentRule.learn.correct}</span>
+                            </p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">
+                              {currentRule.learn.options[currentRule.learn.correct]}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Navigation */}
-              <div className="p-6 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="px-8 pb-8">
                 <div className="flex justify-between items-center">
                   <button
                     onClick={handlePrevious}
                     disabled={currentRuleIndex === 0 && phase === 'learn'}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     Previous
                   </button>
@@ -331,10 +382,11 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
                   {isCorrect && (
                     <button
                       onClick={handleNextFromLearn}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                      className="group px-8 py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 flex items-center space-x-2 font-semibold relative overflow-hidden"
                     >
-                      <span>Apply This Rule</span>
-                      <ArrowRight className="w-5 h-5" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <span className="relative z-10">Apply This Rule</span>
+                      <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
                     </button>
                   )}
                 </div>
@@ -345,8 +397,8 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
 
         {/* APPLY PHASE */}
         {phase === 'apply' && (
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="max-w-4xl mx-auto">
+            <div className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-3xl shadow-2xl overflow-hidden border border-white/50 dark:border-gray-700/50 transform transition-all duration-500">
               {/* Reference Story */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 p-6">
                 <div className="flex items-start space-x-4">
@@ -359,54 +411,70 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
               </div>
 
               {/* Rule Header */}
-              <div className="p-6 border-b-2 border-indigo-700 dark:border-0 dark:bg-gradient-to-r dark:from-indigo-600 dark:to-purple-600">
-                <div className="flex items-center space-x-3 mb-3">
-                  <span className="text-2xl">✍️</span>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Apply: {currentRule.name}
-                  </h2>
+              <div className="relative px-8 py-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 dark:from-indigo-700 dark:via-purple-700 dark:to-indigo-700">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+                <div className="flex items-center space-x-4 relative z-10">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl shadow-lg">
+                    ✍️
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1">
+                      Apply: {currentRule.name}
+                    </h2>
+                    <p className="text-indigo-100 text-sm">Write your own answer based on the scenario</p>
+                  </div>
                 </div>
               </div>
 
               {/* Scenario */}
-              <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
-                <div className="flex items-start space-x-3">
-                  <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">New Scenario:</h3>
-                    <p className="text-gray-800 dark:text-gray-200 italic">{currentRule.apply.scenario}</p>
+              <div className="mx-8 mt-6 mb-6">
+                <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 border-l-4 border-amber-500 dark:border-amber-400 p-6 shadow-lg">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg">
+                      <Lightbulb className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-amber-900 dark:text-amber-200 mb-2 text-base">New Scenario:</h3>
+                      <p className="text-amber-800 dark:text-amber-100 italic leading-relaxed">{currentRule.apply.scenario}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Writing Input */}
-              <div className="p-6">
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                  {currentRule.apply.prompt}
+              <div className="px-8 py-6">
+                <label className="block text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                  <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                    ✏️
+                  </span>
+                  <span>{currentRule.apply.prompt}</span>
                 </label>
-                <textarea
-                  value={applyText}
-                  onChange={(e) => setApplyText(e.target.value)}
-                  placeholder="Type your answer here..."
-                  disabled={submitted}
-                  className="w-full min-h-[120px] px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none disabled:opacity-60 disabled:cursor-not-allowed"
-                  rows={4}
-                />
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {applyText.length} characters
-                  </p>
+                <div className="relative">
+                  <textarea
+                    value={applyText}
+                    onChange={(e) => setApplyText(e.target.value)}
+                    placeholder="Type your answer here..."
+                    disabled={submitted}
+                    className="w-full min-h-[140px] px-5 py-4 border-2 border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm focus:outline-none focus:ring-4 focus:ring-purple-500/30 focus:border-purple-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 text-base leading-relaxed"
+                    rows={5}
+                  />
+                  <div className="absolute bottom-3 right-3 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      {applyText.length} chars
+                    </p>
+                  </div>
                 </div>
 
                 {/* Submit Button */}
                 {!submitted && applyText.trim() && (
-                  <div className="mt-4">
+                  <div className="mt-6 animate-fadeIn">
                     <button
                       onClick={handleSubmitApply}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg font-semibold"
+                      className="group w-full px-8 py-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white rounded-2xl hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 flex items-center justify-center space-x-3 font-bold text-lg relative overflow-hidden"
                     >
-                      <Sparkles className="w-5 h-5" />
-                      <span>Check My Answer</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <Sparkles className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                      <span className="relative z-10">Check My Answer</span>
                     </button>
                   </div>
                 )}
