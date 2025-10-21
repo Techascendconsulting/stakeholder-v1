@@ -75,6 +75,18 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         break;
     }
 
+    // Create contextual scenarios for each rule
+    const scenarios = [
+      "You're writing acceptance criteria for the auto-save feature. One of your criteria combines multiple expectations. Which version follows the rule better?",
+      "Your stakeholder says the upload should be 'fast'. QA asks how to test this. Which AC is testable?",
+      "A developer complains they can't reproduce the resume bug. Which AC provides clear steps to reproduce?",
+      "The product manager asks: 'What if the upload fails?' Which acceptance criteria cover failure cases?",
+      "A designer wants to know if the button must be green. Which AC gives them creative freedom while ensuring the requirement is met?",
+      "A security audit flags unlimited file uploads. Which AC properly defines boundaries?",
+      "QA found users entering invalid dates. Which AC captures the business rule that should have prevented this?",
+      "The CTO asks: 'Why are we building this database index?' Which AC explains the user value?"
+    ];
+
     return {
       id: index + 1,
       title: rule.rule,
@@ -82,7 +94,7 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
       icon: <Target className="w-6 h-6" />,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      scenario: `Rule ${index + 1} of 8: ${rule.rule}`,
+      scenario: scenarios[index] || `Apply the rule: ${rule.rule}`,
       options: [
         {
           value: "A",
