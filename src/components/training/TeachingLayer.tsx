@@ -40,6 +40,102 @@ Your job is to take these high-level statements and break them down into specifi
     bgColor: 'bg-blue-50 dark:bg-blue-900/20'
   },
   {
+    title: 'Understanding Epics: The Big Picture',
+    content: `Before diving into individual user stories, you need to understand epics - the high-level containers that organize your requirements into meaningful business capabilities.
+
+**What is an Epic?**
+
+An epic is a large user story that represents a significant business capability or feature area. Think of it as a theme or initiative that contains multiple smaller user stories. Epics help you organize and prioritize work at a strategic level before breaking it down into actionable pieces.
+
+**Why Epics Matter for Business Analysts:**
+
+Epics serve several critical purposes in requirements documentation:
+
+• **Strategic Alignment**: They connect individual features to business objectives
+• **Scope Management**: They help you understand the full scope of a capability before diving into details
+• **Stakeholder Communication**: They provide a high-level view that executives and business stakeholders can easily understand
+• **Release Planning**: They help you plan which capabilities to deliver in which release
+• **Team Organization**: They allow different teams to work on different aspects of the same business capability
+
+**Real-World Epic Examples:**
+
+**E-commerce Platform Epic:**
+"Customer Account Management" - This epic might contain stories about:
+- User registration and login
+- Profile management
+- Password reset functionality
+- Account security settings
+- Order history viewing
+
+**Healthcare System Epic:**
+"Patient Appointment Scheduling" - This epic might include:
+- Appointment booking
+- Calendar integration
+- Reminder notifications
+- Cancellation and rescheduling
+- Provider availability management
+
+**Banking Application Epic:**
+"Mobile Payment Processing" - This epic could encompass:
+- Payment initiation
+- Security verification
+- Transaction confirmation
+- Payment history
+- Fraud detection alerts
+
+**How Epics Relate to User Stories:**
+
+Epics are the "parent" containers that hold multiple user stories. Each epic represents a complete business capability, while user stories represent specific functionality within that capability.
+
+**The Epic-to-Story Breakdown Process:**
+
+1. **Start with Business Value**: What major business capability does this epic deliver?
+2. **Identify User Types**: Who are the different users who will interact with this capability?
+3. **Define User Journeys**: What are the key workflows within this capability?
+4. **Break into Stories**: Each workflow becomes one or more user stories
+5. **Prioritize Stories**: Which stories are most critical to the epic's success?
+
+**Epic Benefits for Your BA Work:**
+
+• **Better Requirements Organization**: Instead of a flat list of 50 stories, you have 5-7 epics with 5-10 stories each
+• **Clearer Stakeholder Discussions**: You can discuss "Customer Account Management" as a concept before diving into login details
+• **Improved Release Planning**: You can plan to deliver entire epics in specific releases
+• **Enhanced Traceability**: You can trace business objectives → epics → stories → acceptance criteria
+• **Better Scope Management**: When stakeholders want to add features, you can see which epic they belong to
+
+**Common Epic Mistakes to Avoid:**
+
+• **Too Technical**: "Database Optimization" is a technical task, not a business epic
+• **Too Small**: "User Login" is a story, not an epic
+• **Too Vague**: "System Improvement" doesn't provide clear business value
+• **No User Focus**: Epics should always be about what users can do, not what the system does
+
+**Epic Best Practices:**
+
+• **Name from User Perspective**: "Customer Self-Service" not "Customer Portal Development"
+• **Include Business Value**: Each epic should deliver measurable business outcomes
+• **Size Appropriately**: An epic should take 3-6 months to complete all stories
+• **Clear Boundaries**: Each epic should be independent and deliverable
+• **Stakeholder Ownership**: Each epic should have a clear business owner
+
+**The Epic-Story-AC Hierarchy:**
+
+```
+Epic: Customer Account Management
+├── Story: As a customer, I want to register for an account so I can access personalized features
+│   └── AC: Registration form validation, email confirmation, account activation
+├── Story: As a customer, I want to log in securely so I can access my account
+│   └── AC: Username/password validation, security measures, session management
+└── Story: As a customer, I want to update my profile so I can keep my information current
+    └── AC: Profile editing, data validation, change confirmation
+```
+
+This hierarchy makes it easy to understand how individual stories contribute to larger business capabilities, making your requirements documentation more strategic and easier to manage.`,
+    icon: <Star className="w-6 h-6" />,
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-50 dark:bg-indigo-900/20'
+  },
+  {
     title: 'User Stories',
     content: `How to Write User Stories and Acceptance Criteria That Actually Get Built
 
