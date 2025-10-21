@@ -60,6 +60,11 @@ const AdminUserManagement: React.FC = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'senior_admin' | 'super_admin'>('admin');
+  
+  // Unlock/Reset Device modal states
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showResetDeviceModal, setShowResetDeviceModal] = useState(false);
+  const [selectedUserForAction, setSelectedUserForAction] = useState<{ id: string; email: string } | null>(null);
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -226,9 +231,12 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleUnlockUser = async (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to unlock ${email}? This will allow them to log in but they will still need to use their registered device.`)) {
-      return;
-    }
+    setSelectedUserForAction({ id: userId, email });
+    setShowUnlockModal(true);
+  };
+
+  const confirmUnlockUser = async () => {
+    if (!selectedUserForAction) return;
 
     try {
       setLoading(true);
@@ -237,11 +245,10 @@ const AdminUserManagement: React.FC = () => {
       const { error } = await supabase
         .from('user_profiles')
         .update({ locked: false })
-        .eq('user_id', userId);
+        .eq('user_id', selectedUserForAction.id);
 
       if (error) {
         console.error('Error unlocking user:', error);
-        alert(`Failed to unlock ${email}: ${error.message}`);
         return;
       }
 
@@ -251,8 +258,8 @@ const AdminUserManagement: React.FC = () => {
         await adminService.logActivity(
           user?.id || '',
           'unlock_account',
-          userId,
-          { email, action: 'account_unlocked' }
+          selectedUserForAction.id,
+          { email: selectedUserForAction.email, action: 'account_unlocked' }
         );
         console.log('✅ Activity logged successfully');
       } catch (logError) {
@@ -261,19 +268,22 @@ const AdminUserManagement: React.FC = () => {
       
       // Refresh users
       loadUsers();
-      alert(`Account unlocked successfully for ${email}. They can now log in but must use their registered device.`);
+      setShowUnlockModal(false);
+      setSelectedUserForAction(null);
     } catch (error) {
       console.error('Error unlocking account:', error);
-      alert('Error unlocking account');
     } finally {
       setLoading(false);
     }
   };
 
   const handleClearDeviceBinding = async (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to reset the device access for ${email}? They will receive an email notification and need to login to register their new device.`)) {
-      return;
-    }
+    setSelectedUserForAction({ id: userId, email });
+    setShowResetDeviceModal(true);
+  };
+
+  const confirmResetDevice = async () => {
+    if (!selectedUserForAction) return;
 
     try {
       setLoading(true);
@@ -282,7 +292,7 @@ const AdminUserManagement: React.FC = () => {
       const { error } = await supabase
         .from('user_profiles')
         .update({ registered_device: null })
-        .eq('user_id', userId);
+        .eq('user_id', selectedUserForAction.id);
 
       if (error) {
         throw error;
@@ -291,10 +301,8 @@ const AdminUserManagement: React.FC = () => {
       // Send email notification to student (Step 1: Email Notification)
       // TODO: Implement sendDeviceResetNotification in EmailService
       console.log('📧 Device reset - email notification temporarily disabled');
-      // const emailSent = await EmailService.sendDeviceResetNotification(email);
-      // if (!emailSent) {
-      //   console.warn('⚠️ Failed to send email notification, but device binding was cleared');
-      // }
+      const emailSent = false;
+      // const emailSent = await EmailService.sendDeviceResetNotification(selectedUserForAction.email);
 
       // Log the action
       console.log('🔍 Logging clear device binding action...');
@@ -302,9 +310,9 @@ const AdminUserManagement: React.FC = () => {
         await adminService.logActivity(
           user?.id || '',
           'clear_device_binding',
-          userId,
+          selectedUserForAction.id,
           { 
-            email, 
+            email: selectedUserForAction.email, 
             action: 'device_binding_cleared',
             email_notification_sent: emailSent
           }
@@ -316,15 +324,10 @@ const AdminUserManagement: React.FC = () => {
       
       // Refresh users
       loadUsers();
-      
-      const message = emailSent 
-        ? `Device access reset for ${email}. They have been notified via email and can login to register their new device.`
-        : `Device access reset for ${email}. Please notify them manually as the email notification failed.`;
-      
-      alert(message);
+      setShowResetDeviceModal(false);
+      setSelectedUserForAction(null);
     } catch (error) {
       console.error('Error clearing device binding:', error);
-      alert('Error clearing device binding');
     } finally {
       setLoading(false);
     }
@@ -1121,6 +1124,112 @@ const AdminUserManagement: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Unlock Account Modal */}
+      {showUnlockModal && selectedUserForAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Unlock className="w-5 h-5 mr-2 text-green-600" />
+              Unlock Account
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2">User to unlock:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
+              </div>
+              
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                <p className="text-sm text-yellow-900 dark:text-yellow-100 font-medium mb-2">What happens:</p>
+                <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1 ml-4">
+                  <li>• Account will be unlocked</li>
+                  <li>• User can attempt to log in again</li>
+                  <li>• They must use their registered device</li>
+                  <li>• If they use a different device, account locks again</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowUnlockModal(false);
+                  setSelectedUserForAction(null);
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUnlockUser}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                <Unlock className="w-4 h-4" />
+                <span>{loading ? 'Unlocking...' : 'Unlock Account'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Device Modal */}
+      {showResetDeviceModal && selectedUserForAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <EyeOff className="w-5 h-5 mr-2 text-orange-600" />
+              Reset Device Binding
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2">User:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
+              </div>
+              
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-700">
+                <p className="text-sm text-orange-900 dark:text-orange-100 font-medium mb-2">What happens:</p>
+                <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1 ml-4">
+                  <li>• Clears registered device from database</li>
+                  <li>• User can login from ANY device</li>
+                  <li>• First device they login with becomes new registered device</li>
+                  <li>• Old device will be blocked</li>
+                  <li>• Email notification sent (if configured)</li>
+                </ul>
+              </div>
+
+              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                <p className="text-sm text-red-900 dark:text-red-100 font-medium">Warning: This is permanent!</p>
+                <p className="text-xs text-red-800 dark:text-red-200 mt-1">Use only for legitimate device changes (new laptop, stolen device, etc.)</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowResetDeviceModal(false);
+                  setSelectedUserForAction(null);
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmResetDevice}
+                disabled={loading}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                <EyeOff className="w-4 h-4" />
+                <span>{loading ? 'Resetting...' : 'Reset Device'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invite Admin Modal */}
       {showInviteModal && (
