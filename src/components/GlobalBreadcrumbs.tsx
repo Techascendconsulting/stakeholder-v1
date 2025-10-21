@@ -103,11 +103,16 @@ function formatViewName(view: string): string {
 const GlobalBreadcrumbs: React.FC = () => {
   const { currentView, setCurrentView } = useApp();
   
+  console.log('🍞 BREADCRUMBS DEBUG: currentView =', currentView);
+  
   // Hide breadcrumbs on pages that have their own internal breadcrumb systems
   const viewsWithOwnBreadcrumbs = ['voice-meeting-v2', 'documentation', 'documentation-practice'];
   if (viewsWithOwnBreadcrumbs.includes(currentView)) {
+    console.log('🍞 BREADCRUMBS DEBUG: Hiding global breadcrumbs for', currentView);
     return null;
   }
+  
+  console.log('🍞 BREADCRUMBS DEBUG: Showing global breadcrumbs for', currentView);
   
   const [breadcrumbs, setBreadcrumbs] = useState<AppView[]>([]);
   const [scrumSubPage, setScrumSubPage] = useState<string | null>(null);

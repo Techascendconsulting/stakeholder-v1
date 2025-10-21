@@ -80,6 +80,8 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   }
 
   // Render the selector
+  console.log('🍞 LOCAL BREADCRUMB: Rendering WalkthroughSelector breadcrumbs');
+  
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-10">
       {/* Breadcrumbs */}
