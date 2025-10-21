@@ -165,11 +165,11 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
               {/* Reference Story */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 p-6">
-                <div className="flex items-start space-x-3">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="flex items-start space-x-4">
+                  <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-100 italic">{currentRule.learn.referenceStory}</p>
+                    <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
+                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">{currentRule.learn.referenceStory}</p>
                   </div>
                 </div>
               </div>
@@ -301,11 +301,11 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
               {/* Reference Story */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 p-6">
-                <div className="flex items-start space-x-3">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="flex items-start space-x-4">
+                  <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-100 italic">{currentRule.learn.referenceStory}</p>
+                    <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
+                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">{currentRule.learn.referenceStory}</p>
                   </div>
                 </div>
               </div>
