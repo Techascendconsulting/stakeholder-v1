@@ -11,14 +11,16 @@ interface TeachingStep {
 
 const teachingSteps: TeachingStep[] = [
   {
-    title: 'What is Requirements Documentation?',
-    content: `Requirements documentation is the foundation of every successful project. It's how you capture, organize, and communicate what needs to be built in a way that developers can understand, testers can verify, and stakeholders can approve.
+    title: 'What is Requirements Specification?',
+    content: `**Specification** (noun): A detailed description of the design and materials used to make something, or a detailed statement of requirements.
 
-Think of it as the blueprint for your project. Without clear requirements documentation, you're essentially asking a construction team to build a house without any plans. The result? Miscommunication, rework, delays, and frustrated stakeholders.
+In business analysis, a **requirements specification** is the foundation of every successful project. It's how you capture, organize, and communicate what needs to be built in a way that developers can understand, testers can verify, and stakeholders can approve.
 
-**Why Requirements Documentation Matters:**
+Think of it as the blueprint for your project. Without clear requirements specification, you're essentially asking a construction team to build a house without any plans. The result? Miscommunication, rework, delays, and frustrated stakeholders.
 
-As a Business Analyst, you're the bridge between business needs and technical solutions. Your documentation is what transforms vague business ideas into concrete, buildable features. It's your responsibility to ensure that:
+**Why Requirements Specification Matters:**
+
+As a Business Analyst, you're the bridge between business needs and technical solutions. Your specification is what transforms vague business ideas into concrete, buildable features. It's your responsibility to ensure that:
 
 • **Stakeholders know exactly what they're getting** - No surprises, no scope creep
 • **Developers have clear instructions** - They know what to build and how to test it
@@ -316,10 +318,10 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
           <BookOpen className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Requirements Documentation
+          Requirements Specification
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
-          Master the art of documenting requirements through user stories and acceptance criteria that actually get built
+          Master the art of specifying requirements through user stories and acceptance criteria that actually get built
         </p>
         
         {/* Hero Image */}

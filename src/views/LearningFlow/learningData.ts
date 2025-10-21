@@ -4837,7 +4837,7 @@ Use a decision matrix to score and compare options objectively.`
   // MODULE 8: Requirement Specification (User Stories & ACs)
   {
     id: 'module-8-documentation',
-    title: 'Requirement Specification',
+    title: 'Requirements Specification',
     description: 'Write clear, testable user stories and acceptance criteria',
     icon: '✍️',
     color: 'teal',

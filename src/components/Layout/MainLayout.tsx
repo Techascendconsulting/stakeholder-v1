@@ -491,9 +491,9 @@ function getPageTitle(view: string): string {
     'welcome': 'Welcome',
     'get-started': 'Getting Started',
     
-    // Learning & Requirement Specification
-    'documentation': 'Requirement Specification',
-    'documentation-practice': 'Requirement Specification Practice',
+    // Learning & Requirements Specification
+    'documentation': 'Requirements Specification',
+    'documentation-practice': 'Requirements Specification Practice',
     'learning-flow': 'Learning Journey',
     'handbook': 'BA Handbook',
     'ba-reference': 'BA Reference Library',

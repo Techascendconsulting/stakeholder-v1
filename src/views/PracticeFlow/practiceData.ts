@@ -21,9 +21,9 @@ export const practiceModules: PracticeModule[] = [
     order: 1
   },
   {
-    id: 'practice-2-requirement-specification',
-    title: 'Requirement Specification Practice',
-    description: 'Write clear requirement specifications: user stories, acceptance criteria, and business rules. Build a strong BA portfolio.',
+    id: 'practice-2-requirements-specification',
+    title: 'Requirements Specification Practice',
+    description: 'Write clear requirements specifications: user stories, acceptance criteria, and business rules. Build a strong BA portfolio.',
     icon: '📝',
     estimatedTime: '45-60 min',
     difficulty: 'Intermediate',
