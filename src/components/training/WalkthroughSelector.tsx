@@ -96,7 +96,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
           Requirements Specification
         </button>
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900 dark:text-white font-medium">Training Pods</span>
+        <span className="text-gray-900 dark:text-white font-medium">Requirement Pods</span>
       </nav>
 
       {/* Header */}
@@ -105,14 +105,14 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
           <Target className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Training Pods
+          Requirement Pods
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Choose a scenario to practice both user story writing and acceptance criteria. Each pod provides end-to-end learning with one real-world example.
         </p>
       </div>
 
-      {/* Training Pods Grid - Simplilearn Style */}
+      {/* Requirement Pods Grid - Simplilearn Style */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         {trainingPods.map((pod, index) => (
           <div
@@ -174,6 +174,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
     </div>
   );
 }
+
 
 
 
