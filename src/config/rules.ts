@@ -1,4 +1,4 @@
-// BA Thinking Framework - 10 Core Rules
+// Acceptance Criteria Thinking Framework - 10 Core Rules
 // Each rule has Learn (multiple choice) and Apply (writing exercise) phases
 
 export interface RuleLearn {

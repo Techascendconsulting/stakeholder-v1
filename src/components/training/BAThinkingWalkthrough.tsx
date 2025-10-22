@@ -180,7 +180,7 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
           </button>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium shadow-lg">
-            BA Thinking Framework
+            Acceptance Criteria Thinking Framework
           </span>
         </nav>
 
@@ -191,7 +191,7 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
             <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-400 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
           </div>
           <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 dark:from-purple-100 dark:via-indigo-100 dark:to-purple-100 bg-clip-text text-transparent mb-3">
-            BA Thinking Framework
+            Acceptance Criteria Thinking Framework
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Master the 10 core rules of Agile BA thinking through interactive learning

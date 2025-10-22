@@ -254,7 +254,7 @@ export default function BAFrameworkPractice({ onComplete }: BAFrameworkPracticeP
             Excellent Work!
           </h3>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            You've completed all 10 BA Thinking Framework rules. Your responses have been saved!
+            You've completed all 10 Acceptance Criteria Thinking Framework rules. Your responses have been saved!
           </p>
           <button
             onClick={onComplete}
