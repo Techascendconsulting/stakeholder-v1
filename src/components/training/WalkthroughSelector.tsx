@@ -33,7 +33,7 @@ const trainingPods: TrainingPod[] = [
     tag: 'Scenario 1'
   },
   {
-    id: 'shopping-checkout',
+    id: 'student-homework',
     title: 'Student Uploading Homework',
     description: 'Students need clearer feedback when their file uploads fail.',
     scenario: 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.',
@@ -44,7 +44,7 @@ const trainingPods: TrainingPod[] = [
     tag: 'Scenario 2'
   },
   {
-    id: 'student-homework',
+    id: 'shopping-checkout',
     title: 'Tenant Paying Rent Online',
     description: 'Tenants want instant confirmation that their rent payment went through.',
     scenario: 'You\'re working on a rent payment portal. Your stakeholder (the Property Ops Lead) tells you: "Tenants are paying online but sometimes the page freezes and they don\'t know if payment went through. They also want an option to see payment history clearly." This sounds simple. But clarity lives in the details. Don\'t just jump into writing "As a user, I want to pay rent online." That\'s vague, weak, and it puts the thinking burden on developers. Instead, shape a clear story that reflects: Who exactly is using the feature (be specific), What they want to do now, Why it matters at that moment.',
