@@ -191,6 +191,13 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
             Requirements Specification
           </button>
           <ChevronRight className="w-4 h-4 text-gray-400" />
+          <button
+            onClick={onBack}
+            className="px-3 py-1.5 rounded-full bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all duration-200"
+          >
+            Requirement Pods
+          </button>
+          <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium shadow-lg">
             Acceptance Criteria Thinking Framework
           </span>
