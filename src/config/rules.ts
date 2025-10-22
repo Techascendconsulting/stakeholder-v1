@@ -53,7 +53,7 @@ export const RULES: Record<string, Rule> = {
       scenario:
         "As a tenant officer, I want to record when a tenant moves out so I can trigger the inspection.",
       prompt:
-        "In one sentence, write the user goal. Start with 'The user can…' or 'The user should be able to…'",
+        "In one sentence, write the user goal. Start with 'The user can…' or 'The user should be able to…' (where 'user' refers to the person doing the action)",
       exampleAnswer: "The user can record tenant move-out dates to automatically trigger property inspections.",
     },
   },
