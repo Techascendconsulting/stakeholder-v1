@@ -90,14 +90,14 @@ const ProjectJourneyView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-200 to-teal-300 dark:from-green-900 dark:via-emerald-800 dark:to-teal-700 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-200 to-teal-300 dark:from-green-900 dark:via-emerald-800 dark:to-teal-700">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -215,7 +215,7 @@ const ProjectJourneyView: React.FC = () => {
                       className={`
                         bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6
                         border-2 transition-all duration-300
-                        ${isCompleted ? 'border-green-500' : ''}
+                        ${isCompleted ? 'bg-green-500 dark:bg-green-600 border-green-600 text-white' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
                         ${status === 'not_started' ? 'border-green-500' : ''}
                         hover:shadow-2xl hover:scale-105 cursor-pointer
@@ -239,7 +239,7 @@ const ProjectJourneyView: React.FC = () => {
 
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-green-600 dark:text-green-400">{stage.order}.</span> {stage.title}
+                        <span className={isCompleted ? 'text-white' : 'text-green-600 dark:text-green-400'}>{stage.order}.</span> {stage.title}
                       </h3>
 
                       {/* Description */}

@@ -137,14 +137,14 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -225,9 +225,8 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                   <div className={`${isLeft ? 'pr-[55%]' : 'pl-[55%]'}`}>
                     <div
                       className={`
-                        bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6
-                        border-2 transition-all duration-300
-                        ${isCompleted ? 'border-green-500' : ''}
+                        rounded-2xl shadow-xl p-6 border-2 transition-all duration-300
+                        ${isCompleted ? 'bg-blue-500 dark:bg-blue-600 border-blue-600 text-white' : 'bg-white dark:bg-gray-800'}
                         ${isInProgress ? 'border-orange-500' : ''}
                         ${status === 'not_started' || isLocked ? 'border-blue-500' : ''}
                         ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
@@ -249,18 +248,18 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                         `}>
                           {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Start'}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className={`text-xs ${isCompleted ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'}`}>
                           Module {module.order}
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-blue-600 dark:text-blue-400">{module.order}.</span> {module.title}
+                      <h3 className={`text-xl font-bold mb-2 ${isCompleted ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                        <span className={isCompleted ? 'text-blue-200' : 'text-blue-600 dark:text-blue-400'}>{module.order}.</span> {module.title}
                       </h3>
 
                       {/* Description */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className={`text-sm mb-4 ${isCompleted ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'}`}>
                         {module.description}
                       </p>
 

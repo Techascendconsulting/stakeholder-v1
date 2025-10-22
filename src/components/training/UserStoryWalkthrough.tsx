@@ -19,6 +19,7 @@ interface Step {
 }
 
 const getStepsForScenario = (scenarioId?: string): Step[] => {
+  console.log('🔍 DEBUG: getStepsForScenario called with scenarioId:', scenarioId);
   // Get Epic selection step if scenario ID exists in our data
   const epicScenario = getEpicSelectionScenario(scenarioId || '1');
   const epicStep = epicScenario ? {
@@ -33,21 +34,22 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
       .reduce((acc, opt) => ({ ...acc, [opt.label]: opt.feedback }), {})
   } : null;
 
-  if (scenarioId === 'student-homework') {
-    const studentHomeworkEpicStep = {
+  if (scenarioId === 'customer-service') {
+    console.log('🔍 DEBUG: Using customer-service scenario');
+    const customerServiceEpicStep = {
       key: 'epic',
       question: 'Which Epic does this requirement belong to?',
       tip: 'Choose the Epic that best fits this requirement.',
       options: [
-        'File Upload Feedback',
-        'Student Services',
-        'Assignment Management',
+        'Customer Interaction Management',
+        'Support Ticket System',
+        'Customer Service Tools',
         'User Experience'
       ],
-      correct: 'File Upload Feedback',
-      explanation: 'Correct — this is about providing clear feedback during file uploads.',
+      correct: 'Customer Interaction Management',
+      explanation: 'Correct — this is about managing customer interactions and providing better service.',
       incorrectExplanations: {
-        'Student Services': 'Too broad. The focus is specifically on upload feedback.',
+        'Support Ticket System': 'Too narrow. This is about broader customer interaction management.',
         'Assignment Management': 'Close, but the Epic is about upload feedback, not general assignment management.',
         'User Experience': 'Not quite. This is about specific upload feedback, not general UX improvements.'
       }
@@ -58,19 +60,19 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'Who is this feature for?',
         tip: 'Pick the most appropriate user role for this scenario.',
         options: [
-          'A tenant paying rent online',
-          'A parent applying for childcare',
-          'A teacher checking submissions',
-          'A student uploading homework',
-          'A librarian editing reading lists'
+          'A customer calling for support',
+          'A customer service representative',
+          'A manager reviewing tickets',
+          'A developer fixing bugs',
+          'A sales representative'
         ],
-        correct: 'A student uploading homework',
-        explanation: 'This feature supports the student who is uploading homework.',
+        correct: 'A customer service representative',
+        explanation: 'This feature supports the customer service representative who needs to see customer history.',
         incorrectExplanations: {
-          'A tenant paying rent online': 'Wrong context - this is about homework submission, not rent payments.',
-          'A parent applying for childcare': 'Wrong context - this is about student homework, not parent applications.',
-          'A teacher checking submissions': 'Wrong user - this is about student upload, not teacher review.',
-          'A librarian editing reading lists': 'Wrong context - this is about homework submission, not library management.'
+          'A customer calling for support': 'Wrong user - this is about the rep\'s tools, not the customer\'s experience.',
+          'A manager reviewing tickets': 'Wrong user - this is about the rep\'s daily work, not management oversight.',
+          'A developer fixing bugs': 'Wrong user - this is about customer service operations, not development.',
+          'A sales representative': 'Wrong user - this is about customer support, not sales activities.'
         }
       },
       {
@@ -78,19 +80,19 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'What does the user want?',
         tip: 'Choose the real need.',
         options: [
-          'Submit work late',
-          'Send files by email',
-          'Get clear, real-time feedback during the upload',
-          'Skip validation',
-          'See the upload date'
+          'Close tickets faster',
+          'See the customer\'s complete interaction history when they call',
+          'Transfer calls to other departments',
+          'Generate reports',
+          'Update customer information'
         ],
-        correct: 'Get clear, real-time feedback during the upload',
-        explanation: 'Yes: The main need is to know when something fails and why. Students need instant clarity.',
+        correct: 'See the customer\'s complete interaction history when they call',
+        explanation: 'Yes: The main need is to have full context of previous interactions to provide better service.',
         incorrectExplanations: {
-          'Submit work late': 'Wrong action - this is about getting feedback, not late submission.',
-          'Send files by email': 'Wrong action - this is about platform upload, not email.',
-          'Skip validation': 'Wrong action - this is about getting feedback, not avoiding validation.',
-          'See the upload date': 'Wrong action - this is about upload feedback, not date display.'
+          'Close tickets faster': 'Wrong action - this is about having context, not speed.',
+          'Transfer calls to other departments': 'Wrong action - this is about understanding history, not call routing.',
+          'Generate reports': 'Wrong action - this is about real-time customer context, not reporting.',
+          'Update customer information': 'Wrong action - this is about viewing history, not updating data.'
         }
       },
       {
@@ -98,19 +100,19 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'Why do they want it?',
         tip: 'What is the real-world benefit?',
         options: [
-          'To avoid penalties',
-          'To trick the system',
-          'To ask the teacher for more time',
-          'So they know if they need to fix the file and re-upload before the deadline',
-          'To notify classmates'
+          'To reduce call times',
+          'To avoid asking customers to repeat their story',
+          'To increase ticket volume',
+          'To reduce training time',
+          'To automate responses'
         ],
-        correct: 'So they know if they need to fix the file and re-upload before the deadline',
-        explanation: 'Absolutely: Students need time to react and re-submit, not be left in the dark.',
+        correct: 'To avoid asking customers to repeat their story',
+        explanation: 'Absolutely: Reps need to provide personalized assistance without frustrating customers with repetition.',
         incorrectExplanations: {
-          'To avoid penalties': 'That\'s a consequence, not the main benefit of getting feedback.',
-          'To trick the system': 'Wrong benefit - this is about legitimate feedback, not gaming the system.',
-          'To ask the teacher for more time': 'Wrong benefit - this is about fixing files, not requesting extensions.',
-          'To notify classmates': 'Wrong benefit - this is about personal upload feedback, not communication.'
+          'To reduce call times': 'That\'s a side effect, not the main benefit of having context.',
+          'To increase ticket volume': 'Wrong benefit - this is about service quality, not volume.',
+          'To reduce training time': 'Wrong benefit - this is about customer experience, not training efficiency.',
+          'To automate responses': 'Wrong benefit - this is about human service with context, not automation.'
         }
       },
       {
@@ -118,7 +120,7 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'Write the user story',
         tip: 'Let them tweak it, but keep the core structure. Remind them: no "how" — just the who, what, and why.',
         options: [],
-        correct: 'As a student uploading homework, I want clear feedback if my file is invalid, So I can fix it and submit before the deadline.',
+        correct: 'As a customer service representative, I want to see the customer\'s complete interaction history when they call, so that I can provide personalized assistance without asking them to repeat their story.',
         explanation: 'This follows the proper format: As a [role], I want [action], so that [benefit].',
         incorrectExplanations: {}
       },
@@ -127,12 +129,12 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'INVEST Check',
         tip: 'Review your story against the INVEST criteria.',
         options: [],
-        correct: 'Independent: ✅ Can be delivered separately from other features\nNegotiable: ✅ Dev can choose toast, modal, banner, etc.\nValuable: ✅ Prevents unfair penalties for students\nEstimable: ✅ Simple scope: show file errors\nSmall: ✅ Fits in sprint\nTestable: ✅ QA can upload invalid files and check for feedback',
+        correct: 'Independent: ✅ Can be delivered separately from other features\nNegotiable: ✅ Dev can choose dashboard, sidebar, modal, etc.\nValuable: ✅ Improves customer satisfaction and rep efficiency\nEstimable: ✅ Clear scope: display interaction history\nSmall: ✅ Fits in sprint\nTestable: ✅ QA can test with mock customer data',
         explanation: 'Well done — your story passes INVEST. Let\'s make it buildable.',
         incorrectExplanations: {}
       }
     ];
-    return [studentHomeworkEpicStep, ...baseSteps];
+    return [customerServiceEpicStep, ...baseSteps];
   }
 
   if (scenarioId === 'shopping-checkout') {
@@ -232,6 +234,7 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
   }
 
   // Default childcare voucher scenario
+  console.log('🔍 DEBUG: Using default childcare voucher scenario');
   const baseSteps = [
     {
       key: 'user',
@@ -584,6 +587,8 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             ? 'You\'re working on a rent payment portal. Your stakeholder (the Property Ops Lead) tells you: "Tenants are paying online but sometimes the page freezes and they don\'t know if payment went through. They also want an option to see payment history clearly." This sounds simple. But clarity lives in the details. Don\'t just jump into writing "As a user, I want to pay rent online." That\'s vague, weak, and it puts the thinking burden on developers. Instead, shape a clear story that reflects: Who exactly is using the feature (be specific), What they want to do now, Why it matters at that moment.'
             : scenarioId === 'student-homework'
             ? 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.'
+            : scenarioId === 'customer-service'
+            ? 'Meet Sarah. Sarah is a customer service representative at TechCorp, handling 50+ support tickets daily. When customers call, she has to ask them to repeat their entire story because she can\'t see their previous interactions. She wastes time asking "What\'s your account number?" and "What issue are you experiencing?" when the customer already explained everything in their last call. This frustrates both Sarah and the customers, leading to longer call times and lower satisfaction scores. You\'re the Business Analyst for the customer service platform. Your job is to streamline this process.'
             : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
           }
         </p>

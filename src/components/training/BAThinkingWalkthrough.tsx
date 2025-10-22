@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, ArrowRight, Target, Lightbulb, AlertCircle, Home, ChevronRight, FileText, Award, Sparkles } from 'lucide-react';
 import { RULES, RULE_ORDER, RuleKey } from '../../config/rules';
+import { SCENARIO_CONTENT } from '../../config/scenarioContent';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { ENABLE_AI_FEEDBACK } from '../../config/app';
@@ -17,6 +18,7 @@ interface BAThinkingWalkthroughProps {
 type Phase = 'learn' | 'apply';
 
 export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }: BAThinkingWalkthroughProps) {
+  console.log('🔍 DEBUG: BAThinkingWalkthrough rendered with scenarioId:', scenarioId);
   const { user } = useAuth();
   const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('learn');
@@ -33,18 +35,36 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
   const [exampleAnswer, setExampleAnswer] = useState<string | null>(null);
 
   const currentRuleKey = RULE_ORDER[currentRuleIndex] as RuleKey;
-  const currentRule = RULES[currentRuleKey];
+  
+  // Get scenario-specific content or fallback to default rules
+  const getCurrentRule = () => {
+    console.log('🔍 DEBUG: getCurrentRule called with scenarioId:', scenarioId, 'currentRuleKey:', currentRuleKey);
+    if (scenarioId && SCENARIO_CONTENT[scenarioId] && SCENARIO_CONTENT[scenarioId][currentRuleKey]) {
+      console.log('🔍 DEBUG: Using scenario-specific content for', scenarioId, currentRuleKey);
+      return SCENARIO_CONTENT[scenarioId][currentRuleKey];
+    }
+    console.log('🔍 DEBUG: Using default rules for', currentRuleKey);
+    return RULES[currentRuleKey];
+  };
+  
+  const currentRule = getCurrentRule();
+  console.log('🔍 DEBUG: currentRule referenceStory:', currentRule.learn.referenceStory);
   const isLastRule = currentRuleIndex === RULE_ORDER.length - 1;
   const progress = ((currentRuleIndex + 1) / RULE_ORDER.length) * 100;
 
   const getUserStoryForScenario = () => {
+    console.log('🔍 DEBUG: getUserStoryForScenario called with scenarioId:', scenarioId);
     if (scenarioId === 'childcare-voucher') {
+      console.log('🔍 DEBUG: Using childcare-voucher story');
       return 'As a parent applying for childcare vouchers, I want to save my application progress midway, so that I don\'t have to start over if I need to gather documents or take a break.';
-    } else if (scenarioId === 'student-homework') {
-      return 'As a Year 11 student uploading homework, I want to see clear error messages when my file upload fails, so that I know exactly what went wrong and can fix it before the deadline.';
+    } else if (scenarioId === 'customer-service') {
+      console.log('🔍 DEBUG: Using customer-service story');
+      return 'As a customer service representative handling support tickets, I want to see the customer\'s complete interaction history when they call, so that I can provide personalized assistance without asking them to repeat their story.';
     } else if (scenarioId === 'shopping-checkout') {
-      return 'As a tenant paying rent online, I want instant confirmation that my payment went through, so that I know my rent is paid and I can see my payment history clearly.';
+      console.log('🔍 DEBUG: Using shopping-checkout story');
+      return 'As a tenant officer, I want to record when a tenant moves out so I can trigger the inspection.';
     }
+    console.log('🔍 DEBUG: Using default story');
     return 'As a user, I want to complete this action, so that I can achieve my goal.';
   };
 
@@ -98,7 +118,23 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
     }
 
     // Step 3: Show example answer
-    setExampleAnswer(currentRule.apply.exampleAnswer);
+    const scenarioExamples: Record<string, Record<string, string>> = {
+      'student-homework': {
+        'User Goal': "The student can see clear, actionable error messages during upload (e.g., 'PDF only, max 10MB').",
+        'Trigger': "When the student selects a file and clicks 'Upload', validation begins immediately.",
+        'Primary Flow': "Student selects file → clicks Upload → system validates type/size → shows progress → success message appears with timestamp.",
+        'Alternative Flow': "Student drags-and-drops the file into the upload area instead of using the file picker; flow still completes.",
+        'Rules & Validation': "Only PDF/DOCX allowed; max size 10MB; filenames must be alphanumeric with hyphens/underscores; no spaces.",
+        'Roles & Permissions': "Only logged-in students can upload to their own assignment; teachers can view submissions; admins cannot upload on behalf of students.",
+        'Success Feedback': "Show green banner: 'Upload successful' with file name, size, and submission time.",
+        'Error Handling': "If upload fails due to size/type, show red banner with reason and 'Try Again' button.",
+        'Empty State': "Show guidance: 'No files uploaded yet. Drag a PDF or DOCX here or click to browse.'",
+        'Cancel/Undo': "Allow 'Replace file' within 60 seconds to undo the last upload and submit a new one."
+      }
+    };
+
+    const exampleFromScenario = scenarioId && scenarioExamples[scenarioId]?.[currentRule.name];
+    setExampleAnswer(exampleFromScenario || currentRule.apply.exampleAnswer);
   };
 
   const handleNextFromApply = async () => {
@@ -264,7 +300,7 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
                   <div>
                     <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
                     <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
-                      {scenarioId ? getUserStoryForScenario() : currentRule.learn.referenceStory}
+                      {currentRule.learn.referenceStory}
                     </p>
                   </div>
                 </div>
@@ -428,7 +464,7 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
                   <div>
                     <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
                     <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
-                      {scenarioId ? getUserStoryForScenario() : currentRule.learn.referenceStory}
+                      {currentRule.learn.referenceStory}
                     </p>
                   </div>
                 </div>

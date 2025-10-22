@@ -109,14 +109,14 @@ const PracticeModuleList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 dark:from-purple-900 dark:via-purple-800 dark:to-purple-700 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 dark:from-purple-900 dark:via-purple-800 dark:to-purple-700">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -144,7 +144,7 @@ const PracticeModuleList: React.FC = () => {
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="relative">
           {/* Vertical Path Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800 rounded-full" />
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-purple-300 via-purple-400 to-purple-500 dark:from-purple-700 dark:via-purple-600 dark:to-purple-500 rounded-full" />
 
           {/* Practice Modules */}
           <div className="space-y-16">
@@ -192,7 +192,7 @@ const PracticeModuleList: React.FC = () => {
                       className={`
                         bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6
                         border-2 transition-all duration-300
-                        ${isCompleted ? 'border-green-500' : ''}
+                        ${isCompleted ? 'bg-purple-500 dark:bg-purple-600 border-purple-600 text-white' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
                         ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
                         ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
@@ -216,7 +216,7 @@ const PracticeModuleList: React.FC = () => {
 
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-purple-600 dark:text-purple-400">{module.order}.</span> {module.title}
+                        <span className={isCompleted ? 'text-white' : 'text-purple-600 dark:text-purple-400'}>{module.order}.</span> {module.title}
                       </h3>
 
                       {/* Description */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building, GraduationCap, BookOpenCheck, FileEdit, ChevronRight } from 'lucide-react';
 import UserStoryWalkthrough from './UserStoryWalkthrough';
 import AcceptanceCriteriaWalkthrough from './AcceptanceCriteriaWalkthrough';
@@ -32,17 +32,17 @@ const trainingPods: TrainingPod[] = [
     difficulty: 'Beginner',
     tag: 'Scenario 1'
   },
-  {
-    id: 'student-homework',
-    title: 'Student Uploading Homework',
-    description: 'Students need clearer feedback when their file uploads fail.',
-    scenario: 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.',
-    icon: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop&crop=face&auto=format&q=80',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    difficulty: 'Beginner',
-    tag: 'Scenario 2'
-  },
+        {
+          id: 'student-homework',
+          title: 'Customer Service Representative',
+          description: 'Customer service reps need better tools to handle support tickets efficiently.',
+          scenario: 'Meet Sarah. Sarah is a customer service representative at TechCorp, handling 50+ support tickets daily. When customers call, she has to ask them to repeat their entire story because she can\'t see their previous interactions. She wastes time asking "What\'s your account number?" and "What issue are you experiencing?" when the customer already explained everything in their last call. This frustrates both Sarah and the customers, leading to longer call times and lower satisfaction scores. You\'re the Business Analyst for the customer service platform. Your job is to streamline this process.',
+          icon: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop&crop=face&auto=format&q=80',
+          color: 'text-purple-600',
+          bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+          difficulty: 'Beginner',
+          tag: 'Scenario 2'
+        },
   {
     id: 'shopping-checkout',
     title: 'Tenant Paying Rent Online',
@@ -60,16 +60,36 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   const [selectedWalkthrough, setSelectedWalkthrough] = useState<string | null>(null);
   const [currentPod, setCurrentPod] = useState<string | null>(null);
 
+  // Restore last selection on mount for refresh persistence
+  useEffect(() => {
+    try {
+      const savedWalkthrough = localStorage.getItem('requirementPods.selectedWalkthrough');
+      const savedPod = localStorage.getItem('requirementPods.currentPod');
+      if (savedWalkthrough && savedPod) {
+        setSelectedWalkthrough(savedWalkthrough);
+        setCurrentPod(savedPod);
+      }
+    } catch {}
+  }, []);
+
   const handleSelectWalkthrough = (podId: string, walkthroughType: string) => {
     console.log('🎯 WALKTHROUGH SELECTOR: Button clicked', { podId, walkthroughType });
     setCurrentPod(podId);
     setSelectedWalkthrough(walkthroughType);
+    try {
+      localStorage.setItem('requirementPods.selectedWalkthrough', walkthroughType);
+      localStorage.setItem('requirementPods.currentPod', podId);
+    } catch {}
     console.log('🎯 WALKTHROUGH SELECTOR: State updated', { currentPod: podId, selectedWalkthrough: walkthroughType });
   };
 
   const handleBackToSelector = () => {
     setSelectedWalkthrough(null);
     setCurrentPod(null);
+    try {
+      localStorage.removeItem('requirementPods.selectedWalkthrough');
+      localStorage.removeItem('requirementPods.currentPod');
+    } catch {}
   };
 
   // If a walkthrough is selected, render it
@@ -78,6 +98,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   }
 
   if (selectedWalkthrough === 'acceptance-criteria') {
+    console.log('🔍 DEBUG: WalkthroughSelector passing scenarioId to AcceptanceCriteriaWalkthrough:', currentPod);
     return <AcceptanceCriteriaWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} scenarioId={currentPod || undefined} />;
   }
 
@@ -174,6 +195,8 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
     </div>
   );
 }
+
+
 
 
 
