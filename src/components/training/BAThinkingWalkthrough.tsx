@@ -11,11 +11,12 @@ import FeedbackPanel from './FeedbackPanel';
 interface BAThinkingWalkthroughProps {
   onComplete: () => void;
   onBack: () => void;
+  scenarioId?: string;
 }
 
 type Phase = 'learn' | 'apply';
 
-export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinkingWalkthroughProps) {
+export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }: BAThinkingWalkthroughProps) {
   const { user } = useAuth();
   const [currentRuleIndex, setCurrentRuleIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('learn');
@@ -35,6 +36,17 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
   const currentRule = RULES[currentRuleKey];
   const isLastRule = currentRuleIndex === RULE_ORDER.length - 1;
   const progress = ((currentRuleIndex + 1) / RULE_ORDER.length) * 100;
+
+  const getUserStoryForScenario = () => {
+    if (scenarioId === 'childcare-voucher') {
+      return 'As a parent applying for childcare vouchers, I want to save my application progress midway, so that I don\'t have to start over if I need to gather documents or take a break.';
+    } else if (scenarioId === 'student-homework') {
+      return 'As a Year 11 student uploading homework, I want to see clear error messages when my file upload fails, so that I know exactly what went wrong and can fix it before the deadline.';
+    } else if (scenarioId === 'shopping-checkout') {
+      return 'As a tenant paying rent online, I want instant confirmation that my payment went through, so that I know my rent is paid and I can see my payment history clearly.';
+    }
+    return 'As a user, I want to complete this action, so that I can achieve my goal.';
+  };
 
 
   const handleLearnSelect = (option: 'A' | 'B' | 'C') => {
@@ -232,6 +244,31 @@ export default function BAThinkingWalkthrough({ onComplete, onBack }: BAThinking
             </div>
           </div>
         </div>
+
+        {/* User Story Context for Scenario */}
+        {scenarioId && (
+          <div className="max-w-4xl mx-auto mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 rounded-lg p-6">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-3 flex items-center">
+                    <Target className="w-5 h-5 mr-2" />
+                    User Story for this Walkthrough:
+                  </h3>
+                  <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
+                    "{getUserStoryForScenario()}"
+                  </p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-3">
+                    You're writing acceptance criteria to define when this story is "done"
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* LEARN PHASE */}
         {phase === 'learn' && (
