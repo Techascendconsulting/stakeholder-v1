@@ -423,7 +423,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             onClick={onBack}
             className="hover:text-gray-900 dark:hover:text-white transition-colors"
           >
-            Training Pods
+            Requirement Pods
           </button>
           <ChevronRight className="w-4 h-4" />
           <span className="text-gray-900 dark:text-white font-medium">User Story Walkthrough</span>
@@ -557,7 +557,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
           onClick={onBack}
           className="hover:text-gray-900 dark:hover:text-white transition-colors"
         >
-          Training Pods
+          Requirement Pods
         </button>
         <ChevronRight className="w-4 h-4" />
         <span className="text-gray-900 dark:text-white font-medium">User Story Walkthrough</span>
