@@ -252,30 +252,6 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
           </div>
         </div>
 
-        {/* User Story Context for Scenario */}
-        {scenarioId && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-600 dark:border-blue-400 rounded-lg p-6">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-3 flex items-center">
-                    <Target className="w-5 h-5 mr-2" />
-                    User Story for this Walkthrough:
-                  </h3>
-                  <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
-                    "{getUserStoryForScenario()}"
-                  </p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-3">
-                    You're writing acceptance criteria to define when this story is "done"
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* LEARN PHASE */}
         {phase === 'learn' && (
@@ -287,7 +263,9 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
                   <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
                     <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
-                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">{currentRule.learn.referenceStory}</p>
+                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
+                      {scenarioId ? getUserStoryForScenario() : currentRule.learn.referenceStory}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -449,7 +427,9 @@ export default function BAThinkingWalkthrough({ onComplete, onBack, scenarioId }
                   <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
                     <h3 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Reference User Story:</h3>
-                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">{currentRule.learn.referenceStory}</p>
+                    <p className="text-base text-blue-800 dark:text-blue-100 italic leading-relaxed">
+                      {scenarioId ? getUserStoryForScenario() : currentRule.learn.referenceStory}
+                    </p>
                   </div>
                 </div>
               </div>
