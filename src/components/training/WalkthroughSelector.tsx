@@ -61,8 +61,10 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   const [currentPod, setCurrentPod] = useState<string | null>(null);
 
   const handleSelectWalkthrough = (podId: string, walkthroughType: string) => {
+    console.log('🎯 WALKTHROUGH SELECTOR: Button clicked', { podId, walkthroughType });
     setCurrentPod(podId);
     setSelectedWalkthrough(walkthroughType);
+    console.log('🎯 WALKTHROUGH SELECTOR: State updated', { currentPod: podId, selectedWalkthrough: walkthroughType });
   };
 
   const handleBackToSelector = () => {

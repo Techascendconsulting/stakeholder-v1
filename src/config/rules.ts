@@ -54,7 +54,7 @@ export const RULES: Record<string, Rule> = {
         "As a tenant officer, I want to record when a tenant moves out so I can trigger the inspection.",
       prompt:
         "In one sentence, write the user goal. Start with 'The user can…' or 'The user should be able to…' (where 'user' refers to the person doing the action)",
-      exampleAnswer: "The tenant officer can record tenant move-out dates (in dd-mm-yyyy format) to automatically trigger property inspections.",
+      exampleAnswer: "The tenant officer can record tenant move-out dates (in dd-mm-yyyy format) with automatic validation against lease end dates, triggering property inspections within 24 hours and notifying the maintenance team via their preferred communication channel.",
     },
   },
 

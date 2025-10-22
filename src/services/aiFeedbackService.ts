@@ -14,36 +14,58 @@ export async function checkResponseWithAI(
   userResponse: string
 ): Promise<AIFeedbackResult> {
   try {
-    const prompt = `You are an expert Business Analyst coaching acceptance criteria writing.
+    const prompt = `You are a Senior Business Analyst with 15 years of experience coaching acceptance criteria writing.
 
 Rule: ${ruleName}
 Reference story: ${referenceStory}
 Learner's response: ${userResponse}
 
-Evaluate this as an acceptance criteria. Be specific and intelligent:
+Apply 15 years of BA expertise to evaluate this acceptance criteria:
 
-For User Goal: Look for clear user actions, avoid system jargon
-For Triggers: Check for specific conditions (dates, statuses, events)
-For Success Flow: Verify step-by-step user actions
-For Alternative Paths: Ensure valid alternatives that still succeed
-For Business Rules: Look for clear constraints and validations
-For Permissions: Check role-based access clearly defined
-For Success Messages: Verify observable user feedback
-For Error Handling: Check for specific error scenarios
-For Empty States: Ensure helpful guidance when no data exists
-For Undo Actions: Verify safe reversal mechanisms
+BUSINESS ANALYSIS INTELLIGENCE:
+- Stakeholder Impact: Does it consider all affected parties?
+- Business Value: Is the value proposition clear and measurable?
+- Risk Assessment: Are potential failure points identified?
+- Compliance: Does it address regulatory or policy requirements?
+- Performance: Are performance expectations realistic?
+- Integration: Does it consider system dependencies?
 
-AC Writing Intelligence:
-- Dates: Suggest specific formats (dd-mm-yyyy, ISO format)
-- Data: Mention field names, validation rules
-- UI: Reference buttons, messages, visual feedback
-- Business Logic: Include specific thresholds, calculations
-- User Roles: Name actual roles (tenant officer, manager, etc.)
+TECHNICAL SOPHISTICATION:
+- Data Integrity: Are data validation rules comprehensive?
+- Security: Are access controls and permissions properly defined?
+- Scalability: Can the solution handle growth scenarios?
+- Error Recovery: Are graceful degradation paths defined?
+- Audit Trail: Is tracking and logging addressed?
+- Performance Metrics: Are measurable outcomes defined?
+
+USER EXPERIENCE MASTERY:
+- Usability: Is the user journey intuitive and efficient?
+- Accessibility: Are diverse user needs considered?
+- Feedback Loops: Is user confirmation and error messaging clear?
+- Edge Cases: Are unusual but valid scenarios covered?
+- Mobile/Desktop: Are platform-specific considerations included?
+- Internationalization: Are cultural and language factors addressed?
+
+ENTERPRISE THINKING:
+- Process Integration: How does this fit into larger workflows?
+- Change Management: Are transition scenarios considered?
+- Training Needs: Are user education requirements identified?
+- Maintenance: Are ongoing support scenarios covered?
+- Reporting: Are analytics and monitoring needs addressed?
+- Documentation: Are knowledge transfer requirements clear?
+
+ADVANCED AC PATTERNS:
+- Given-When-Then: Proper scenario structure
+- Boundary Testing: Edge cases and limits
+- State Transitions: Clear before/after conditions
+- Business Rules: Complex conditional logic
+- Data Relationships: Cross-system dependencies
+- Performance SLAs: Response time expectations
 
 Return JSON only:
-{"score": number (1-5), "feedback": "specific AC writing tip with examples"}
+{"score": number (1-5), "feedback": "senior BA insight with specific enterprise-level guidance"}
 
-Be encouraging but give concrete, actionable advice for better acceptance criteria.`;
+Provide expert-level coaching that reflects deep industry experience and enterprise complexity.`;
 
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     if (!apiKey) {

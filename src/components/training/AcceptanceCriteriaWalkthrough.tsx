@@ -11,6 +11,9 @@ export default function AcceptanceCriteriaWalkthrough({
   onStartPractice, 
   onBack 
 }: AcceptanceCriteriaWalkthroughProps) {
+  console.log('🎯 ACCEPTANCE CRITERIA WALKTHROUGH: Rendering component');
+  console.log('🎯 ACCEPTANCE CRITERIA WALKTHROUGH: Props', { onStartPractice, onBack });
+  
   return (
     <BAThinkingWalkthrough 
       onComplete={onStartPractice} 
