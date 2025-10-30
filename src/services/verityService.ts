@@ -6,7 +6,7 @@ const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 if (!apiKey) {
   console.error('❌ VITE_OPENAI_API_KEY is not set in environment variables');
 } else {
-  console.log('✅ OpenAI API key loaded:', apiKey.substring(0, 20) + '...');
+  // Do not log secrets
 }
 
 // SECURITY: Client-side OpenAI usage exposes API key in browser
