@@ -50,15 +50,22 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
     }));
   };
 
+  const goHome = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50" style={{ scrollbarGutter: 'stable' }}>
-      {/* Header with Navigation */}
-      {onBack && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
+      {/* Header with Navigation - always rendered to keep layout stable */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
-              <button onClick={onBack} className="flex items-center space-x-2 group">
+              <button onClick={goHome} className="flex items-center space-x-2 group">
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
                   <GraduationCap className="w-5 h-5 text-white" />
                 </div>
@@ -68,14 +75,14 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
               {/* Navigation - keep items width stable; use active state instead of replacing element */}
               <nav className="hidden md:flex items-center space-x-6">
                 <button 
-                  onClick={onBack}
+                  onClick={goHome}
                   className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
                 >
                   Home
                 </button>
                 <button 
                   onClick={() => {
-                    onBack && onBack();
+                    if (onBack) onBack();
                     setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100);
                   }}
                   className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
@@ -84,7 +91,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
                 </button>
                 <button 
                   onClick={() => {
-                    onBack && onBack();
+                    if (onBack) onBack();
                     setTimeout(() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }), 100);
                   }}
                   className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
@@ -93,7 +100,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
                 </button>
                 <button 
                   onClick={() => {
-                    onBack && onBack();
+                    if (onBack) onBack();
                     setTimeout(() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' }), 100);
                   }}
                   className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
@@ -124,10 +131,9 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
             </div>
           </div>
         </header>
-      )}
       
       {/* Add padding to account for fixed header */}
-      <div className={onBack ? "pt-16" : ""}>
+      <div className="pt-16">
       
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">

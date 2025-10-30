@@ -314,8 +314,8 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900" style={{ scrollbarGutter: 'stable' }}>
-      {/* Header with Navigation */}
-      {onBack && (
+      {/* Header with Navigation - always render to keep layout stable */}
+      {true && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
@@ -379,10 +379,16 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => {
-                    // Ask LandingPage to open RequestAccess modal if present
-                    window.dispatchEvent(new CustomEvent('openRequestAccess'));
-                    // Fallback: navigate back to landing if handler provided
-                    if (onBack) onBack();
+                    try {
+                      console.log('FAQView: Get Started clicked');
+                      localStorage.setItem('openRequestAccess', '1');
+                    } catch (e) {
+                      console.warn('FAQView: failed to set openRequestAccess flag', e);
+                    }
+                    if (onBack) {
+                      console.log('FAQView: navigating back to landing');
+                      onBack();
+                    }
                   }}
                   className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium"
                 >
@@ -395,7 +401,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       )}
 
       {/* Add padding for fixed header */}
-      <div className={onBack ? "pt-16" : ""}>
+      <div className="pt-16">
 
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
