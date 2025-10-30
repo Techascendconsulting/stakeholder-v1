@@ -53,7 +53,7 @@ export class VerityService {
       ];
       const isOffScope = offScopePatterns.some(rx => rx.test(lastUser));
       if (isOffScope) {
-        const refusal = "I’m focused on Business Analysis and Scrum for this platform. What would you like to do? For example:\n- Work on backlog refinement or acceptance criteria writing\n- Practice in [Scrum Practice](scrum-practice) or [Documentation Practice](documentation-practice)";
+        const refusal = "Thanks for your message. I focus on practical Business Analysis and Scrum here. What would you like to work on today? If it helps, we could explore a real‑world BA concept, walk through a scenario together, or try a short hands‑on exercise. I’m happy to follow your lead.";
         return { reply: refusal, escalate: false };
       }
       // Build the context-aware system message
