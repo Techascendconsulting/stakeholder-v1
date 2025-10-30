@@ -80,9 +80,13 @@ const LandingPage: React.FC = () => {
       setScrollY(window.scrollY)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
+    // Allow other pages to open Request Access modal
+    const openHandler = () => setShowRequestAccess(true)
+    window.addEventListener('openRequestAccess', openHandler as EventListener)
     
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('openRequestAccess', openHandler as EventListener)
     }
   }, [])
 

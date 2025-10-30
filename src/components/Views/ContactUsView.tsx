@@ -65,7 +65,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
                 <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
               </button>
               
-              {/* Navigation */}
+              {/* Navigation - keep items width stable; use active state instead of replacing element */}
               <nav className="hidden md:flex items-center space-x-6">
                 <button 
                   onClick={onBack}
@@ -110,7 +110,11 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
                 >
                   FAQ
                 </button>
-                <span className="text-purple-600 font-semibold">Contact Us</span>
+                <button
+                  className="font-semibold text-purple-600 cursor-default"
+                >
+                  Contact Us
+                </button>
               </nav>
               
               {/* Mobile Menu Toggle - Future Enhancement */}

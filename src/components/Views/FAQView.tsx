@@ -362,7 +362,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
                 >
                   Success Stories
                 </button>
-                <span className="text-purple-600 font-semibold">FAQ</span>
+                <button className="font-semibold text-purple-600 cursor-default">FAQ</button>
                 <button 
                   onClick={() => {
                     if (onContactClick) {
@@ -378,7 +378,12 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
               {/* CTA */}
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={onBack}
+                  onClick={() => {
+                    // Ask LandingPage to open RequestAccess modal if present
+                    window.dispatchEvent(new CustomEvent('openRequestAccess'));
+                    // Fallback: navigate back to landing if handler provided
+                    if (onBack) onBack();
+                  }}
                   className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium"
                 >
                   Get Started
