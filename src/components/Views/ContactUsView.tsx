@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, MapPin, Phone, Send, CheckCircle, Linkedin, Twitter, Facebook, Youtube, Instagram, AlertCircle, ArrowLeft, GraduationCap } from 'lucide-react';
 import { submitContactForm } from '../../services/contactService';
+import PublicLayout from '../Layout/PublicLayout';
 
 interface ContactUsViewProps {
   onBack?: () => void;
@@ -59,83 +60,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 overflow-x-hidden">
-      {console.log('ContactUsView: rendering fixed header and spacer')}
-      {/* Header with Navigation - always rendered to keep layout stable */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg stable-header">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <button onClick={goHome} className="flex items-center space-x-2 group">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
-              </button>
-              
-              {/* Navigation - keep items width stable; use active state instead of replacing element */}
-              <nav className="hidden md:flex items-center space-x-6">
-                <button 
-                  onClick={goHome}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Home
-                </button>
-                <button 
-                  onClick={() => {
-                    if (onBack) onBack();
-                    setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Features
-                </button>
-                <button 
-                  onClick={() => {
-                    if (onBack) onBack();
-                    setTimeout(() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  How It Works
-                </button>
-                <button 
-                  onClick={() => {
-                    if (onBack) onBack();
-                    setTimeout(() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Success Stories
-                </button>
-                <button 
-                  onClick={() => {
-                    if (onFAQClick) {
-                      onFAQClick();
-                    }
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  FAQ
-                </button>
-                <button
-                  className="font-semibold text-purple-600 cursor-default"
-                >
-                  Contact Us
-                </button>
-              </nav>
-              
-              {/* Mobile Menu Toggle - Future Enhancement */}
-              <div className="md:hidden">
-                {/* Mobile menu button can go here */}
-              </div>
-            </div>
-          </div>
-        </header>
-      
-      {/* Add padding to account for fixed header */}
-      <div className="pt-16">
-        {console.log('ContactUsView: applied pt-16 spacer under fixed header')}
+    <PublicLayout active="contact" onHome={onBack} onFAQClick={onFAQClick}>
       
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
@@ -485,8 +410,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
         </div>
       </section>
       
-      </div>
-    </div>
+    </PublicLayout>
   );
 };
 

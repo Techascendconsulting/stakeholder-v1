@@ -27,6 +27,8 @@ interface FAQViewProps {
   showTabs?: boolean;
 }
 
+import PublicLayout from '../Layout/PublicLayout';
+
 const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, showTabs = false }) => {
   const [openCategories, setOpenCategories] = useState<string[]>(['getting-started', 'account-security', 'learning']);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
@@ -313,97 +315,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 overflow-x-hidden">
-      {console.log('FAQView: rendering fixed header and spacer')}
-      {/* Header with Navigation - always render to keep layout stable */}
-      {true && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg stable-header">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <button onClick={onBack} className="flex items-center space-x-2 group">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
-              </button>
-              
-              {/* Navigation */}
-              <nav className="hidden md:flex items-center space-x-6">
-                <button 
-                  onClick={onBack}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Home
-                </button>
-                <button 
-                  onClick={() => {
-                    onBack && onBack();
-                    setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Features
-                </button>
-                <button 
-                  onClick={() => {
-                    onBack && onBack();
-                    setTimeout(() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  How It Works
-                </button>
-                <button 
-                  onClick={() => {
-                    onBack && onBack();
-                    setTimeout(() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Success Stories
-                </button>
-                <button className="font-semibold text-purple-600 cursor-default">FAQ</button>
-                <button 
-                  onClick={() => {
-                    if (onContactClick) {
-                      onContactClick();
-                    }
-                  }}
-                  className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-                >
-                  Contact Us
-                </button>
-              </nav>
-              
-              {/* CTA */}
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => {
-                    try {
-                      console.log('FAQView: Get Started clicked');
-                      localStorage.setItem('openRequestAccess', '1');
-                    } catch (e) {
-                      console.warn('FAQView: failed to set openRequestAccess flag', e);
-                    }
-                    if (onBack) {
-                      console.log('FAQView: navigating back to landing');
-                      onBack();
-                    }
-                  }}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium"
-                >
-                  Get Started
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-      )}
-
-      {/* Add padding for fixed header */}
-      <div className="pt-16">
-        {console.log('FAQView: applied pt-16 spacer under fixed header')}
+    <PublicLayout active="faq" onHome={onBack} onFAQClick={() => {}} onContactClick={onContactClick}>
 
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
@@ -577,7 +489,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       </section>
 
       </div>
-    </div>
+    </PublicLayout>
   );
 };
 
