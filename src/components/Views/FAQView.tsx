@@ -487,8 +487,6 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
           </div>
         </div>
       </section>
-
-      </div>
     </PublicLayout>
   );
 };

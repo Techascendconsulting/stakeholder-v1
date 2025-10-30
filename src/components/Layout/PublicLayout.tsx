@@ -15,7 +15,21 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // No CTA in this layout per requirement – use same menu as others
+  // Reuse same menu as landing: include Sign In and Request Access controls via events/flags
+  const openRequestAccess = () => {
+    try {
+      window.dispatchEvent(new CustomEvent('openRequestAccess'));
+      localStorage.setItem('openRequestAccess', '1');
+    } catch {}
+  };
+
+  const openSignIn = () => {
+    try {
+      localStorage.setItem('showLoginForm', 'true');
+      if (onHome) onHome();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {}
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 overflow-x-hidden">
@@ -68,7 +82,20 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
               </button>
             </nav>
 
-            <div className="hidden md:flex items-center space-x-3" />
+            <div className="hidden md:flex items-center space-x-3">
+              <button
+                onClick={openSignIn}
+                className="text-gray-700 hover:text-gray-900 font-medium"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={openRequestAccess}
+                className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-4 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium"
+              >
+                Request Access
+              </button>
+            </div>
           </div>
         </div>
       </header>
