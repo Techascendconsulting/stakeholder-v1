@@ -17,6 +17,15 @@ html, body, #root {
   padding: 0;
 }
 
+/* Prevent horizontal jiggle and keep scrollbar space consistent across pages */
+html {
+  scrollbar-gutter: stable;
+}
+body {
+  overflow-y: scroll; /* always reserve vertical scrollbar space */
+  overflow-x: hidden; /* avoid horizontal shift */
+}
+
 body {
   display: flex;
   flex-direction: column;

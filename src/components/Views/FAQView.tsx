@@ -313,7 +313,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900" style={{ scrollbarGutter: 'stable' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 overflow-x-hidden">
       {console.log('FAQView: rendering fixed header and spacer')}
       {/* Header with Navigation - always render to keep layout stable */}
       {true && (

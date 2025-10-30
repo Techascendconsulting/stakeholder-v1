@@ -59,7 +59,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50" style={{ scrollbarGutter: 'stable' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 overflow-x-hidden">
       {console.log('ContactUsView: rendering fixed header and spacer')}
       {/* Header with Navigation - always rendered to keep layout stable */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
