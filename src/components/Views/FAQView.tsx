@@ -314,6 +314,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900" style={{ scrollbarGutter: 'stable' }}>
+      {console.log('FAQView: rendering fixed header and spacer')}
       {/* Header with Navigation - always render to keep layout stable */}
       {true && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
@@ -402,6 +403,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
       {/* Add padding for fixed header */}
       <div className="pt-16">
+        {console.log('FAQView: applied pt-16 spacer under fixed header')}
 
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">

@@ -60,6 +60,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50" style={{ scrollbarGutter: 'stable' }}>
+      {console.log('ContactUsView: rendering fixed header and spacer')}
       {/* Header with Navigation - always rendered to keep layout stable */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,6 +135,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
       
       {/* Add padding to account for fixed header */}
       <div className="pt-16">
+        {console.log('ContactUsView: applied pt-16 spacer under fixed header')}
       
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">

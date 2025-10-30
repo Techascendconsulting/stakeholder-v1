@@ -81,8 +81,23 @@ const LandingPage: React.FC = () => {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     // Allow other pages to open Request Access modal
-    const openHandler = () => setShowRequestAccess(true)
+    const openHandler = () => {
+      console.log('LandingPage: openRequestAccess event received')
+      setShowRequestAccess(true)
+    }
     window.addEventListener('openRequestAccess', openHandler as EventListener)
+
+    // Fallback: check flag to open request access
+    try {
+      const shouldOpen = localStorage.getItem('openRequestAccess')
+      if (shouldOpen === '1') {
+        console.log('LandingPage: opening Request Access via localStorage flag')
+        setShowRequestAccess(true)
+        localStorage.removeItem('openRequestAccess')
+      }
+    } catch (e) {
+      console.warn('LandingPage: failed to read openRequestAccess flag', e)
+    }
     
     return () => {
       window.removeEventListener('scroll', handleScroll)
