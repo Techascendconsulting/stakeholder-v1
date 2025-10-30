@@ -44,6 +44,18 @@ export class VerityService {
     context: VerityContext
   ): Promise<{ reply: string; escalate: boolean }> {
     try {
+      // Pre-filter: refuse out-of-scope topics before calling the model
+      const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content?.toLowerCase() || '';
+      const offScopePatterns = [
+        /\binterview\b|\bjob\b|cv|resume|cover letter|salary|recruit(er|ment)/i,
+        /news|headlines|today\s*news/i,
+        /digital\s*marketing|seo|sem|ppc|facebook ads|google ads/i
+      ];
+      const isOffScope = offScopePatterns.some(rx => rx.test(lastUser));
+      if (isOffScope) {
+        const refusal = "I’m focused on Business Analysis and Scrum for this platform. I can help with:\n- Backlog refinement or acceptance criteria writing\n- Where to practice inside the app: [Scrum Practice](scrum-practice) or [Documentation Practice](documentation-practice)\nWhich would you like?";
+        return { reply: refusal, escalate: false };
+      }
       // Build the context-aware system message
       const contextualSystemPrompt = `${VERITY_SYSTEM_PROMPT}
 
