@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, HelpCircle, Mail } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -15,12 +15,7 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openRequestAccess = () => {
-    try {
-      window.dispatchEvent(new CustomEvent('openRequestAccess'));
-      localStorage.setItem('openRequestAccess', '1');
-    } catch {}
-  };
+  // No CTA in this layout per requirement – use same menu as others
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 overflow-x-hidden">
@@ -73,15 +68,7 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
               </button>
             </nav>
 
-            <div className="hidden md:flex items-center space-x-3">
-              <button
-                onClick={openRequestAccess}
-                className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-medium inline-flex items-center gap-2"
-              >
-                <Mail className="w-4 h-4" />
-                Get Started
-              </button>
-            </div>
+            <div className="hidden md:flex items-center space-x-3" />
           </div>
         </div>
       </header>
