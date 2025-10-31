@@ -98,8 +98,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     getInitialSession()
 
-    return () => clearTimeout(loadingTimeout)
-
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -127,7 +125,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(loadingTimeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
