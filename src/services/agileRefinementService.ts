@@ -1,11 +1,26 @@
 import OpenAI from 'openai';
 import { Message } from '../types';
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-  // Removed baseURL - call OpenAI directly (backend server not required)
-});
+// Only create OpenAI client if API key is available
+const createOpenAIClient = () => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn('⚠️ VITE_OPENAI_API_KEY not set - Agile refinement features will be disabled');
+    return null;
+  }
+  try {
+    return new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true
+      // Removed baseURL - call OpenAI directly (backend server not required)
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client for agile refinement:', error);
+    return null;
+  }
+};
+
+const openai = createOpenAIClient();
 
 export interface AgileTeamMemberContext {
   id: string;
@@ -182,6 +197,10 @@ ${rolePrompt}
 
 Be sharp, collaborative, and focused on refining the story for sprint delivery.`;
 
+      if (!openai) {
+        return this.getFallbackResponse(member.role);
+      }
+
       const response = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -338,6 +357,17 @@ Generate a summary with:
 4. Team feedback and recommendations
 
 Keep it professional and actionable.`;
+
+      if (!openai) {
+        progressCallback?.(100);
+        return {
+          summary: 'AI summary generation unavailable. OpenAI API key is not configured.',
+          stories: stories.length,
+          participants: this.getTeamMembers().length + 1,
+          duration: Math.round(messages.length * 1.5),
+          keyDecisions: [],
+        };
+      }
 
       const response = await openai.chat.completions.create({
         model: 'gpt-4',

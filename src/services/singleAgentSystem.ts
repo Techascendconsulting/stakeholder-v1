@@ -20,19 +20,30 @@ interface ProjectContext {
 }
 
 class SingleAgentSystem {
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private isInitialized = false;
   private lastError: string | null = null;
   private retryCount = 0;
   private maxRetries = 3;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'dummy-key',
-      dangerouslyAllowBrowser: true,
-      timeout: 30000 // 30 second timeout
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Single agent system features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true,
+          timeout: 30000 // 30 second timeout
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for single agent system:', error);
+        this.openai = null;
+      }
+    }
   }
 
   async initialize(): Promise<boolean> {
@@ -190,6 +201,10 @@ class SingleAgentSystem {
       
       console.log(`📚 Including ${historyMessages.length} messages from conversation history`);
       
+      if (!this.openai) {
+        throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY to enable AI features.');
+      }
+      
       const response = await this.openai.chat.completions.create({
         model: model,
         messages: [
@@ -272,6 +287,10 @@ Current time: ${timestamp}`;
   private async generateErrorResponse(userMessage: string): Promise<string> {
     const projectContext = `Project: Unable to determine specific project context
 Please provide more details about the project you're working on.`;
+
+    if (!this.openai) {
+      return "I'm having trouble connecting right now. Please configure the OpenAI API key to enable AI features.";
+    }
 
     try {
       const response = await this.openai.chat.completions.create({
