@@ -16,20 +16,37 @@ if (!hasValidApiKey) {
 // Current setup is acceptable for development/MVP but NOT production-ready
 
 // Only create OpenAI client if API key is available and valid
+// IMPORTANT: Never create client at module level - only create when actually needed
 let openai: OpenAI | null = null;
-if (hasValidApiKey && apiKey) {
+
+// Lazy getter function - only creates client when actually needed, not at module load
+function getOpenAIClient(): OpenAI | null {
+  if (openai !== null) {
+    return openai; // Return existing client if already created
+  }
+
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+  
+  if (!hasValidApiKey) {
+    return null;
+  }
+  
+  const trimmedKey = apiKey.trim();
+  if (!trimmedKey || trimmedKey.length === 0) {
+    return null;
+  }
+  
   try {
-    const trimmedKey = apiKey.trim();
-    // Double-check the key is valid before creating client
-    if (trimmedKey && trimmedKey.length > 0) {
-      openai = new OpenAI({
-        apiKey: trimmedKey,
-        dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
-      });
-    }
+    openai = new OpenAI({
+      apiKey: trimmedKey,
+      dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
+    });
+    return openai;
   } catch (error) {
     console.error('❌ Failed to initialize OpenAI client:', error);
     openai = null;
+    return null;
   }
 }
 
@@ -111,11 +128,12 @@ User role: ${context.userRole || 'learner'}`;
         console.warn('Backend error:', backendError);
 
         // FALLBACK: Call OpenAI directly (only if client is available)
-        if (!openai) {
+        const openaiClient = getOpenAIClient();
+        if (!openaiClient) {
           throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in environment variables.');
         }
 
-        const completion = await openai.chat.completions.create({
+        const completion = await openaiClient.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: contextualSystemPrompt },

@@ -226,11 +226,44 @@ class KnowledgeBase {
         }));
       }
 
-      const openai = new OpenAI({
-        apiKey: apiKey.trim(),
-        dangerouslyAllowBrowser: true,
-        baseURL: 'http://localhost:3001/api/openai-proxy'
-      });
+      // Double-check trimmed key is valid before creating client
+      const trimmedKey = apiKey.trim();
+      if (!trimmedKey || trimmedKey.length === 0) {
+        console.warn('⚠️ VITE_OPENAI_API_KEY is empty after trim - KB search features will use fallback');
+        return entries.slice(0, limit).map(entry => ({
+          question: entry.question,
+          answer: entry.answer,
+          short: entry.short,
+          expanded: entry.expanded
+        }));
+      }
+
+      let openai: OpenAI | null = null;
+      try {
+        openai = new OpenAI({
+          apiKey: trimmedKey,
+          dangerouslyAllowBrowser: true,
+          baseURL: 'http://localhost:3001/api/openai-proxy'
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for KB search:', error);
+        // Return fallback instead of throwing
+        return entries.slice(0, limit).map(entry => ({
+          question: entry.question,
+          answer: entry.answer,
+          short: entry.short,
+          expanded: entry.expanded
+        }));
+      }
+
+      if (!openai) {
+        return entries.slice(0, limit).map(entry => ({
+          question: entry.question,
+          answer: entry.answer,
+          short: entry.short,
+          expanded: entry.expanded
+        }));
+      }
 
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
