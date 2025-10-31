@@ -6,9 +6,16 @@ import OpenAI from 'openai';
 import 'dotenv/config';
 import { config } from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
-// Load environment variables from env.local
-config({ path: path.resolve(process.cwd(), 'env.local') });
+// Vite automatically loads .env, .env.local, .env.production, etc.
+// We only need to explicitly load env.local (without dot) if it exists for backwards compatibility
+// On Vercel, environment variables are injected automatically, so no file loading needed
+const envLocalPath = path.resolve(process.cwd(), 'env.local');
+if (fs.existsSync(envLocalPath)) {
+  config({ path: envLocalPath });
+}
+// Note: Vite will also automatically load .env.local, .env, etc. if they exist
 
 // https://vitejs.dev/config/
 export default defineConfig({
