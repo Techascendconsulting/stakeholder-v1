@@ -18,14 +18,25 @@ interface ProblemExplorationEvaluation {
 
 class ProblemExplorationService {
   private static instance: ProblemExplorationService;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Problem exploration features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for problem exploration:', error);
+        this.openai = null;
+      }
+    }
   }
 
   static getInstance(): ProblemExplorationService {
@@ -58,6 +69,22 @@ class ProblemExplorationService {
       ]
     }`;
 
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, using fallback guidance');
+      // Fallback guidance
+      return {
+        title: "Problem Exploration Guide",
+        description: "Brief overview of what makes a good problem exploration question:",
+        why: "This question is crucial in project meetings because it helps ensure everyone is aligned on the core issue the project is meant to address.",
+        how: "Ask open-ended questions that prompt stakeholders to reflect on pain points, not just proposed solutions. Encourage them to describe real situations and the impact.",
+        examples: [
+          "What challenges led to this project being initiated?",
+          "Can you describe a recent issue that highlighted this need?",
+          "What would success look like once this problem is solved?"
+        ]
+      };
+    }
+
     try {
       const response = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
@@ -80,7 +107,6 @@ class ProblemExplorationService {
 
     } catch (error) {
       console.error('❌ PROBLEM EXPLORATION: Guidance failed:', error);
-
       // Fallback guidance
       return {
         title: "Problem Exploration Guide",
@@ -139,29 +165,8 @@ class ProblemExplorationService {
     const userPrompt = `Evaluate this problem exploration question: "${question}"
     ${context ? `Context: ${context}` : ''}`;
 
-    try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 400,
-        temperature: 0.2
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No response from OpenAI');
-      }
-
-      const evaluation = JSON.parse(content);
-      console.log('✅ PROBLEM EXPLORATION: Evaluation completed:', evaluation.verdict);
-      return evaluation;
-
-    } catch (error) {
-      console.error('❌ PROBLEM EXPLORATION: Evaluation failed:', error);
-
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, using fallback evaluation');
       // Fallback evaluation using simple rules
       const isProblemFocused = /(problem|challenge|issue|pain|difficulty|struggle|concern)/i.test(question);
       const isOpenEnded = /(what|how|why|when|where|describe|explain|tell)/i.test(question);

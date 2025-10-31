@@ -11,14 +11,25 @@ interface StakeholderResponseAnalysis {
 
 class StakeholderResponseAnalysisService {
   private static instance: StakeholderResponseAnalysisService;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Stakeholder response analysis features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for stakeholder response analysis:', error);
+        this.openai = null;
+      }
+    }
   }
 
   static getInstance(): StakeholderResponseAnalysisService {
@@ -59,6 +70,19 @@ class StakeholderResponseAnalysisService {
 
     const userPrompt = `Analyze this stakeholder response: "${response}"
     ${context ? `Context: ${context}` : ''}`;
+
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, using fallback analysis');
+      // Return fallback immediately
+      return {
+        insights: ["Stakeholder provided valuable context about their situation"],
+        painPoints: ["Need to identify specific pain points from their response"],
+        blockers: ["Need to understand potential blockers"],
+        nextQuestion: "Can you tell me more about the specific challenges you're facing?",
+        reasoning: "This question will help us dive deeper into their specific situation",
+        technique: "Probing"
+      };
+    }
 
     try {
       const response = await this.openai.chat.completions.create({

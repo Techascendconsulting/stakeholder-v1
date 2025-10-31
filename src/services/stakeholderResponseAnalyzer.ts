@@ -24,14 +24,25 @@ interface AnalysisContext {
 
 class StakeholderResponseAnalyzer {
   private static instance: StakeholderResponseAnalyzer;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Stakeholder response analyzer features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for stakeholder response analyzer:', error);
+        this.openai = null;
+      }
+    }
   }
 
   static getInstance(): StakeholderResponseAnalyzer {
@@ -80,6 +91,11 @@ Return JSON only with this structure:
       current_response: context.currentResponse,
       question_number: context.questionCount
     });
+
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, using fallback analysis');
+      return this.fallbackAnalysis(context);
+    }
 
     try {
       const response = await this.openai.chat.completions.create({

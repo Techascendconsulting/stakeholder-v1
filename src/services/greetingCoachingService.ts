@@ -18,14 +18,25 @@ interface WarmUpGuidance {
 
 class GreetingCoachingService {
   private static instance: GreetingCoachingService;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Greeting coaching features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for greeting coaching:', error);
+        this.openai = null;
+      }
+    }
   }
 
   static getInstance(): GreetingCoachingService {

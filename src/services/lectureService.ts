@@ -30,18 +30,29 @@ interface LectureContext {
 
 class LectureService {
   private static instance: LectureService;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private lectureContexts: Map<string, LectureContext> = new Map();
 
   // Comprehensive Knowledge Base - Imported from separate file
   private knowledgeBase: KnowledgeItem[] = comprehensiveKnowledgeBase;
 
   private constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Lecture service features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for lecture service:', error);
+        this.openai = null;
+      }
+    }
   }
 
   public static getInstance(): LectureService {
@@ -86,6 +97,16 @@ class LectureService {
     }
 
     // Fallback to AI generation with strict topic focus
+    if (!this.openai) {
+      return {
+        content: `Here's information about ${topic}. What questions do you have? (AI features disabled - OpenAI API key not configured)`,
+        phase: 'teach',
+        topic: topic,
+        moduleId: moduleId,
+        questionsRemaining: context.maxQuestions - context.questionsAsked
+      };
+    }
+
     const systemPrompt = `You are providing information about the specific topic: "${topic}". 
 
 CRITICAL: You must ONLY cover "${topic}" and nothing else. Do not cover other BA topics.
@@ -136,6 +157,16 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
     
     this.lectureContexts.set(moduleId, context);
 
+    if (!this.openai) {
+      return {
+        content: `Let's practice ${topic}. (AI features disabled - OpenAI API key not configured)`,
+        phase: 'practice',
+        topic: topic,
+        moduleId: moduleId,
+        questionsRemaining: context.maxQuestions - context.questionsAsked
+      };
+    }
+
     const systemPrompt = this.buildPracticePrompt(module, topic, context);
     
     const response = await this.openai.chat.completions.create({
@@ -183,9 +214,12 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
       aiResponse = knowledgeBaseResponse;
     } else {
       // Use AI for complex questions or after knowledge base limit
-      const systemPrompt = this.buildSystemPrompt(module, topic, context);
-      
-      const response = await this.openai.chat.completions.create({
+      if (!this.openai) {
+        aiResponse = 'I understand. Let\'s continue learning. (AI features disabled - OpenAI API key not configured)';
+      } else {
+        const systemPrompt = this.buildSystemPrompt(module, topic, context);
+        
+        const response = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
@@ -195,7 +229,8 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
         temperature: 0.7
       });
 
-      aiResponse = response.choices[0]?.message?.content || 'I understand. Let\'s continue learning.';
+        aiResponse = response.choices[0]?.message?.content || 'I understand. Let\'s continue learning.';
+      }
     }
 
     // Clean up any overly enthusiastic language
@@ -230,6 +265,10 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
     7. Next steps for improvement
     
     Be constructive, specific, and encouraging. Focus on BA best practices and real-world application.`;
+
+    if (!this.openai) {
+      return this.parseAssignmentAnalysis('AI grading unavailable - OpenAI API key not configured', assignmentType);
+    }
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',

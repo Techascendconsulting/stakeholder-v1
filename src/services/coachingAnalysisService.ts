@@ -17,18 +17,29 @@ interface PhaseContext {
 
 class CoachingAnalysisService {
   private static instance: CoachingAnalysisService;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private aiCallCount = 0;
   private maxAiCallsPerSession = 10; // Limit AI calls to control costs
   private lastAiCallTime = 0;
   private minTimeBetweenAiCalls = 5000; // 5 seconds between AI calls
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Coaching analysis features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey,
+          dangerouslyAllowBrowser: true
+          // Removed baseURL - call OpenAI directly (backend server not required)
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for coaching analysis:', error);
+        this.openai = null;
+      }
+    }
   }
 
   static getInstance(): CoachingAnalysisService {
