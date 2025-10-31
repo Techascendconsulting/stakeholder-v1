@@ -32,18 +32,27 @@ class SingleAgentSystem {
     if (!hasValidApiKey) {
       console.warn('⚠️ VITE_OPENAI_API_KEY not set - Single agent system features will be disabled');
       this.openai = null;
-    } else {
-      try {
-        this.openai = new OpenAI({
-          apiKey: apiKey.trim(),
-          dangerouslyAllowBrowser: true,
-          timeout: 30000 // 30 second timeout
-          // Removed baseURL - call OpenAI directly (backend server not required)
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for single agent system:', error);
-        this.openai = null;
-      }
+      return; // Early return to prevent any further execution
+    }
+    
+    // Double-check before creating client
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey || trimmedKey.length === 0) {
+      console.warn('⚠️ VITE_OPENAI_API_KEY is empty after trim - Single agent system features will be disabled');
+      this.openai = null;
+      return;
+    }
+    
+    try {
+      this.openai = new OpenAI({
+        apiKey: trimmedKey,
+        dangerouslyAllowBrowser: true,
+        timeout: 30000 // 30 second timeout
+        // Removed baseURL - call OpenAI directly (backend server not required)
+      });
+    } catch (error) {
+      console.error('❌ Failed to initialize OpenAI client for single agent system:', error);
+      this.openai = null;
     }
   }
 

@@ -17,12 +17,16 @@ if (!hasValidApiKey) {
 
 // Only create OpenAI client if API key is available and valid
 let openai: OpenAI | null = null;
-if (hasValidApiKey) {
+if (hasValidApiKey && apiKey) {
   try {
-    openai = new OpenAI({
-      apiKey: apiKey.trim(),
-      dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
-    });
+    const trimmedKey = apiKey.trim();
+    // Double-check the key is valid before creating client
+    if (trimmedKey && trimmedKey.length > 0) {
+      openai = new OpenAI({
+        apiKey: trimmedKey,
+        dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
+      });
+    }
   } catch (error) {
     console.error('❌ Failed to initialize OpenAI client:', error);
     openai = null;
