@@ -4,9 +4,7 @@ import { VERITY_SYSTEM_PROMPT } from '../components/Verity/VerityPrompt';
 // Check if API key is available
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 if (!apiKey) {
-  console.error('❌ VITE_OPENAI_API_KEY is not set in environment variables');
-} else {
-  // Do not log secrets
+  console.warn('⚠️ VITE_OPENAI_API_KEY is not set - Verity AI features will be limited');
 }
 
 // SECURITY: Client-side OpenAI usage exposes API key in browser
@@ -14,10 +12,20 @@ if (!apiKey) {
 // TODO: Create /supabase/functions/verity-chat/index.ts
 // TODO: Client sends user message → Edge Function calls OpenAI → Returns response
 // Current setup is acceptable for development/MVP but NOT production-ready
-const openai = new OpenAI({
-  apiKey: apiKey,
-  dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
-});
+
+// Only create OpenAI client if API key is available
+let openai: OpenAI | null = null;
+if (apiKey) {
+  try {
+    openai = new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client:', error);
+    openai = null;
+  }
+}
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -96,7 +104,11 @@ User role: ${context.userRole || 'learner'}`;
         console.warn('⚠️ Verity: Backend unavailable, falling back to direct OpenAI call');
         console.warn('Backend error:', backendError);
 
-        // FALLBACK: Call OpenAI directly
+        // FALLBACK: Call OpenAI directly (only if client is available)
+        if (!openai) {
+          throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in environment variables.');
+        }
+
         const completion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: [

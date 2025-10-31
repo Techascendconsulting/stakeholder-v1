@@ -12,11 +12,27 @@ import { getNextModuleId } from '../views/LearningFlow/learningData';
 // TODO (Production): Move AI grading to Supabase Edge Function
 // TODO: Create /supabase/functions/grade-assignment/index.ts
 // Current approach acceptable for MVP but exposes API key in browser
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true, // ⚠️ SECURITY: Move to Edge Function for production
-  baseURL: 'http://localhost:3001/api/openai-proxy'
-});
+
+// Only create OpenAI client if API key is available
+const createOpenAIClient = () => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn('⚠️ VITE_OPENAI_API_KEY not set - assignment AI features will be disabled');
+    return null;
+  }
+  try {
+    return new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true, // ⚠️ SECURITY: Move to Edge Function for production
+      baseURL: 'http://localhost:3001/api/openai-proxy'
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client for assignments:', error);
+    return null;
+  }
+};
+
+const openai = createOpenAIClient();
 
 export interface AssignmentSubmission {
   id: string;
@@ -81,6 +97,15 @@ export async function reviewAssignmentWithAI(
     console.log('🤖 Requesting AI review for', moduleId);
 
     // Call OpenAI for feedback
+    if (!openai) {
+      return {
+        summary: 'AI grading unavailable',
+        feedback: 'OpenAI API key is not configured. Please configure VITE_OPENAI_API_KEY to enable AI-powered assignment grading.',
+        score: null,
+        status: 'submitted'
+      };
+    }
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -303,6 +328,8 @@ export function formatTimeRemaining(milliseconds: number): string {
   }
   return `${minutes}m remaining`;
 }
+
+
 
 
 
