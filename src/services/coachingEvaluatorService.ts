@@ -37,13 +37,14 @@ class CoachingEvaluatorService {
 
   constructor() {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) {
+    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+    if (!hasValidApiKey) {
       console.warn('⚠️ VITE_OPENAI_API_KEY not set - Coaching evaluator features will be disabled');
       this.openai = null;
     } else {
       try {
         this.openai = new OpenAI({
-          apiKey: apiKey,
+          apiKey: apiKey.trim(),
           dangerouslyAllowBrowser: true
           // Removed baseURL - call OpenAI directly (backend server not required)
         });

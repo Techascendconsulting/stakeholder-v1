@@ -16,13 +16,14 @@ import { getNextModuleId } from '../views/LearningFlow/learningData';
 // Only create OpenAI client if API key is available
 const createOpenAIClient = () => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) {
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+  if (!hasValidApiKey) {
     console.warn('⚠️ VITE_OPENAI_API_KEY not set - assignment AI features will be disabled');
     return null;
   }
   try {
     return new OpenAI({
-      apiKey: apiKey,
+      apiKey: apiKey.trim(),
       dangerouslyAllowBrowser: true, // ⚠️ SECURITY: Move to Edge Function for production
       baseURL: 'http://localhost:3001/api/openai-proxy'
     });
