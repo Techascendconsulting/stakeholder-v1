@@ -1,12 +1,38 @@
 import type { Request, Response } from 'express';
 import OpenAI from 'openai';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+// Lazy OpenAI client getter - only creates client when needed
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+  
+  if (!hasValidApiKey) {
+    console.warn('⚠️ OPENAI_API_KEY not set - analyzeStakeholder feature disabled');
+    return null;
+  }
+  
+  try {
+    return new OpenAI({
+      apiKey: apiKey.trim(),
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client for analyzeStakeholder:', error);
+    return null;
+  }
+}
 
 export async function analyzeStakeholder(req: Request, res: Response) {
   try {
     const { transcript, context, conversationHistory } = req.body ?? {};
     if (!transcript) return res.status(400).json({ error: 'Missing transcript' });
+
+    const client = getOpenAIClient();
+    if (!client) {
+      return res.status(503).json({ 
+        error: 'OpenAI service unavailable', 
+        message: 'OpenAI API key not configured' 
+      });
+    }
 
     const started = Date.now();
     const completion = await client.chat.completions.create({

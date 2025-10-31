@@ -23,16 +23,28 @@ interface KnowledgeBase {
 
 class HybridKnowledgeBase {
   private static instance: HybridKnowledgeBase;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private kbData: KnowledgeBase | null = null;
   private embeddings: Map<string, number[]> = new Map();
   private isInitialized = false;
 
   private constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-    });
+    const apiKey = process.env.OPENAI_API_KEY;
+    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+    
+    if (!hasValidApiKey) {
+      console.warn('⚠️ OPENAI_API_KEY not set - HybridKnowledgeBase features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey.trim(),
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for HybridKnowledgeBase:', error);
+        this.openai = null;
+      }
+    }
   }
 
   public static getInstance(): HybridKnowledgeBase {
@@ -65,6 +77,11 @@ class HybridKnowledgeBase {
   // Generate embeddings for all KB entries
   private async generateEmbeddings(): Promise<void> {
     if (!this.kbData) return;
+
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, skipping embeddings generation');
+      return;
+    }
 
     const entries = this.kbData.knowledge_base;
     const batchSize = 10; // Process in batches to avoid rate limits
@@ -183,6 +200,11 @@ class HybridKnowledgeBase {
   // Find semantic matches using embeddings
   private async findSemanticMatches(query: string): Promise<SearchResult[]> {
     if (!this.kbData || this.embeddings.size === 0) return [];
+
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, skipping semantic search');
+      return [];
+    }
 
     try {
       // Generate embedding for query

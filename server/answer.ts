@@ -10,14 +10,26 @@ interface AnswerResponse {
 
 class AnsweringPipeline {
   private static instance: AnsweringPipeline;
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private kb: HybridKnowledgeBase;
 
   private constructor() {
-    this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
-    });
+    const apiKey = process.env.OPENAI_API_KEY;
+    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+    
+    if (!hasValidApiKey) {
+      console.warn('⚠️ OPENAI_API_KEY not set - AnsweringPipeline features will be disabled');
+      this.openai = null;
+    } else {
+      try {
+        this.openai = new OpenAI({
+          apiKey: apiKey.trim(),
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize OpenAI client for AnsweringPipeline:', error);
+        this.openai = null;
+      }
+    }
     this.kb = HybridKnowledgeBase.getInstance();
   }
 
@@ -89,6 +101,12 @@ class AnsweringPipeline {
 
   // Compose answer using LLM from KB snippets
   private async composeAnswer(userQuery: string, searchResults: SearchResult[]): Promise<string> {
+    if (!this.openai) {
+      console.warn('⚠️ OpenAI not configured, using fallback answer');
+      const bestResult = searchResults[0];
+      return bestResult ? bestResult.entry.short : this.getFallbackResponse().answer;
+    }
+
     try {
       // Prepare context from top KB entries
       const context = searchResults.map(result => {
