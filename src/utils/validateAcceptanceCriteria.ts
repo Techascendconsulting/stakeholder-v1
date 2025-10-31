@@ -4,14 +4,20 @@ import { OpenAI } from 'openai';
 // Initialize OpenAI client only when needed
 function getOpenAIClient() {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) {
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+  if (!hasValidApiKey) {
     return null;
   }
-  return new OpenAI({ 
-    apiKey,
-    dangerouslyAllowBrowser: true, // Required for browser environment
-    baseURL: 'http://localhost:3001/api/openai-proxy'
-  });
+  try {
+    return new OpenAI({ 
+      apiKey: apiKey.trim(),
+      dangerouslyAllowBrowser: true, // Required for browser environment
+      baseURL: 'http://localhost:3001/api/openai-proxy'
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client for validation:', error);
+    return null;
+  }
 }
 
 // 8 rules baseline

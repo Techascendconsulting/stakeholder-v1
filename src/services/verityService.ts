@@ -1,9 +1,11 @@
 import OpenAI from 'openai';
 import { VERITY_SYSTEM_PROMPT } from '../components/Verity/VerityPrompt';
 
-// Check if API key is available
+// Check if API key is available (must be a non-empty string)
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-if (!apiKey) {
+const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+
+if (!hasValidApiKey) {
   console.warn('⚠️ VITE_OPENAI_API_KEY is not set - Verity AI features will be limited');
 }
 
@@ -13,12 +15,12 @@ if (!apiKey) {
 // TODO: Client sends user message → Edge Function calls OpenAI → Returns response
 // Current setup is acceptable for development/MVP but NOT production-ready
 
-// Only create OpenAI client if API key is available
+// Only create OpenAI client if API key is available and valid
 let openai: OpenAI | null = null;
-if (apiKey) {
+if (hasValidApiKey) {
   try {
     openai = new OpenAI({
-      apiKey: apiKey,
+      apiKey: apiKey.trim(),
       dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
     });
   } catch (error) {

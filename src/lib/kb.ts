@@ -212,8 +212,22 @@ class KnowledgeBase {
       }));
 
       // Use OpenAI to find the most relevant entries
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+      
+      if (!hasValidApiKey) {
+        console.warn('⚠️ VITE_OPENAI_API_KEY not set - KB search features will use fallback');
+        // Return first N entries as fallback
+        return entries.slice(0, limit).map(entry => ({
+          question: entry.question,
+          answer: entry.answer,
+          short: entry.short,
+          expanded: entry.expanded
+        }));
+      }
+
       const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        apiKey: apiKey.trim(),
         dangerouslyAllowBrowser: true,
         baseURL: 'http://localhost:3001/api/openai-proxy'
       });
