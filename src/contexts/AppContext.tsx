@@ -8,6 +8,8 @@ import { supabase } from '../lib/supabase'
 import LockMessageToast from '../components/LockMessageToast'
 import { getUserPhase, isPageAccessible } from '../utils/userProgressPhase'
 import { ElicitationAccess, getElicitationAccess } from '../utils/elicitationProgress'
+import { saveResumeState, loadResumeState, isReturnableRoute, getPageTitle } from '../services/resumeStore'
+import type { PageType } from '../types/resume'
 
 interface AppContextType {
   // Hydration state
@@ -379,6 +381,91 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       localStorage.setItem('currentView', view)
       console.log('💾 NAVIGATE: Saved view to localStorage:', view)
+      
+      // Route capture: Save resume state for "Continue where you left off" feature
+      if (user?.id) {
+        // Determine page type based on view
+        let pageType: PageType = 'dashboard';
+        
+        // Learning pages
+        const learningPages = [
+          'core-learning', 'project-initiation', 'requirements-engineering', 
+          'solution-options', 'documentation', 'design-hub', 'mvp-hub',
+          'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials',
+          'agile-scrum', 'scrum-learning', 'learning-hub', 'core-concepts'
+        ];
+        
+        // Practice pages
+        const practicePages = [
+          'training-practice', 'practice', 'practice-2', 'training-assess',
+          'meeting', 'voice-only-meeting', 'voice-meeting-v2', 'scrum-practice',
+          'documentation-practice'
+        ];
+        
+        // Project pages
+        const projectPages = [
+          'projects', 'project', 'project-brief', 'custom-project', 'create-project',
+          'project-workspace', 'project-flow', 'mvp-engine'
+        ];
+        
+        if (learningPages.includes(view)) {
+          pageType = 'learning';
+        } else if (practicePages.includes(view)) {
+          pageType = 'practice';
+        } else if (projectPages.includes(view)) {
+          pageType = 'project';
+        } else if (view === 'admin' || view === 'admin-panel') {
+          pageType = 'admin';
+        } else if (view === 'dashboard' || view === 'welcome' || view === 'get-started') {
+          pageType = 'dashboard';
+        } else if (view === 'profile' || view === 'settings') {
+          pageType = 'settings';
+        }
+        
+        // Only save resume state if it's a returnable route
+        if (isReturnableRoute(view) && pageType !== 'dashboard' && pageType !== 'admin' && pageType !== 'settings') {
+          // Capture current scroll position
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          
+          // Try to capture tab/step info from common patterns
+          // This will be enhanced per-view later, but captures common cases now
+          let tabId: string | undefined;
+          let stepId: string | undefined;
+          
+          // Check for active tab in common UI patterns
+          const activeTabElement = document.querySelector('[aria-selected="true"]') || 
+                                   document.querySelector('.tab-active') ||
+                                   document.querySelector('[data-active-tab]');
+          if (activeTabElement) {
+            tabId = activeTabElement.getAttribute('data-tab-id') || 
+                    activeTabElement.getAttribute('id') ||
+                    activeTabElement.textContent?.trim().toLowerCase().replace(/\s+/g, '-');
+          }
+          
+          // Check for active step/lesson
+          const activeStepElement = document.querySelector('[data-active-step]') ||
+                                    document.querySelector('.step-active') ||
+                                    document.querySelector('[aria-current="step"]');
+          if (activeStepElement) {
+            const stepIdAttr = activeStepElement.getAttribute('data-step-id') || activeStepElement.getAttribute('id');
+            stepId = stepIdAttr || undefined;
+          }
+          
+          saveResumeState({
+            userId: user.id,
+            path: view,
+            pageType: pageType,
+            pageTitle: getPageTitle(view),
+            projectId: selectedProject?.id,
+            scrollY: scrollY > 0 ? scrollY : undefined,
+            tabId: tabId,
+            stepId: stepId,
+            exitReason: 'nav-away',
+          });
+          console.log('💾 RESUME: Saved resume state for view:', view, 'pageType:', pageType, 'scrollY:', scrollY);
+        }
+      }
+      
       console.log('🎯 NAVIGATE: Navigation complete. React should re-render with new currentView:', view)
     } catch (error) {
       console.log('❌ NAVIGATE: Could not save view to localStorage:', error)
@@ -491,7 +578,77 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Only clear if we had a logged-in user before and now we're explicitly logged out
     if (prevUser.current && user === null) {
-      console.log('👋 USER_EFFECT: Actual logout detected, clearing all saved state')
+      console.log('👋 USER_EFFECT: Actual logout detected, saving resume state before clearing')
+      
+      // IMPORTANT: Save resume state BEFORE clearing anything (if user was on a returnable page)
+      const currentViewOnLogout = currentView || localStorage.getItem('currentView');
+      if (prevUser.current?.id && currentViewOnLogout) {
+        // Check if current view is returnable
+        if (isReturnableRoute(currentViewOnLogout)) {
+          // Determine page type
+          let pageType: PageType = 'dashboard';
+          const learningPages = ['core-learning', 'project-initiation', 'requirements-engineering', 
+            'solution-options', 'documentation', 'design-hub', 'mvp-hub',
+            'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials'];
+          const practicePages = ['training-practice', 'practice', 'meeting', 'voice-only-meeting'];
+          const projectPages = ['projects', 'project', 'custom-project', 'create-project'];
+          
+          if (learningPages.includes(currentViewOnLogout)) pageType = 'learning';
+          else if (practicePages.includes(currentViewOnLogout)) pageType = 'practice';
+          else if (projectPages.includes(currentViewOnLogout)) pageType = 'project';
+          
+          if (pageType !== 'dashboard') {
+            // Capture scroll and state
+            const scrollY = window.scrollY || document.documentElement.scrollTop;
+            
+            // Try to capture active topic/step for core-learning
+            let stepId: string | undefined;
+            if (currentViewOnLogout === 'core-learning') {
+              // Check for selected topic using data attributes
+              const activeTopicElement = document.querySelector('[data-active-topic="true"]');
+              if (activeTopicElement) {
+                const topicIdAttr = activeTopicElement.getAttribute('data-topic-id') || activeTopicElement.getAttribute('data-lesson-id');
+                stepId = topicIdAttr || undefined;
+              }
+              
+              // Fallback: check localStorage for selectedTopicId (CoreLearning2View saves this)
+              if (!stepId && prevUser.current?.id) {
+                try {
+                  // Try to get the last viewed topic from resume state
+                  // Since we can't access component state here, we'll rely on DOM or resume state
+                  const resumeState = loadResumeState(prevUser.current.id);
+                  if (resumeState && resumeState.stepId) {
+                    stepId = resumeState.stepId;
+                  }
+                } catch (error) {
+                  console.warn('Error checking localStorage for topic:', error);
+                }
+              }
+            }
+            
+            saveResumeState({
+              userId: prevUser.current.id,
+              path: currentViewOnLogout,
+              pageType: pageType,
+              pageTitle: getPageTitle(currentViewOnLogout),
+              scrollY: scrollY > 0 ? scrollY : undefined,
+              stepId: stepId,
+              exitReason: 'logout',
+            });
+            console.log('💾 RESUME: Saved resume state on logout', { 
+              path: currentViewOnLogout, 
+              pageType, 
+              scrollY, 
+              stepId: stepId || 'none',
+              userId: prevUser.current.id
+            });
+            
+            // Verify it was saved
+            const verifyState = loadResumeState(prevUser.current.id);
+            console.log('✅ RESUME: Verified saved state exists:', !!verifyState, verifyState ? { path: verifyState.path, stepId: verifyState.stepId } : null);
+          }
+        }
+      }
       
       // Check if this is a device lock error (don't redirect to dashboard)
       const deviceLockError = localStorage.getItem('deviceLockError')
@@ -512,6 +669,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localStorage.removeItem('selectedProject')
         localStorage.removeItem('selectedStakeholders')
         localStorage.removeItem('customProject')
+        // NOTE: We don't clear resume_state - that persists across sessions
         setCurrentViewState('dashboard')
         setSelectedProjectState(null)
         setSelectedStakeholdersState([])
@@ -665,7 +823,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           .eq('user_id', user.id);
         
         if (projectsData && !error) {
-          const projectIds = projectsData.map(p => p.project_id);
+          const projectIds = projectsData.map((p: { project_id: string }) => p.project_id);
           setUserSelectedProjects(projectIds);
           setUserProjectCount(projectIds.length);
           // Also save to localStorage as backup

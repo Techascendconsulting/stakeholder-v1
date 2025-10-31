@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock } from 'lucide-react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
 import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
 import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
+import { loadResumeState } from '../../services/resumeStore';
+import type { ResumeState } from '../../types/resume';
 
 const Dashboard: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -18,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [nextStep, setNextStep] = useState<NextStepGuidance | null>(null);
   const [userType, setUserType] = useState<'new' | 'existing' | 'admin'>('existing');
   const [userPhase, setUserPhase] = useState<UserPhase>('learning');
+  const [resumeState, setResumeState] = useState<ResumeState | null>(null);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -36,6 +39,13 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+    // Load resume state for "Continue where you left off"
+    if (user?.id) {
+      const state = loadResumeState(user.id);
+      if (state && state.isReturnable && state.pageType !== 'dashboard') {
+        setResumeState(state);
+      }
+    }
   }, [user?.id]);
 
   const loadDashboardData = async () => {
@@ -136,6 +146,49 @@ const Dashboard: React.FC = () => {
           Here's your stakeholder interview progress and recent activity
         </p>
       </div>
+
+      {/* Continue Where You Left Off */}
+      {resumeState && (
+        <div className="mb-6 rounded-xl p-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                <RotateCcw className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold mb-1">Continue where you left off</h3>
+                <p className="text-indigo-100 text-sm">
+                  You were on <span className="font-semibold">{resumeState.pageTitle || resumeState.path}</span>
+                  {resumeState.stepId && ` — ${resumeState.stepId}`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setCurrentView(resumeState.path as any);
+                // Restore scroll/step after navigation
+                setTimeout(() => {
+                  if (resumeState.scrollY && resumeState.scrollY > 0) {
+                    window.scrollTo({ top: resumeState.scrollY, behavior: 'smooth' });
+                  }
+                  if (resumeState.stepId || resumeState.tabId) {
+                    const element = document.querySelector(`[data-step-id="${resumeState.stepId}"]`) ||
+                                  document.querySelector(`[data-topic-id="${resumeState.stepId}"]`) ||
+                                  document.querySelector(`[data-tab-id="${resumeState.tabId}"]`);
+                    if (element) {
+                      (element as HTMLElement).click();
+                    }
+                  }
+                }, 300);
+              }}
+              className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold flex items-center space-x-2 hover:bg-indigo-50 transition-all hover:scale-105 shadow-md"
+            >
+              <span>Continue</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Next Step Guidance Banner */}
       {nextStep && (

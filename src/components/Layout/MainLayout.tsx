@@ -3,7 +3,7 @@ import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard'; // Updated with journey integration
-import Dashboard2 from '../Views/Dashboard2'; // OLD: Clean, purposeful dashboard
+// import Dashboard2 from '../Views/Dashboard2'; // OLD: Clean, purposeful dashboard
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
 import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
@@ -102,6 +102,10 @@ import LockMessageToast from '../LockMessageToast';
 // import NavigationGuideView from '../Views/NavigationGuideView'; // Removed: Using interactive tour instead
 import OnboardingTour from '../OnboardingTour';
 import GlobalBreadcrumbs from '../GlobalBreadcrumbs';
+import { ContinueModal } from '../ContinueModal';
+import { useContinuePrompt } from '../../hooks/useContinuePrompt';
+import { trackContinueErrorFallback } from '../../services/continueAnalytics';
+import { clearResumeState } from '../../services/resumeStore';
 
 
 const MainLayout: React.FC = () => {
@@ -551,11 +555,44 @@ function getPageTitle(view: string): string {
 
 // Add this before the export
 const MainLayoutWithTour: React.FC = () => {
-  const { currentView, setCurrentView, isLoading, selectedProject, lockMessage, clearLockMessage } = useApp();
+  console.log('🚀 MAIN_LAYOUT_WRAPPER: Component rendering/updating');
+  const { setCurrentView } = useApp();
   const { isAdmin } = useAdmin();
   const { user } = useAuth();
-  const [userType, setUserType] = React.useState<'new' | 'existing'>('existing');
   const [showTour, setShowTour] = React.useState(false);
+  
+  // Debug: Log whenever user changes
+  React.useEffect(() => {
+    console.log('🚀 MAIN_LAYOUT_WRAPPER: User state changed', { userId: user?.id, isAdmin });
+  }, [user?.id, isAdmin]);
+
+  // Check onboarding status for continue prompt
+  const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+  const isOnboardingInProgress = localStorage.getItem('onboardingInProgress') === 'true';
+  const hasCompletedOnboarding = onboardingCompleted || (!onboardingCompleted && !isOnboardingInProgress);
+
+  // Debug: Log values being passed to hook
+  console.log('🎯 MAIN_LAYOUT_WRAPPER: Values for continue prompt hook', {
+    userId: user?.id,
+    isAdmin,
+    onboardingCompleted,
+    isOnboardingInProgress,
+    hasCompletedOnboarding
+  });
+
+  // Continue where you left off prompt
+  const { shouldShow: showContinuePrompt, resumeState, dismiss: dismissContinuePrompt } = useContinuePrompt(
+    user?.id,
+    isAdmin,
+    hasCompletedOnboarding
+  );
+  
+  // Debug: Log hook result
+  console.log('🎯 MAIN_LAYOUT_WRAPPER: Continue prompt hook result', {
+    shouldShow: showContinuePrompt,
+    hasResumeState: !!resumeState,
+    resumeStatePath: resumeState?.path
+  });
 
   // Listen for tour trigger from Dashboard
   React.useEffect(() => {
@@ -584,11 +621,98 @@ const MainLayoutWithTour: React.FC = () => {
     }
   };
 
+  const handleContinue = () => {
+    if (resumeState) {
+      console.log('🔄 Continue: Navigating to', resumeState.path);
+      
+      // Validate that the route still exists/is accessible
+      const validViews = [
+        'core-learning', 'project-initiation', 'requirements-engineering', 
+        'solution-options', 'documentation', 'design-hub', 'mvp-hub',
+        'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials',
+        'training-practice', 'practice', 'meeting', 'voice-only-meeting',
+        'projects', 'project', 'custom-project', 'create-project'
+      ];
+      
+      const isValidRoute = validViews.includes(resumeState.path);
+      
+      if (!isValidRoute) {
+        // Invalid route - fallback to dashboard with error tracking
+        console.warn('⚠️ Continue: Invalid route detected, falling back to dashboard');
+        trackContinueErrorFallback('invalid_route', resumeState);
+        clearResumeState();
+        setCurrentView('dashboard');
+        dismissContinuePrompt();
+        return;
+      }
+      
+      // Check if practice session expired (for practice pages)
+      if (resumeState.pageType === 'practice' && resumeState.practiceSessionId) {
+        // In Phase 2, we'll assume sessions don't expire quickly
+        // In Phase 3, add actual session validation
+        console.log('📝 Continue: Practice session ID:', resumeState.practiceSessionId);
+      }
+      
+      // Check if project still exists (for project pages)
+      if (resumeState.pageType === 'project' && resumeState.projectId) {
+        // In Phase 2, we'll navigate anyway and let the view handle missing projects
+        // In Phase 3, add project validation
+        console.log('📁 Continue: Project ID:', resumeState.projectId);
+      }
+      
+      try {
+        // Navigate to the saved view
+        setCurrentView(resumeState.path as any);
+        
+        // Restore scroll/step state after a brief delay to allow view to render
+        setTimeout(() => {
+          try {
+            const { restoreResumeState } = require('../../utils/scrollRestore');
+            restoreResumeState(resumeState);
+          } catch (error) {
+            console.warn('⚠️ Continue: Error restoring scroll/step state:', error);
+            // Non-critical error, continue anyway
+          }
+        }, 300); // Small delay to ensure view component has mounted
+        
+        dismissContinuePrompt();
+      } catch (error) {
+        // Fallback on navigation error
+        console.error('❌ Continue: Navigation error:', error);
+        trackContinueErrorFallback('navigation_error', resumeState);
+        setCurrentView('dashboard');
+        dismissContinuePrompt();
+      }
+    }
+  };
+
+  const handleGoToDashboard = () => {
+    console.log('🔄 Continue: Going to dashboard');
+    setCurrentView('dashboard');
+    dismissContinuePrompt();
+  };
+
+  const handleDismissContinue = () => {
+    dismissContinuePrompt();
+  };
+
+  // Get user's first name for personalization
+  const userName = user?.user_metadata?.name?.split(' ')[0] || user?.email?.split('@')[0] || undefined;
+
   return (
     <>
       <MainLayout />
       {showTour && (
         <OnboardingTour onComplete={handleTourComplete} onSkip={handleTourSkip} />
+      )}
+      {showContinuePrompt && resumeState && (
+        <ContinueModal
+          resumeState={resumeState}
+          userName={userName}
+          onContinue={handleContinue}
+          onGoToDashboard={handleGoToDashboard}
+          onDismiss={handleDismissContinue}
+        />
       )}
     </>
   );

@@ -9,6 +9,9 @@ import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
 import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
+import { saveResumeState, loadResumeState } from '../../services/resumeStore';
+import { getPageTitle } from '../../services/resumeStore';
+import type { PageType } from '../../types/resume';
 
 const CoreLearning2View: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -88,6 +91,50 @@ const CoreLearning2View: React.FC = () => {
   useEffect(() => {
     saveProgress();
   }, [completedTopics, midAssignmentCompleted]);
+
+  // Save resume state when navigating to core-learning (even without topic selected)
+  useEffect(() => {
+    if (user?.id) {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      
+      saveResumeState({
+        userId: user.id,
+        path: 'core-learning',
+        pageType: 'learning' as PageType,
+        pageTitle: getPageTitle('core-learning'),
+        moduleId: 'module-1-core-learning',
+        stepId: selectedTopicId || undefined, // Include topic if selected
+        scrollY: scrollY > 0 ? scrollY : undefined,
+        exitReason: 'nav-away',
+      });
+      console.log('💾 CORE_LEARNING: Saved resume state', { hasTopic: !!selectedTopicId, topicId: selectedTopicId });
+    }
+  }, [selectedTopicId, user?.id]); // Save whenever topic changes OR on mount
+  
+  // Restore selected topic from resume state on mount
+  useEffect(() => {
+    if (user?.id && !selectedTopicId) {
+      try {
+        const resumeState = loadResumeState(user.id);
+        
+        if (resumeState && resumeState.path === 'core-learning' && resumeState.stepId) {
+          // Only restore if this is from the continue modal (not just loading the page)
+          // We'll check sessionStorage to see if modal was shown
+          const promptShown = sessionStorage.getItem('continuePromptShown') === '1';
+          if (promptShown && resumeState.stepId) {
+            console.log('📚 CORE_LEARNING: Restoring topic from resume state', resumeState.stepId);
+            // Validate the stepId exists
+            const topicExists = topics.some(t => t.id === resumeState.stepId);
+            if (topicExists) {
+              setSelectedTopicId(resumeState.stepId);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ CORE_LEARNING: Error loading resume state', error);
+      }
+    }
+  }, [user?.id]); // Only run once on mount
 
   // Map topic index to icon
   const getTopicIcon = (index: number) => {
@@ -680,6 +727,8 @@ d) Departments have different lunch schedules
               return (
                 <div
                   key={topic.id}
+                  data-topic-id={topic.id}
+                  data-active-topic={selectedTopicId === topic.id ? 'true' : 'false'}
                   onClick={() => {
                     if (isAccessible) {
                       setSelectedTopicId(topic.id);
@@ -842,6 +891,8 @@ d) Departments have different lunch schedules
               return (
                 <div
                   key={topic.id}
+                  data-topic-id={topic.id}
+                  data-active-topic={selectedTopicId === topic.id ? 'true' : 'false'}
                   onClick={() => {
                     if (isAccessible) {
                       setSelectedTopicId(topic.id);
