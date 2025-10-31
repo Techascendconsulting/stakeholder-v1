@@ -37,6 +37,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deviceRegistrationCompleted = useRef<boolean>(false)
 
   useEffect(() => {
+    // Safety timeout: Force loading to false after 5 seconds to prevent blank screen
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('🔐 AUTH - Loading timeout reached, forcing loading to false');
+        setLoading(false);
+      }
+    }, 5000);
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -45,6 +53,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {
           console.error('🔐 AUTH - Error getting session:', error)
+          // Even on error, set loading to false so app can render
+          setLoading(false)
+          return
         } else {
           console.log('🔐 AUTH - Initial session:', session ? 'Found' : 'None')
           
@@ -76,13 +87,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } catch (error) {
         console.error('🔐 AUTH - Error in getInitialSession:', error)
+        // Even on error, set loading to false so app can render
+        setLoading(false)
       } finally {
         console.log('🔐 AUTH - Setting loading to false')
+        clearTimeout(loadingTimeout)
         setLoading(false)
       }
     }
 
     getInitialSession()
+
+    return () => clearTimeout(loadingTimeout)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
