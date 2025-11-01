@@ -161,7 +161,7 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
   }
 
   // Resolve voice ID (now guaranteed to return a valid string, never undefined)
-  const voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId);
+  let voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId);
   
   // Double-check it's valid (should never fail now, but safety check)
   if (!voiceId || voiceId.trim() === '' || voiceId === 'undefined' || voiceId === 'null') {
@@ -171,10 +171,8 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
       resolvedVoiceId: voiceId
     });
     // Use emergency fallback
-    const emergencyVoiceId = "EXAVITQu4vr4xnSDxMaL";
-    console.error(`❌ SYNTHESIZE: Using emergency fallback: ${emergencyVoiceId}`);
-    // Continue with emergency fallback instead of rejecting
-    // (We'll use emergencyVoiceId below)
+    voiceId = "EXAVITQu4vr4xnSDxMaL"; // Bella - guaranteed to work
+    console.error(`❌ SYNTHESIZE: Using emergency fallback voice ID: ${voiceId}`);
   }
 
   console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
