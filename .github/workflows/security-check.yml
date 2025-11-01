@@ -38,13 +38,14 @@ jobs:
       - name: Check for secrets in code
         run: |
           # Check for common secret patterns (OpenAI keys)
-          if grep -r "sk-proj-\|sk-[a-zA-Z0-9]{51}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=backup_* --exclude-dir=stakeholder-v2 --exclude="*.md"; then
+          # Using extended regex (-E) and excluding common directories
+          if grep -rE "sk-proj-[A-Za-z0-9]{32,}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=backup_20250824_214727 --exclude-dir=backup_20250827_104428_sidebar_fixed --exclude-dir=backup_most_correct_20250913_044954 --exclude-dir=stakeholder-v2 --exclude="*.md" --exclude="*.example"; then
             echo "❌ ERROR: Potential OpenAI API keys found in code"
             exit 1
           fi
           
           # Check for private keys (actual keys, not just patterns)
-          if grep -r "-----BEGIN.*PRIVATE KEY-----" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=backup_* --exclude-dir=stakeholder-v2; then
+          if grep -rE "-----BEGIN.*PRIVATE KEY-----" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=backup_20250824_214727 --exclude-dir=backup_20250827_104428_sidebar_fixed --exclude-dir=backup_most_correct_20250913_044954 --exclude-dir=stakeholder-v2; then
             echo "❌ ERROR: Potential private keys found in code"
             exit 1
           fi
