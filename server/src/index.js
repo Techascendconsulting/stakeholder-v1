@@ -18,6 +18,9 @@ fastify.register(async function (fastify) {
   
   // Register stricter rate limiting for sensitive endpoints
   await fastify.register(require('@fastify/rate-limit'), getStrictRateLimitConfig());
+  
+  // Register logging middleware
+  await fastify.register(require('./middleware/logging'));
 
   // Register CORS
   await fastify.register(cors, {
