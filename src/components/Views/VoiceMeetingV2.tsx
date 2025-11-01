@@ -467,6 +467,7 @@ Rules:
 
     setActiveSpeaker(options?.stakeholderName || null);
     console.log('🔊 Speaking:', text.substring(0, 50));
+    console.log('🔊 Speak options:', { stakeholderName: options?.stakeholderName, voiceId: options?.voiceId });
     
     return new Promise(async (resolve) => {
       try {
@@ -477,9 +478,20 @@ Rules:
         if (isConfigured()) {
           try {
             console.log('✅ Using ElevenLabs TTS service for voice synthesis');
-            const audioBlob = await synthesizeToBlob(text, {
+            console.log('🔍 About to call synthesizeToBlob with:', {
+              textLength: text.length,
               stakeholderName: options?.stakeholderName,
               voiceId: options?.voiceId
+            });
+            
+            const audioBlob = await synthesizeToBlob(text, {
+              stakeholderName: options?.stakeholderName || 'Jess', // Ensure we always have a stakeholder name
+              voiceId: options?.voiceId
+            });
+            
+            console.log('✅ synthesizeToBlob returned:', { 
+              hasBlob: !!audioBlob, 
+              blobSize: audioBlob?.size || 0 
             });
 
             if (audioBlob && audioBlob.size > 0) {
