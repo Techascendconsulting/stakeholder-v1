@@ -11,6 +11,7 @@ const VOICE_ID_SRIKANTH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH as s
 const VOICE_ID_BOLA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella
 const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string | undefined || "AZnzlk1XvdvUeBnXmlld" // Domi - Friendly female
 const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined || "ThT5KcBeYPX3keUQqHPh" // Dorothy - Warm female
+const VOICE_ID_ROBERT = import.meta.env.VITE_ELEVENLABS_VOICE_ID_ROBERT as string | undefined || "pNInz6obpgDQGcFmaJgB" // Adam - Professional male
 const VOICE_ID_FEMALEMOTIVATION = import.meta.env.VITE_ELEVENLABS_VOICE_ID_FEMALEMOTIVATION as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
@@ -57,6 +58,7 @@ export function isConfigured(): boolean {
       BOLA: VOICE_ID_BOLA,
       SARAH: VOICE_ID_SARAH,
       LISA: VOICE_ID_LISA,
+      ROBERT: VOICE_ID_ROBERT,
       DEFAULT: DEFAULT_VOICE_ID
     }
   });
@@ -80,32 +82,45 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   
   if (key === 'jess' || key === 'jessica') {
     // For Jess, use JESS (which now has a default fallback - guaranteed to have value)
+    // VOICE_ID_JESS always has fallback, so no need to check
     resolvedVoiceId = VOICE_ID_JESS;
-    console.log(`🎤 VOICE RESOLUTION: Jess/Jessica -> ${resolvedVoiceId} (VOICE_ID_JESS=${!!VOICE_ID_JESS})`);
-  } else if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) {
-    resolvedVoiceId = VOICE_ID_AISHA || VOICE_ID_JESS
-    console.log(`🎤 VOICE RESOLUTION: Aisha -> ${resolvedVoiceId} (${resolvedVoiceId === VOICE_ID_AISHA ? 'AISHA' : 'JESS'})`)
-  } else if (key === 'david' && VOICE_ID_DAVID) {
+    console.log(`🎤 VOICE RESOLUTION: Jess/Jessica -> ${resolvedVoiceId} (always has fallback)`);
+  } else if (key === 'aisha') {
+    // Aisha has guaranteed fallback
+    resolvedVoiceId = VOICE_ID_AISHA || VOICE_ID_JESS || DEFAULT_VOICE_ID
+    console.log(`🎤 VOICE RESOLUTION: Aisha -> ${resolvedVoiceId}`)
+  } else if (key === 'david') {
+    // David has guaranteed fallback (hardcoded)
     resolvedVoiceId = VOICE_ID_DAVID
     console.log(`🎤 VOICE RESOLUTION: David -> ${resolvedVoiceId}`)
-  } else if (key === 'james' && VOICE_ID_JAMES) {
+  } else if (key === 'james') {
+    // James has guaranteed fallback
     resolvedVoiceId = VOICE_ID_JAMES
     console.log(`🎤 VOICE RESOLUTION: James -> ${resolvedVoiceId}`)
-  } else if (key === 'emily' && VOICE_ID_EMILY) {
+  } else if (key === 'emily') {
+    // Emily has guaranteed fallback
     resolvedVoiceId = VOICE_ID_EMILY
     console.log(`🎤 VOICE RESOLUTION: Emily -> ${resolvedVoiceId}`)
-  } else if (key === 'srikanth' && VOICE_ID_SRIKANTH) {
+  } else if (key === 'srikanth') {
+    // Srikanth has guaranteed fallback
     resolvedVoiceId = VOICE_ID_SRIKANTH
     console.log(`🎤 VOICE RESOLUTION: Srikanth -> ${resolvedVoiceId}`)
-  } else if (key === 'bola' && VOICE_ID_BOLA) {
+  } else if (key === 'bola') {
+    // Bola has guaranteed fallback
     resolvedVoiceId = VOICE_ID_BOLA
     console.log(`🎤 VOICE RESOLUTION: Bola -> ${resolvedVoiceId}`)
-  } else if (key === 'sarah' && VOICE_ID_SARAH) {
+  } else if (key === 'sarah') {
+    // Sarah has guaranteed fallback
     resolvedVoiceId = VOICE_ID_SARAH
     console.log(`🎤 VOICE RESOLUTION: Sarah -> ${resolvedVoiceId}`)
-  } else if (key === 'lisa' && VOICE_ID_LISA) {
+  } else if (key === 'lisa') {
+    // Lisa has guaranteed fallback
     resolvedVoiceId = VOICE_ID_LISA
     console.log(`🎤 VOICE RESOLUTION: Lisa -> ${resolvedVoiceId}`)
+  } else if (key === 'robert' || key === 'rob') {
+    // Robert has a guaranteed fallback
+    resolvedVoiceId = VOICE_ID_ROBERT
+    console.log(`🎤 VOICE RESOLUTION: Robert -> ${resolvedVoiceId} (VOICE_ID_ROBERT=${!!VOICE_ID_ROBERT})`)
   } else if (key === 'femalemotivation' && VOICE_ID_FEMALEMOTIVATION) {
     resolvedVoiceId = VOICE_ID_FEMALEMOTIVATION
     console.log(`🎤 VOICE RESOLUTION: Female Motivation -> ${resolvedVoiceId}`)
@@ -160,13 +175,28 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
     return Promise.reject(new Error('ElevenLabs API key not configured'))
   }
 
-  // Resolve voice ID (now guaranteed to return a valid string, never undefined)
-  let voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId);
+  // Ensure we have a stakeholder name to work with
+  const stakeholderNameForResolution = options?.stakeholderName || '';
+  console.log(`🎤 SYNTHESIZE: Resolving voice for stakeholder: "${stakeholderNameForResolution}" with explicit voiceId: "${options?.voiceId}"`);
   
-  // Double-check it's valid (should never fail now, but safety check)
+  // Resolve voice ID (now guaranteed to return a valid string, never undefined)
+  // IMPORTANT: Even if explicit voiceId is provided, still resolve to ensure it's valid
+  let voiceId: string;
+  
+  if (options?.voiceId && options.voiceId.trim() && options.voiceId !== 'undefined' && options.voiceId !== 'null') {
+    // Use explicit voice ID if provided and valid
+    voiceId = options.voiceId.trim();
+    console.log(`🎤 SYNTHESIZE: Using explicit voice ID: ${voiceId}`);
+  } else {
+    // Resolve from stakeholder name
+    voiceId = resolveVoiceId(stakeholderNameForResolution, undefined);
+    console.log(`🎤 SYNTHESIZE: Resolved voice ID from name: ${voiceId}`);
+  }
+  
+  // Final safety check - should never fail now, but absolutely critical
   if (!voiceId || voiceId.trim() === '' || voiceId === 'undefined' || voiceId === 'null') {
-    console.error('❌ SYNTHESIZE: CRITICAL - Voice ID resolution failed', {
-      stakeholderName: options?.stakeholderName,
+    console.error('❌ SYNTHESIZE: CRITICAL - Voice ID resolution completely failed', {
+      stakeholderName: stakeholderNameForResolution,
       explicitVoiceId: options?.voiceId,
       resolvedVoiceId: voiceId
     });
@@ -175,7 +205,7 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
     console.error(`❌ SYNTHESIZE: Using emergency fallback voice ID: ${voiceId}`);
   }
 
-  console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
+  console.log(`🎤 SYNTHESIZE: Final voice ID: ${voiceId} for stakeholder: ${stakeholderNameForResolution || 'unknown'}`)
 
   // Check persistent cache first
   if (persistentCache) {
