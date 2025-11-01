@@ -1,15 +1,16 @@
 // Environment variables (Vite-style)
+// Default voice IDs are ElevenLabs free tier voices that work without additional setup
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
-const DEFAULT_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined
-const VOICE_ID_AISHA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA as string | undefined
-const VOICE_ID_JESS = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS as string | undefined
-const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined
-const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined
-const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string | undefined
-const VOICE_ID_SRIKANTH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH as string | undefined
-const VOICE_ID_BOLA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA as string | undefined
-const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string | undefined
-const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined
+const DEFAULT_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella - Professional female (default fallback)
+const VOICE_ID_AISHA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella
+const VOICE_ID_JESS = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella (same as Aisha)
+const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined || "L0Dsvb3SLTyegXwtm47J" // Rachel - Professional female
+const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined || "pYDLV125o4CgqP8i49Lg" // Josh - Professional male
+const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella
+const VOICE_ID_SRIKANTH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH as string | undefined || "pNInz6obpgDQGcFmaJgB" // Adam - Professional male
+const VOICE_ID_BOLA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA as string | undefined || "EXAVITQu4vr4xnSDxMaL" // Bella
+const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string | undefined || "AZnzlk1XvdvUeBnXmlld" // Domi - Friendly female
+const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined || "ThT5KcBeYPX3keUQqHPh" // Dorothy - Warm female
 const VOICE_ID_FEMALEMOTIVATION = import.meta.env.VITE_ELEVENLABS_VOICE_ID_FEMALEMOTIVATION as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
@@ -30,11 +31,21 @@ let persistentCache: any = null;
 })();
 
 export function isConfigured(): boolean {
-  const configured = Boolean(ENABLE_ELEVENLABS && ELEVENLABS_API_KEY)
+  // Check if API key exists - if it does, we can use ElevenLabs
+  // VITE_ENABLE_ELEVENLABS is optional (defaults to enabled if API key exists)
+  const hasApiKey = Boolean(ELEVENLABS_API_KEY && ELEVENLABS_API_KEY.trim().length > 0);
+  const explicitlyEnabled = ENABLE_ELEVENLABS === true;
+  const explicitlyDisabled = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'false';
+  
+  // Configured if: (explicitly enabled OR has API key) AND not explicitly disabled
+  const configured = (explicitlyEnabled || hasApiKey) && !explicitlyDisabled;
+  
   console.log("🔊 ELEVENLABS DEBUG:", {
     ENABLE_ELEVENLABS,
-    hasApiKey: !!ELEVENLABS_API_KEY,
+    hasApiKey,
     apiKeyLength: ELEVENLABS_API_KEY?.length || 0,
+    explicitlyEnabled,
+    explicitlyDisabled,
     isConfigured: configured,
     voiceIds: {
       AISHA: VOICE_ID_AISHA,
@@ -66,9 +77,10 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   
   let resolvedVoiceId: string | undefined
   
-  if ((key === 'jess' || key === 'jessica') && (VOICE_ID_JESS || VOICE_ID_AISHA)) {
-    resolvedVoiceId = VOICE_ID_JESS || VOICE_ID_AISHA
-    console.log(`🎤 VOICE RESOLUTION: Jess/Jessica -> ${resolvedVoiceId} (${resolvedVoiceId === VOICE_ID_JESS ? 'JESS' : 'AISHA'})`)
+  if (key === 'jess' || key === 'jessica') {
+    // For Jess, use JESS (which now has a default fallback)
+    resolvedVoiceId = VOICE_ID_JESS
+    console.log(`🎤 VOICE RESOLUTION: Jess/Jessica -> ${resolvedVoiceId} (using VOICE_ID_JESS which has default fallback)`)
   } else if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) {
     resolvedVoiceId = VOICE_ID_AISHA || VOICE_ID_JESS
     console.log(`🎤 VOICE RESOLUTION: Aisha -> ${resolvedVoiceId} (${resolvedVoiceId === VOICE_ID_AISHA ? 'AISHA' : 'JESS'})`)
@@ -98,11 +110,12 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
     console.log(`🎤 VOICE RESOLUTION: Female Motivation -> ${resolvedVoiceId}`)
   } else {
     resolvedVoiceId = DEFAULT_VOICE_ID
-    console.log(`🎤 VOICE RESOLUTION: No specific match, using DEFAULT -> ${resolvedVoiceId}`)
+    console.log(`🎤 VOICE RESOLUTION: No specific match, using DEFAULT -> ${resolvedVoiceId || 'NOT SET'}`)
   }
   
-  if (!resolvedVoiceId) {
+  if (!resolvedVoiceId || resolvedVoiceId.trim() === '') {
     console.warn(`⚠️ VOICE RESOLUTION: No voice ID found for stakeholder "${stakeholderName}"`)
+    console.warn(`⚠️ VOICE RESOLUTION: Available env vars - JESS: ${VOICE_ID_JESS ? 'SET' : 'NOT SET'}, AISHA: ${VOICE_ID_AISHA ? 'SET' : 'NOT SET'}, DEFAULT: ${DEFAULT_VOICE_ID ? 'SET' : 'NOT SET'}`)
   }
   
   return resolvedVoiceId
@@ -142,9 +155,13 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
   }
 
   const voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId)
-  if (!voiceId) {
-    console.error('❌ SYNTHESIZE: No ElevenLabs voice configured')
-    return Promise.reject(new Error('No ElevenLabs voice configured'))
+  if (!voiceId || voiceId.trim() === '' || voiceId === 'undefined') {
+    console.error('❌ SYNTHESIZE: No ElevenLabs voice configured', {
+      stakeholderName: options?.stakeholderName,
+      explicitVoiceId: options?.voiceId,
+      resolvedVoiceId: voiceId
+    })
+    return Promise.reject(new Error(`No ElevenLabs voice configured for stakeholder: ${options?.stakeholderName || 'unknown'}. Please set VITE_ELEVENLABS_VOICE_ID environment variables.`))
   }
 
   console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
@@ -182,9 +199,18 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
       }
     }
     
-    console.log(`🎤 SYNTHESIZE: Making API request to ElevenLabs...`)
+    // Final safety check - never make API call with undefined/null/empty voiceId
+    // Also ensure voiceId is a valid string and not the literal string "undefined"
+    const safeVoiceId = String(voiceId || '').trim();
+    if (!safeVoiceId || safeVoiceId === '' || safeVoiceId === 'undefined' || safeVoiceId === 'null') {
+      const errorMsg = `Invalid voice ID: "${voiceId}". Cannot make ElevenLabs API call. Stakeholder: ${options?.stakeholderName || 'unknown'}`;
+      console.error(`❌ SYNTHESIZE: ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
     
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    console.log(`🎤 SYNTHESIZE: Making API request to ElevenLabs with voice ID: ${safeVoiceId} (for stakeholder: ${options?.stakeholderName || 'unknown'})`)
+    
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${safeVoiceId}`, {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,

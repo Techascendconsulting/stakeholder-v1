@@ -424,29 +424,35 @@ Rules:
       }
 
       // Map to ElevenLabs voice
+      // NOTE: Using hardcoded voice IDs as fallbacks (like David) so they work without env vars
+      // Env vars will override these if set
       const VOICE_MAP: Record<string, string | undefined> = {
-        "Aisha": import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
-        "Jess": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS,
-        "David": "L0Dsvb3SLTyegXwtm47J",
-        "James": "pYDLV125o4CgqP8i49Lg",
-        "Emily": import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY,
-        "Sarah": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH,
-        "Srikanth": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH,
-        "Bola": import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA,
-        "Lisa": import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA,
-        "Robert": import.meta.env.VITE_ELEVENLABS_VOICE_ID_ROBERT,
+        "Aisha": import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA || "EXAVITQu4vr4xnSDxMaL", // Bella - Professional female (default)
+        "Jess": import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS || "EXAVITQu4vr4xnSDxMaL", // Bella - Professional female (same as Aisha fallback)
+        "David": "L0Dsvb3SLTyegXwtm47J", // Hardcoded
+        "James": "pYDLV125o4CgqP8i49Lg", // Hardcoded
+        "Emily": import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY || "EXAVITQu4vr4xnSDxMaL",
+        "Sarah": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH || "AZnzlk1XvdvUeBnXmlld", // Domi - Friendly female
+        "Srikanth": import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH || "pNInz6obpgDQGcFmaJgB", // Adam - Professional male
+        "Bola": import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || "EXAVITQu4vr4xnSDxMaL",
+        "Lisa": import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA || "ThT5KcBeYPX3keUQqHPh", // Dorothy - Warm female
+        "Robert": import.meta.env.VITE_ELEVENLABS_VOICE_ID_ROBERT || "pNInz6obpgDQGcFmaJgB", // Adam - Professional male
       };
 
       const firstName = safeSpeaker.split(' ')[0];
-      const voiceId = VOICE_MAP[firstName] || VOICE_MAP[safeSpeaker] || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
+      // Get voice ID from map (now has fallbacks for all voices)
+      const voiceId = VOICE_MAP[firstName] || VOICE_MAP[safeSpeaker] || VOICE_MAP["Aisha"]; // Final fallback to Aisha/Bella
 
+      // Voice ID should always be defined now (all have fallbacks), but service will also resolve it
       return { reply, speaker: safeSpeaker, voiceId, stakeholderName: safeSpeaker, document };
     } catch (error) {
       console.error('❌ getAgentReply error:', error);
+      const fallbackStakeholder = selectedStakeholders[0]?.name || "Stakeholder";
       return {
         reply: "Sorry, I didn't catch that.",
-        speaker: selectedStakeholders[0]?.name || "Stakeholder",
-        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA,
+        speaker: fallbackStakeholder,
+        voiceId: undefined, // Let service resolve based on stakeholder name
+        stakeholderName: fallbackStakeholder,
       };
     }
   }
@@ -459,67 +465,79 @@ Rules:
       currentAudioRef.current = null;
     }
 
-    const voiceId = options?.voiceId || import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA;
-    const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-
     setActiveSpeaker(options?.stakeholderName || null);
     console.log('🔊 Speaking:', text.substring(0, 50));
     
     return new Promise(async (resolve) => {
       try {
-        // Get TTS audio from ElevenLabs
-        const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json", 
-            "xi-api-key": apiKey 
-          },
-          body: JSON.stringify({
-            text,
-            model_id: "eleven_monolingual_v1",
-            voice_settings: { stability: 0.4, similarity_boost: 0.75 },
-          }),
-        });
+        // Use the ElevenLabs service which handles voice ID resolution properly
+        const { synthesizeToBlob, isConfigured } = await import('../../services/elevenLabsTTS');
+        
+        // Try ElevenLabs first if configured
+        if (isConfigured()) {
+          try {
+            console.log('✅ Using ElevenLabs TTS service for voice synthesis');
+            const audioBlob = await synthesizeToBlob(text, {
+              stakeholderName: options?.stakeholderName,
+              voiceId: options?.voiceId
+            });
 
-        if (!ttsResponse.ok) {
-          throw new Error(`TTS failed: ${ttsResponse.status}`);
+            if (audioBlob && audioBlob.size > 0) {
+              console.log(`✅ ElevenLabs audio generated (${audioBlob.size} bytes)`);
+              const url = URL.createObjectURL(audioBlob);
+              const audio = new Audio(url);
+              currentAudioRef.current = audio;
+
+              audio.onended = () => {
+                console.log('✅ Audio finished');
+                URL.revokeObjectURL(url);
+                currentAudioRef.current = null;
+                setActiveSpeaker(null);
+                resolve();
+              };
+
+              audio.onerror = (e) => {
+                console.error('❌ Audio playback error:', e);
+                URL.revokeObjectURL(url);
+                currentAudioRef.current = null;
+                setActiveSpeaker(null);
+                resolve();
+              };
+
+              console.log('▶️ Starting audio playback...');
+              await audio.play().catch((playError) => {
+                console.error('❌ Play failed:', playError);
+                URL.revokeObjectURL(url);
+                currentAudioRef.current = null;
+                setActiveSpeaker(null);
+                resolve();
+              });
+              
+              return; // Success, exit early
+            } else {
+              throw new Error('Empty audio blob from ElevenLabs');
+            }
+          } catch (elevenLabsError) {
+            console.warn('❌ ElevenLabs TTS service failed, falling back to browser TTS:', elevenLabsError);
+            // Fall through to browser TTS
+          }
+        } else {
+          console.log('⚠️ ElevenLabs not configured, using browser TTS');
         }
 
-        const audioBuffer = await ttsResponse.arrayBuffer();
-        const audioBlob = new Blob([audioBuffer], { type: "audio/mpeg" });
-        const url = URL.createObjectURL(audioBlob);
-        const audio = new Audio(url);
-        currentAudioRef.current = audio;
-
-        audio.onended = () => {
-          console.log('✅ Audio finished');
-          URL.revokeObjectURL(url);
-          currentAudioRef.current = null;
-          setActiveSpeaker(null);
-          resolve();
-        };
-
-        audio.onerror = (e) => {
-          console.error('❌ Audio playback error:', e);
-          URL.revokeObjectURL(url);
-          currentAudioRef.current = null;
-          setActiveSpeaker(null);
-          resolve();
-        };
-
-        console.log('▶️ Starting audio playback...');
-        await audio.play().catch((playError) => {
-          console.error('❌ Play failed:', playError);
-          URL.revokeObjectURL(url);
-          currentAudioRef.current = null;
-          setActiveSpeaker(null);
-          resolve();
-        });
-
+        // Fallback to browser TTS
+        try {
+          await playBrowserTTS(text);
+          console.log('✅ Browser TTS completed');
+        } catch (e) {
+          console.error('❌ Browser TTS also failed:', e);
+        }
+        setActiveSpeaker(null);
+        resolve();
       } catch (error) {
         console.error('❌ TTS error:', error);
         setActiveSpeaker(null);
-        // Fallback to browser TTS if ElevenLabs fails
+        // Final fallback to browser TTS
         try {
           await playBrowserTTS(text);
         } catch (e) {

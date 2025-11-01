@@ -53,6 +53,7 @@ async function registerSecurity(fastify) {
 
 /**
  * Create stricter rate limit configuration for sensitive routes
+ * Uses IP address for key generation (used when auth is not available)
  */
 function getStrictRateLimitConfig() {
   return {
@@ -72,9 +73,38 @@ function getStrictRateLimitConfig() {
   };
 }
 
+/**
+ * Create user-based rate limit configuration for authenticated routes
+ * Tracks rate limits per user ID after authentication
+ */
+function getUserRateLimitConfig() {
+  return {
+    max: 100, // Requests per user
+    timeWindow: '15 minutes',
+    errorResponseBuilder: function (request, context) {
+      return {
+        code: 429,
+        error: 'Too Many Requests',
+        message: `Rate limit exceeded for your account, retry in ${context.ttl} seconds`,
+        retryAfter: Math.round(context.ttl / 1000)
+      };
+    },
+    keyGenerator: function (request) {
+      // Use authenticated user ID if available, otherwise fallback to IP
+      // This should only be called after verifyUserAuth middleware
+      if (request.user && request.user.id) {
+        return `user:${request.user.id}`;
+      }
+      // Fallback (shouldn't happen if auth middleware is properly applied)
+      return request.ip;
+    }
+  };
+}
+
 module.exports = {
   registerSecurity,
-  getStrictRateLimitConfig
+  getStrictRateLimitConfig,
+  getUserRateLimitConfig
 };
 
 

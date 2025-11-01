@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const { validateRequest, stakeholderAISchema } = require('../validation/schemas');
+const { verifyUserAuth } = require('../middleware/auth');
 
 async function stakeholderAIRoutes(fastify, options) {
   // Create OpenAI client with null check
@@ -16,8 +17,9 @@ async function stakeholderAIRoutes(fastify, options) {
   }
 
   // Stakeholder response generation endpoint
+  // SECURITY: Requires authentication
   fastify.post('/api/stakeholder-response', {
-    preHandler: validateRequest(stakeholderAISchema)
+    preHandler: [verifyUserAuth, validateRequest(stakeholderAISchema)]
   }, async (request, reply) => {
     try {
       if (!openai) {
@@ -34,6 +36,8 @@ async function stakeholderAIRoutes(fastify, options) {
       }
       
       console.log('🤖 Stakeholder AI request:', {
+        userId: request.user?.id,
+        userEmail: request.user?.email,
         model: model || 'gpt-4o-mini',
         messageLength: userMessage.length,
         maxTokens: maxTokens || 150

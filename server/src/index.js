@@ -90,26 +90,46 @@ fastify.register(async function (fastify) {
     return stagePacks;
   });
 
-  fastify.post('/api/meetings/start', async (request, reply) => {
-  const { stage_id, coach_mode = 'medium' } = request.body;
-  
-  // Mock session creation
-  const session = {
-    id: `session_${Date.now()}`,
-    stage_id,
-    coach_mode,
-    minutes_cap: 10,
-    turns_cap: 16,
-    turns_used: 0,
-    started_at: new Date().toISOString()
-  };
-  
+  // SECURITY: Requires authentication
+  fastify.post('/api/meetings/start', {
+    preHandler: [require('./middleware/auth').verifyUserAuth]
+  }, async (request, reply) => {
+    const { stage_id, coach_mode = 'medium' } = request.body;
+    
+    console.log('🔄 Meeting start request:', {
+      userId: request.user?.id,
+      userEmail: request.user?.email,
+      stage_id,
+      coach_mode
+    });
+    
+    // Mock session creation
+    const session = {
+      id: `session_${Date.now()}`,
+      stage_id,
+      coach_mode,
+      minutes_cap: 10,
+      turns_cap: 16,
+      turns_used: 0,
+      started_at: new Date().toISOString()
+    };
+    
     return session;
   });
 
-  fastify.post('/api/meetings/:sessionId/reply', async (request, reply) => {
+  // SECURITY: Requires authentication
+  fastify.post('/api/meetings/:sessionId/reply', {
+    preHandler: [require('./middleware/auth').verifyUserAuth]
+  }, async (request, reply) => {
     const { sessionId } = request.params;
     const { user_text } = request.body;
+    
+    console.log('🔄 Meeting reply request:', {
+      userId: request.user?.id,
+      userEmail: request.user?.email,
+      sessionId,
+      messageLength: user_text?.length
+    });
     
     // Mock stakeholder response
     const response = {

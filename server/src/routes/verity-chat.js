@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const { validateRequest, verityChatSchema } = require('../validation/schemas');
+const { verifyUserAuth } = require('../middleware/auth');
 
 async function verityChatRoutes(fastify, options) {
   // Create OpenAI client with null check
@@ -15,8 +16,9 @@ async function verityChatRoutes(fastify, options) {
     }
   }
 
+  // SECURITY: Requires authentication
   fastify.post('/api/verity-chat', {
-    preHandler: validateRequest(verityChatSchema)
+    preHandler: [verifyUserAuth, validateRequest(verityChatSchema)]
   }, async (request, reply) => {
     try {
       if (!openai) {
@@ -29,6 +31,8 @@ async function verityChatRoutes(fastify, options) {
       const { messages, context } = request.body;
       
       console.log('🤖 Verity chat request received:', {
+        userId: request.user?.id,
+        userEmail: request.user?.email,
         messageCount: messages.length,
         context: context?.pageTitle
       });
