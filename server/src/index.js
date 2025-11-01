@@ -11,19 +11,27 @@ const verityChatRoutes = require('./routes/verity-chat');
 const stakeholderAIRoutes = require('./routes/stakeholder-ai');
 const openaiProxyRoutes = require('./routes/openai-proxy');
 
-// Register plugins
-fastify.register(cors, {
-  origin: true,
-  credentials: true
-});
+// Register security plugins FIRST (before other routes)
+fastify.register(async function (fastify) {
+  const { registerSecurity, getStrictRateLimitConfig } = require('./security');
+  await registerSecurity(fastify);
+  
+  // Register stricter rate limiting for sensitive endpoints
+  await fastify.register(require('@fastify/rate-limit'), getStrictRateLimitConfig());
 
-// Health check route
-fastify.get('/health', async (request, reply) => {
-  return { status: 'ok', timestamp: new Date().toISOString() };
-});
+  // Register CORS
+  await fastify.register(cors, {
+    origin: true,
+    credentials: true
+  });
 
-// Training routes
-fastify.get('/api/stage-packs', async (request, reply) => {
+  // Health check route
+  fastify.get('/health', async (request, reply) => {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  });
+
+  // Training routes
+  fastify.get('/api/stage-packs', async (request, reply) => {
   // Mock data for now - will be replaced with database query
   const stagePacks = [
     {
@@ -76,10 +84,10 @@ fastify.get('/api/stage-packs', async (request, reply) => {
     }
   ];
   
-  return stagePacks;
-});
+    return stagePacks;
+  });
 
-fastify.post('/api/meetings/start', async (request, reply) => {
+  fastify.post('/api/meetings/start', async (request, reply) => {
   const { stage_id, coach_mode = 'medium' } = request.body;
   
   // Mock session creation
@@ -93,32 +101,33 @@ fastify.post('/api/meetings/start', async (request, reply) => {
     started_at: new Date().toISOString()
   };
   
-  return session;
+    return session;
+  });
+
+  fastify.post('/api/meetings/:sessionId/reply', async (request, reply) => {
+    const { sessionId } = request.params;
+    const { user_text } = request.body;
+    
+    // Mock stakeholder response
+    const response = {
+      stakeholder_text: `Thank you for that question. As a stakeholder, I can tell you that we're currently facing some challenges with our process efficiency. The main issues we're seeing are related to manual handoffs between departments and lack of real-time visibility. We're looking to reduce our processing time from 6 to 8 weeks down to 3 to 4 weeks, and improve our customer satisfaction scores.`,
+      updated_turns_used: 1
+    };
+    
+    return response;
+  });
+
+  // Register debrief routes with coaching
+  debriefRoutes(fastify);
+
+  // Register process mapping routes
+  await fastify.register(processCoachRoutes);
+  await fastify.register(processDrafterRoutes);
+  await fastify.register(stakeholderReplyRoutes);
+  await fastify.register(verityChatRoutes);
+  await fastify.register(stakeholderAIRoutes);
+  await fastify.register(openaiProxyRoutes);
 });
-
-fastify.post('/api/meetings/:sessionId/reply', async (request, reply) => {
-  const { sessionId } = request.params;
-  const { user_text } = request.body;
-  
-  // Mock stakeholder response
-  const response = {
-    stakeholder_text: `Thank you for that question. As a stakeholder, I can tell you that we're currently facing some challenges with our process efficiency. The main issues we're seeing are related to manual handoffs between departments and lack of real-time visibility. We're looking to reduce our processing time from 6 to 8 weeks down to 3 to 4 weeks, and improve our customer satisfaction scores.`,
-    updated_turns_used: 1
-  };
-  
-  return response;
-});
-
-// Register debrief routes with coaching
-debriefRoutes(fastify);
-
-// Register process mapping routes
-fastify.register(processCoachRoutes);
-fastify.register(processDrafterRoutes);
-fastify.register(stakeholderReplyRoutes);
-fastify.register(verityChatRoutes);
-fastify.register(stakeholderAIRoutes);
-fastify.register(openaiProxyRoutes);
 
 // Start server
 const start = async () => {

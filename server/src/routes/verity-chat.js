@@ -1,17 +1,32 @@
 const OpenAI = require('openai');
+const { validateRequest, verityChatSchema } = require('../validation/schemas');
 
 async function verityChatRoutes(fastify, options) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  fastify.post('/api/verity-chat', async (request, reply) => {
+  // Create OpenAI client with null check
+  let openai = null;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0) {
     try {
-      const { messages, context } = request.body;
-      
-      if (!messages || !Array.isArray(messages)) {
-        return reply.code(400).send({ error: 'Messages array is required' });
+      openai = new OpenAI({
+        apiKey: apiKey.trim(),
+      });
+    } catch (error) {
+      fastify.log.error('Failed to initialize OpenAI client:', error);
+    }
+  }
+
+  fastify.post('/api/verity-chat', {
+    preHandler: validateRequest(verityChatSchema)
+  }, async (request, reply) => {
+    try {
+      if (!openai) {
+        return reply.code(503).send({ 
+          error: 'OpenAI service unavailable',
+          message: 'OpenAI API key not configured' 
+        });
       }
+
+      const { messages, context } = request.body;
       
       console.log('🤖 Verity chat request received:', {
         messageCount: messages.length,
@@ -47,6 +62,7 @@ async function verityChatRoutes(fastify, options) {
 }
 
 module.exports = verityChatRoutes;
+
 
 
 

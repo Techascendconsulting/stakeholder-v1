@@ -1,13 +1,32 @@
 const OpenAI = require('openai');
+const { validateRequest, stakeholderAISchema } = require('../validation/schemas');
 
 async function stakeholderAIRoutes(fastify, options) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+  // Create OpenAI client with null check
+  let openai = null;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0) {
+    try {
+      openai = new OpenAI({
+        apiKey: apiKey.trim(),
+      });
+    } catch (error) {
+      fastify.log.error('Failed to initialize OpenAI client:', error);
+    }
+  }
 
   // Stakeholder response generation endpoint
-  fastify.post('/api/stakeholder-response', async (request, reply) => {
+  fastify.post('/api/stakeholder-response', {
+    preHandler: validateRequest(stakeholderAISchema)
+  }, async (request, reply) => {
     try {
+      if (!openai) {
+        return reply.code(503).send({ 
+          error: 'OpenAI service unavailable',
+          message: 'OpenAI API key not configured' 
+        });
+      }
+
       const { systemPrompt, userMessage, model, maxTokens, temperature } = request.body;
       
       if (!userMessage) {
@@ -63,6 +82,7 @@ async function stakeholderAIRoutes(fastify, options) {
 }
 
 module.exports = stakeholderAIRoutes;
+
 
 
 

@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+const { validateRequest, openaiChatSchema } = require('../validation/schemas');
 
 /**
  * OpenAI Proxy Route - Transparent proxy to avoid CORS issues
@@ -7,13 +8,31 @@ const OpenAI = require('openai');
  * just by changing the baseURL to point here instead of OpenAI directly.
  */
 async function openaiProxyRoutes(fastify, options) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+  // Create OpenAI client with null check
+  let openai = null;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0) {
+    try {
+      openai = new OpenAI({
+        apiKey: apiKey.trim(),
+      });
+    } catch (error) {
+      fastify.log.error('Failed to initialize OpenAI client:', error);
+    }
+  }
 
   // Proxy chat completions endpoint (without /v1/ because SDK doesn't append it when baseURL is set)
-  fastify.post('/api/openai-proxy/chat/completions', async (request, reply) => {
+  fastify.post('/api/openai-proxy/chat/completions', {
+    preHandler: validateRequest(openaiChatSchema)
+  }, async (request, reply) => {
     try {
+      if (!openai) {
+        return reply.code(503).send({ 
+          error: 'OpenAI service unavailable',
+          message: 'OpenAI API key not configured' 
+        });
+      }
+
       const { model, messages, temperature, max_tokens, presence_penalty, frequency_penalty, stream } = request.body;
       
       console.log('🔄 OpenAI Proxy: chat.completions request', {
