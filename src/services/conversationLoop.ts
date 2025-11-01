@@ -98,7 +98,13 @@ export function createStakeholderConversationLoop({
     onAgentUtterance({ text: reply, speaker: speaker || "Stakeholder", document });
 
     setState(states.SPEAKING);
-    await speak(reply, { voiceId, stakeholderName: stakeholderName || speaker }).catch((e) => {
+    // Ensure stakeholderName is always provided (use first name for voice resolution)
+    const speakerFirstName = (stakeholderName || speaker || "").split(' ')[0].trim();
+    console.log(`🎤 Conversation Loop: Speaking as ${speakerFirstName} (full name: ${speaker || 'unknown'})`);
+    await speak(reply, { 
+      voiceId, 
+      stakeholderName: speakerFirstName || stakeholderName || speaker 
+    }).catch((e) => {
       console.error('❌ Speak error:', e);
     });
     
