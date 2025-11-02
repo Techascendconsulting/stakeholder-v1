@@ -9,14 +9,15 @@ try {
 // Initialize OpenAI client safely
 const createOpenAIClient = () => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0
   
-  if (!OpenAI || !apiKey) {
+  if (!OpenAI || !hasValidApiKey) {
     console.warn('OpenAI not configured. Whisper transcription will not be available.')
     return null
   }
   
   return new OpenAI({
-    apiKey,
+    apiKey: apiKey.trim(),
     dangerouslyAllowBrowser: true // Note: In production, this should be handled server-side
   })
 }

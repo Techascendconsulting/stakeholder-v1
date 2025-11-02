@@ -36,7 +36,10 @@ Pain Points: No centralized tracking, manual status updates, customers often una
       'Achieve 95% on-time delivery rate for committed go-live dates'
     ],
     duration: '4-5 weeks',
-    complexity: 'Intermediate'
+    complexity: 'Intermediate',
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'], // Operations, Customer Service, IT, Customer Experience
+    companyProducts: 'Enterprise software solutions designed for IT, Product Development, and Customer Support teams. These include workflow automation tools, customer engagement platforms, and system integration software.',
+    companyServices: 'Implementation consulting, technical onboarding support, customer success management, and long-term enterprise support programs to help clients adopt and maximize TechCorp’s solutions.'
   },
   {
     id: 'proj-2',
@@ -74,7 +77,10 @@ Pain Points: High error rates, no real-time visibility, delayed reimbursements, 
       'Enable mobile expense submission and approval capabilities'
     ],
     duration: '5-6 weeks',
-    complexity: 'Advanced'
+    complexity: 'Advanced',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-5', 'stake-6'], // Operations, IT, Compliance, Finance
+    companyProducts: 'Financial management software tools and reporting systems that help mid-market companies manage budgets, expenses, and compliance.',
+    companyServices: 'Corporate financial services including expense policy consulting, compliance advisory (SOX, regulatory), employee reimbursement programs, and analytics-driven financial planning support.'
   },
   {
     id: 'proj-3',
@@ -112,7 +118,11 @@ Pain Points: Week-old data for decision making, no demand forecasting, manual pr
       'Establish centralized purchasing optimization'
     ],
     duration: '3-4 weeks',
-    complexity: 'Beginner'
+    complexity: 'Beginner',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-6', 'stake-7'], // Operations, IT, Finance, Supply Chain
+    companyProducts: 'Enterprise inventory management software solutions.',
+    companyServices: 'Supply chain visibility dashboards, forecasting and demand analytics, and logistics consultancy for large-scale retail distribution.',
+    companyOverview: 'We provide wholesale distribution services to over 2,400 retail locations. That includes managing inventory across 15 distribution centers, coordinating with vendors, ensuring timely fulfillment, and offering demand forecasting and stock visibility support. In short, our services help retailers keep shelves stocked efficiently while reducing supply chain costs.'
   },
   {
     id: 'proj-4',
@@ -150,20 +160,17 @@ Pain Points: No intelligent routing, knowledge silos, manual status updates, inc
       'Implement real-time performance dashboards and analytics'
     ],
     duration: '4-5 weeks',
-    complexity: 'Intermediate'
+    complexity: 'Intermediate',
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'], // Operations, Customer Service, IT, Customer Experience
+    companyProducts: 'A SaaS platform that provides enterprise-grade business management tools, including workflow automation, reporting, and customer engagement modules.',
+    companyServices: '24/7 technical support for enterprise customers; customer onboarding and training for the SaaS platform; premium support tiers (dedicated account manager, priority SLAs); knowledge sharing through webinars, documentation, and customer success programs.'
   },
   {
     id: 'proj-5',
     name: 'Employee Performance Management Platform',
-    description: 'Modernize annual performance review processes through continuous feedback mechanisms, goal tracking integration, 360-degree review capabilities, and data-driven performance analytics.',
-    businessContext: `HRTech Corp, a growing technology company with 2,500+ employees across 8 global offices, currently conducts annual performance reviews using manual processes that have become increasingly inadequate for our dynamic business environment. Our recent employee engagement survey revealed that 73% of employees find the current review process ineffective, and 68% of managers report spending excessive time on administrative tasks rather than meaningful performance discussions.
-
-The current system provides limited visibility into employee goal achievement, lacks continuous feedback mechanisms, and offers insufficient data for talent development and succession planning decisions. With planned headcount growth of 35% in 2024 and expansion into new markets, we need a scalable, data-driven performance management system.
-
-The Chief People Officer has prioritized this initiative to improve employee engagement, enhance talent retention (currently 12% annual turnover), and support our goal of becoming an employer of choice in the technology sector. Executive leadership has committed $380K budget with expected improvements in employee satisfaction and retention metrics.`,
-    problemStatement: `The current annual performance review process relies on subjective evaluations, lacks continuous feedback mechanisms, provides limited goal visibility and tracking, and offers insufficient data for strategic talent development decisions. The system creates administrative burden for managers, provides little value to employees for professional development, and fails to align individual performance with organizational objectives.
-
-Critical issues include: annual-only review cycle, subjective evaluation criteria, no goal tracking integration, limited 360-degree feedback, poor documentation standards, no succession planning data, and lack of performance analytics. These limitations impact employee engagement, talent retention, and organizational ability to identify and develop high-potential employees.`,
+    description: 'Internal focus: Performance Management System Modernization with continuous feedback, goal tracking, 360-degree reviews, and data-driven analytics.',
+    businessContext: `HRTech Corp employs 2,500+ staff across 8 offices. They help clients stay compliant with health & safety regulations, but internally, their own employee performance reviews are outdated. 73% of employees find annual reviews ineffective, and managers spend more time on admin than meaningful discussions.`,
+    problemStatement: `The internal performance review system is manual, annual-only, subjective, and disconnected from talent development.`,
     asIsProcess: `Current Performance Management Process:
 1. Annual review cycle initiated by HR with email notifications
 2. Manual distribution of performance review forms (Word documents)
@@ -178,7 +185,7 @@ Critical issues include: annual-only review cycle, subjective evaluation criteri
 
 Pain Points: Annual-only feedback, subjective evaluations, no goal tracking, limited development planning, administrative burden, poor documentation, no performance analytics, disconnect between reviews and compensation decisions.`,
     businessGoals: [
-      'Transition from annual to continuous performance feedback model',
+      'Implement a continuous, data-driven performance management system to boost engagement, reduce turnover, and align staff performance with company objectives.',
       'Increase employee engagement scores by 25% within 12 months',
       'Improve goal achievement rates from 62% to 85% organization-wide',
       'Implement 360-degree feedback capabilities for all management levels',
@@ -188,7 +195,10 @@ Pain Points: Annual-only feedback, subjective evaluations, no goal tracking, lim
       'Enable real-time performance analytics and reporting for leadership'
     ],
     duration: '5-7 weeks',
-    complexity: 'Advanced'
+    complexity: 'Advanced',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-4', 'stake-6'], // Operations, IT, HR, Finance
+    companyProducts: 'Workplace safety compliance software; incident tracking and reporting tools.',
+    companyServices: 'Health and safety audits; compliance training for employees and managers; risk assessment and hazard management consulting.'
   }
 ]
 
@@ -199,21 +209,25 @@ export const mockStakeholders: Stakeholder[] = [
     role: 'Head of Operations',
     department: 'Operations',
     bio: 'James leads operational excellence initiatives across the organization with 15 years of experience in process optimization and operational strategy. He focuses on efficiency improvements and cross-functional coordination.',
-    photo: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
+    photo: '/Screenshot 2025-07-22 at 17.29.25.png',
     personality: 'Strategic, process-focused, results-driven leadership style',
     priorities: ['Operational efficiency', 'Process standardization', 'Resource optimization'],
-    voice: 'en-GB-RyanNeural'
+    expertise: ['Process optimization', 'Operational strategy', 'Cross-functional coordination', 'Efficiency improvements', 'Resource management'],
+    voice: 'en-US-maverick',
+    agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
   },
   {
     id: 'stake-2',
-    name: 'Aisha Ahmed',
+    name: 'Jess Morgan',
     role: 'Customer Service Manager',
     department: 'Customer Service',
     bio: 'Aisha manages customer service operations with 10 years of experience in customer experience management and service delivery optimization. She specializes in customer satisfaction improvement and team performance.',
     photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Customer-focused, empathetic, performance-oriented',
     priorities: ['Customer satisfaction', 'Service quality', 'Team efficiency'],
-    voice: 'en-GB-SoniaNeural'
+    expertise: ['Customer experience management', 'Service delivery optimization', 'Customer satisfaction improvement', 'Team performance management', 'Service quality assurance'],
+    voice: 'en-UK-hazel',
+    agentId: 'agent_3601k16fe93ject9vy38wev45tym' // ElevenLabs agent ID
   },
   {
     id: 'stake-3',
@@ -224,7 +238,9 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
-    voice: 'en-GB-ThomasNeural'
+    expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
+    voice: 'en-AU-leyton',
+    agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   },
   {
     id: 'stake-4',
@@ -235,7 +251,9 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'People-focused, collaborative, change management expert',
     priorities: ['Employee engagement', 'Change management', 'Training effectiveness'],
-    voice: 'en-GB-LibbyNeural'
+    expertise: ['HR business partnering', 'HR strategy alignment', 'Change management', 'Employee engagement', 'Organizational development'],
+    voice: 'en-UK-hazel',
+    agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
   },
   {
     id: 'stake-5',
@@ -246,6 +264,47 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Detail-oriented, risk-aware, compliance-focused',
     priorities: ['Regulatory compliance', 'Risk mitigation', 'Policy adherence'],
-    voice: 'en-GB-AbbiNeural'
+    expertise: ['Regulatory compliance', 'Risk assessment', 'Policy development', 'Compliance management', 'Risk mitigation strategies'],
+    voice: 'en-UK-hazel',
+    agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-6',
+    name: 'Michael Chen',
+    role: 'Finance Manager',
+    department: 'Finance',
+    bio: 'Michael manages financial operations and analysis with 13 years of experience in corporate finance, budgeting, and financial reporting. He specializes in cost analysis, financial planning, and ROI assessment for business initiatives.',
+    photo: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Analytical, cost-conscious, data-driven',
+    priorities: ['Cost optimization', 'Financial accuracy', 'ROI analysis'],
+    expertise: ['Financial analysis', 'Budget management', 'Cost-benefit analysis', 'Financial reporting', 'ROI assessment', 'Financial planning'],
+    voice: 'en-US-maverick',
+    agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-7',
+    name: 'Lisa Rodriguez',
+    role: 'Supply Chain Manager',
+    department: 'Supply Chain',
+    bio: 'Lisa oversees supply chain operations and procurement with 14 years of experience in inventory management, vendor relations, and demand planning. She specializes in supply chain optimization, procurement strategies, and warehouse operations.',
+    photo: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Detail-oriented, strategic, efficiency-focused',
+    priorities: ['Supply chain efficiency', 'Inventory optimization', 'Vendor management'],
+    expertise: ['Inventory management', 'Demand forecasting', 'Procurement strategies', 'Warehouse operations', 'Supply chain optimization', 'Vendor relations'],
+    voice: 'en-UK-hazel',
+    agentId: 'agent_3601k16fe93ject9vy38wev45tym' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-8',
+    name: 'Robert Kim',
+    role: 'Customer Experience Manager',
+    department: 'Customer Experience',
+    bio: 'Robert leads customer experience initiatives with 11 years of experience in customer journey optimization, support operations, and service delivery. He specializes in customer satisfaction improvement, support process design, and customer success metrics.',
+    photo: 'https://images.pexels.com/photos/2566581/pexels-photo-2566581.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Customer-centric, empathetic, results-driven',
+    priorities: ['Customer satisfaction', 'Service excellence', 'Customer journey optimization'],
+    expertise: ['Customer experience design', 'Support operations', 'Customer journey optimization', 'Service delivery', 'Customer satisfaction metrics', 'Support process improvement'],
+    voice: 'en-AU-leyton',
+    agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   }
 ]

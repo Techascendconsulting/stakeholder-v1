@@ -1,0 +1,214 @@
+import OpenAI from 'openai';
+import { VERITY_SYSTEM_PROMPT } from '../components/Verity/VerityPrompt';
+
+// Check if API key is available (must be a non-empty string)
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+
+if (!hasValidApiKey) {
+  console.warn('⚠️ VITE_OPENAI_API_KEY is not set - Verity AI features will be limited');
+}
+
+// SECURITY: Client-side OpenAI usage exposes API key in browser
+// TODO (Production): Move all OpenAI calls to Supabase Edge Functions
+// TODO: Create /supabase/functions/verity-chat/index.ts
+// TODO: Client sends user message → Edge Function calls OpenAI → Returns response
+// Current setup is acceptable for development/MVP but NOT production-ready
+
+// Only create OpenAI client if API key is available and valid
+// IMPORTANT: Never create client at module level - only create when actually needed
+let openai: OpenAI | null = null;
+
+// Lazy getter function - only creates client when actually needed, not at module load
+function getOpenAIClient(): OpenAI | null {
+  if (openai !== null) {
+    return openai; // Return existing client if already created
+  }
+
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
+  
+  if (!hasValidApiKey) {
+    return null;
+  }
+  
+  const trimmedKey = apiKey.trim();
+  if (!trimmedKey || trimmedKey.length === 0) {
+    return null;
+  }
+  
+  try {
+    openai = new OpenAI({
+      apiKey: trimmedKey,
+      dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
+    });
+    return openai;
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client:', error);
+    openai = null;
+    return null;
+  }
+}
+
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface VerityContext {
+  context: string;
+  pageTitle?: string;
+  userRole?: string;
+}
+
+/**
+ * Verity AI Service
+ * 
+ * Handles communication with OpenAI for the Verity assistant
+ */
+export class VerityService {
+  /**
+   * Get a response from Verity based on user input and page context
+   */
+  static async getResponse(
+    messages: Message[],
+    context: VerityContext
+  ): Promise<{ reply: string; escalate: boolean }> {
+    try {
+      // Pre-filter: refuse out-of-scope topics before calling the model
+      const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content?.toLowerCase() || '';
+      const offScopePatterns = [
+        /\binterview\b|\bjob\b|cv|resume|cover letter|salary|recruit(er|ment)/i,
+        /news|headlines|today\s*news/i,
+        /digital\s*marketing|seo|sem|ppc|facebook ads|google ads/i
+      ];
+      const isOffScope = offScopePatterns.some(rx => rx.test(lastUser));
+      if (isOffScope) {
+        const refusal = "Thanks for your message. I focus on practical Business Analysis and Scrum here. What would you like to work on today? If it helps, we could explore a real‑world BA concept, walk through a scenario together, or try a short hands‑on exercise. I’m happy to follow your lead.";
+        return { reply: refusal, escalate: false };
+      }
+      // Build the context-aware system message
+      const contextualSystemPrompt = `${VERITY_SYSTEM_PROMPT}
+
+The current page is: ${context.pageTitle || 'Unknown Page'} (${context.context}).
+User role: ${context.userRole || 'learner'}`;
+
+      // TRY backend API first, fallback to direct OpenAI if backend unavailable
+      let reply: string;
+      let escalate = false;
+
+      try {
+        console.log('🔄 Verity: Attempting backend API call...');
+        const response = await fetch('http://localhost:3001/api/verity-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: contextualSystemPrompt },
+              ...messages
+            ],
+            context
+          }),
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
+
+        if (!response.ok) {
+          throw new Error(`Backend API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        reply = data.reply || "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
+        escalate = data.escalate || false;
+        console.log('✅ Verity: Backend API response received');
+
+      } catch (backendError) {
+        console.warn('⚠️ Verity: Backend unavailable, falling back to direct OpenAI call');
+        console.warn('Backend error:', backendError);
+
+        // FALLBACK: Call OpenAI directly (only if client is available)
+        const openaiClient = getOpenAIClient();
+        if (!openaiClient) {
+          throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in environment variables.');
+        }
+
+        const completion = await openaiClient.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: contextualSystemPrompt },
+            ...messages
+          ] as any,
+          temperature: 0.7,
+          max_tokens: 500
+        });
+
+        reply = completion.choices[0]?.message?.content || 
+          "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
+        
+        console.log('✅ Verity: Direct OpenAI response received');
+      }
+
+      // Detect if escalation is needed
+      escalate = 
+        escalate ||
+        reply.includes('[ESCALATE_TO_JOY]') ||
+        /help|not working|issue|error|bug|broken/i.test(reply);
+
+      // Clean up escalation markers from reply
+      const cleanReply = reply.replace(/\[ESCALATE_TO_JOY\]/g, '').trim();
+
+      return { reply: cleanReply, escalate };
+
+    } catch (error) {
+      console.error('❌ Verity Service Error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: error?.constructor?.name,
+        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY
+      });
+      
+      // Don't auto-escalate on service errors - just inform the user
+      return {
+        reply: "I'm having a bit of trouble connecting right now. Please try asking again, or use the **⚠️ Report Issue** tab if you need immediate help.",
+        escalate: false
+      };
+    }
+  }
+
+  /**
+   * Check if a message requires immediate escalation
+   */
+  static requiresEscalation(message: string): boolean {
+    const escalationKeywords = [
+      'not working',
+      'broken',
+      'error',
+      'bug',
+      'crash',
+      'can\'t',
+      'cannot',
+      'won\'t',
+      'doesn\'t work',
+      'help me',
+      'stuck',
+      'frustrated'
+    ];
+
+    const lowerMessage = message.toLowerCase();
+    return escalationKeywords.some(keyword => lowerMessage.includes(keyword));
+  }
+}
+
+export default VerityService;
+
+
+
+
+
+
+
+
+
+
+

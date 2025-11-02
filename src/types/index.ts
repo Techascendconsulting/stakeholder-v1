@@ -1,59 +1,130 @@
-export interface Project {
-  id: string
-  name: string
-  description: string
-  businessContext: string
-  problemStatement: string
-  asIsProcess: string
-  businessGoals: string[]
-  duration: string
-  complexity: 'Beginner' | 'Intermediate' | 'Advanced'
-  isCustom?: boolean
-  stakeholderRoles?: string[]
-  industry?: string
-  projectType?: string
-}
+// Export all types
+export * from './meeting';
+export * from './chat';
 
-export interface Stakeholder {
-  id: string
-  name: string
-  role: string
-  department: string
-  bio: string
-  photo: string
-  personality: string
-  priorities: string[]
-  voice: string
-  isCustom?: boolean
-}
+// AppView type definition
+export type AppView = 
+  | 'welcome'
+  | 'get-started'
+  | 'dashboard'
+  | 'learn'
+  | 'learning-hub'
+  | 'learning-flow'
+  | 'practice-flow'
+  | 'project-flow'
+  | 'project-journey'
+  | 'core-learning'
+  | 'project-initiation'
+  | 'stakeholder-mapping'
+  | 'module-3-stakeholder-mapping'
+  | 'stakeholder-conversations-flow'
+  | 'elicitation'
+  | 'requirements-engineering'
+  | 'documentation'
+  | 'my-resources'
+  | 'career-journey'
+  | 'solution-options'
+  | 'design-hub'
+  | 'mvp-hub'
+  | 'agile-scrum'
+  | 'practice'
+  | 'practice-2'
+  | 'documentation-practice'
+  | 'mvp-practice'
+  | 'hands-on-project'
+  | 'elicitation-hub'
+  | 'motivation'
+  | 'community-hub'
+  | 'project'
+  | 'core-concepts'
+  | 'agile-scrum'
+  | 'scrum-essentials'
+  | 'scrum-learning'
+  | 'scrum-practice'
+  | 'agile-practice'
+  | 'progress-tracking'
+  | 'project-workspace'
+  | 'meeting-history'
+  | 'portfolio'
+  | 'create-project'
+  | 'ba-fundamentals'
+  | 'process-mapper'
+  | 'ai-process-mapper'
+  | 'process-mapper-editor'
+  | 'diagram-creation'
+  | 'advanced-topics'
+  | 'projects'
+  | 'project-setup'
+  | 'meeting'
+  | 'voice-only-meeting'
+  | 'voice-meeting-v2'
+  | 'meeting-summary'
+  | 'meeting-details'
+  | 'raw-transcript'
+  | 'notes'
+  | 'deliverables'
+  | 'profile'
+  | 'support'
+  | 'navigation-guide'
+  | 'analysis'
+  | 'custom-project'
+  | 'custom-stakeholders'
+  | 'agile-hub'
+  | 'elevenlabs-meeting'
+  | 'individual-agent-meeting'
+  | 'enhanced-training-flow'
+  | 'training-hub'
+  | 'training-hub-project-selection'
+  | 'training-hub-stage-selection'
+  | 'practice-hub-cards'
+  | 'training-practice'
+  | 'training-assess'
+  | 'training-feedback'
+  | 'training-dashboard'
+  | 'training-deliverables'
+  | 'project-deliverables'
+  | 'my-meetings'
+  | 'voice-meeting'
+  | 'settings'
+  | 'project-brief'
+  | 'stage-selection'
+  | 'stakeholders'
+  | 'meeting-mode-selection'
+  | 'structured-training'
+  | 'pre-brief'
+  | 'live-training-meeting'
+  | 'post-brief'
+  | 'user-story-checker'
+  | 'solution-options'
+  | 'design-hub'
+  | 'mvp-hub'
+  | 'mvp-engine'
+  | 'community-hub'
+  | 'community-admin'
+  | 'my-mentorship'
+  | 'book-session'
+  | 'mentor-feedback'
+  | 'career-coaching'
+  | 'my-progress-mentor'
+  | 'admin'
+  | 'admin-panel'
+  | 'contact-us'
+  | 'admin-contact-submissions'
+  | 'faq';
 
-export interface Meeting {
-  id: string
-  projectId: string
-  stakeholderIds: string[]
-  transcript: Message[]
-  date: string
-  duration: number
-  status: 'scheduled' | 'in_progress' | 'completed'
-  meetingType: 'individual' | 'group'
-}
-
-export interface Message {
-  id: string
-  speaker: 'user' | string // stakeholder ID for group meetings
-  content: string
-  timestamp: string
-  stakeholderName?: string
-  stakeholderRole?: string
-}
-
-export interface Deliverable {
-  id: string
-  projectId: string
-  type: 'goals' | 'user-stories' | 'acceptance-criteria' | 'brd'
-  title: string
-  content: string
-  lastModified: string
-}
-
-export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
+// Re-export specific types for convenience
+export type {
+  Message,
+  DirectMessage,
+  UserProfile,
+  MessageThread,
+  PinnedMessage,
+  TypingIndicator,
+  SearchResult,
+  Conversation,
+  Channel,
+  MessageReaction,
+  SearchResponse,
+  ConversationListResponse,
+  UserProfileResponse
+} from './chat';

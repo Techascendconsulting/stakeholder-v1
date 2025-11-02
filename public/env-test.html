@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Env Test</title></head>
+<body>
+<h1>Environment Variable Test</h1>
+<pre id="output">Loading...</pre>
+<script type="module">
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  document.getElementById('output').textContent = 
+    'VITE_OPENAI_API_KEY exists: ' + (!!apiKey) + '\n' +
+    'Key starts with: ' + (apiKey ? apiKey.substring(0, 20) + '...' : 'NOT FOUND') + '\n' +
+    'All env vars: ' + JSON.stringify(import.meta.env, null, 2);
+</script>
+</body>
+</html>

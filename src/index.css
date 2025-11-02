@@ -1,3 +1,399 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CSS Variables for layout calculations */
+:root {
+  --header-h: 0px;      /* no fixed header */
+  --crumbs-h: 0px;      /* breadcrumbs hidden on voice meeting */
+  --sidebar-w: 256px;   /* sidebar width (w-64 = 16rem = 256px) */
+}
+
+/* Global height reset for full-height layouts */
+html, body, #root {
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent horizontal jiggle and keep scrollbar space consistent across pages */
+html {
+  scrollbar-gutter: stable;
+}
+body {
+  overflow-y: scroll; /* always reserve vertical scrollbar space */
+  overflow-x: hidden; /* avoid horizontal shift */
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Compensate fixed header when scrollbar presence differs across UAs */
+.stable-header {
+  padding-right: calc(100vw - 100%);
+}
+
+/* Feedback Panel Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Joyride tour progress indicator - TOP RIGHT */
+.__floater__body [role="status"] {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+}
+
+/* Alternative selector in case above doesn't work */
+div[aria-live="polite"][role="status"] {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+}
+
+/* Dark Purple Theme Variables */
+:root {
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7c3aed;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+  --purple-950: #3b0764;
+
+  /* Project Color Themes */
+  --purple-primary: 262 83% 58%;
+  --purple-secondary: 252 100% 72%;
+  --green-primary: 142 76% 36%;
+  --green-secondary: 125 100% 45%;
+  --orange-primary: 24 95% 53%;
+  --orange-secondary: 13 100% 62%;
+  --blue-primary: 217 91% 60%;
+  --blue-secondary: 199 89% 48%;
+  --red-primary: 0 84% 60%;
+  --red-secondary: 0 91% 71%;
+}
+
+/* Dark Purple Theme for Dark Mode */
+.dark {
+  --bg-primary: #1e1b2e;      /* Dark purple background */
+  --bg-secondary: #2d1b69;    /* Slightly lighter purple */
+  --bg-tertiary: #3b2a6b;     /* Card backgrounds */
+  --text-primary: #f8fafc;    /* Light text */
+  --text-secondary: #e2e8f0;  /* Secondary text */
+  --accent-primary: #a855f7;  /* Purple accent */
+  --accent-secondary: #c084fc; /* Light purple accent */
+}
+
+/* Let Tailwind handle dark mode naturally */
+
+/* Admin-specific dark purple styling */
+.admin-dark-purple {
+  --admin-bg-primary: #1a1625;    /* Even darker purple for admin */
+  --admin-bg-secondary: #2d1b69;  /* Purple cards */
+  --admin-accent: #a855f7;        /* Admin purple accent */
+}
+
+.admin-dark-purple .admin-header {
+  background: linear-gradient(135deg, var(--admin-bg-primary) 0%, var(--admin-bg-secondary) 100%);
+  color: var(--text-primary);
+}
+
+.admin-dark-purple .admin-card {
+  background: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-accent);
+  color: var(--text-primary);
+}
+
+.admin-dark-purple .admin-button {
+  background: var(--admin-accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.admin-dark-purple .admin-button:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+
+.admin-dark-purple .admin-input {
+  background: var(--admin-bg-tertiary);
+  border: 1px solid var(--admin-accent);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.admin-dark-purple .admin-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.admin-dark-purple .admin-input:focus {
+  outline: none;
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Floating animation for Core Concepts */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Gradient text effect */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Smooth transitions for theme switching */
+*:not(.tour-highlight) {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Focus styles */
+.focus-ring:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.dark .focus-ring:focus {
+  box-shadow: 0 0 0 2px #60a5fa;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Button hover effects */
+.btn-hover {
+  transition: all 0.2s ease;
+}
+
+.btn-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .btn-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  border: 5px solid transparent;
+  border-top-color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Dark mode tooltip */
+.dark .tooltip::before {
+  background: #374151;
+}
+
+.dark .tooltip::after {
+  border-top-color: #374151;
+}
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+  .responsive-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .responsive-text {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-before: always;
+  }
+  
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .high-contrast {
+    border: 2px solid currentColor;
+  }
+  
+  .dark .high-contrast {
+    border-color: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .animate-float {
+    animation: none;
+  }
+}

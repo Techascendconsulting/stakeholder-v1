@@ -1,216 +1,565 @@
-import React from 'react'
-import { useApp } from '../../contexts/AppContext'
-import { 
-  FolderOpen, 
-  Users, 
-  FileText, 
-  Clock,
-  TrendingUp,
-  CheckCircle,
-  Target,
-  Award
-} from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
+import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
+import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
+import { loadResumeState } from '../../services/resumeStore';
+import type { ResumeState } from '../../types/resume';
 
 const Dashboard: React.FC = () => {
-  const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading } = useApp()
+  const { setCurrentView } = useApp();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  
+  // Journey progress state
+  const [careerProgress, setCareerProgress] = useState<JourneyProgress | null>(null);
+  const [learningProgress, setLearningProgress] = useState<LearningProgress | null>(null);
+  const [practiceProgress, setPracticeProgress] = useState<PracticeProgress | null>(null);
+  const [nextStep, setNextStep] = useState<NextStepGuidance | null>(null);
+  const [userType, setUserType] = useState<'new' | 'existing' | 'admin'>('existing');
+  const [userPhase, setUserPhase] = useState<UserPhase>('learning');
+  const [resumeState, setResumeState] = useState<ResumeState | null>(null);
 
-  // Use real data from userProgress if available, otherwise fall back to calculated values
-  const completedMeetings = userProgress?.total_meetings_conducted || meetings.filter(m => m.status === 'completed').length
-  const totalDeliverables = userProgress?.total_deliverables_created || deliverables.length
-  const activeProjects = userProgress?.total_projects_started || 0
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollToTop = () => {
+      const mainContainer = document.querySelector('main');
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        mainContainer.scrollTop = 0;
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    };
+    scrollToTop();
+    setTimeout(scrollToTop, 0);
+    setTimeout(scrollToTop, 50);
+  }, []);
 
-  const stats = [
-    {
-      title: 'Available Projects',
-      value: projects.length.toString(),
-      icon: FolderOpen,
-      color: 'from-blue-500 to-blue-600',
-      change: '5 comprehensive scenarios',
-      description: 'Real-world BA projects'
-    },
-    {
-      title: 'Stakeholder Interviews',
-      value: completedMeetings.toString(),
-      icon: Users,
-      color: 'from-emerald-500 to-emerald-600',
-      change: 'Professional development',
-      description: 'Completed sessions'
-    },
-    {
-      title: 'Deliverables Created',
-      value: totalDeliverables.toString(),
-      icon: FileText,
-      color: 'from-purple-500 to-purple-600',
-      change: 'Industry-standard formats',
-      description: 'Professional documents'
-    },
-    {
-      title: 'Training Hours',
-      value: (completedMeetings * 2 + totalDeliverables * 3).toString(),
-      icon: Clock,
-      color: 'from-orange-500 to-orange-600',
-      change: 'Continuous learning',
-      description: 'Skill development time'
+  useEffect(() => {
+    loadDashboardData();
+    // Load resume state for "Continue where you left off"
+    if (user?.id) {
+      const state = loadResumeState(user.id);
+      if (state && state.isReturnable && state.pageType !== 'dashboard') {
+        setResumeState(state);
+      }
     }
-  ]
+  }, [user?.id]);
 
-  const recentActivity = [
-    { action: 'Completed stakeholder interview with', target: 'James Walker (Head of Operations)', time: '2 hours ago', type: 'meeting' },
-    { action: 'Updated business requirements for', target: 'Customer Onboarding Optimization', time: '4 hours ago', type: 'deliverable' },
-    { action: 'Reviewed project brief for', target: 'Digital Expense Management System', time: '1 day ago', type: 'project' },
-    { action: 'Created user stories for', target: 'Inventory Management Enhancement', time: '2 days ago', type: 'deliverable' }
-  ]
+  const loadDashboardData = async () => {
+    if (!user?.id) {
+      console.log('🚫 Dashboard - No user ID available');
+      return;
+    }
 
-  const learningPath = [
-    { title: 'Project Analysis', description: 'Review business context and requirements', completed: true },
-    { title: 'Stakeholder Engagement', description: 'Conduct professional interviews', completed: false },
-    { title: 'Requirements Documentation', description: 'Create comprehensive deliverables', completed: false },
-    { title: 'Solution Presentation', description: 'Present findings to stakeholders', completed: false }
-  ]
+    try {
+      setLoading(true);
+      console.log('════════════════════════════════════════════════');
+      console.log('🔄 Dashboard - Loading journey progress for user:', user.id);
+      console.log('════════════════════════════════════════════════');
+      
+      // Load user type and phase first
+      const type = await JourneyProgressService.getUserType(user.id);
+      const phase = await getUserPhase(user.id);
+      setUserType(type);
+      setUserPhase(phase);
+      console.log('👤 Dashboard - User type:', type, 'Phase:', phase);
+      
+      // Sync module completion to career journey phases
+      console.log('🔄 Dashboard - Syncing module progress to career journey phases...');
+      await syncModuleProgressToPhases(user.id);
+      
+      // Load journey progress data (after sync, so it reflects latest module completions)
+      const [career, learning, practice] = await Promise.all([
+        JourneyProgressService.getCareerJourneyProgress(user.id),
+        JourneyProgressService.getLearningProgress(user.id),
+        JourneyProgressService.getPracticeProgress(user.id)
+      ]);
+      
+      setCareerProgress(career);
+      setLearningProgress(learning);
+      setPracticeProgress(practice);
+      
+      // Calculate next step guidance
+      const guidance = await JourneyProgressService.getNextStepGuidance(user.id, type, career, learning, practice);
+      setNextStep(guidance);
+      
+      console.log('✅ Dashboard - Journey progress loaded:');
+      console.log('  📊 Career Progress:', career);
+      console.log('  📚 Learning Progress:', learning);
+      console.log('  🎯 Practice Progress:', practice);
+      console.log('  🧭 Next Step Guidance:', guidance);
+      console.log('════════════════════════════════════════════════');
+
+    } catch (error) {
+      console.error('❌ Dashboard - Error loading dashboard data:', error);
+      console.error('════════════════════════════════════════════════');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  // Helper to get icon for next step
+  const getNextStepIcon = (icon: string) => {
+    switch (icon) {
+      case 'career': return <Map className="w-6 h-6 text-white" />;
+      case 'learning': return <Brain className="w-6 h-6 text-white" />;
+      case 'practice': return <Target className="w-6 h-6 text-white" />;
+      case 'project': return <Rocket className="w-6 h-6 text-white" />;
+      default: return <Rocket className="w-6 h-6 text-white" />;
+    }
+  };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Business Analyst Training Dashboard</h1>
-          <p className="text-lg text-gray-600">
-            Welcome to your professional development platform. Track your progress and continue building essential BA skills.
-          </p>
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100">
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
+          </h1>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => {
+                console.log('🔄 Dashboard - Manual refresh triggered');
+                loadDashboardData();
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+            </button>
+          </div>
         </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          Here's your stakeholder interview progress and recent activity
+        </p>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-14 h-14 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center`}>
-                  <stat.icon className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                </div>
+      {/* Continue Where You Left Off */}
+      {resumeState && (
+        <div className="mb-6 rounded-xl p-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                <RotateCcw className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">{stat.title}</p>
-                <p className="text-xs text-gray-500 mb-2">{stat.description}</p>
-                <span className="text-xs text-emerald-600 font-medium">{stat.change}</span>
+                <h3 className="text-lg font-bold mb-1">Continue where you left off</h3>
+                <p className="text-indigo-100 text-sm">
+                  You were on <span className="font-semibold">{resumeState.pageTitle || resumeState.path}</span>
+                  {resumeState.stepId && ` — ${resumeState.stepId}`}
+                </p>
               </div>
             </div>
-          ))}
+            <button
+              onClick={() => {
+                setCurrentView(resumeState.path as any);
+                // Restore scroll/step after navigation
+                setTimeout(() => {
+                  if (resumeState.scrollY && resumeState.scrollY > 0) {
+                    window.scrollTo({ top: resumeState.scrollY, behavior: 'smooth' });
+                  }
+                  if (resumeState.stepId || resumeState.tabId) {
+                    const element = document.querySelector(`[data-step-id="${resumeState.stepId}"]`) ||
+                                  document.querySelector(`[data-topic-id="${resumeState.stepId}"]`) ||
+                                  document.querySelector(`[data-tab-id="${resumeState.tabId}"]`);
+                    if (element) {
+                      (element as HTMLElement).click();
+                    }
+                  }
+                }, 300);
+              }}
+              className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold flex items-center space-x-2 hover:bg-indigo-50 transition-all hover:scale-105 shadow-md"
+            >
+              <span>Continue</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
+      )}
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Recent Training Activity</h3>
-              <p className="text-sm text-gray-600 mt-1">Your latest learning progress and achievements</p>
+      {/* Next Step Guidance Banner */}
+      {nextStep && (
+        <div className={`mb-8 rounded-xl p-6 border-2 ${
+          nextStep.priority === 'high' 
+            ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-300 dark:border-purple-700' 
+            : 'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-300 dark:border-blue-700'
+        }`}>
+            <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                nextStep.priority === 'high' ? 'bg-purple-600' : 'bg-blue-600'
+              }`}>
+                {getNextStepIcon(nextStep.icon)}
+              </div>
+              <div>
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className={`text-xs font-bold uppercase tracking-wide ${
+                    nextStep.priority === 'high' ? 'text-purple-700 dark:text-purple-300' : 'text-blue-700 dark:text-blue-300'
+                  }`}>
+                    {nextStep.priority === 'high' ? '⚡ Recommended Next Step' : '💡 Suggested Action'}
+                  </span>
+              </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                  {nextStep.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {nextStep.description}
+                </p>
+              </div>
             </div>
-            <div className="divide-y divide-gray-100">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="p-6 hover:bg-gray-50 transition-colors duration-200">
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      activity.type === 'meeting' ? 'bg-blue-100' :
-                      activity.type === 'deliverable' ? 'bg-purple-100' : 'bg-emerald-100'
-                    }`}>
-                      {activity.type === 'meeting' ? <Users className="w-5 h-5 text-blue-600" /> :
-                       activity.type === 'deliverable' ? <FileText className="w-5 h-5 text-purple-600" /> :
-                       <FolderOpen className="w-5 h-5 text-emerald-600" />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.action} <span className="text-blue-600">{activity.target}</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                    </div>
+            <button
+              onClick={() => setCurrentView(nextStep.actionView as any)}
+              className={`px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 transition-all hover:scale-105 ${
+                nextStep.priority === 'high'
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              <span>{nextStep.action}</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+      </div>
+      )}
+
+      {/* Journey Progress Cards */}
+      {(careerProgress || learningProgress || practiceProgress) && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* BA Career Journey Progress */}
+          {careerProgress && (
+            <div 
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('career-journey')}
+            >
+          <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Map className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">BA Project Journey</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {careerProgress.phasesCompleted}/{careerProgress.totalPhases} phases
+                    </p>
                   </div>
                 </div>
-              ))}
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                  <span className="font-semibold text-purple-600 dark:text-purple-400">
+                    {careerProgress.progressPercentage}%
+            </span>
+          </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 h-2 rounded-full transition-all"
+                    style={{ width: `${careerProgress.progressPercentage}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Current: {careerProgress.currentPhaseTitle}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Learning Journey Progress */}
+          {learningProgress && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                 onClick={() => setCurrentView('learning-flow')}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <Brain className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Learning Journey</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {learningProgress.modulesCompleted}/{learningProgress.totalModules} modules
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    {learningProgress.progressPercentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 h-2 rounded-full transition-all"
+                    style={{ width: `${learningProgress.progressPercentage}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {learningProgress.currentModuleTitle ? `Current: ${learningProgress.currentModuleTitle}` : 'All modules completed!'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Practice Journey Progress - Quick Exercises */}
+          {practiceProgress && (
+            <div 
+              className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
+                isPageAccessible('practice-flow', userPhase, userType) 
+                  ? 'hover:shadow-lg cursor-pointer' 
+                  : 'opacity-60 cursor-not-allowed'
+              }`}
+              onClick={() => {
+                if (isPageAccessible('practice-flow', userPhase, userType)) {
+                  setCurrentView('practice-flow');
+                }
+              }}
+            >
+              {!isPageAccessible('practice-flow', userPhase, userType) && (
+                <div className="absolute top-3 right-3">
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                    <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Locked</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    isPageAccessible('practice-flow', userPhase, userType)
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                      : 'bg-gray-400 dark:bg-gray-600'
+                  }`}>
+                    {isPageAccessible('practice-flow', userPhase, userType) ? (
+                      <Target className="w-5 h-5 text-white" />
+                    ) : (
+                      <Lock className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Practice Journey</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isPageAccessible('practice-flow', userPhase, userType)
+                        ? 'Quick practice exercises'
+                        : 'Unlocks after 3 modules'
+                      }
+                    </p>
             </div>
           </div>
+                {isPageAccessible('practice-flow', userPhase, userType) && (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                )}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">Exercises</span>
+                  <span className={`font-semibold ${
+                    isPageAccessible('practice-flow', userPhase, userType)
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}>
+                    {practiceProgress.meetingsCount || 0}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {isPageAccessible('practice-flow', userPhase, userType)
+                    ? 'Elicitation, Documentation, MVP, Scrum'
+                    : '🔒 Complete 3 modules to unlock'
+                  }
+                </p>
+              </div>
+          </div>
+          )}
 
-          {/* Learning Path & Quick Actions */}
-          <div className="space-y-6">
-            {/* Learning Path */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Learning Path</h3>
-                <p className="text-sm text-gray-600 mt-1">Your structured BA development journey</p>
+          {/* Project Journey Progress - Hands-On Projects */}
+          <div 
+            className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow relative ${
+              isPageAccessible('project-flow', userPhase, userType) 
+                ? 'hover:shadow-lg cursor-pointer' 
+                : 'opacity-60 cursor-not-allowed'
+            }`}
+            onClick={() => {
+              if (isPageAccessible('project-flow', userPhase, userType)) {
+                setCurrentView('project-flow');
+              }
+            }}
+          >
+            {!isPageAccessible('project-flow', userPhase, userType) && (
+              <div className="absolute top-3 right-3">
+                <div className="flex items-center space-x-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <Lock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Locked</span>
+                </div>
               </div>
-              <div className="p-6 space-y-4">
-                {learningPath.map((step, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
-                      step.completed ? 'bg-emerald-100' : 'bg-gray-100'
-                    }`}>
-                      {step.completed ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium ${step.completed ? 'text-emerald-900' : 'text-gray-900'}`}>
-                        {step.title}
-                      </p>
-                      <p className={`text-xs ${step.completed ? 'text-emerald-600' : 'text-gray-500'}`}>
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            )}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  isPageAccessible('project-flow', userPhase, userType)
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600'
+                    : 'bg-gray-400 dark:bg-gray-600'
+                }`}>
+                  {isPageAccessible('project-flow', userPhase, userType) ? (
+                    <Rocket className="w-5 h-5 text-white" />
+                  ) : (
+                    <Lock className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Project Journey</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {isPageAccessible('project-flow', userPhase, userType)
+                      ? 'Hands-on real projects'
+                      : 'Unlocks after 10 modules'
+                    }
+                  </p>
+                </div>
               </div>
+              {isPageAccessible('project-flow', userPhase, userType) && (
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              )}
             </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-                <p className="text-sm text-gray-600 mt-1">Continue your professional development</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Status</span>
+                <span className={`font-semibold ${
+                  isPageAccessible('project-flow', userPhase, userType)
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-gray-400 dark:text-gray-500'
+                }`}>
+                  {isPageAccessible('project-flow', userPhase, userType) ? 'Ready' : 'Locked'}
+                </span>
               </div>
-              <div className="p-6 space-y-3">
-                <button 
-                  onClick={() => setCurrentView('projects')}
-                  className="w-full text-left p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl hover:from-blue-100 hover:to-purple-100 transition-all duration-200 border border-blue-100"
-                >
-                  <div className="flex items-center space-x-3">
-                    <FolderOpen className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">Browse Projects</span>
-                      <span className="text-xs text-gray-600">Select training scenarios</span>
-                    </div>
-                  </div>
-                </button>
-                <button 
-                  onClick={() => setCurrentView('notes')}
-                  className="w-full text-left p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl hover:from-emerald-100 hover:to-teal-100 transition-all duration-200 border border-emerald-100"
-                >
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-emerald-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">Review Notes</span>
-                      <span className="text-xs text-gray-600">Meeting transcripts</span>
-                    </div>
-                  </div>
-                </button>
-                <button className="w-full text-left p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl hover:from-orange-100 hover:to-red-100 transition-all duration-200 border border-orange-100">
-                  <div className="flex items-center space-x-3">
-                    <Award className="w-5 h-5 text-orange-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">View Progress</span>
-                      <span className="text-xs text-gray-600">Track achievements</span>
-                    </div>
-                  </div>
-                </button>
-              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {isPageAccessible('project-flow', userPhase, userType)
+                  ? 'Select project, conduct meetings, create deliverables'
+                  : '🔒 Complete all 10 modules to unlock'
+                }
+              </p>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* BA Career Journey - Always visible */}
+        <button
+          onClick={() => setCurrentView('career-journey')}
+          className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          data-tour="quick-action-career"
+        >
+          <div className="flex items-center space-x-3">
+            <Map className="w-6 h-6" />
+            <span className="font-semibold">BA Career Journey</span>
+          </div>
+          <p className="text-purple-100 text-sm mt-2">Follow the complete BA lifecycle from onboarding to delivery</p>
+        </button>
+
+        {/* Learning Journey - Always accessible */}
+        <button
+          onClick={() => setCurrentView('learning-flow')}
+          className="p-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          data-tour="quick-action-learning"
+        >
+          <div className="flex items-center space-x-3">
+            <Brain className="w-6 h-6" />
+            <span className="font-semibold">Learning Journey</span>
+          </div>
+          <p className="text-blue-100 text-sm mt-2">Master BA skills through 11 comprehensive modules</p>
+        </button>
+
+        {/* Practice Journey - Quick Exercises (Unlocks at 3 modules) */}
+        <button
+          onClick={() => {
+            if (isPageAccessible('practice-flow', userPhase, userType)) {
+              setCurrentView('practice-flow');
+            }
+          }}
+          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
+            isPageAccessible('practice-flow', userPhase, userType)
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
+              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
+          }`}
+          data-tour="quick-action-practice"
+        >
+          {!isPageAccessible('practice-flow', userPhase, userType) && (
+            <div className="absolute top-3 right-3">
+              <Lock className="w-5 h-5 text-white/70" />
+            </div>
+          )}
+          <div className="flex items-center space-x-3">
+            {isPageAccessible('practice-flow', userPhase, userType) ? (
+              <Target className="w-6 h-6" />
+            ) : (
+              <Lock className="w-6 h-6" />
+            )}
+            <span className="font-semibold">Practice Journey</span>
+          </div>
+          <p className={`text-sm mt-2 ${
+            isPageAccessible('practice-flow', userPhase, userType) ? 'text-green-100' : 'text-white/80'
+          }`}>
+            {isPageAccessible('practice-flow', userPhase, userType)
+              ? 'Quick practice: Elicitation, Docs, MVP, Scrum'
+              : '🔒 Complete 3 modules to unlock'
+            }
+          </p>
+        </button>
+
+        {/* Project Journey - Hands-On Projects (Unlocks at 10 modules) */}
+        <button
+          onClick={() => {
+            if (isPageAccessible('project-flow', userPhase, userType)) {
+              setCurrentView('project-flow');
+            }
+          }}
+          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
+            isPageAccessible('project-flow', userPhase, userType)
+              ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
+              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
+          }`}
+          data-tour="quick-action-project"
+        >
+          {!isPageAccessible('project-flow', userPhase, userType) && (
+            <div className="absolute top-3 right-3">
+              <Lock className="w-5 h-5 text-white/70" />
+            </div>
+          )}
+          <div className="flex items-center space-x-3">
+            {isPageAccessible('project-flow', userPhase, userType) ? (
+              <Rocket className="w-6 h-6" />
+            ) : (
+              <Lock className="w-6 h-6" />
+            )}
+            <span className="font-semibold">Project Journey</span>
+          </div>
+          <p className={`text-sm mt-2 ${
+            isPageAccessible('project-flow', userPhase, userType) ? 'text-orange-100' : 'text-white/80'
+          }`}>
+            {isPageAccessible('project-flow', userPhase, userType)
+              ? 'End-to-end projects with stakeholder meetings'
+              : '🔒 Complete all 10 modules to unlock'
+            }
+          </p>
+        </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
