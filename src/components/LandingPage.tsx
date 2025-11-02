@@ -664,6 +664,39 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Professional Growth Section - Separator */}
+      <section className="py-20 bg-gradient-to-br from-blue-50/40 via-white to-indigo-50/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                  Industry-Ready Skills
+                </h2>
+              </div>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Build practical expertise with hands-on experience in real business environments
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-6">
+              {[
+                { icon: CheckCircle, text: "Certified Skills" },
+                { icon: CheckCircle, text: "Real Experience" },
+                { icon: CheckCircle, text: "Portfolio Ready" }
+              ].map((item, index) => (
+                <div key={index} className="flex flex-col items-center p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all">
+                  <item.icon className="w-8 h-8 text-blue-600 mb-2" />
+                  <span className="text-sm font-semibold text-gray-700 text-center">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Real-world Business Analysis Challenges Section - 2 Column with App Colors */}
       <section className="py-24 bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
