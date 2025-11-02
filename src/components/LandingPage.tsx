@@ -667,13 +667,13 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Real-world Business Analysis Challenges Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900 text-white">
+      <section className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Real-world business analysis challenges
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               Engage with authentic business scenarios, learn from professional deliverables.
             </p>
           </div>
@@ -697,10 +697,10 @@ const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                 <FileText className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-4xl font-bold text-white mb-6 leading-tight">
+              <h3 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
                 Develop professional deliverables
               </h3>
-              <p className="text-lg text-gray-300 mb-10 leading-relaxed">
+              <p className="text-lg text-gray-700 mb-10 leading-relaxed">
                 Work on real-world business scenarios. Apply your learning to actual Business Analysis projects with tools for requirements, process mapping, and stakeholder management.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -713,7 +713,7 @@ const LandingPage: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-10 py-5 rounded-xl hover:bg-white/20 hover:border-white/50 transition-all duration-300 font-semibold text-lg hover:shadow-xl"
+                  className="bg-gray-900 text-white px-10 py-5 rounded-xl hover:bg-gray-800 transition-all duration-300 font-semibold text-lg hover:shadow-xl"
                 >
                   Learn More
                 </button>
