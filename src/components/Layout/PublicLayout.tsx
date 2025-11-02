@@ -51,16 +51,16 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
                 Home
               </button>
               <button 
-                onClick={() => { if (onHome) onHome(); setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
-                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
-              >
-                Features
-              </button>
-              <button 
                 onClick={() => { if (onHome) onHome(); setTimeout(() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
                 className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
               >
                 How It Works
+              </button>
+              <button 
+                onClick={() => { if (onHome) onHome(); setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
+                className="text-gray-600 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
+              >
+                Features
               </button>
               <button 
                 onClick={() => { if (onHome) onHome(); setTimeout(() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' }), 100); }}

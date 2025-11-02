@@ -148,16 +148,16 @@ const LandingPage: React.FC = () => {
             <nav className="hidden md:flex items-center space-x-6">
               <button className="text-gray-300 hover:text-white font-medium transition-colors">Home</button>
               <button 
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-gray-300 hover:text-white font-medium transition-colors"
-              >
-                Features
-              </button>
-              <button 
                 onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
                 How It Works
+              </button>
+              <button 
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
               </button>
               <button 
                 onClick={() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' })}
