@@ -15,7 +15,8 @@ import {
   Instagram,
   ChevronDown,
   BookOpen,
-  Rocket
+  Rocket,
+  Mail
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
@@ -1063,17 +1064,20 @@ const LandingPage: React.FC = () => {
                   <Twitter className="w-5 h-5" />
                 </a>
                 <a href="#" className="hover:text-white transition-colors">
+                  <Youtube className="w-5 h-5" />
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
                   <Instagram className="w-5 h-5" />
                 </a>
                 <a href="#" className="hover:text-white transition-colors">
-                  <Youtube className="w-5 h-5" />
+                  <Mail className="w-5 h-5" />
                 </a>
               </div>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12 max-w-4xl mx-auto">
             {/* Platform Column */}
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">Platform</h4>
@@ -1083,7 +1087,7 @@ const LandingPage: React.FC = () => {
                     onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
                     className="hover:text-white transition-colors text-left"
                   >
-                    How It Works
+                    Learning Journey
                   </button>
                 </li>
                 <li>
@@ -1091,7 +1095,15 @@ const LandingPage: React.FC = () => {
                     onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                     className="hover:text-white transition-colors text-left"
                   >
-                    Features
+                    Practice Sessions
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Projects
                   </button>
                 </li>
                 <li>
@@ -1100,29 +1112,6 @@ const LandingPage: React.FC = () => {
                     className="hover:text-white transition-colors text-left"
                   >
                     Success Stories
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Learning Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Learning</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <button 
-                    onClick={() => setShowRequestAccess(true)}
-                    className="hover:text-white transition-colors text-left"
-                  >
-                    Get Started
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => setShowRequestAccess(true)}
-                    className="hover:text-white transition-colors text-left"
-                  >
-                    Request Access
                   </button>
                 </li>
               </ul>
@@ -1148,25 +1137,6 @@ const LandingPage: React.FC = () => {
                     Contact Us
                   </button>
                 </li>
-              </ul>
-            </div>
-
-            {/* Company Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="https://techascendconsulting.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors text-left">
-                    About Us
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Legal Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
                 <li>
                   <button 
                     onClick={() => setShowPrivacyPolicy(true)}
