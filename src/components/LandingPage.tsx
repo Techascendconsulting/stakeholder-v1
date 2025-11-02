@@ -1041,51 +1041,50 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Top Section */}
-          <div className="mb-12 text-center">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
-            </div>
-            <p className="text-gray-400 max-w-2xl mx-auto mb-8">
-              The world's most advanced Business Analysis training platform. Transform your career with AI-powered learning, practice, and real-world projects.
-            </p>
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-white mb-4">Connect With Us</h4>
-              <div className="flex justify-center space-x-4">
-                <a href="#" className="hover:text-white transition-colors">
-                  <Linkedin className="w-5 h-5" />
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  <Youtube className="w-5 h-5" />
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  <Mail className="w-5 h-5" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12 max-w-4xl mx-auto">
-            {/* Platform Column */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Left Column - Brand */}
             <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">BA WorkXP</span>
+              </div>
+              <p className="text-sm text-gray-400 mb-6">
+                The world's most advanced Business Analysis training platform.
+              </p>
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-3">Connect With Us</h4>
+                <div className="flex space-x-4">
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Mail className="w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Middle Column - Platform */}
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-4">Platform</h4>
+              <ul className="space-y-3 text-sm">
                 <li>
                   <button 
                     onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Learning Journey
                   </button>
@@ -1093,7 +1092,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Practice Sessions
                   </button>
@@ -1101,7 +1100,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Projects
                   </button>
@@ -1109,7 +1108,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Success Stories
                   </button>
@@ -1117,14 +1116,14 @@ const LandingPage: React.FC = () => {
               </ul>
             </div>
 
-            {/* Support Column */}
+            {/* Right Column - Support */}
             <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
+              <h4 className="text-sm font-semibold text-white mb-4">Support</h4>
+              <ul className="space-y-3 text-sm">
                 <li>
                   <button 
                     onClick={() => setShowFAQ(true)}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     FAQ
                   </button>
@@ -1132,7 +1131,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => setShowContact(true)}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Contact Us
                   </button>
@@ -1140,7 +1139,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => setShowPrivacyPolicy(true)}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Privacy Policy
                   </button>
@@ -1148,7 +1147,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <button 
                     onClick={() => setShowTermsOfService(true)}
-                    className="hover:text-white transition-colors text-left"
+                    className="text-gray-400 hover:text-white transition-colors text-left"
                   >
                     Terms of Service
                   </button>
@@ -1158,8 +1157,8 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-sm text-gray-400">
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-sm text-gray-400 text-center">
               © 2025 BA WorkXP. All rights reserved.
             </p>
           </div>
