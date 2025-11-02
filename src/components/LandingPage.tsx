@@ -339,16 +339,9 @@ const LandingPage: React.FC = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 01. Learn business analysis fundamentals
               </h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-600 leading-relaxed">
                 Complete comprehensive interactive modules covering all Business Analysis fundamentals. From core concepts to advanced techniques, build a solid foundation.
               </p>
-              <button 
-                onClick={() => setShowRequestAccess(true)}
-                className="text-purple-600 font-semibold hover:text-purple-700 flex items-center group transition-all"
-              >
-                Request Access
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
             </div>
 
             {/* Card 2: Practice */}
@@ -359,16 +352,9 @@ const LandingPage: React.FC = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 02. Practice real-world scenarios
               </h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-600 leading-relaxed">
                 Apply your knowledge with AI-powered simulations. Practice elicitation, documentation, MVP building, and Scrum in realistic scenarios.
               </p>
-              <button 
-                onClick={() => setShowRequestAccess(true)}
-                className="text-cyan-600 font-semibold hover:text-cyan-700 flex items-center group transition-all"
-              >
-                Request Access
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
             </div>
 
             {/* Card 3: Build */}
@@ -379,16 +365,9 @@ const LandingPage: React.FC = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 03. Build professional portfolio
               </h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-600 leading-relaxed">
                 Work on hands-on projects that mirror real-world BA work. Create requirements, map processes, and manage stakeholders.
               </p>
-              <button 
-                onClick={() => setShowRequestAccess(true)}
-                className="text-emerald-600 font-semibold hover:text-emerald-700 flex items-center group transition-all"
-              >
-                Request Access
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
             </div>
           </div>
         </div>
