@@ -608,7 +608,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Simulate Real Business Scenarios Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-indigo-800 via-purple-900 to-indigo-800 text-white">
+      <section className="py-24 bg-gradient-to-br from-slate-700 via-slate-800 to-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -665,7 +665,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Real-world Business Analysis Challenges Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800 text-white">
+      <section className="py-24 bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -1005,7 +1005,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-900 to-indigo-900 text-white">
+      <section className="py-20 bg-gradient-to-br from-slate-900 to-gray-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Your BA Career Transformation Starts Today
