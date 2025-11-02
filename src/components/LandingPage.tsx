@@ -735,69 +735,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Verity AI Learning Assistant Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Verity AI Learning Assistant
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Get instant coaching, real-time feedback, and personalized guidance.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Left: Content */}
-            <div>
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
-                <Bot className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                Instant Learning Support
-              </h3>
-              <p className="text-lg text-gray-300 mb-10 leading-relaxed">
-                Your 24/7 learning companion. Get instant answers to Business Analysis questions, navigate the platform, and receive personalized guidance throughout your journey.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => setShowRequestAccess(true)}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-5 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg shadow-2xl transform hover:scale-105 flex items-center justify-center"
-                >
-                  <Rocket className="w-5 h-5 mr-2" />
-                  Request Access
-                </button>
-                <button 
-                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-10 py-5 rounded-xl hover:bg-white/20 hover:border-white/50 transition-all duration-300 font-semibold text-lg"
-                >
-                  Learn More
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Image */}
-            <div className="relative">
-              <div className="h-[500px] bg-gradient-to-br from-purple-800 to-indigo-800 rounded-2xl overflow-hidden shadow-2xl relative">
-                <img 
-                  src="https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200" 
-                  alt="AI Bot Assistant" 
-                  className="w-full h-full object-cover opacity-90"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/30"></div>
-                {/* Animated bot icon overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-48 h-48 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-                  <Bot className="w-32 h-32 text-white/80 absolute drop-shadow-2xl" />
-                </div>
-              </div>
-              <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl opacity-20 blur-2xl"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Platform Features Section */}
       <section className="py-24 bg-gradient-to-br from-indigo-50/30 via-purple-50/50 to-pink-50/30" id="features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -881,6 +818,69 @@ const LandingPage: React.FC = () => {
                 Request Access
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Verity AI Learning Assistant Section - 2 Column with App Colors */}
+      <section className="py-24 bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Verity AI Learning Assistant
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Get instant coaching, real-time feedback, and personalized guidance.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            {/* Left: Content */}
+            <div>
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
+                <Bot className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                Instant Learning Support
+              </h3>
+              <p className="text-lg text-gray-300 mb-10 leading-relaxed">
+                Your 24/7 learning companion. Get instant answers to Business Analysis questions, navigate the platform, and receive personalized guidance throughout your journey.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => setShowRequestAccess(true)}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-5 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg shadow-2xl transform hover:scale-105 flex items-center justify-center"
+                >
+                  <Rocket className="w-5 h-5 mr-2" />
+                  Request Access
+                </button>
+                <button 
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-10 py-5 rounded-xl hover:bg-white/20 hover:border-white/50 transition-all duration-300 font-semibold text-lg"
+                >
+                  Learn More
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Image */}
+            <div className="relative">
+              <div className="h-[500px] bg-gradient-to-br from-purple-800 to-indigo-800 rounded-2xl overflow-hidden shadow-2xl relative">
+                <img 
+                  src="https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200" 
+                  alt="AI Bot Assistant" 
+                  className="w-full h-full object-cover opacity-90"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/30"></div>
+                {/* Animated bot icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-48 h-48 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
+                  <Bot className="w-32 h-32 text-white/80 absolute drop-shadow-2xl" />
+                </div>
+              </div>
+              <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl opacity-20 blur-2xl"></div>
             </div>
           </div>
         </div>
