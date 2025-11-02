@@ -31,7 +31,6 @@ const LandingPage: React.FC = () => {
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
-  const [showResources, setShowResources] = useState(false)
 
   useEffect(() => {
     const showLoginForm = localStorage.getItem('showLoginForm')
@@ -149,20 +148,23 @@ const LandingPage: React.FC = () => {
             <nav className="hidden md:flex items-center space-x-6">
               <button className="text-gray-300 hover:text-white font-medium transition-colors">Home</button>
               <button 
-                onClick={() => setShowContact(true)}
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
-                About
+                Features
               </button>
-              <div className="relative">
-                <button 
-                  onClick={() => setShowResources(!showResources)}
-                  className="text-gray-300 hover:text-white font-medium flex items-center transition-colors"
-                >
-                  Resources
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </button>
-              </div>
+              <button 
+                onClick={() => document.getElementById('learning-path')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Success Stories
+              </button>
               <button 
                 onClick={() => setShowFAQ(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
@@ -173,7 +175,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => setShowContact(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
-                Contact
+                Contact Us
               </button>
             </nav>
 
@@ -317,7 +319,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Your Learning Path Section - 3 Cards with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-purple-100 via-purple-50 to-indigo-50 border-t border-purple-100">
+      <section id="learning-path" className="py-24 bg-gradient-to-br from-purple-100 via-purple-50 to-indigo-50 border-t border-purple-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
