@@ -264,48 +264,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Company Logos Section - Dual Scrolling Rows */}
-      <section className="py-12 bg-gradient-to-b from-gray-50/50 via-white to-purple-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-              Our graduates work at leading companies worldwide
-            </h2>
-            <p className="text-gray-600 text-sm">
-              Trusted by top organizations across the globe
-            </p>
-          </div>
-          
-          {/* Top row - scrolling left */}
-          <div className="relative overflow-hidden mb-4">
-            <div className="flex animate-scroll-left space-x-12 items-center">
-              {[...companyLogos, ...companyLogos, ...companyLogos].map((company, index) => (
-                <div 
-                  key={`top-${index}`} 
-                  className="flex-shrink-0 text-xl font-bold text-gray-400 hover:text-purple-600 transition-colors px-8 whitespace-nowrap"
-                >
-                  {company.name}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Bottom row - scrolling right */}
-          <div className="relative overflow-hidden">
-            <div className="flex animate-scroll-right space-x-12 items-center">
-              {[...companyLogos, ...companyLogos, ...companyLogos].map((company, index) => (
-                <div 
-                  key={`bottom-${index}`} 
-                  className="flex-shrink-0 text-xl font-bold text-gray-400 hover:text-purple-600 transition-colors px-8 whitespace-nowrap"
-                >
-                  {company.name}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Your Learning Path Section - 3 Cards with App Colors */}
       <section id="how-it-works" className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 border-t border-purple-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -909,6 +867,48 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Company Logos Section - Dual Scrolling Rows */}
+      <section className="py-12 bg-gradient-to-b from-gray-50/50 via-white to-purple-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+              Our graduates work at leading companies worldwide
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Trusted by top organizations across the globe
+            </p>
+          </div>
+          
+          {/* Top row - scrolling left */}
+          <div className="relative overflow-hidden mb-4">
+            <div className="flex animate-scroll-left space-x-12 items-center">
+              {[...companyLogos, ...companyLogos, ...companyLogos].map((company, index) => (
+                <div 
+                  key={`top-${index}`} 
+                  className="flex-shrink-0 text-xl font-bold text-gray-400 hover:text-purple-600 transition-colors px-8 whitespace-nowrap"
+                >
+                  {company.name}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Bottom row - scrolling right */}
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll-right space-x-12 items-center">
+              {[...companyLogos, ...companyLogos, ...companyLogos].map((company, index) => (
+                <div 
+                  key={`bottom-${index}`} 
+                  className="flex-shrink-0 text-xl font-bold text-gray-400 hover:text-purple-600 transition-colors px-8 whitespace-nowrap"
+                >
+                  {company.name}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
