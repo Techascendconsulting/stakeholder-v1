@@ -1073,17 +1073,17 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Navigation Links */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Platform Column */}
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">Platform</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <button 
-                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
                     className="hover:text-white transition-colors text-left"
                   >
-                    Learning Journey
+                    How It Works
                   </button>
                 </li>
                 <li>
@@ -1091,15 +1091,7 @@ const LandingPage: React.FC = () => {
                     onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                     className="hover:text-white transition-colors text-left"
                   >
-                    Practice Sessions
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="hover:text-white transition-colors text-left"
-                  >
-                    Projects
+                    Features
                   </button>
                 </li>
                 <li>
@@ -1108,6 +1100,29 @@ const LandingPage: React.FC = () => {
                     className="hover:text-white transition-colors text-left"
                   >
                     Success Stories
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Learning Column */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">Learning</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <button 
+                    onClick={() => setShowRequestAccess(true)}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Get Started
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setShowRequestAccess(true)}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Request Access
                   </button>
                 </li>
               </ul>
@@ -1132,6 +1147,18 @@ const LandingPage: React.FC = () => {
                   >
                     Contact Us
                   </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company Column */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a href="https://techascendconsulting.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors text-left">
+                    About Us
+                  </a>
                 </li>
               </ul>
             </div>
