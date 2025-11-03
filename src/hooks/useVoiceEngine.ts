@@ -26,12 +26,15 @@ export function useVoiceEngine({ onTranscribed, onStateChange }: UseVoiceEngineP
   const [state, setState] = useState<VoiceState>("idle");
   const recognitionRef = useRef<any>(null);
   const autoResumeRef = useRef(false); // controls if we resume after AI finishes
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
-  // init recognition
+  // init recognition (Chrome/Edge/Android). iOS will use MediaRecorder + server STT.
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    if (!SpeechRecognition || isIOS) {
       console.warn("SpeechRecognition API not available in this browser.");
       return;
     }
@@ -79,7 +82,52 @@ export function useVoiceEngine({ onTranscribed, onStateChange }: UseVoiceEngineP
     };
   }, [onStateChange, onTranscribed]);
 
-  const startListening = () => {
+  const startListening = async () => {
+    // iOS path: record short clip and send to server for transcription
+    if (isIOS) {
+      try {
+        autoResumeRef.current = true;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mr = new MediaRecorder(stream, { mimeType: 'audio/webm' } as any);
+        chunksRef.current = [];
+        mr.onstart = () => {
+          setState('listening');
+          onStateChange?.('listening');
+        };
+        mr.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+        };
+        mr.onstop = async () => {
+          setState('processing');
+          onStateChange?.('processing');
+          const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          const base64 = await blobToBase64(blob);
+          try {
+            const resp = await fetch('/api/transcribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ audioBase64: base64.split(',')[1], mimeType: blob.type })
+            });
+            const json = await resp.json();
+            if (json?.text) onTranscribed?.(json.text);
+          } catch (err) {
+            console.warn('Transcription failed', err);
+            setState('idle');
+            onStateChange?.('idle');
+          }
+        };
+        mediaRecorderRef.current = mr;
+        mr.start();
+        // Auto-stop after 7s (short turn-taking)
+        setTimeout(() => {
+          try { mr.state !== 'inactive' && mr.stop(); } catch {}
+        }, 7000);
+      } catch (e) {
+        console.warn('iOS mic start error', e);
+      }
+      return;
+    }
+
     if (!recognitionRef.current) return;
     console.log('🎤 Voice engine: Starting listening...');
     try {
@@ -96,6 +144,11 @@ export function useVoiceEngine({ onTranscribed, onStateChange }: UseVoiceEngineP
     autoResumeRef.current = false;
     try {
       recognitionRef.current?.abort();
+    } catch {}
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
     } catch {}
   };
 
@@ -129,6 +182,15 @@ export function useVoiceEngine({ onTranscribed, onStateChange }: UseVoiceEngineP
     stopListening,    // not shown in UI; safety
     endConversation,  // End Conversation button
   };
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 

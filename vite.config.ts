@@ -102,6 +102,33 @@ export default defineConfig({
           }
         });
 
+        // Simple server transcription endpoint for iOS (expects base64 audio)
+        app.post('/api/transcribe', async (req, res) => {
+          try {
+            const { audioBase64, mimeType } = req.body ?? {};
+            if (!audioBase64) return res.status(400).json({ error: 'Missing audioBase64' });
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) return res.status(500).json({ error: 'No OpenAI API key configured' });
+
+            const buffer = Buffer.from(audioBase64, 'base64');
+            const file = new File([buffer], 'audio.webm', { type: mimeType || 'audio/webm' });
+
+            const client = new OpenAI({ apiKey });
+            const transcript = await client.audio.transcriptions.create({
+              file,
+              model: 'gpt-4o-transcribe',
+            } as any);
+
+            // Return plain text
+            const text = (transcript as any).text || '';
+            return res.json({ text });
+          } catch (e: any) {
+            console.error('Transcription error:', e?.message || e);
+            res.status(e?.status ?? 500).json({ error: e?.message ?? 'Transcription failed' });
+          }
+        });
+
         // Stakeholder reply endpoint
         app.post('/api/stakeholder-reply', async (req, res) => {
           try {
