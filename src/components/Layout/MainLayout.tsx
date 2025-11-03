@@ -442,6 +442,15 @@ const MainLayout: React.FC = () => {
           Admin Purple Theme Active
         </div>
       )}
+      {/* Mobile Menu Toggle - visible on small screens */}
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+        className="lg:hidden fixed top-4 left-4 z-50 px-3 py-2 rounded-md bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 shadow-md text-sm font-medium text-gray-700 dark:text-gray-200"
+        aria-label="Toggle menu"
+      >
+        Menu
+      </button>
       <Sidebar />
       {currentView === 'voice-meeting-v2' ? (
         // Voice meeting: no grid, no wrapper - just render directly
@@ -461,7 +470,9 @@ const MainLayout: React.FC = () => {
                 onClose={clearLockMessage}
               />
             ) : (
-              renderView()
+              <ErrorBoundary>
+                {renderView()}
+              </ErrorBoundary>
             )}
           </section>
         </main>
