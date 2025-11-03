@@ -24,6 +24,7 @@ import FAQView from './Views/FAQView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
+import CookiePolicyView from './Views/CookiePolicyView'
 import CookieConsent from './CookieConsent'
 
 const LandingPage: React.FC = () => {
@@ -33,6 +34,7 @@ const LandingPage: React.FC = () => {
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
+  const [showCookiePolicy, setShowCookiePolicy] = useState(false)
   
   // Hero image carousel
   const heroImages = ['home3', 'home4', 'home5', 'home6', 'home7']
@@ -222,7 +224,7 @@ const LandingPage: React.FC = () => {
               key={img}
               src={`/images/${img}.jpg`} 
               alt="Business analysis professional working with modern technology" 
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 ${
                 index === currentImageIndex ? 'opacity-100' : 'opacity-0'
               }`}
               loading={index === 0 ? "eager" : "lazy"}
@@ -231,7 +233,7 @@ const LandingPage: React.FC = () => {
         </div>
         
         {/* Content Overlay */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-40 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-64 md:pt-80 w-full">
           <div className="max-w-4xl">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
               Master Business Analysis
