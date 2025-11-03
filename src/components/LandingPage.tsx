@@ -200,42 +200,40 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section - Full Image Background */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.pexels.com/photos/3184436/pexels-photo-3184436.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop" 
+            src="/images/home.jpg" 
             alt="Business analysis professional working with modern technology" 
             className="w-full h-full object-cover"
             loading="eager"
           />
-          {/* Dark overlay with purple tint */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-gray-900/75 to-purple-900/65"></div>
         </div>
         
         {/* Content Overlay */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-40 w-full">
           <div className="max-w-4xl">
             {/* Top Stats Bar */}
-            <div className="grid grid-cols-2 gap-4 mb-10">
-              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-6 py-4 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">3,247+</div>
-                <div className="text-xs md:text-sm text-gray-300">Successful Analysts</div>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
+                <div className="text-xl md:text-2xl font-bold text-white mb-1">3,247+</div>
+                <div className="text-xs text-gray-300">Successful Analysts</div>
               </div>
-              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-6 py-4 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">Complete</div>
-                <div className="text-xs md:text-sm text-gray-300">Learning Journey</div>
+              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
+                <div className="text-xl md:text-2xl font-bold text-white mb-1">Complete</div>
+                <div className="text-xs text-gray-300">Learning Journey</div>
               </div>
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight drop-shadow-2xl">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
               Master Business Analysis
               <span className="block bg-gradient-to-r from-purple-300 via-white to-purple-300 bg-clip-text text-transparent">
                 with AI-Powered Training
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-200 mb-12 leading-relaxed max-w-2xl drop-shadow-lg">
+            <p className="text-base md:text-lg text-gray-200 mb-10 leading-relaxed max-w-2xl drop-shadow-lg">
               Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. Begin your Business Analysis career transformation today.
             </p>
             
