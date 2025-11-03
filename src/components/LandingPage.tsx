@@ -381,7 +381,7 @@ const LandingPage: React.FC = () => {
       <section id="how-it-works" className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               How It Works
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -436,7 +436,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 md:py-24 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white" id="stats">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
               Transforming Careers Worldwide
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -467,7 +467,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 md:py-24 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-400 dark:border-gray-700" id="why">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
               Why BA WorkXP?
             </h2>
             <p className="text-xl text-purple-50 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -601,7 +601,7 @@ const LandingPage: React.FC = () => {
 
             {/* Right: Content */}
             <div>
-              <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
                 Comprehensive curriculum for business analysts
               </h2>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -741,7 +741,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 md:py-24 bg-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
               Real-world business analysis challenges
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
@@ -798,7 +798,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 md:py-24 bg-gradient-to-br from-indigo-50/30 via-purple-50/50 to-pink-50/30" id="features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
               Platform Features
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -886,7 +886,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 md:py-24 bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
               Verity AI Learning Assistant
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">

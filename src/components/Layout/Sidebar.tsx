@@ -107,6 +107,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     loadUserType();
   }, [user?.id]);
 
+  // Auto-collapse sidebar on small screens and expand on large screens
+  useEffect(() => {
+    const handleResponsiveCollapse = () => {
+      const shouldCollapse = window.innerWidth < 1024; // collapse below lg
+      setIsCollapsed(shouldCollapse);
+    };
+    handleResponsiveCollapse();
+    window.addEventListener('resize', handleResponsiveCollapse);
+    return () => window.removeEventListener('resize', handleResponsiveCollapse);
+  }, []);
+
   // Admin-specific menu items
   const adminMenuItems: MenuItem[] = [
     { 
@@ -267,6 +278,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Listen for global toggle events from mobile menu button
+  useEffect(() => {
+    const handleToggle = () => setIsCollapsed(prev => !prev);
+    window.addEventListener('toggle-sidebar', handleToggle as EventListener);
+    return () => window.removeEventListener('toggle-sidebar', handleToggle as EventListener);
   }, []);
 
 
