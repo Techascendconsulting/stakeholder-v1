@@ -1151,6 +1151,14 @@ const LandingPage: React.FC = () => {
                 </li>
                 <li>
                   <button 
+                    onClick={() => setShowCookiePolicy(true)}
+                    className="text-gray-400 hover:text-white transition-colors text-left"
+                  >
+                    Cookie Policy
+                  </button>
+                </li>
+                <li>
+                  <button 
                     onClick={() => setShowPrivacyPolicy(true)}
                     className="text-gray-400 hover:text-white transition-colors text-left"
                   >
