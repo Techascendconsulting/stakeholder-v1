@@ -28,7 +28,7 @@ const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBack
       </div>
 
       {/* Modal Content */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full animate-in fade-in zoom-in duration-300 border border-white/20">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300 border border-white/20">
         {/* Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-10"></div>

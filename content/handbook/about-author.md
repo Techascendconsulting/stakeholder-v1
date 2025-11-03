@@ -13,3 +13,8 @@ When not consulting or writing, [Author] can be found mentoring aspiring BAs, co
 
 
 
+
+
+
+
+

@@ -62,3 +62,6 @@ async function loggingMiddleware(fastify) {
 
 module.exports = loggingMiddleware;
 
+
+
+

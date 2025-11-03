@@ -89,3 +89,8 @@ SELECT 'Simple admin fix ready! Use the make_super_admin function with your emai
 
 
 
+
+
+
+
+

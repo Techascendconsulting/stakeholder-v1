@@ -85,6 +85,7 @@ export type AppView =
   | 'project-deliverables'
   | 'my-meetings'
   | 'voice-meeting'
+  | 'voice-meeting-simple'
   | 'settings'
   | 'project-brief'
   | 'stage-selection'

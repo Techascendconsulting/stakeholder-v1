@@ -26,3 +26,7 @@ export type ResumePrefs = {
   lastPromptAt?: number;         // For analysis/back-offs later
 };
 
+
+
+
+

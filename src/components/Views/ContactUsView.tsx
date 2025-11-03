@@ -63,22 +63,22 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
     <PublicLayout active="contact" onHome={onBack} onFAQClick={onFAQClick}>
       
       {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
+      <section className="relative py-12 md:py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Get In Touch</h1>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">Get In Touch</h1>
+          <p className="text-base md:text-lg lg:text-xl text-purple-100 max-w-2xl mx-auto">
             Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-20 -mt-12">
+      <section className="py-12 md:py-20 -mt-8 md:-mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
@@ -314,11 +314,11 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
       </section>
 
       {/* Quick Contact Cards */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Other Ways to Reach Us</h2>
-            <p className="text-xl text-gray-600">Choose the method that works best for you</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Other Ways to Reach Us</h2>
+            <p className="text-base md:text-lg lg:text-xl text-gray-600">Choose the method that works best for you</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -371,11 +371,11 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onBack, onFAQClick }) => 
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-purple-50/30">
+      <section className="py-12 md:py-20 bg-gradient-to-br from-slate-50 to-purple-50/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Quick answers to common questions</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-base md:text-lg lg:text-xl text-gray-600">Quick answers to common questions</p>
           </div>
 
           <div className="space-y-4">

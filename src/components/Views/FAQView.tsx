@@ -318,7 +318,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
     <PublicLayout active="faq" onHome={onBack} onFAQClick={() => {}} onContactClick={onContactClick}>
 
       {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
+      <section className="relative py-12 md:py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
@@ -329,8 +329,8 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
             <HelpCircle className="w-4 h-4 mr-2" />
             {showTabs ? 'Support Center' : 'Frequently Asked Questions'}
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">How Can We Help You?</h1>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">How Can We Help You?</h1>
+          <p className="text-base md:text-lg lg:text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Find answers to common questions about the platform, learning journey, and getting started
           </p>
 
@@ -458,11 +458,11 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       </section>
 
       {/* Still Have Questions CTA */}
-      <section className="py-20 bg-white dark:bg-gray-800/50">
+      <section className="py-12 md:py-20 bg-white dark:bg-gray-800/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-3xl p-12 text-white">
-            <h2 className="text-4xl font-bold mb-4">Still Have Questions?</h2>
-            <p className="text-xl text-purple-100 mb-8">
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Still Have Questions?</h2>
+            <p className="text-base md:text-lg lg:text-xl text-purple-100 mb-8">
               Can't find what you're looking for? We're here to help!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

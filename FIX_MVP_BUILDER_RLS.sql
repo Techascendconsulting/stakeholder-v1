@@ -71,3 +71,8 @@ SELECT 'Acceptance Criteria accessible:' as info, COUNT(*) as count FROM public.
 
 
 
+
+
+
+
+
