@@ -214,8 +214,19 @@ const LandingPage: React.FC = () => {
         {/* Content Overlay */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-40 w-full">
           <div className="max-w-4xl">
-            {/* Top Stats Bar */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
+              Master Business Analysis
+              <span className="block bg-gradient-to-r from-purple-300 via-white to-purple-300 bg-clip-text text-transparent">
+                with AI-Powered Training
+              </span>
+            </h1>
+            
+            <p className="text-base md:text-lg text-gray-200 mb-8 leading-relaxed max-w-2xl drop-shadow-lg">
+              Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. Begin your Business Analysis career transformation today.
+            </p>
+            
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 gap-4 mb-10">
               <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
                 <div className="text-xl md:text-2xl font-bold text-white mb-1">3,247+</div>
                 <div className="text-xs text-gray-300">Successful Analysts</div>
@@ -225,17 +236,6 @@ const LandingPage: React.FC = () => {
                 <div className="text-xs text-gray-300">Learning Journey</div>
               </div>
             </div>
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
-              Master Business Analysis
-              <span className="block bg-gradient-to-r from-purple-300 via-white to-purple-300 bg-clip-text text-transparent">
-                with AI-Powered Training
-              </span>
-            </h1>
-            
-            <p className="text-base md:text-lg text-gray-200 mb-10 leading-relaxed max-w-2xl drop-shadow-lg">
-              Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. Begin your Business Analysis career transformation today.
-            </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <button
