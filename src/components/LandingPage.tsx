@@ -18,7 +18,9 @@ import {
   Rocket,
   Mail,
   Moon,
-  Sun
+  Sun,
+  Menu,
+  X
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
@@ -39,6 +41,7 @@ const LandingPage: React.FC = () => {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
   const [showCookiePolicy, setShowCookiePolicy] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   // Hero image carousel
   const heroImages = ['home3', 'home4', 'home5', 'home6', 'home7']
@@ -217,7 +220,7 @@ const LandingPage: React.FC = () => {
             </nav>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
               <button
                 onClick={toggleTheme}
                 className="text-gray-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
@@ -242,7 +245,79 @@ const LandingPage: React.FC = () => {
                 Request Access
               </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-gray-300 hover:text-white transition-colors p-2"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden bg-gray-900/98 border-t border-gray-800 py-4 space-y-2">
+              <button 
+                onClick={() => { setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); document.getElementById('success')?.scrollIntoView({ behavior: 'smooth' }); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                Success Stories
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setShowFAQ(true); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                FAQ
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setShowContact(true); }}
+                className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+              >
+                Contact Us
+              </button>
+              <div className="border-t border-gray-800 pt-2 mt-2">
+                <button
+                  onClick={() => { setMobileMenuOpen(false); toggleTheme(); }}
+                  className="flex items-center w-full px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                >
+                  {resolvedTheme === 'dark' ? <Sun className="w-5 h-5 mr-2" /> : <Moon className="w-5 h-5 mr-2" />}
+                  {resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </button>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); setShowAuth(true); }}
+                  className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); setShowRequestAccess(true); }}
+                  className="block w-full text-left px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:from-purple-700 hover:to-indigo-800 transition-colors"
+                >
+                  Request Access
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -303,13 +378,13 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Your Learning Path Section - 3 Cards with App Colors */}
-      <section id="how-it-works" className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
+      <section id="how-it-works" className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               A structured, progressive journey from foundational concepts to real-world application
             </p>
           </div>
@@ -358,7 +433,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Transforming Careers Worldwide Section */}
-      <section className="py-24 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white" id="stats">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white" id="stats">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
@@ -389,7 +464,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Why BA WorkXP? Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-400 dark:border-gray-700" id="why">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-400 dark:border-gray-700" id="why">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -507,7 +582,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Comprehensive Curriculum Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-cyan-50/30 via-white to-blue-50/30">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-cyan-50/30 via-white to-blue-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             {/* Left: Image */}
@@ -573,7 +648,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Simulate Real Business Scenarios Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-slate-700 via-slate-800 to-gray-900 text-white">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-slate-700 via-slate-800 to-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -663,7 +738,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Real-world Business Analysis Challenges Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gray-200">
+      <section className="py-12 md:py-24 bg-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -720,7 +795,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Platform Features Section */}
-      <section className="py-24 bg-gradient-to-br from-indigo-50/30 via-purple-50/50 to-pink-50/30" id="features">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-indigo-50/30 via-purple-50/50 to-pink-50/30" id="features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -808,7 +883,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Verity AI Learning Assistant Section - 2 Column with App Colors */}
-      <section className="py-24 bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-600 text-white">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -871,7 +946,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Success Stories Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700" id="success">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700" id="success">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
@@ -952,7 +1027,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Invite-Only Platform CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-600 to-indigo-800 text-white">
+      <section className="py-12 md:py-24 bg-gradient-to-br from-purple-600 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
