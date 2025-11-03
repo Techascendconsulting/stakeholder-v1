@@ -120,7 +120,19 @@ const LandingPage: React.FC = () => {
   }
 
   if (showCookiePolicy) {
-    return <CookiePolicyView onBack={() => setShowCookiePolicy(false)} />
+    return (
+      <CookiePolicyView 
+        onBack={() => setShowCookiePolicy(false)} 
+        onPrivacyPolicyClick={() => {
+          setShowCookiePolicy(false);
+          setShowPrivacyPolicy(true);
+        }}
+        onTermsOfServiceClick={() => {
+          setShowCookiePolicy(false);
+          setShowTermsOfService(true);
+        }}
+      />
+    )
   }
 
   if (showTermsOfService) {

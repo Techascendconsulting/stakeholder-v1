@@ -3,9 +3,11 @@ import { Shield, Cookie, BarChart3, Target, Settings, ArrowLeft } from 'lucide-r
 
 interface CookiePolicyViewProps {
   onBack?: () => void;
+  onPrivacyPolicyClick?: () => void;
+  onTermsOfServiceClick?: () => void;
 }
 
-const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
+const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack, onPrivacyPolicyClick, onTermsOfServiceClick }) => {
   const handleBack = () => {
     if (onBack) {
       onBack();
@@ -49,8 +51,9 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
               explains what cookies are, how we use them, and your choices regarding their use.
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">
-              This policy should be read in conjunction with our <a href="#" className="text-purple-600 underline">Privacy Policy</a> and 
-              <a href="#" className="text-purple-600 underline"> Terms of Service</a>, which together govern your use of our platform.
+              This policy should be read in conjunction with our{' '}
+              <button onClick={onPrivacyPolicyClick} className="text-purple-600 underline hover:text-purple-700">Privacy Policy</button> and{' '}
+              <button onClick={onTermsOfServiceClick} className="text-purple-600 underline hover:text-purple-700">Terms of Service</button>, which together govern your use of our platform.
             </p>
             <p className="text-gray-700 leading-relaxed">
               By continuing to use our website, you consent to our use of cookies in accordance with this policy, 
