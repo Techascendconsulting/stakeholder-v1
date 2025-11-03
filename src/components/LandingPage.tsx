@@ -204,7 +204,7 @@ const LandingPage: React.FC = () => {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/home.jpg" 
+            src="/images/home2.jpg" 
             alt="Business analysis professional working with modern technology" 
             className="w-full h-full object-cover"
             loading="eager"
