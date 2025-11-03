@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { ErrorBoundary } from '../ErrorBoundary';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
