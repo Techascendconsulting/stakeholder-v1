@@ -389,13 +389,13 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Why BA WorkXP? Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700" id="why">
+      <section className="py-24 bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-400 dark:border-gray-700" id="why">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
               Why BA WorkXP?
             </h2>
-            <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-purple-50 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               From Learning to Employment - Bridge the gap between training and getting hired with real digital work experience
             </p>
           </div>
