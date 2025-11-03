@@ -44,9 +44,13 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              BA WorkXP ("we," "us," or "our") uses cookies and similar tracking technologies on our website 
+              BA WorkXP ("we," "us," or "our") operated by Techascend Consulting Limited uses cookies and similar tracking technologies on our website 
               to enhance your experience, analyze site traffic, and personalize content. This Cookie Policy 
               explains what cookies are, how we use them, and your choices regarding their use.
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              This policy should be read in conjunction with our <a href="#" className="text-purple-600 underline">Privacy Policy</a> and 
+              <a href="#" className="text-purple-600 underline"> Terms of Service</a>, which together govern your use of our platform.
             </p>
             <p className="text-gray-700 leading-relaxed">
               By continuing to use our website, you consent to our use of cookies in accordance with this policy, 
@@ -167,9 +171,39 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
             </div>
           </section>
 
+          {/* Cookie Duration and Retention */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Cookie Duration and Data Retention</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Different cookies have different lifespans:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <span className="text-purple-600 font-bold">•</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">Session Cookies</p>
+                    <p className="text-gray-600">Temporary cookies that expire when you close your browser. We retain this data for up to 24 hours for security and fraud prevention.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-purple-600 font-bold">•</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">Persistent Cookies</p>
+                    <p className="text-gray-600">These cookies remain on your device for a set period (typically 30 days to 2 years) or until you delete them. We use these to remember your preferences and authentication status.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <p className="text-gray-700 leading-relaxed mt-4">
+              Data collected through cookies is retained in accordance with our data retention policy, which complies with applicable 
+              data protection laws. We delete or anonymize personal data when it is no longer necessary for the purposes for which it was collected.
+            </p>
+          </section>
+
           {/* Third-Party Cookies */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Third-Party Cookies</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Third-Party Cookies and Services</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
               We work with trusted third parties who may also set cookies on our website. These include:
             </p>
@@ -178,30 +212,60 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
                 <li className="flex items-start gap-3">
                   <span className="text-purple-600 font-bold">•</span>
                   <div>
-                    <p className="font-semibold text-gray-900">Cloud Infrastructure</p>
-                    <p className="text-gray-600">Hosting and performance optimization services</p>
+                    <p className="font-semibold text-gray-900">Cloud Infrastructure Providers</p>
+                    <p className="text-gray-600">Vercel, Supabase, and other hosting/performance optimization services for secure data storage and delivery</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-purple-600 font-bold">•</span>
                   <div>
                     <p className="font-semibold text-gray-900">Analytics Providers</p>
-                    <p className="text-gray-600">Tools to help us understand site usage and user behavior</p>
+                    <p className="text-gray-600">Tools to help us understand site usage and user behavior (may include Google Analytics, if implemented)</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-purple-600 font-bold">•</span>
                   <div>
                     <p className="font-semibold text-gray-900">Payment Processors</p>
-                    <p className="text-gray-600">Secure payment processing for subscriptions</p>
+                    <p className="text-gray-600">Secure payment processing for subscriptions and transactions (Stripe, PayPal, or similar)</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-purple-600 font-bold">•</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">AI and Voice Services</p>
+                    <p className="text-gray-600">OpenAI and ElevenLabs for AI-powered features and text-to-speech functionality</p>
                   </div>
                 </li>
               </ul>
             </div>
             <p className="text-gray-700 leading-relaxed mt-4">
               These third parties may use cookies to collect information about your online activities across 
-              different websites. We recommend reviewing their privacy policies to understand their practices.
+              different websites. We recommend reviewing their privacy policies to understand their practices. 
+              We have data processing agreements in place with these providers to ensure your data is handled securely.
             </p>
+          </section>
+
+          {/* Data Storage and Security */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Data Storage and Security</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              We take the security of your data seriously:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+              <div>
+                <p className="font-semibold text-gray-900 mb-2">Encryption</p>
+                <p className="text-gray-700">All data transmitted through cookies is encrypted using industry-standard SSL/TLS protocols.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 mb-2">Storage Location</p>
+                <p className="text-gray-700">Cookie data is stored securely on your device and on our encrypted servers. We use cloud infrastructure providers with GDPR-compliant data centers.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 mb-2">Access Controls</p>
+                <p className="text-gray-700">Only authorized personnel with legitimate business needs can access cookie data, and all access is logged and monitored.</p>
+              </div>
+            </div>
           </section>
 
           {/* Managing Cookies */}
@@ -220,10 +284,16 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
                   <li><strong>Safari:</strong> Preferences → Privacy → Cookies and website data</li>
                   <li><strong>Edge:</strong> Settings → Privacy, search, and services → Cookies</li>
                 </ul>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mb-4">
                   <strong>Note:</strong> Disabling certain cookies may impact your experience and prevent some 
                   features from working properly.
                 </p>
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mt-4">
+                  <p className="text-sm text-gray-700">
+                    <strong>How to Withdraw Consent:</strong> You can withdraw your consent to non-essential cookies 
+                    at any time by clearing your browser cookies for our website or contacting us at support@baworkxp.com
+                  </p>
+                </div>
               </div>
             </div>
           </section>
@@ -254,26 +324,97 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Rights</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Under data protection laws, including GDPR and CCPA, you have the following rights:
+              Under data protection laws, including GDPR, CCPA, and other applicable regulations, you have the following rights:
             </p>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">Access</p>
-                <p className="text-gray-600">Know what cookies are set on your device</p>
+                <p className="font-semibold text-gray-900 mb-2">Right to Access</p>
+                <p className="text-gray-600">Know what cookies are set on your device and what data they collect</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">Control</p>
-                <p className="text-gray-600">Accept or reject non-essential cookies</p>
+                <p className="font-semibold text-gray-900 mb-2">Right to Control</p>
+                <p className="text-gray-600">Accept or reject non-essential cookies and withdraw consent at any time</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">Delete</p>
-                <p className="text-gray-600">Remove cookies through browser settings</p>
+                <p className="font-semibold text-gray-900 mb-2">Right to Delete</p>
+                <p className="text-gray-600">Remove cookies through browser settings or request deletion of your data</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="font-semibold text-gray-900 mb-2">Complain</p>
-                <p className="text-gray-600">Lodge a complaint with a supervisory authority</p>
+                <p className="font-semibold text-gray-900 mb-2">Right to Rectification</p>
+                <p className="text-gray-600">Correct any inaccurate personal data we hold about you</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="font-semibold text-gray-900 mb-2">Right to Data Portability</p>
+                <p className="text-gray-600">Receive a copy of your data in a structured, commonly used format</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="font-semibold text-gray-900 mb-2">Right to Complain</p>
+                <p className="text-gray-600">Lodge a complaint with a supervisory authority (GDPR) or attorney general (CCPA)</p>
               </div>
             </div>
+          </section>
+
+          {/* CCPA - Do Not Sell */}
+          <section className="mb-12">
+            <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">California Consumer Privacy Act (CCPA)</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                If you are a California resident, you have additional rights under the CCPA:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
+                <li>Right to know what personal information is collected, used, and shared</li>
+                <li>Right to delete personal information we have collected from you</li>
+                <li>Right to opt-out of the "sale" of personal information (we do not sell personal information)</li>
+                <li>Right to non-discrimination for exercising your privacy rights</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed">
+                <strong>California consumers can exercise these rights by contacting us at support@baworkxp.com</strong>
+              </p>
+            </div>
+          </section>
+
+          {/* Children's Privacy */}
+          <section className="mb-12">
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Children's Privacy</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Our services are not intended for individuals under the age of 18. We do not knowingly collect 
+                personal information from children without appropriate parental or guardian consent.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                If you are a parent or guardian and believe your child has provided personal information to us, 
+                please contact us immediately at <strong>support@baworkxp.com</strong> so we can delete such 
+                information and cancel any accounts created by the child.
+              </p>
+            </div>
+          </section>
+
+          {/* International Transfers */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">International Data Transfers</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Your data may be transferred to and processed in countries outside your country of residence, 
+              including the United States and European Union member states. We ensure appropriate safeguards 
+              are in place for such transfers, including:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6 space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">Standard Contractual Clauses (SCCs) approved by the European Commission</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">GDPR-compliant data processing agreements with all third-party providers</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">Adequate protection measures as required by applicable data protection laws</p>
+              </div>
+            </div>
+            <p className="text-gray-700 leading-relaxed mt-4">
+              By using our services, you consent to the transfer of your information to countries outside your 
+              country of residence, subject to the safeguards described above.
+            </p>
           </section>
 
           {/* Updates */}
@@ -295,13 +436,53 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack }) => {
           {/* Contact */}
           <section className="mb-12">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-xl p-8">
-              <h2 className="text-3xl font-bold mb-4">Questions About Cookies?</h2>
+              <h2 className="text-3xl font-bold mb-4">Questions About Cookies or Your Privacy?</h2>
               <p className="text-purple-100 mb-6">
-                If you have any questions about our use of cookies or this Cookie Policy, please contact us:
+                If you have any questions, concerns, or wish to exercise your rights regarding our use of cookies or this Cookie Policy, please contact us:
               </p>
               <div className="space-y-3 text-purple-100">
+                <p><strong>Company:</strong> Techascend Consulting Limited</p>
                 <p><strong>Email:</strong> support@baworkxp.com</p>
-                <p><strong>Subject:</strong> Cookie Policy Inquiry</p>
+                <p><strong>Subject Line:</strong> Cookie Policy Inquiry / Privacy Request</p>
+              </div>
+              <div className="mt-6 pt-6 border-t border-white/20">
+                <p className="text-purple-100 text-sm">
+                  <strong>Response Time:</strong> We aim to respond to all inquiries within 30 days as required by GDPR.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Additional Resources */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Additional Resources</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              For more information about cookies and data protection, please refer to:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6 space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">
+                  <a href="https://www.allaboutcookies.org/" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">
+                    All About Cookies
+                  </a> - General information about cookies and how they work
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">
+                  <a href="https://gdpr-info.eu/" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">
+                    GDPR Official Information Portal
+                  </a> - European data protection regulation
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-purple-600 font-bold">•</span>
+                <p className="text-gray-700">
+                  <a href="https://oag.ca.gov/privacy/ccpa" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline">
+                    California Attorney General - CCPA
+                  </a> - California consumer privacy rights
+                </p>
               </div>
             </div>
           </section>
