@@ -33,6 +33,10 @@ const LandingPage: React.FC = () => {
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
+  
+  // Hero image carousel
+  const heroImages = ['home3', 'home4', 'home5', 'home6', 'home7']
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     const showLoginForm = localStorage.getItem('showLoginForm')
@@ -60,6 +64,15 @@ const LandingPage: React.FC = () => {
       window.removeEventListener('openRequestAccess', openHandler as EventListener)
     }
   }, [])
+
+  // Hero image carousel rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length)
+    }, 5000) // Change image every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [heroImages.length])
 
   if (showAuth) {
     return <LoginSignup onBack={() => setShowAuth(false)} />
@@ -202,14 +215,19 @@ const LandingPage: React.FC = () => {
 
       {/* Hero Section - Full Image Background */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background Image */}
+        {/* Background Image Carousel */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/home3.jpg" 
-            alt="Business analysis professional working with modern technology" 
-            className="w-full h-full object-cover"
-            loading="eager"
-          />
+          {heroImages.map((img, index) => (
+            <img 
+              key={img}
+              src={`/images/${img}.jpg`} 
+              alt="Business analysis professional working with modern technology" 
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+          ))}
         </div>
         
         {/* Content Overlay */}
