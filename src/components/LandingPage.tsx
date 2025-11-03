@@ -115,6 +115,10 @@ const LandingPage: React.FC = () => {
     return <PrivacyPolicyView onBack={() => setShowPrivacyPolicy(false)} />
   }
 
+  if (showCookiePolicy) {
+    return <CookiePolicyView onBack={() => setShowCookiePolicy(false)} />
+  }
+
   if (showTermsOfService) {
     return <TermsOfServiceView onBack={() => setShowTermsOfService(false)} />
   }
@@ -1160,7 +1164,7 @@ const LandingPage: React.FC = () => {
       </footer>
 
       {/* Cookie Consent Banner */}
-      <CookieConsent />
+      <CookieConsent onCookiePolicyClick={() => setShowCookiePolicy(true)} />
 
       {/* CSS Animations */}
       <style>{`

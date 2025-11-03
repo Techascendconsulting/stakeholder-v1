@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Cookie, Shield } from 'lucide-react';
 
-const CookieConsent: React.FC = () => {
+interface CookieConsentProps {
+  onCookiePolicyClick?: () => void;
+}
+
+const CookieConsent: React.FC<CookieConsentProps> = ({ onCookiePolicyClick }) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -47,9 +51,12 @@ const CookieConsent: React.FC = () => {
               We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
               By clicking "Accept All", you consent to our use of cookies. You can customize your preferences 
               or learn more in our{' '}
-              <a href="#" className="text-purple-400 hover:text-purple-300 underline">
+              <button 
+                onClick={onCookiePolicyClick}
+                className="text-purple-400 hover:text-purple-300 underline"
+              >
                 Cookie Policy
-              </a>.
+              </button>.
             </p>
           </div>
 
