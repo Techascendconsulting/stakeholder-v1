@@ -79,3 +79,7 @@ Please help me understand:
 - App currently auto-redirects existing users to dashboard on login (this behavior needs to change)
 - Need to implement modal component and logic to ask users if they want to continue where they left off
 
+
+
+
+

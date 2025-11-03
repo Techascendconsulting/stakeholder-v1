@@ -80,3 +80,8 @@ CREATE TRIGGER update_project_journey_progress_updated_at
 -- Grant permissions
 GRANT ALL ON project_journey_progress TO authenticated;
 
+
+
+
+
+

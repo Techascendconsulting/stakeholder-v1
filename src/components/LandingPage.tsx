@@ -381,10 +381,10 @@ const LandingPage: React.FC = () => {
       <section id="how-it-works" className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               How It Works
             </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               A structured, progressive journey from foundational concepts to real-world application
             </p>
           </div>
@@ -946,7 +946,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Success Stories Section */}
-      <section className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700" id="success">
+      <section className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700" id="success">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
@@ -1027,7 +1027,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Invite-Only Platform CTA Section */}
-      <section className="py-12 md:py-24 bg-gradient-to-br from-purple-600 to-indigo-800 text-white">
+      <section className="py-24 bg-gradient-to-br from-purple-600 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">

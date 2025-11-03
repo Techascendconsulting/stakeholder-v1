@@ -9,57 +9,9 @@
     <!-- Preload critical resources for faster initial render -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- Diagnostic: Show loading message immediately -->
-    <style>
-      #root:empty::before {
-        content: "Loading BA WorkXP Platform...";
-        display: block;
-        padding: 50px;
-        text-align: center;
-        font-family: sans-serif;
-        color: #666;
-      }
-      #fallback-error {
-        display: none;
-        padding: 20px;
-        font-family: sans-serif;
-        background: #fee;
-        border: 2px solid #fcc;
-        margin: 20px;
-        border-radius: 4px;
-      }
-    </style>
   </head>
   <body>
-    <div id="root">
-      <!-- Fallback: Will be replaced by React -->
-      <div style="padding: 50px; text-align: center; font-family: sans-serif;">
-        <h1>Loading BA WorkXP Platform...</h1>
-        <p>If this message persists, check the browser console for errors.</p>
-      </div>
-    </div>
-    <div id="fallback-error"></div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Diagnostic: Log if script fails to load
-      window.addEventListener('error', function(e) {
-        console.error('❌ Global error:', e.error);
-        const fallback = document.getElementById('fallback-error');
-        if (fallback) {
-          fallback.style.display = 'block';
-          fallback.innerHTML = '<h2>JavaScript Error</h2><p>' + (e.error?.message || 'Unknown error') + '</p><p>Check the browser console for details.</p>';
-        }
-      });
-      
-      // Timeout: If app doesn't load in 10 seconds, show error
-      setTimeout(function() {
-        const root = document.getElementById('root');
-        if (root && root.children.length === 1 && root.children[0].textContent?.includes('Loading')) {
-          console.error('❌ App failed to load within 10 seconds');
-          root.innerHTML = '<div style="padding: 50px; text-align: center; font-family: sans-serif;"><h1>Application Failed to Load</h1><p>Please check the browser console for errors.</p><p>Common issues:</p><ul style="text-align: left; display: inline-block;"><li>Missing environment variables</li><li>JavaScript errors</li><li>Network connectivity issues</li></ul></div>';
-        }
-      }, 10000);
-    </script>
   </body>
 </html>

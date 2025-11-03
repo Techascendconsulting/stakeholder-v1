@@ -829,8 +829,30 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               await playBrowserTTS(response);
             }
           } else {
-            console.log('⚠️ ElevenLabs TTS not configured, using browser TTS');
-            await playBrowserTTS(response);
+            // Try ElevenLabs even if not explicitly configured (it will check for API key)
+            if (elevenConfigured()) {
+              try {
+                const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder?.name });
+                if (audioBlob && audioBlob.size > 0) {
+                  const audioUrl = URL.createObjectURL(audioBlob);
+                  const audio = new Audio(audioUrl);
+                  audio.addEventListener('ended', () => URL.revokeObjectURL(audioUrl), { once: true });
+                  await new Promise<void>((resolve) => {
+                    audio.onended = () => resolve();
+                    audio.onerror = () => resolve();
+                    audio.play().catch(() => resolve());
+                  });
+                } else {
+                  throw new Error('Empty blob');
+                }
+              } catch {
+                console.log('⚠️ ElevenLabs failed, using browser TTS');
+                await playBrowserTTS(response);
+              }
+            } else {
+              console.log('⚠️ ElevenLabs TTS not configured (check VITE_ELEVENLABS_API_KEY), using browser TTS');
+              await playBrowserTTS(response);
+            }
           }
         } catch (error) {
           console.error(`❌ Fallback TTS error for ${stakeholder.name}:`, error);
@@ -3174,7 +3196,7 @@ Please review the raw transcript for detailed conversation content.`;
     // Only stakeholder messages should use ElevenLabs TTS
     const voiceId = stakeholder?.voice || null;
     
-    console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${message.speaker}`);
+    console.log(`🎵 Speaking message from: ${message.speaker}, stakeholder: ${stakeholder?.name || 'none'}`);
     console.log(`🔧 ElevenLabs TTS Available: ${elevenConfigured()}`);
     
     try {
@@ -3185,52 +3207,74 @@ Please review the raw transcript for detailed conversation content.`;
 
       let audioElement: HTMLAudioElement | null = null;
 
-      // Use ElevenLabs for stakeholders when available
-      if (stakeholder && elevenConfigured()) {
+      // ALWAYS try ElevenLabs first if configured (even without stakeholder - use default voice)
+      if (elevenConfigured()) {
         try {
-          console.log(`✅ Using ElevenLabs for stakeholder: ${stakeholder.name}`);
-          const audioBlob = await synthesizeToBlob(message.content, { stakeholderName: stakeholder?.name }).catch(() => null as any);
-          if (audioBlob) {
+          console.log(`✅ Attempting ElevenLabs TTS for: ${stakeholder?.name || 'default voice'}`);
+          const audioBlob = await synthesizeToBlob(message.content, { 
+            stakeholderName: stakeholder?.name, 
+            voiceId: stakeholder?.voice 
+          });
+          
+          if (audioBlob && audioBlob.size > 0) {
+            console.log(`✅ ElevenLabs audio generated successfully (${audioBlob.size} bytes)`);
             const audioUrl = URL.createObjectURL(audioBlob);
             audioElement = new Audio(audioUrl);
+            
+            // Clean up URL when audio ends
+            audioElement.addEventListener('ended', () => URL.revokeObjectURL(audioUrl), { once: true });
+            audioElement.addEventListener('error', () => URL.revokeObjectURL(audioUrl), { once: true });
           } else {
-            console.warn('❌ ElevenLabs returned null, falling back to browser TTS');
+            console.warn('❌ ElevenLabs returned empty blob, falling back to browser TTS');
+            throw new Error('Empty audio blob from ElevenLabs');
           }
         } catch (err) {
           console.warn('❌ ElevenLabs failed, falling back to browser TTS:', err);
-          audioElement = await playBrowserTTS(message.content);
+          // Will fall through to browser TTS below
         }
       } else {
-        if (!stakeholder) {
-          console.log(`⚠️ No stakeholder found, using browser TTS`);
-        } else {
-          console.log(`⚠️ ElevenLabs not available, using browser TTS`);
+        console.log(`⚠️ ElevenLabs not configured (check VITE_ELEVENLABS_API_KEY), using browser TTS`);
+      }
+
+      // Fallback to browser TTS only if ElevenLabs failed or not configured
+      if (!audioElement) {
+        console.log(`🎤 Using browser TTS fallback`);
+        // Browser TTS doesn't return an Audio element, so play it directly
+        // and update state when it completes
+        try {
+          await playBrowserTTS(message.content);
+        } finally {
+          // Always clean up state after browser TTS completes
+          setCurrentSpeaker(null);
+          setIsAudioPlaying(false);
+          setPlayingMessageId(null);
+          setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+          setCurrentAudio(null);
         }
-        audioElement = await playBrowserTTS(message.content);
+        return; // Browser TTS handles its own completion
       }
 
-      if (audioElement) {
-        setCurrentAudio(audioElement);
-        
-        audioElement.onended = () => {
-          setCurrentSpeaker(null);
-          setIsAudioPlaying(false);
-          setPlayingMessageId(null);
-          setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
-          setCurrentAudio(null);
-        };
+      // ElevenLabs audio element - set up event handlers and play
+      setCurrentAudio(audioElement);
+      
+      audioElement.onended = () => {
+        setCurrentSpeaker(null);
+        setIsAudioPlaying(false);
+        setPlayingMessageId(null);
+        setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+        setCurrentAudio(null);
+      };
 
-        audioElement.onerror = () => {
-          console.error('Audio playback error for message:', message.id);
-          setCurrentSpeaker(null);
-          setIsAudioPlaying(false);
-          setPlayingMessageId(null);
-          setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
-          setCurrentAudio(null);
-        };
+      audioElement.onerror = () => {
+        console.error('Audio playback error for message:', message.id);
+        setCurrentSpeaker(null);
+        setIsAudioPlaying(false);
+        setPlayingMessageId(null);
+        setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+        setCurrentAudio(null);
+      };
 
-        await audioElement.play();
-      }
+      await audioElement.play();
     } catch (error) {
       console.error('Error playing message audio:', error);
       setCurrentSpeaker(null);
