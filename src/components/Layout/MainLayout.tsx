@@ -470,7 +470,9 @@ const MainLayout: React.FC = () => {
                 onClose={clearLockMessage}
               />
             ) : (
-              renderView()
+              <ErrorBoundary>
+                {renderView()}
+              </ErrorBoundary>
             )}
           </section>
         </main>
