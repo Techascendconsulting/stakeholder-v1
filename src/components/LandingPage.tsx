@@ -16,7 +16,9 @@ import {
   ChevronDown,
   BookOpen,
   Rocket,
-  Mail
+  Mail,
+  Moon,
+  Sun
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
@@ -26,8 +28,10 @@ import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
 import CookiePolicyView from './Views/CookiePolicyView'
 import CookieConsent from './CookieConsent'
+import { useTheme } from '../contexts/ThemeContext'
 
 const LandingPage: React.FC = () => {
+  const { resolvedTheme, toggleTheme } = useTheme()
   const [showAuth, setShowAuth] = useState(false)
   const [showContact, setShowContact] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
@@ -152,7 +156,7 @@ const LandingPage: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
       {/* Header - Matching Wireframe */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -202,6 +206,17 @@ const LandingPage: React.FC = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="text-gray-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+                aria-label="Toggle theme"
+              >
+                {resolvedTheme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </button>
               <button
                 onClick={() => setShowAuth(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
@@ -276,53 +291,53 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Your Learning Path Section - 3 Cards with App Colors */}
-      <section id="how-it-works" className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 border-t border-purple-200">
+      <section id="how-it-works" className="py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               A structured, progressive journey from foundational concepts to real-world application
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Card 1: Learn */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-purple-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-purple-100 dark:border-gray-700">
               <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-5 w-20 h-20 flex items-center justify-center mb-6 shadow-lg">
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 01. Learn business analysis fundamentals
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Complete comprehensive interactive modules covering all Business Analysis fundamentals. From core concepts to advanced techniques, build a solid foundation.
               </p>
             </div>
 
             {/* Card 2: Practice */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-cyan-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-cyan-100 dark:border-gray-700">
               <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-5 w-20 h-20 flex items-center justify-center mb-6 shadow-lg">
                 <Target className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 02. Practice real-world scenarios
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Apply your knowledge with AI-powered simulations. Practice elicitation, documentation, MVP building, and Scrum in realistic scenarios.
               </p>
             </div>
 
             {/* Card 3: Build */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-emerald-100 dark:border-gray-700">
               <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 w-20 h-20 flex items-center justify-center mb-6 shadow-lg">
                 <Briefcase className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 03. Build professional portfolio
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Work on hands-on projects that mirror real-world BA work. Create requirements, map processes, and manage stakeholders.
               </p>
             </div>
@@ -375,77 +390,77 @@ const LandingPage: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             {/* Practical Work Experience */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-purple-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-purple-100 dark:border-gray-700">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                 <Briefcase className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Practical Work Experience</h3>
-              <p className="text-gray-600 mb-4 leading-relaxed">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Practical Work Experience</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                 Gain real, hands-on digital work experience without needing a corporate placement. Work on structured projects that mirror actual business problems.
               </p>
-              <div className="text-sm font-semibold text-purple-600">Real-world confidence</div>
+              <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">Real-world confidence</div>
             </div>
 
             {/* Become Job-Ready */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-cyan-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-cyan-100 dark:border-gray-700">
               <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                 <FileText className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Become Job-Ready</h3>
-              <p className="text-gray-600 mb-4 leading-relaxed">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Become Job-Ready</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                 Learn to speak and think like a real Business Analyst. Master interview-level skills and understand what hiring managers actually want.
               </p>
-              <div className="text-sm font-semibold text-cyan-600">Interview-ready skills</div>
+              <div className="text-sm font-semibold text-cyan-600 dark:text-cyan-400">Interview-ready skills</div>
             </div>
 
             {/* Full Project Lifecycle */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-emerald-100 dark:border-gray-700">
               <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                 <Target className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Full Project Lifecycle</h3>
-              <p className="text-gray-600 mb-4 leading-relaxed">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Full Project Lifecycle</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                 Experience the complete journey from problem identification to solution delivery. Interact with simulated stakeholders across departments.
               </p>
-              <div className="text-sm font-semibold text-emerald-600">Real BA activities</div>
+              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Real BA activities</div>
             </div>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
             {/* AI-Powered Guidance */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-blue-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-blue-100 dark:border-gray-700">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
                 <Bot className="w-6 h-6 text-white" />
               </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">AI-Powered Guidance</h4>
-              <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">AI-Powered Guidance</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                 Receive step-by-step coaching just like in a real BA role. Get instant feedback to correct mistakes and improve your delivery depth.
               </p>
-              <div className="text-xs font-semibold text-blue-600">Learn why, not just what</div>
+              <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">Learn why, not just what</div>
             </div>
 
             {/* Build Your Portfolio */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-purple-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-purple-100 dark:border-gray-700">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
                 <Award className="w-6 h-6 text-white" />
               </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">Build Your Portfolio</h4>
-              <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Build Your Portfolio</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                 Export real deliverables as portfolio samples. Showcase tangible project experience to recruiters and hiring managers.
               </p>
-              <div className="text-xs font-semibold text-purple-600">Proof of experience</div>
+              <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">Proof of experience</div>
             </div>
 
             {/* Confidence Through Practice */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-emerald-100 dark:border-gray-700">
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">Confidence Through Practice</h4>
-              <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Confidence Through Practice</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                 Rehearse stakeholder meetings with instant feedback. Develop the fluency and composure that separate trained candidates from hired ones.
               </p>
-              <div className="text-xs font-semibold text-emerald-600">Interview composure</div>
+              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Interview composure</div>
             </div>
 
             {/* Summary Card */}
