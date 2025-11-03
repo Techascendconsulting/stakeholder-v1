@@ -291,9 +291,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   console.log('🎨 SIDEBAR RENDER: userType =', userType, 'user?.id =', user?.id);
 
   return (
-    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 dark:bg-gradient-to-b dark:from-[#5A287D] dark:via-[#7A3DB8] dark:to-[#2E0F4D] text-white w-64 ${isCollapsed ? 'lg:w-20' : 'lg:w-64'} h-screen flex flex-col shadow-lg overflow-hidden relative z-40 ${className} 
-      fixed lg:static top-0 left-0 transform transition-transform duration-300 ease-in-out 
-      ${isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}`}>
+    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 dark:bg-gradient-to-b dark:from-[#5A287D] dark:via-[#7A3DB8] dark:to-[#2E0F4D] text-white 
+      ${isCollapsed ? 'w-0 lg:w-20' : 'w-64 lg:w-64'} h-screen flex flex-col shadow-lg overflow-hidden relative z-40 ${className}
+      fixed lg:static top-0 left-0 transform transition-all duration-300 ease-in-out 
+      ${isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}`} aria-hidden={isCollapsed ? 'true' : 'false'}>
       {/* DEBUG Badge */}
       {!isCollapsed && (
         <div className="absolute top-2 right-2 z-50 bg-yellow-400 text-black text-xs px-2 py-1 rounded font-bold">
