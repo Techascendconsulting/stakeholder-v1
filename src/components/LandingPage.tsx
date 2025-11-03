@@ -24,6 +24,7 @@ import FAQView from './Views/FAQView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
+import CookieConsent from './CookieConsent'
 
 const LandingPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false)
@@ -1137,6 +1138,9 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Cookie Consent Banner */}
+      <CookieConsent />
 
       {/* CSS Animations */}
       <style>{`
