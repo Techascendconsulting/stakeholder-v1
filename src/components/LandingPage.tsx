@@ -225,18 +225,6 @@ const LandingPage: React.FC = () => {
               Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. Begin your Business Analysis career transformation today.
             </p>
             
-            {/* Stats Bar */}
-            <div className="grid grid-cols-2 gap-4 mb-10">
-              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
-                <div className="text-xl md:text-2xl font-bold text-white mb-1">3,247+</div>
-                <div className="text-xs text-gray-300">Successful Analysts</div>
-              </div>
-              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-500/40 shadow-xl hover:border-purple-400 transition-all">
-                <div className="text-xl md:text-2xl font-bold text-white mb-1">Complete</div>
-                <div className="text-xs text-gray-300">Learning Journey</div>
-              </div>
-            </div>
-            
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <button
                 onClick={() => setShowRequestAccess(true)}
