@@ -172,6 +172,193 @@ const LandingPage: React.FC = () => {
 
   const NEW_HOME = true
 
+  // Hard switch: render ONLY the new homepage between existing header/nav and footer
+  if (NEW_HOME) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
+        {/* Header - unchanged */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">BA WorkXP</span>
+              </div>
+
+              {/* Navigation */}
+              <nav className="hidden md:flex items-center space-x-6">
+                <button className="text-gray-300 hover:text-white font-medium transition-colors">Home</button>
+                <button onClick={() => setShowFAQ(true)} className="text-gray-300 hover:text-white font-medium transition-colors">FAQ</button>
+                <button onClick={() => setShowContact(true)} className="text-gray-300 hover:text-white font-medium transition-colors">Contact Us</button>
+              </nav>
+
+              {/* Right Side Actions */}
+              <div className="hidden md:flex items-center space-x-4">
+                <button onClick={toggleTheme} className="text-gray-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10" aria-label="Toggle theme">
+                  {resolvedTheme === 'dark' ? (<Sun className="w-5 h-5" />) : (<Moon className="w-5 h-5" />)}
+                </button>
+                <button onClick={() => setShowAuth(true)} className="text-gray-300 hover:text-white font-medium transition-colors">Login</button>
+                <button onClick={() => setShowRequestAccess(true)} className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-indigo-800 transition-all font-semibold shadow-lg hover:shadow-xl">Request Access</button>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-gray-300 hover:text-white transition-colors p-2" aria-label="Toggle menu">
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden bg-gray-900/98 border-t border-gray-800 py-4 space-y-2">
+                <button onClick={() => { setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Home</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowFAQ(true); }} className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">FAQ</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowContact(true); }} className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Contact Us</button>
+                <div className="border-t border-gray-800 pt-2 mt-2">
+                  <button onClick={() => { setMobileMenuOpen(false); toggleTheme(); }} className="flex items-center w-full px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
+                    {resolvedTheme === 'dark' ? <Sun className="w-5 h-5 mr-2" /> : <Moon className="w-5 h-5 mr-2" />}
+                    {resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </button>
+                  <button onClick={() => { setMobileMenuOpen(false); setShowAuth(true); }} className="block w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Login</button>
+                  <button onClick={() => { setMobileMenuOpen(false); setShowRequestAccess(true); }} className="block w-full text-left px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:from-purple-700 hover:to-indigo-800 transition-colors">Request Access</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* New homepage content */}
+        <main className="pt-20">
+          {/* Hero */}
+          <section className="relative">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+              <div className="grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">From training to real experience</h1>
+                  <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-xl">Practice stakeholder conversations, apply Scrum and BA techniques, and build real deliverables that make you job‑ready.</p>
+                  <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                    <button onClick={() => setShowRequestAccess(true)} className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-indigo-800 font-semibold">Request access</button>
+                    <button onClick={() => setShowAuth(true)} className="border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">See how it works</button>
+                  </div>
+                </div>
+                <div className="h-72 md:h-96 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-gray-800 dark:to-gray-700" />
+              </div>
+            </div>
+          </section>
+
+          {/* Problem */}
+          <section className="py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Training alone doesn’t make you job‑ready</h2>
+                  <ul className="mt-6 space-y-3 text-gray-700 dark:text-gray-300">
+                    <li>• Theory without practice doesn’t translate to confident delivery.</li>
+                    <li>• Interviews test real conversation skills, not memorized answers.</li>
+                    <li>• Portfolios need real artefacts: stories, AC, process maps.</li>
+                  </ul>
+                  <div className="mt-6 flex gap-3">
+                    <button onClick={() => setShowRequestAccess(true)} className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg">Request access</button>
+                    <button onClick={() => setShowFAQ(true)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg">Learn more</button>
+                  </div>
+                </div>
+                <div className="h-72 md:h-80 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+              </div>
+            </div>
+          </section>
+
+          {/* Benefits */}
+          <section className="py-16 md:py-20 bg-gray-50 dark:bg-gray-900/50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-center text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-10">What you’ll gain</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Clarity and confidence</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Learn frameworks and practise them in realistic meetings.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Practical communication</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Handle ambiguity, ask better questions, and guide decisions.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Hands‑on project experience</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Create stories, AC, and process maps you can show employers.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Journey */}
+          <section className="py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-center text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-10">How the journey works</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6"><h5 className="font-semibold text-gray-900 dark:text-white">Step 1 — Learn the foundations</h5><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Core BA concepts, requirements, process mapping, MVP, Scrum.</p></div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6"><h5 className="font-semibold text-gray-900 dark:text-white">Step 2 — Practise scenarios</h5><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Voice meetings with AI stakeholders and instant coaching.</p></div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6"><h5 className="font-semibold text-gray-900 dark:text-white">Step 3 — Apply Scrum</h5><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Backlog refinement, Sprint planning, and iterative delivery.</p></div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6"><h5 className="font-semibold text-gray-900 dark:text-white">Step 4 — Build your portfolio</h5><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Export real artefacts that prove experience.</p></div>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="py-20 bg-gray-100 dark:bg-gray-800">
+            <div className="max-w-5xl mx-auto px-4 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Stop learning in theory</h3>
+              <p className="mt-3 text-gray-700 dark:text-gray-300">Request access to join the next cohort and start building real‑world experience.</p>
+              <div className="mt-6 flex justify-center gap-4">
+                <button onClick={() => setShowRequestAccess(true)} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-lg">Request access</button>
+                <button onClick={() => setShowAuth(true)} className="border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg">Learn more</button>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-gray-900 text-gray-300 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              {/* Left Column - Brand */}
+              <div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-white">BA WorkXP</span>
+                </div>
+                <p className="text-sm text-gray-400 mb-6">The world's most advanced Business Analysis training platform.</p>
+              </div>
+
+              {/* Middle Column - Platform */}
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-4">Platform</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><button onClick={() => setShowFAQ(true)} className="text-gray-400 hover:text-white transition-colors text-left">FAQ</button></li>
+                  <li><button onClick={() => setShowContact(true)} className="text-gray-400 hover:text-white transition-colors text-left">Contact Us</button></li>
+                </ul>
+              </div>
+
+              {/* Right Column - Support */}
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-4">Support</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><button onClick={() => setShowRequestAccess(true)} className="text-gray-400 hover:text-white transition-colors text-left">Request Access</button></li>
+                </ul>
+              </div>
+            </div>
+            <div className="border-t border-gray-800 pt-8"><p className="text-sm text-gray-400 text-center">© 2025 BA WorkXP. All rights reserved.</p></div>
+          </div>
+        </footer>
+
+        {/* Cookie Consent Banner */}
+        <CookieConsent onCookiePolicyClick={() => setShowCookiePolicy(true)} />
+      </div>
+    )
+  }
+
+  // Legacy path (kept for safety)
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
       {/* Header - Matching Wireframe */}
