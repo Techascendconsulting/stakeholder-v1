@@ -170,6 +170,8 @@ const LandingPage: React.FC = () => {
     { name: "Emeka Obi", role: "Senior BA", company: "Barclays", location: "London, UK", salary: "£58k → £88k", quote: "The MVP prioritization module changed how I approach feature planning. Landed my dream role!", image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400" }
   ]
 
+  const NEW_HOME = true
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
       {/* Header - Matching Wireframe */}
@@ -321,61 +323,126 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section - Full Image Background */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background Image Carousel */}
-        <div className="absolute inset-0 z-0">
-          {heroImages.map((img, index) => (
-            <img 
-              key={img}
-              src={`/images/${img}.jpg`} 
-              alt="Business analysis professional working with modern technology" 
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-              loading={index === 0 ? "eager" : "lazy"}
-            />
-          ))}
-        </div>
-        
-        {/* Content Overlay */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-40 w-full">
-          <div className="max-w-4xl">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
-              Master Business Analysis
-              <span className="block bg-gradient-to-r from-purple-300 via-white to-purple-300 bg-clip-text text-transparent">
-                with AI-Powered Training
-              </span>
-            </h1>
-            
-            <p className="text-base md:text-lg text-gray-200 mb-8 leading-relaxed max-w-2xl drop-shadow-lg">
-              Learn through comprehensive interactive modules, practice with AI stakeholders, and build real projects. Begin your Business Analysis career transformation today.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <button
-                onClick={() => setShowRequestAccess(true)}
-                className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-10 py-5 rounded-xl hover:from-purple-700 hover:to-indigo-800 transition-all duration-300 font-semibold text-lg shadow-2xl transform hover:scale-105 border border-purple-400/50 flex items-center justify-center"
-              >
-                <Rocket className="w-5 h-5 mr-2" />
-                Start Learning Now
-              </button>
-              <button 
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-10 py-5 rounded-xl hover:bg-white/20 hover:border-white/50 transition-all duration-300 font-semibold text-lg hover:shadow-xl"
-              >
-                Explore Platform
-              </button>
+      {NEW_HOME ? (
+        <>
+          {/* Hero: From training to real experience */}
+          <section className="relative">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+              <div className="grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                    From training to real experience
+                  </h1>
+                  <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-xl">
+                    Practice stakeholder conversations, apply Scrum and BA techniques, and build real deliverables that make you job-ready.
+                  </p>
+                  <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                    <button
+                      onClick={() => setShowRequestAccess(true)}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-indigo-800 font-semibold"
+                    >
+                      Request access
+                    </button>
+                    <button
+                      onClick={() => setShowAuth(true)}
+                      className="border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      See how it works
+                    </button>
+                  </div>
+                </div>
+                <div className="h-72 md:h-96 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-gray-800 dark:to-gray-700" />
+              </div>
             </div>
+          </section>
 
-            {/* AI-Powered Business Analysis Training Platform Badge */}
-            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 backdrop-blur-md rounded-xl px-6 py-3 border border-purple-400/30 shadow-lg">
-              <Bot className="w-6 h-6 text-purple-300" />
-              <span className="text-base text-white font-medium">AI-Powered Business Analysis Training Platform</span>
+          {/* Problem section */}
+          <section className="py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                    Training alone doesn’t make you job‑ready
+                  </h2>
+                  <ul className="mt-6 space-y-3 text-gray-700 dark:text-gray-300">
+                    <li>• Theory without practice doesn’t translate to confident delivery.</li>
+                    <li>• Interviews test real conversation skills, not memorized answers.</li>
+                    <li>• Portfolios need real artefacts: stories, AC, process maps.</li>
+                  </ul>
+                  <div className="mt-6 flex gap-3">
+                    <button onClick={() => setShowRequestAccess(true)} className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg">Request access</button>
+                    <button onClick={() => setShowFAQ(true)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg">Learn more</button>
+                  </div>
+                </div>
+                <div className="h-72 md:h-80 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+
+          {/* Benefits grid */}
+          <section className="py-16 md:py-20 bg-gray-50 dark:bg-gray-900/50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-center text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-10">What you’ll gain</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Clarity and confidence</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Learn frameworks and practise them in realistic meetings.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Practical communication</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Handle ambiguity, ask better questions, and guide decisions.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Hands‑on project experience</h4>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Create stories, AC, and process maps you can show employers.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* How the journey works */}
+          <section className="py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-center text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-10">How the journey works</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 dark:text-white">Step 1 — Learn the foundations</h5>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Core BA concepts, requirements, process mapping, MVP, Scrum.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 dark:text-white">Step 2 — Practise scenarios</h5>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Voice meetings with AI stakeholders and instant coaching.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 dark:text-white">Step 3 — Apply Scrum</h5>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Backlog refinement, Sprint planning, and iterative delivery.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h5 className="font-semibold text-gray-900 dark:text-white">Step 4 — Build your portfolio</h5>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Export real artefacts that prove experience.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Stop learning in theory CTA */}
+          <section className="py-20 bg-gray-100 dark:bg-gray-800">
+            <div className="max-w-5xl mx-auto px-4 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Stop learning in theory</h3>
+              <p className="mt-3 text-gray-700 dark:text-gray-300">Request access to join the next cohort and start building the real-world experience that gets you hired.</p>
+              <div className="mt-6 flex justify-center gap-4">
+                <button onClick={() => setShowRequestAccess(true)} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-lg">Request access</button>
+                <button onClick={() => setShowAuth(true)} className="border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg">Learn more</button>
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
+          {/* Hero Section - Full Image Background (legacy) */}
+          {/* legacy content omitted */}
+        </>
+      )}
 
       {/* Your Learning Path Section - 3 Cards with App Colors */}
       <section id="how-it-works" className="py-12 md:py-24 bg-gradient-to-br from-purple-200 via-purple-100 to-indigo-100 dark:from-gray-800 dark:via-gray-900 dark:to-slate-900 border-t border-purple-200 dark:border-gray-700">
