@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { Users, Grid, MessageCircle, Mic, Target, ArrowRight, CheckCircle, AlertCircle, FileText } from "lucide-react";
+import { Users, Grid, MessageCircle, Mic, Target, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
