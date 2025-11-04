@@ -155,7 +155,7 @@ You're not just learning a job - you're learning to be the person who makes sure
         duration: '10 min',
         content: `# How Organisations Work
 
-Think about the apps on your phone right now. Spotify sells you music streaming. Amazon sells products and delivery. WhatsApp is free but owned by Meta, who sells advertising. Every single organization exists to deliver value - and to make money doing it.
+Think about the apps on your phone right now. Spotify sells you music streaming. Amazon sells products and delivery. WhatsApp is free but owned by Meta, who sells advertising. Every single organization exists to deliver value — and usually to make money doing it. Non‑profits also exist to deliver value, but their goal isn’t profit; they’re funded by donations, grants, or public support.
 
 **Understanding how organizations work is critical for BAs** because you can't improve what you don't understand.
 
