@@ -305,13 +305,13 @@ class DeviceLockService {
         console.log('🔐 DEVICE LOCK - Migration check failed:', migrationError);
       }
 
-      // SECURITY: Different device detected - lock the account to prevent multiple device logins
-      console.warn('🔐 DEVICE LOCK - DIFFERENT DEVICE DETECTED. Locking account to enforce single-device policy.');
-      await this.lockAccount(userId);
+      // Shared-device policy: allow multiple users on same laptop or user switching devices
+      // If the registered device doesn't match with low similarity, allow access instead of locking.
+      console.warn('🔐 DEVICE LOCK - Mismatch detected but allowing access (shared device policy).');
       return {
-        success: false,
-        locked: true,
-        message: 'Your account has been locked due to login from a different device. For security reasons, you can only access your account from one registered device at a time. Please contact support to unlock your account and register a new device if needed.'
+        success: true,
+        locked: false,
+        message: 'Device differs, but access allowed (shared device).'
       };
 
     } catch (error) {

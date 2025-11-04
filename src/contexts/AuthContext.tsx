@@ -523,36 +523,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           const currentDeviceId = await deviceLockService.getDeviceId()
           
-          // SECURITY: Check if registered device matches current device (enforces single-device policy)
-          const { data: deviceProfile } = await supabase
-            .from('user_profiles')
-            .select('registered_device, locked')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (deviceProfile?.registered_device && currentDeviceId && deviceProfile.registered_device !== currentDeviceId) {
-            console.log('🔐 AUTH - REGISTERED DEVICE MISMATCH DETECTED! Locking account immediately')
-            console.log('🔐 AUTH - Registered device:', deviceProfile.registered_device)
-            console.log('🔐 AUTH - Current device:', currentDeviceId)
-            
-            // Log device mismatch
-            await userActivityService.logDeviceLockFailure(
-              user.id,
-              currentDeviceId,
-              'Registered device mismatch detected - user logged in from different device'
-            )
-            
-            // Lock the account immediately
-            await deviceLockService.lockAccount(user.id)
-            
-            // Sign out the user
-            await signOut()
-            
-            // Show alert
-            alert('Your account has been locked due to login from a different device. You can only be logged in from one device at a time. Please contact support to unlock your account.')
-            
-            return
-          }
+          // Reverted: Do not enforce registered vs current device mismatch during session
           
           // Check if device ID has changed (different browser/incognito during same session)
           if (currentDeviceId && lastDeviceId.current && currentDeviceId !== lastDeviceId.current) {
