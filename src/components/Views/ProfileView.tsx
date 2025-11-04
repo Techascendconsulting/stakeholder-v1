@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor, RefreshCw } from 'lucide-react';
+import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor, RefreshCw, Cpu, Laptop } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { supabase } from '../../lib/supabase';
 import { getUserProfile, updateUserProfile } from '../../utils/profileUtils';
+import { deviceLockService } from '../../services/deviceLockService';
 
 export const ProfileView: React.FC = () => {
   const { user } = useAuth();
@@ -39,6 +40,11 @@ export const ProfileView: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  // Device registration state
+  const [deviceStatusLoading, setDeviceStatusLoading] = useState(false);
+  const [registeredDevice, setRegisteredDevice] = useState<string | null>(null);
+  const [deviceMessage, setDeviceMessage] = useState<string>('');
+
   // Photo state
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoLoading, setPhotoLoading] = useState(false);
@@ -60,6 +66,7 @@ export const ProfileView: React.FC = () => {
 
   useEffect(() => {
     loadProfile();
+    loadDeviceStatus();
   }, [user?.id]);
 
   const loadProfile = () => {
@@ -110,6 +117,48 @@ export const ProfileView: React.FC = () => {
       alert('Error saving profile. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDeviceStatus = async () => {
+    if (!user?.id) return;
+    setDeviceStatusLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('registered_device')
+        .eq('user_id', user.id)
+        .single();
+      if (!error) {
+        setRegisteredDevice(data?.registered_device || null);
+      }
+    } finally {
+      setDeviceStatusLoading(false);
+    }
+  };
+
+  const registerThisDevice = async () => {
+    if (!user?.id) return;
+    setDeviceStatusLoading(true);
+    setDeviceMessage('');
+    try {
+      const deviceId = await deviceLockService.getDeviceId();
+      if (!deviceId) {
+        setDeviceMessage('Unable to identify this device. Please try again.');
+        return;
+      }
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ registered_device: deviceId })
+        .eq('user_id', user.id);
+      if (error) {
+        setDeviceMessage('Failed to register device.');
+      } else {
+        setRegisteredDevice(deviceId);
+        setDeviceMessage('Device registered successfully.');
+      }
+    } finally {
+      setDeviceStatusLoading(false);
     }
   };
 
@@ -698,6 +747,43 @@ export const ProfileView: React.FC = () => {
                        Last updated: {user?.updated_at ? formatLastSignIn(user.updated_at) : 'Unknown'}
                      </div>
                    </div>
+                </div>
+              </div>
+
+              {/* Device Registration */}
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Laptop className="mr-2 text-indigo-600" size={20} />
+                  Device Registration
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Register this laptop so we recognize it the next time you sign in. You can re-register at any time.
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 mb-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-700 dark:text-gray-300">Status:</span>
+                    <span className="font-mono text-gray-900 dark:text-white">
+                      {deviceStatusLoading ? 'Checking…' : registeredDevice ? 'Registered' : 'Not registered'}
+                    </span>
+                  </div>
+                  {registeredDevice && (
+                    <div className="mt-2 text-xs text-gray-500 break-all">
+                      ID: {registeredDevice}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={registerThisDevice}
+                    disabled={deviceStatusLoading}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm"
+                  >
+                    {registeredDevice ? 'Re-register this device' : 'Register this device'}
+                  </button>
+                  {deviceMessage && (
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{deviceMessage}</span>
+                  )}
                 </div>
               </div>
 
