@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor, RefreshCw, Cpu, Laptop } from 'lucide-react';
+import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor, RefreshCw, Cpu, Laptop, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useTheme } from '../../contexts/ThemeContext';
