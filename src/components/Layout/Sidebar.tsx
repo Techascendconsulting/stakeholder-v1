@@ -69,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+  const [displayName, setDisplayName] = useState<string>('');
 
   // Load user type from database
   useEffect(() => {
@@ -117,6 +118,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     window.addEventListener('resize', handleResponsiveCollapse);
     return () => window.removeEventListener('resize', handleResponsiveCollapse);
   }, []);
+
+  // Load and react to display name changes saved in profile
+  useEffect(() => {
+    const loadDisplayName = () => {
+      try {
+        if (!user?.id) { setDisplayName(''); return; }
+        const saved = localStorage.getItem(`profile-${user.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.displayName && typeof parsed.displayName === 'string') {
+            setDisplayName(parsed.displayName);
+            return;
+          }
+        }
+        // Fallback to email prefix
+        setDisplayName(user?.email?.split('@')[0] || 'User');
+      } catch {
+        setDisplayName(user?.email?.split('@')[0] || 'User');
+      }
+    };
+
+    loadDisplayName();
+    const onStorage = (e: StorageEvent) => {
+      if (!user?.id) return;
+      if (e.key === `profile-${user.id}`) {
+        loadDisplayName();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user?.id, user?.email]);
 
   // Admin-specific menu items
   const adminMenuItems: MenuItem[] = [
@@ -501,7 +533,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           <button
             onClick={() => !isCollapsed && setShowUserMenu(!showUserMenu)}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group`}
-            title={isCollapsed ? user?.email?.split('@')[0] || 'User' : ''}
+            title={isCollapsed ? (displayName || user?.email?.split('@')[0] || 'User') : ''}
           >
             <UserAvatar 
               userId={user?.id || ''} 
@@ -514,7 +546,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               <>
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-medium text-white truncate">
-                    {user?.email?.split('@')[0] || 'User'}
+                    {displayName || user?.email?.split('@')[0] || 'User'}
                   </p>
                   <p className="text-xs text-purple-200">Business Analyst</p>
                 </div>
