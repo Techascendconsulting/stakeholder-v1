@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, User, Lock, Shield, Eye, EyeOff, RefreshCw, Copy, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { adminService } from '../services/adminService';
 
 interface AdminCreateUserModalProps {
   onClose: () => void;
@@ -60,75 +59,38 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
     setLoading(true);
 
     try {
-      // Step 1: Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: {
-          full_name: formData.name
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('You must be logged in to create users');
+      }
+
+      // Call Edge Function to create user server-side
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: formData.email,
+          name: formData.name,
+          password: formData.password,
+          userType: formData.userType,
+          subscriptionTier: formData.subscriptionTier,
+          maxProjects: formData.maxProjects,
+          sendEmail: formData.sendEmail,
+          accessRequestId: prefillData?.accessRequestId
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       });
 
-      if (authError || !authData.user) {
-        throw new Error(authError?.message || 'Failed to create auth user');
+      if (error) {
+        throw new Error(error.message || 'Failed to create user');
       }
 
-      console.log('✅ Auth user created:', authData.user.id);
-
-      // Step 2: Create/Update user profile with subscription settings
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: authData.user.id,
-          display_name: formData.name,
-          user_type: formData.userType,
-          subscription_tier: formData.subscriptionTier,
-          max_projects: formData.maxProjects,
-          subscription_status: 'active',
-          blocked: false,
-          created_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        console.warn('Profile creation warning:', profileError);
-        // Don't fail if profile creation fails, auth user is created
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to create user');
       }
 
-      // Step 3: If this was from an access request, mark it as approved
-      if (prefillData?.accessRequestId) {
-        await supabase
-          .from('access_requests')
-          .update({
-            status: 'approved',
-            reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-            reviewed_at: new Date().toISOString()
-          })
-          .eq('id', prefillData.accessRequestId);
-      }
-
-      // Step 4: Log the action
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (currentUser) {
-        await adminService.logActivity(
-          currentUser.id,
-          'user_created',
-          authData.user.id,
-          {
-            email: formData.email,
-            name: formData.name,
-            userType: formData.userType,
-            tier: formData.subscriptionTier,
-            sendEmail: formData.sendEmail
-          }
-        );
-      }
-
-      // Step 5: Send welcome email if requested
-      if (formData.sendEmail) {
-        // TODO: Implement email sending via Resend
-        console.log('📧 TODO: Send welcome email to', formData.email);
-      }
+      console.log('✅ User created successfully:', data.user);
 
       // Show success with credentials
       setCreatedUser({
