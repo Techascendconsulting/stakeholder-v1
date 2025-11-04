@@ -152,20 +152,29 @@ serve(async (req) => {
     }
 
     // Step 5: Send welcome email if requested
+    let emailSent = false
+    let emailError = null
+    
     if (body.sendEmail) {
       try {
         const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-        if (RESEND_API_KEY) {
+        if (!RESEND_API_KEY) {
+          console.warn('⚠️ RESEND_API_KEY not configured. Email will not be sent.')
+          emailError = 'RESEND_API_KEY not configured in Supabase Edge Functions'
+        } else {
           // Generate password reset link so user can set their own password
           const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'recovery',
             email: body.email
           })
 
-          if (!resetError && resetData?.properties?.action_link) {
+          if (resetError) {
+            console.error('Error generating password reset link:', resetError)
+            emailError = resetError.message
+          } else if (resetData?.properties?.action_link) {
             const resetLink = resetData.properties.action_link
 
-            await fetch('https://api.resend.com/emails', {
+            const emailResponse = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -202,15 +211,27 @@ serve(async (req) => {
                 `
               })
             })
+
+            const emailResult = await emailResponse.json()
+            
+            if (emailResponse.ok) {
+              console.log('✅ Welcome email sent successfully to:', body.email)
+              emailSent = true
+            } else {
+              console.error('❌ Failed to send email:', emailResult)
+              emailError = emailResult.message || 'Failed to send email'
+            }
+          } else {
+            emailError = 'Failed to generate password reset link'
           }
         }
-      } catch (emailError) {
-        console.warn('Failed to send welcome email:', emailError)
-        // Don't fail the request if email fails
+      } catch (err) {
+        console.error('Exception while sending email:', err)
+        emailError = err.message || 'Email sending failed'
       }
     }
 
-    // Return success
+    // Return success with email status
     return new Response(
       JSON.stringify({
         success: true,
@@ -219,7 +240,9 @@ serve(async (req) => {
           email: authData.user.email,
           name: body.name
         },
-        message: 'User created successfully'
+        message: 'User created successfully',
+        emailSent: emailSent,
+        emailError: emailError || undefined
       }),
       {
         status: 200,

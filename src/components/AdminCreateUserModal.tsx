@@ -91,6 +91,15 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
       }
 
       console.log('✅ User created successfully:', data.user);
+      
+      // Show warning if email failed
+      if (formData.sendEmail && !data.emailSent) {
+        const emailError = data.emailError || 'Email not sent';
+        console.warn('⚠️ Email not sent:', emailError);
+        if (emailError.includes('RESEND_API_KEY')) {
+          alert(`User created successfully, but email was not sent.\n\nTo enable emails, set RESEND_API_KEY in Supabase:\nDashboard → Project Settings → Edge Functions → Secrets\n\nUser can still sign in with the temporary password below.`);
+        }
+      }
 
       // Show success with credentials
       setCreatedUser({
