@@ -31,9 +31,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [showDeviceRegistration, setShowDeviceRegistration] = useState(false)
-  const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
-  const lastDeviceId = useRef<string | null>(null)
-  const deviceLockFailed = useRef<boolean>(false)
   const deviceRegistrationCompleted = useRef<boolean>(false)
 
   // Shared admin check used in multiple places
@@ -301,16 +298,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.log('🔐 AUTH - Admin user detected, skipping device reset auto-unlock');
         }
         
+        // LOGIN-TIME DEVICE CHECK: Prevents multiple device logins
+        // If user tries to login from different device than registered, account is LOCKED immediately
+        // This blocks the new login attempt AND prevents any existing sessions from continuing
         const deviceLockResult = await deviceLockService.checkDeviceLock(data.user.id)
         
         console.log('🔐 AUTH - Device lock result:', deviceLockResult)
         
         if (!deviceLockResult.success) {
-          // Device lock failed, sign out the user but don't wait for it
-          console.log('🔐 AUTH - Device lock failed, signing out user')
-          
-          // Set flag to prevent continuous monitoring
-          deviceLockFailed.current = true
+          // Device mismatch detected at login - account locked immediately
+          // This blocks this login attempt AND any existing sessions on other devices
+          console.log('🔐 AUTH - Different device detected at login - account LOCKED, blocking login')
           
           // Log device lock failure
           const deviceId = await deviceLockService.getDeviceId()
@@ -336,8 +334,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         
         console.log('🔐 AUTH - Device lock successful')
-        // Reset device lock failed flag on successful login
-        deviceLockFailed.current = false
         
         // Log successful sign-in
         const deviceId = await deviceLockService.getDeviceId()
@@ -434,186 +430,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const completeDeviceRegistration = () => {
     setShowDeviceRegistration(false)
     deviceRegistrationCompleted.current = true
-    
-    // Now start device monitoring since registration is complete
-    console.log('🔐 AUTH - Device registration completed, starting monitoring')
-    
-    // Check if user is admin before starting monitoring
-    const startMonitoringAfterRegistration = async () => {
-      const isAdmin = await checkIfAdmin();
-      if (!isAdmin) {
-        console.log('🔐 AUTH - Starting device monitoring after registration');
-        startDeviceMonitoring();
-      } else {
-        console.log('🔐 AUTH - Admin user, no monitoring needed after registration');
-      }
-    };
-    
-    startMonitoringAfterRegistration();
+    console.log('🔐 AUTH - Device registration completed')
   }
 
-  // Continuous device lock monitoring
-  useEffect(() => {
-    if (!user) {
-      // Clear intervals if no user
-      if (deviceCheckInterval.current) {
-        console.log('🔐 AUTH - Clearing device monitoring interval (no user)')
-        clearInterval(deviceCheckInterval.current)
-        deviceCheckInterval.current = null
-      }
-      // Reset device lock failed flag when user is logged out
-      deviceLockFailed.current = false
-      deviceRegistrationCompleted.current = false
-      return
-    }
-
-    // Don't start monitoring if device lock just failed
-    if (deviceLockFailed.current) {
-      console.log('🔐 AUTH - Skipping device monitoring (device lock just failed)')
-      return
-    }
-
-    // Check admin status first - make it synchronous to prevent race conditions
-    const startMonitoringIfNotAdmin = async () => {
-      const isAdmin = await checkIfAdmin();
-      if (isAdmin) {
-        // Admin users get NO monitoring (device lock bypassed)
-        console.log('🔐 AUTH - Admin user detected, no monitoring needed');
-        return;
-      }
-      
-      // For non-admin users, only start monitoring if device registration is complete
-      if (deviceRegistrationCompleted.current) {
-        console.log('🔐 AUTH - Starting device monitoring for student user (device registration complete)');
-        startDeviceMonitoring();
-      } else {
-        console.log('🔐 AUTH - Device registration pending, monitoring will start after registration');
-      }
-    };
-
-    startMonitoringIfNotAdmin();
-
-    // Start continuous device lock monitoring
-    const startDeviceMonitoring = async () => {
-      // Get initial device ID
-      const initialDeviceId = await deviceLockService.getDeviceId()
-      lastDeviceId.current = initialDeviceId
-      
-      console.log('🔐 AUTH - Starting continuous device lock monitoring, initial device ID:', initialDeviceId)
-      
-      // Check every 30 seconds (reduced from 5s to minimize database load and battery drain)
-      // Device rarely changes mid-session, so less frequent checks are sufficient
-      deviceCheckInterval.current = setInterval(async () => {
-        try {
-          // OPTIMIZED: Single query to get all needed fields (reduces DB load)
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('blocked, block_reason, is_admin, is_super_admin, is_senior_admin, registered_device, locked')
-            .eq('user_id', user.id)
-            .single();
-          
-          // If user is blocked, immediately sign out
-          if (profile?.blocked) {
-            console.log('🚫 AUTH - User was blocked during session, forcing sign out');
-            
-            // Store blocked status for UI
-            localStorage.setItem('accountBlocked', JSON.stringify({
-              blocked: true,
-              reason: profile.block_reason || 'Your account has been blocked.',
-              email: user.email
-            }));
-            
-            // Clear interval
-            if (deviceCheckInterval.current) {
-              clearInterval(deviceCheckInterval.current);
-              deviceCheckInterval.current = null;
-            }
-            
-            // Sign out
-            await supabase.auth.signOut();
-            alert('Your account has been blocked. Contact support@baworkxp.com if you believe this is an error.');
-            return;
-          }
-          
-          // Double-check admin status before any device lock action
-          const isAdmin = profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin;
-          if (isAdmin) {
-            console.log('🔐 AUTH - Admin user detected during monitoring, stopping device monitoring');
-            if (deviceCheckInterval.current) {
-              clearInterval(deviceCheckInterval.current);
-              deviceCheckInterval.current = null;
-            }
-            return;
-          }
-
-          const currentDeviceId = await deviceLockService.getDeviceId()
-          
-          // SECURITY: Check if THIS user's registered device matches current device
-          // If different, LOCK THIS USER's account (not the device)
-          // NOTE: Multiple users CAN share the same device - each user has their own registered_device field
-
-          if (profile?.registered_device && currentDeviceId && profile.registered_device !== currentDeviceId) {
-            console.log('🔐 AUTH - THIS USER\'s registered device mismatch detected. LOCKING THIS USER\'S ACCOUNT (deterrent)');
-
-            await userActivityService.logDeviceLockFailure(
-              user.id,
-              currentDeviceId,
-              'Registered device mismatch during session - locking account to deter multiple device usage'
-            );
-
-            // LOCK the account to prevent any further logins until admin unlocks
-            await deviceLockService.lockAccount(user.id);
-
-            await signOut();
-            alert('Your account has been LOCKED due to login from a different device. You can only access your account from one registered device at a time. Please contact support to unlock your account.');
-            return;
-          }
-          
-          // Check if device ID has changed (different browser/incognito during same session)
-          if (currentDeviceId && lastDeviceId.current && currentDeviceId !== lastDeviceId.current) {
-            console.log('🔐 AUTH - Device ID changed! Locking account immediately')
-            console.log('🔐 AUTH - Previous device:', lastDeviceId.current)
-            console.log('🔐 AUTH - Current device:', currentDeviceId)
-            
-            // Log device switching attempt
-            await userActivityService.logDeviceLockFailure(
-              user.id,
-              currentDeviceId,
-              'Device switching detected during session'
-            )
-            
-            // Lock the account immediately
-            await deviceLockService.lockAccount(user.id)
-            
-            // Sign out the user
-            await signOut()
-            
-            // Show alert
-            alert('Your account has been locked due to device switching. Please contact support.')
-            
-            return
-          }
-          
-          // Update last known device ID
-          lastDeviceId.current = currentDeviceId
-          
-        } catch (error) {
-          console.error('🔐 AUTH - Device monitoring error:', error)
-        }
-      }, 30000) // Check every 30 seconds (reduced from 5s to minimize DB load and battery drain)
-    }
-
-    // Note: Removed last active tracking to reduce log volume
-    // Last login date is sufficient for "last active" information
-
-    // Cleanup on unmount or user change
-    return () => {
-      if (deviceCheckInterval.current) {
-        clearInterval(deviceCheckInterval.current)
-        deviceCheckInterval.current = null
-      }
-    }
-  }, [user])
+  // REMOVED: Continuous device monitoring
+  // Device lock is now enforced ONLY at login time via checkDeviceLock()
+  // This is more efficient and prevents the issue at the source rather than detecting it later
+  // When user tries to login from different device, account is locked immediately
 
   const value = {
     user,
@@ -637,4 +460,5 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       )}
     </AuthContext.Provider>
   )
+}
 }
