@@ -36,6 +36,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deviceLockFailed = useRef<boolean>(false)
   const deviceRegistrationCompleted = useRef<boolean>(false)
 
+  // Shared admin check used in multiple places
+  const checkIfAdmin = async (): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('is_admin, is_super_admin, is_senior_admin')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('🔐 AUTH - Error checking admin status:', error);
+        return false;
+      }
+
+      const isAdmin = !!(profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin);
+      return isAdmin;
+    } catch (error) {
+      console.error('🔐 AUTH - Error checking admin status:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     // Safety timeout: Force loading to false after 5 seconds to prevent blank screen
     const loadingTimeout = setTimeout(() => {
@@ -425,32 +448,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🔐 AUTH - Skipping device monitoring (device lock just failed)')
       return
     }
-
-    // Check if user is admin - admins should NOT be monitored for device lock
-    const checkIfAdmin = async () => {
-      try {
-        const { data: profile, error } = await supabase
-          .from('user_profiles')
-          .select('is_admin, is_super_admin, is_senior_admin')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          console.error('🔐 AUTH - Error checking admin status:', error);
-          return false;
-        }
-
-        const isAdmin = profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin;
-        if (isAdmin) {
-          console.log('🔐 AUTH - Admin user detected, skipping device lock monitoring entirely');
-          return true;
-        }
-        return false;
-      } catch (error) {
-        console.error('🔐 AUTH - Error checking admin status:', error);
-        return false;
-      }
-    };
 
     // Check admin status first - make it synchronous to prevent race conditions
     const startMonitoringIfNotAdmin = async () => {
