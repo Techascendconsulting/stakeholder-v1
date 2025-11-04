@@ -462,64 +462,22 @@ d) There's no difference
             const completed = completedTopics.includes(topic.id);
             const Icon = getTopicIcon(idx);
             const color = getTopicColor(idx);
-            const statusLabel = completed ? 'Review' : accessible ? 'Start' : 'Locked';
-
-            // For comparison: render the FIRST card with the previous, simpler design
-            if (idx === 0) {
-              return (
-                <button
-                  key={topic.id}
-                  onClick={() => accessible && setSelectedTopicId(topic.id)}
-                  disabled={!accessible}
-                  className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
-                    completed
-                      ? 'bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800'
-                      : accessible
-                      ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
-                      : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/50' : color.icon}`}>
-                      {completed ? (
-                        <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                      ) : !accessible ? (
-                        <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
-                      ) : (
-                        <Icon className={`w-6 h-6 ${color.text}`} />
-                      )}
-                    </div>
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Topic {idx + 1}</span>
-                  </div>
-                  <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                    {topic.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <Clock className="w-3 h-3" />
-                    <span>{topic.duration || '10 min'}</span>
-                  </div>
-                </button>
-              );
-            }
 
             return (
               <button
                 key={topic.id}
                 onClick={() => accessible && setSelectedTopicId(topic.id)}
                 disabled={!accessible}
-                className={`group relative p-6 rounded-2xl border transition-all text-left overflow-hidden ${
+                className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-green-200 dark:border-green-800 shadow-sm'
+                    ? 'bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800'
                     : accessible
-                    ? 'bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-700'
+                    ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
                 }`}
               >
-                {/* Accent blob */}
-                <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-purple-200/60 to-pink-200/60 dark:from-purple-900/20 dark:to-pink-900/20 blur-2xl group-hover:scale-110 transition-transform" />
-
-                <div className="flex items-start justify-between mb-4 relative">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ring-1 ring-inset ${completed ? 'bg-green-100/90 dark:bg-green-900/40 ring-green-300/60' : `${color.icon} ring-white/20`}`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/50' : color.icon}`}>
                     {completed ? (
                       <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                     ) : !accessible ? (
@@ -528,33 +486,15 @@ d) There's no difference
                       <Icon className={`w-6 h-6 ${color.text}`} />
                     )}
                   </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                    Topic {idx + 1}
-                  </span>
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Topic {idx + 1}</span>
                 </div>
-
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   {topic.title}
                 </h3>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <Clock className="w-3 h-3" />
-                    <span>{topic.duration || '10 min'}</span>
-                  </div>
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-                    completed
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-                      : accessible
-                      ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700'
-                  }`}>
-                    {statusLabel}
-                  </span>
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <Clock className="w-3 h-3" />
+                  <span>{topic.duration || '10 min'}</span>
                 </div>
-
-                {/* Hover lift */}
-                <div className="absolute inset-0 rounded-2xl ring-0 group-hover:ring-2 ring-purple-300/60 dark:ring-purple-700/50 transition" />
               </button>
             );
           })}
