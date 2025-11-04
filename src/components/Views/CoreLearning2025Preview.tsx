@@ -353,7 +353,49 @@ d) There's no difference
                     prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                     prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
                   ">
-                    <ReactMarkdown>{formatContent(selectedTopic.content)}</ReactMarkdown>
+                    {formatContent(selectedTopic.content).split('\n\n').map((section, index) => {
+                      if (section.startsWith('## ')) {
+                        return (
+                          <h2 key={index} className="text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-4 first:mt-0">
+                            {section.replace('## ', '')}
+                          </h2>
+                        );
+                      }
+                      if (section.trim() === '---') {
+                        return <hr key={index} className="my-8 border-t-2 border-gray-200 dark:border-gray-700" />;
+                      }
+                      if (section.startsWith('**') && section.endsWith('**')) {
+                        const text = section.replace(/\*\*/g, '');
+                        return (
+                          <div key={index} className="bg-purple-100 dark:bg-purple-900/30 border-l-4 border-purple-500 p-4 rounded-r-lg my-4">
+                            <p className="text-gray-900 dark:text-white font-semibold m-0">{text}</p>
+                          </div>
+                        );
+                      }
+                      if (section.trim().startsWith('- ')) {
+                        const items = section.split('\n').filter(Boolean).map(s => s.replace(/^\-\s*/, ''));
+                        return (
+                          <ul key={index} className="list-disc list-inside my-6">
+                            {items.map((it, i) => (
+                              <li key={i} className="my-2 text-gray-700 dark:text-gray-300">{it}</li>
+                            ))}
+                          </ul>
+                        );
+                      }
+                      if (section.includes('**')) {
+                        const parts = section.split('**');
+                        return (
+                          <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                            {parts.map((part, i) => (
+                              i % 2 === 0 ? part : <strong key={i} className="font-bold text-gray-900 dark:text-white">{part}</strong>
+                            ))}
+                          </p>
+                        );
+                      }
+                      return section.trim() ? (
+                        <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{section}</p>
+                      ) : null;
+                    })}
                   </div>
 
                   {/* Final Assignment (After Topic 14) */}
