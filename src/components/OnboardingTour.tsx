@@ -17,8 +17,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
 
   React.useEffect(() => {
     const buildSteps = async () => {
-      // Build steps matching previous content
-      const s: Step[] = [
+      // Base steps
+      const baseSteps: Step[] = [
         {
           target: 'body',
           placement: 'center',
@@ -75,7 +75,27 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
           content: 'Manage your account here.',
         }
       ];
-      setSteps(s);
+
+      // Ensure targets exist; if not, convert to a centered body step (keeps numbering consistent)
+      const resolvedSteps: Step[] = baseSteps.map((step) => {
+        if (step.target === 'body') return step;
+        try {
+          const selector = step.target as string;
+          const exists = !!document.querySelector(selector);
+          if (!exists) {
+            return {
+              ...step,
+              target: 'body',
+              placement: 'center'
+            } as Step;
+          }
+        } catch {
+          return { ...step, target: 'body', placement: 'center' } as Step;
+        }
+        return step;
+      });
+
+      setSteps(resolvedSteps);
     };
     buildSteps();
   }, [user?.id]);
