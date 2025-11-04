@@ -517,13 +517,13 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Role
                   </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                   >
                     <option value="Business Analyst">Business Analyst</option>
                     <option value="Senior Business Analyst">Senior Business Analyst</option>
@@ -539,7 +539,7 @@ export const ProfileView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Company/Organization
                 </label>
                 <input
@@ -547,12 +547,12 @@ export const ProfileView: React.FC = () => {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="Enter your company or organization"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Bio
                 </label>
                 <textarea
@@ -560,7 +560,7 @@ export const ProfileView: React.FC = () => {
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell us a bit about yourself and your experience..."
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                 />
               </div>
             </div>
@@ -588,13 +588,13 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Language
                   </label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                   >
                     <option value="en">English</option>
                     <option value="es">Español</option>
@@ -606,13 +606,13 @@ export const ProfileView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Timezone
                 </label>
                 <select
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                 >
                   <option value="UTC">UTC</option>
                   <option value="America/New_York">Eastern Time</option>
@@ -661,8 +661,8 @@ export const ProfileView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-gray-900">Email Notifications</h4>
-                    <p className="text-sm text-gray-600">Receive important updates via email</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Receive important updates via email</p>
                   </div>
                   <button
                     onClick={() => setEmailNotifications(!emailNotifications)}
@@ -680,8 +680,8 @@ export const ProfileView: React.FC = () => {
 
                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-gray-900">Meeting Reminders</h4>
-                    <p className="text-sm text-gray-600">Get notified before scheduled meetings</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Meeting Reminders</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Get notified before scheduled meetings</p>
                   </div>
                   <button
                     onClick={() => setMeetingReminders(!meetingReminders)}
@@ -699,8 +699,8 @@ export const ProfileView: React.FC = () => {
 
                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-gray-900">Weekly Digest</h4>
-                    <p className="text-sm text-gray-600">Weekly summary of your activity</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Weekly Digest</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Weekly summary of your activity</p>
                   </div>
                   <button
                     onClick={() => setWeeklyDigest(!weeklyDigest)}
@@ -813,7 +813,7 @@ export const ProfileView: React.FC = () => {
                 <div className="space-y-4">
                   {/* Current Password */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Current Password
                     </label>
                     <div className="relative">
@@ -836,7 +836,7 @@ export const ProfileView: React.FC = () => {
 
                   {/* New Password */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       New Password
                     </label>
                     <div className="relative">
@@ -859,7 +859,7 @@ export const ProfileView: React.FC = () => {
 
                   {/* Confirm New Password */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Confirm New Password
                     </label>
                     <div className="relative">
