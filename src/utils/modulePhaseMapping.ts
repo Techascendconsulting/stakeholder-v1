@@ -215,7 +215,7 @@ export async function syncModuleProgressToPhases(userId: string): Promise<void> 
     await initializeCareerJourneyPhases(userId);
     
     // STEP 2: Get completed modules from localStorage
-    const completedModulesStr = localStorage.getItem('completedModules');
+    const completedModulesStr = localStorage.getItem(`completedModules_${userId}`) || localStorage.getItem('completedModules');
     if (!completedModulesStr) {
       console.log('📚 No completed modules found in localStorage');
       return;

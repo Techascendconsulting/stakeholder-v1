@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { BookOpen, FileText, CheckCircle, Lock, Star, Target, Users, Brain } from 'lucide-react';
 import CaseStudyView from './CaseStudyView';
 import AssignmentView from './AssignmentView';
@@ -25,13 +26,18 @@ const AssessmentsView: React.FC = () => {
   const [currentAssessmentId, setCurrentAssessmentId] = useState<string>('');
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
 
-  // Load completion status from localStorage
+  const { user } = useAuth();
+  // Load completion status from localStorage (per user)
   useEffect(() => {
-    const savedCompletedModules = localStorage.getItem('completedModules');
+    if (!user?.id) return;
+    const key = `completedModules_${user.id}`;
+    const savedCompletedModules = localStorage.getItem(key) || localStorage.getItem('completedModules');
     if (savedCompletedModules) {
       setCompletedModules(new Set(JSON.parse(savedCompletedModules)));
+    } else {
+      setCompletedModules(new Set());
     }
-  }, []);
+  }, [user?.id]);
 
   const isModuleCompleted = (moduleId: string): boolean => {
     return completedModules.has(moduleId);

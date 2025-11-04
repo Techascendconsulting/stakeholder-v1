@@ -138,7 +138,7 @@ export class JourneyProgressService {
   static async getLearningProgress(userId: string): Promise<LearningProgress> {
     try {
       // Check localStorage for completed modules
-      const completedModulesStr = localStorage.getItem('completedModules');
+      const completedModulesStr = localStorage.getItem(`completedModules_${userId}`) || localStorage.getItem('completedModules');
       const completedModules = completedModulesStr ? JSON.parse(completedModulesStr) : [];
       
       const TOTAL_MODULES = 11; // As per your curriculum
