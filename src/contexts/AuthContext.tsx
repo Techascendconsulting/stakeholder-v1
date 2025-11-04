@@ -242,7 +242,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
         
-        console.log('🔐 AUTH - User not blocked, proceeding with device lock check');
+        // If user account is LOCKED (device lock), block login and require admin unlock
+        if (userProfile?.locked && !userProfile?.is_admin && !userProfile?.is_super_admin && !userProfile?.is_senior_admin) {
+          console.log('🔐 AUTH - User account is LOCKED (device lock), preventing access')
+          
+          // Sign out immediately
+          await supabase.auth.signOut()
+          
+          // Log locked account access attempt
+          await userActivityService.logActivity(
+            data.user.id,
+            'locked_account_access_attempt',
+            {
+              email,
+              deviceId: await deviceLockService.getDeviceId(),
+              reason: 'Account locked due to multiple device usage',
+              success: false
+            }
+          )
+          
+          return {
+            error: new Error('Your account has been LOCKED due to login from multiple devices. Please contact support to unlock your account and register a single device.')
+          }
+        }
+        
+        console.log('🔐 AUTH - User not blocked or locked, proceeding with device lock check');
         
         const isAdminUser = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
         const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdminUser;
@@ -523,7 +547,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           const currentDeviceId = await deviceLockService.getDeviceId()
           
-          // Reverted: Do not enforce registered vs current device mismatch during session
+          // SECURITY: Check if THIS user's registered device matches current device
+          // If different, LOCK THIS USER's account (not the device)
+          // NOTE: Multiple users CAN share the same device - each user has their own registered_device field
+          const { data: deviceProfile } = await supabase
+            .from('user_profiles')
+            .select('registered_device, locked')
+            .eq('user_id', user.id)
+            .single();
+
+          if (deviceProfile?.registered_device && currentDeviceId && deviceProfile.registered_device !== currentDeviceId) {
+            console.log('🔐 AUTH - THIS USER\'s registered device mismatch detected. LOCKING THIS USER\'S ACCOUNT (deterrent)');
+
+            await userActivityService.logDeviceLockFailure(
+              user.id,
+              currentDeviceId,
+              'Registered device mismatch during session - locking account to deter multiple device usage'
+            );
+
+            // LOCK the account to prevent any further logins until admin unlocks
+            await deviceLockService.lockAccount(user.id);
+
+            await signOut();
+            alert('Your account has been LOCKED due to login from a different device. You can only access your account from one registered device at a time. Please contact support to unlock your account.');
+            return;
+          }
           
           // Check if device ID has changed (different browser/incognito during same session)
           if (currentDeviceId && lastDeviceId.current && currentDeviceId !== lastDeviceId.current) {

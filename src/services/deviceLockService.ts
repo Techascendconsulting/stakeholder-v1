@@ -253,7 +253,9 @@ class DeviceLockService {
         };
       }
 
-      // If no device is registered, register current device
+      // If no device is registered, register current device for THIS user
+      // NOTE: Multiple users CAN share the same device - each user has their own registered_device
+      // This allows different users to use the same laptop/device with their own logins
       if (!user.registered_device) {
         await this.registerDevice(userId, currentDeviceId);
         return {
@@ -264,7 +266,8 @@ class DeviceLockService {
         };
       }
 
-      // If registered device matches current device, allow login
+      // If THIS user's registered device matches current device, allow login
+      // This check is per-user, so different users can use the same device
       if (user.registered_device === currentDeviceId) {
         return {
           success: true,
@@ -305,13 +308,15 @@ class DeviceLockService {
         console.log('🔐 DEVICE LOCK - Migration check failed:', migrationError);
       }
 
-      // Shared-device policy: allow multiple users on same laptop or user switching devices
-      // If the registered device doesn't match with low similarity, allow access instead of locking.
-      console.warn('🔐 DEVICE LOCK - Mismatch detected but allowing access (shared device policy).');
+      // SECURITY: THIS user's registered device differs from current device
+      // LOCK THIS USER'S account (not the device) to enforce single-device-per-user policy
+      // This does NOT prevent other users from using the same device - each user has their own registered_device
+      console.warn('🔐 DEVICE LOCK - DIFFERENT DEVICE DETECTED for user', userId, '. LOCKING THIS USER\'S ACCOUNT.');
+      await this.lockAccount(userId);
       return {
-        success: true,
-        locked: false,
-        message: 'Device differs, but access allowed (shared device).'
+        success: false,
+        locked: true,
+        message: 'Your account has been LOCKED due to login from a different device. For security reasons, you can only access your account from one registered device at a time. Please contact support to unlock your account and register a new device if needed.'
       };
 
     } catch (error) {
