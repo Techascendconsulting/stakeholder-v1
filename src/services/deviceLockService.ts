@@ -200,10 +200,11 @@ class DeviceLockService {
 
       if (error) {
         console.error('Error fetching user device data:', error);
+        // Fail-open: allow access on transient DB issues to avoid blocking learners
         return {
-          success: false,
+          success: true,
           locked: false,
-          message: 'Database error. Please try again.'
+          message: 'Proceed allowed (temporary service issue).'
         };
       }
 
@@ -292,12 +293,13 @@ class DeviceLockService {
         console.log('🔐 DEVICE LOCK - Migration check failed:', migrationError);
       }
 
-      // If registered device doesn't match, lock account
-      await this.lockAccount(userId);
+      // Shared-device policy: allow multiple users on same laptop.
+      // If the registered device doesn't match with low similarity, allow access instead of locking.
+      console.warn('🔐 DEVICE LOCK - Mismatch detected but allowing access (shared device policy).');
       return {
-        success: false,
-        locked: true,
-        message: 'Your account has been locked due to multiple device login attempts. For security reasons, you can only access your account from the device you originally registered with. Please contact support to unlock your account.'
+        success: true,
+        locked: false,
+        message: 'Device differs, but access allowed (shared device).'
       };
 
     } catch (error) {
