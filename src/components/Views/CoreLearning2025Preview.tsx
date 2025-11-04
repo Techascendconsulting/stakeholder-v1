@@ -304,6 +304,7 @@ d) There's no difference
                     return (
                       <button
                         key={topic.id}
+                        data-topic-id={topic.id}
                         onClick={() => accessible && setSelectedTopicId(topic.id)}
                         disabled={!accessible}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
@@ -317,10 +318,10 @@ d) There's no difference
                         }`}
                       >
                         <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                          completed ? 'bg-green-100 dark:bg-green-900/30' : isSelected ? 'bg-purple-200 dark:bg-purple-800' : color.icon
+                          completed ? 'bg-green-700 dark:bg-green-900' : isSelected ? 'bg-purple-200 dark:bg-purple-800' : color.icon
                         }`}>
                           {completed ? (
-                            <CheckCircle className="w-4 h-4 text-green-700 dark:text-green-300" />
+                            <CheckCircle className="w-4 h-4 text-white" />
                           ) : !accessible ? (
                             <Lock className="w-4 h-4" />
                           ) : (
@@ -329,7 +330,7 @@ d) There's no difference
                         </div>
                         <span className="flex-1 text-left truncate">{topic.title}</span>
                         {completed && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800">Done</span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-800 text-white dark:bg-green-950 dark:text-green-100 border border-green-900 dark:border-green-900">Done</span>
                         )}
                       </button>
                     );
@@ -584,38 +585,39 @@ d) There's no difference
             return (
               <button
                 key={topic.id}
+                data-topic-id={topic.id}
                 onClick={() => accessible && setSelectedTopicId(topic.id)}
                 disabled={!accessible}
                 className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-green-100 dark:bg-green-900/40 border-green-400 dark:border-green-600'
+                    ? 'bg-green-800 dark:bg-green-950 border-green-900 dark:border-green-950'
                     : accessible
                     ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-200 dark:bg-green-900/50' : color.icon}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-800 dark:bg-green-950' : color.icon}`}>
                     {completed ? (
-                      <CheckCircle className="w-6 h-6 text-green-800 dark:text-green-200" />
+                      <CheckCircle className="w-6 h-6 text-white" />
                     ) : !accessible ? (
                       <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
                     ) : (
                       <Icon className={`w-6 h-6 ${color.text}`} />
                     )}
                   </div>
-                  <span className={`text-xs font-semibold ${completed ? 'text-green-800 dark:text-green-200' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
+                  <span className={`text-xs font-semibold ${completed ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                <h3 className={`font-bold mb-2 transition-colors ${completed ? 'text-white' : 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'}`}>
                   {topic.title}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className={`flex items-center gap-2 text-xs ${completed ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
                     <Clock className="w-3 h-3" />
                     <span>{topic.duration || '10 min'}</span>
                   </div>
                   {completed && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-200 text-green-800 dark:bg-green-900/60 dark:text-green-200 border border-green-300 dark:border-green-700">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-900 text-white dark:bg-green-900 border border-green-950 dark:border-green-950">
                       <CheckCircle className="w-3 h-3" /> Completed
                     </span>
                   )}

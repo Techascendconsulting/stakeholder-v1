@@ -70,6 +70,7 @@ export function isPageAccessible(page: string, phase: UserPhase, userType: 'new'
     'my-resources', 
     'handbook', 
     'ba-reference',  // Resources section
+    'support',       // Support is always open to all users
     'profile', 
     'welcome', 
     'motivation'
