@@ -39,6 +39,11 @@ export const ProfileView: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    title: string;
+    message: string;
+    success?: boolean;
+  } | null>(null);
 
   // Device registration state
   const [deviceStatusLoading, setDeviceStatusLoading] = useState(false);
@@ -110,11 +115,10 @@ export const ProfileView: React.FC = () => {
       
       localStorage.setItem(`profile-${user.id}`, JSON.stringify(profile));
       
-      // Show success message (could be replaced with toast notification)
-      alert('Profile updated successfully!');
+      setStatusModal({ title: 'Success', message: 'Profile updated successfully.', success: true });
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Error saving profile. Please try again.');
+      setStatusModal({ title: 'Error', message: 'Error saving profile. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -164,17 +168,17 @@ export const ProfileView: React.FC = () => {
 
   const changePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      alert('Please fill in all password fields.');
+      setStatusModal({ title: 'Missing information', message: 'Please fill in all password fields.' });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert('New passwords do not match.');
+      setStatusModal({ title: 'Mismatch', message: 'New passwords do not match.' });
       return;
     }
 
     if (newPassword.length < 6) {
-      alert('New password must be at least 6 characters long.');
+      setStatusModal({ title: 'Weak password', message: 'New password must be at least 6 characters long.' });
       return;
     }
 
@@ -187,7 +191,7 @@ export const ProfileView: React.FC = () => {
       });
 
       if (verifyError) {
-        alert('Current password is incorrect.');
+        setStatusModal({ title: 'Incorrect password', message: 'Current password is incorrect.' });
         return;
       }
 
@@ -197,7 +201,7 @@ export const ProfileView: React.FC = () => {
       });
 
       if (updateError) {
-        alert('Error updating password: ' + updateError.message);
+        setStatusModal({ title: 'Error updating password', message: updateError.message || 'Please try again.' });
         return;
       }
 
@@ -205,10 +209,10 @@ export const ProfileView: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      alert('Password updated successfully!');
+      setStatusModal({ title: 'Password updated', message: 'Your password has been changed successfully.', success: true });
     } catch (error) {
       console.error('Error changing password:', error);
-      alert('An error occurred while changing your password.');
+      setStatusModal({ title: 'Error', message: 'An error occurred while changing your password. Please try again.' });
     } finally {
       setPasswordLoading(false);
     }
@@ -794,7 +798,7 @@ export const ProfileView: React.FC = () => {
                   Change Password
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Enter your current password and choose a new secure password.
+                  Enter your current password and choose a new secure password. New users can change their password here anytime.
                 </p>
 
                 <div className="space-y-4">
@@ -921,6 +925,18 @@ export const ProfileView: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Status Modal */}
+      {statusModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className={`text-lg font-semibold mb-2 ${statusModal.success ? 'text-green-700 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>{statusModal.title}</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{statusModal.message}</p>
+            <div className="mt-5 flex justify-end">
+              <button onClick={() => setStatusModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
