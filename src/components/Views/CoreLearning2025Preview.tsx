@@ -346,10 +346,10 @@ d) There's no difference
                     prose-h1:text-3xl prose-h1:mb-4 md:prose-h1:text-4xl
                     prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-gray-700 prose-h2:pb-2
                     prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-                    prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-5 prose-p:leading-7 md:prose-p:leading-8
-                    prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold
-                    prose-ul:my-6 prose-ul:space-y-2 marker:text-gray-500 dark:marker:text-gray-400
-                    prose-li:text-gray-700 dark:prose-li:text-gray-300
+                    prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:my-5 prose-p:leading-7 md:prose-p:leading-8
+                    prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold prose-strong:block prose-strong:mt-6 prose-strong:mb-2
+                    prose-ul:my-6 prose-ul:space-y-2 marker:text-gray-500 dark:marker:text-gray-400 list-disc list-inside
+                    prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:my-2 md:prose-li:my-2.5
                     prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                     prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
                   ">
