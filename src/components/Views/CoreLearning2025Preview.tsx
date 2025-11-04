@@ -110,13 +110,44 @@ const CoreLearning2025Preview: React.FC = () => {
   const isLastTopic = selectedIndex === topics.length - 1;
   const topicColor = selectedTopic ? getTopicColor(selectedIndex) : getTopicColor(0);
 
-  // Create readable paragraphs from dense text by inserting blank lines after sentence boundaries
+  // Create readable sections if content has no markdown structure
   const formatContent = (raw: string) => {
     if (!raw) return raw;
-    // Insert a blank line after sentence-ending punctuation followed by the start of a new sentence
-    const withParagraphs = raw.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
-    // Keep markdown lists tight (avoid adding extra blank lines before list markers)
-    return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
+    const hasHeadings = /\n\s*#+\s|^\s*#+\s/m.test(raw);
+    const hasParagraphs = /\n\n/.test(raw);
+    if (hasHeadings || hasParagraphs) {
+      // Light paragraphization for already-structured text
+      const withParagraphs = raw.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
+      return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
+    }
+
+    // Auto-structure dense blocks: Overview, Key ideas, Example
+    const sentences = raw
+      .replace(/\s+/g, ' ')
+      .split(/(?<=[.!?])\s+/)
+      .filter(Boolean);
+
+    if (sentences.length <= 3) {
+      return sentences.join(' \n\n');
+    }
+
+    const overview = sentences.slice(0, Math.min(2, sentences.length)).join(' ');
+    const middleStart = Math.min(2, sentences.length);
+    const middleEnd = Math.min(middleStart + 5, sentences.length - 1);
+    const middle = sentences.slice(middleStart, middleEnd);
+    const tail = sentences.slice(middleEnd).join(' ');
+
+    const keyIdeas = middle.map(s => `- ${s}`).join('\n');
+
+    let md = `### Overview\n\n${overview}\n\n`;
+    if (middle.length) {
+      md += `### Key ideas\n\n${keyIdeas}\n\n`;
+    }
+    if (tail.trim().length) {
+      md += `### Example\n\n${tail}\n`;
+    }
+
+    return md.trim();
   };
 
   // Keyboard navigation for selected topic
