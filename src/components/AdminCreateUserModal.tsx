@@ -27,6 +27,12 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
   const [createdUser, setCreatedUser] = useState<{email: string; password: string} | null>(null);
+  const [errorModal, setErrorModal] = useState<{
+    title: string;
+    message: string;
+    status?: number;
+    details?: string;
+  } | null>(null);
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
@@ -65,9 +71,17 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
         throw new Error('You must be logged in to create users');
       }
 
-      // Call Edge Function to create user server-side
-      const { data, error } = await supabase.functions.invoke('create-user', {
-        body: {
+      // Call Edge Function via direct fetch to capture status & errors precisely
+      const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || ''}/functions/v1/create-user`;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      const resp = await fetch(functionsUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': anonKey
+        },
+        body: JSON.stringify({
           email: formData.email,
           name: formData.name,
           password: formData.password,
@@ -76,18 +90,26 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
           maxProjects: formData.maxProjects,
           sendEmail: formData.sendEmail,
           accessRequestId: prefillData?.accessRequestId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+        })
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to create user');
+      let data: any = null;
+      try {
+        data = await resp.json();
+      } catch {
+        // no-op
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Failed to create user');
+      if (!resp.ok || !data?.success) {
+        const status = resp.status;
+        const serverMessage = data?.error || data?.message || 'Failed to create user';
+        setErrorModal({
+          title: 'Failed to create user',
+          message: serverMessage,
+          status,
+          details: typeof data === 'string' ? data : JSON.stringify(data || {}, null, 2)
+        });
+        return;
       }
 
       console.log('✅ User created successfully:', data.user);
@@ -109,7 +131,10 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
 
     } catch (error) {
       console.error('Error creating user:', error);
-      alert(`Failed to create user: ${(error as Error).message}`);
+      setErrorModal({
+        title: 'Unexpected error',
+        message: (error as Error).message || 'Something went wrong while creating the user.'
+      });
     } finally {
       setLoading(false);
     }
@@ -176,6 +201,32 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Error Modal */}
+        {errorModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setErrorModal(null)}></div>
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{errorModal.title}</h3>
+                  {errorModal.status && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Status: {errorModal.status}</p>
+                  )}
+                </div>
+                <button onClick={() => setErrorModal(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{errorModal.message}</p>
+              {errorModal.details && (
+                <pre className="mt-3 max-h-48 overflow-auto text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{errorModal.details}</pre>
+              )}
+              <div className="mt-5 flex justify-end gap-2">
+                <button onClick={() => setErrorModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
           <div className="flex items-center space-x-3">
