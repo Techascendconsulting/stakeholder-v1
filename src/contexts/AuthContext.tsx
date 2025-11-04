@@ -501,13 +501,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       console.log('🔐 AUTH - Starting continuous device lock monitoring, initial device ID:', initialDeviceId)
       
-      // Check every 5 seconds
+      // Check every 30 seconds (reduced from 5s to minimize database load and battery drain)
+      // Device rarely changes mid-session, so less frequent checks are sufficient
       deviceCheckInterval.current = setInterval(async () => {
         try {
-          // First: Check if user has been blocked
+          // OPTIMIZED: Single query to get all needed fields (reduces DB load)
           const { data: profile } = await supabase
             .from('user_profiles')
-            .select('blocked, block_reason, is_admin, is_super_admin, is_senior_admin')
+            .select('blocked, block_reason, is_admin, is_super_admin, is_senior_admin, registered_device, locked')
             .eq('user_id', user.id)
             .single();
           
@@ -550,13 +551,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // SECURITY: Check if THIS user's registered device matches current device
           // If different, LOCK THIS USER's account (not the device)
           // NOTE: Multiple users CAN share the same device - each user has their own registered_device field
-          const { data: deviceProfile } = await supabase
-            .from('user_profiles')
-            .select('registered_device, locked')
-            .eq('user_id', user.id)
-            .single();
 
-          if (deviceProfile?.registered_device && currentDeviceId && deviceProfile.registered_device !== currentDeviceId) {
+          if (profile?.registered_device && currentDeviceId && profile.registered_device !== currentDeviceId) {
             console.log('🔐 AUTH - THIS USER\'s registered device mismatch detected. LOCKING THIS USER\'S ACCOUNT (deterrent)');
 
             await userActivityService.logDeviceLockFailure(
@@ -604,7 +600,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
           console.error('🔐 AUTH - Device monitoring error:', error)
         }
-      }, 5000) // Check every 5 seconds
+      }, 30000) // Check every 30 seconds (reduced from 5s to minimize DB load and battery drain)
     }
 
     // Note: Removed last active tracking to reduce log volume
