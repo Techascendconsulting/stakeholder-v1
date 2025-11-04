@@ -115,7 +115,13 @@ const DeviceRegistrationPrompt: React.FC<DeviceRegistrationPromptProps> = ({ use
           </button>
           
           <button
-            onClick={onComplete}
+            onClick={() => {
+              try {
+                const payload = { skippedAt: Date.now() };
+                localStorage.setItem('device_registration_skipped', JSON.stringify(payload));
+              } catch {}
+              onComplete();
+            }}
             disabled={isRegistering}
             className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
           >

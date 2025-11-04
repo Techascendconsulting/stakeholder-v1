@@ -116,6 +116,17 @@ class DeviceLockService {
   async checkDeviceLock(userId: string): Promise<DeviceLockResult> {
     try {
       console.log('🔐 DEVICE LOCK - Starting device lock check for user:', userId);
+      // Respect user skip (temporary bypass)
+      try {
+        const raw = localStorage.getItem('device_registration_skipped');
+        if (raw) {
+          const { skippedAt } = JSON.parse(raw);
+          const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
+          if (!skippedAt || Date.now() - skippedAt < twoWeeksMs) {
+            return { success: true, locked: false, message: 'Proceeding without device registration (user skipped).' };
+          }
+        }
+      } catch {}
       
       // FIRST: Check if user is admin - admins bypass device lock entirely
       try {
@@ -157,10 +168,11 @@ class DeviceLockService {
       const currentDeviceId = await this.getDeviceId();
       console.log('🔐 DEVICE LOCK - Current device ID:', currentDeviceId);
       if (!currentDeviceId) {
+        // Fail-open: let user proceed if fingerprint not available
         return {
-          success: false,
+          success: true,
           locked: false,
-          message: 'Unable to identify device. Please try again.'
+          message: 'Proceed allowed (unable to identify device).'
         };
       }
 
