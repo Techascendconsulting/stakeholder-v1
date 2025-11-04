@@ -75,6 +75,7 @@ const AdminUserManagement: React.FC = () => {
   const [showUnblockModal, setShowUnblockModal] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [resendingWelcomeFor, setResendingWelcomeFor] = useState<string | null>(null);
+  const [welcomeModal, setWelcomeModal] = useState<{ email: string; resetLink: string; emailSent: boolean } | null>(null);
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -756,12 +757,12 @@ const AdminUserManagement: React.FC = () => {
               headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
             if (error || !data?.success) {
-              alert('Failed to send welcome email. Please check email settings.');
+              setWelcomeModal({ email: targetUser.email, resetLink: '', emailSent: false });
             } else {
-              alert('Welcome email sent.');
+              setWelcomeModal({ email: targetUser.email, resetLink: data.resetLink || '', emailSent: !!data.emailSent });
             }
           } catch (e) {
-            alert('Failed to send welcome email.');
+            setWelcomeModal({ email: targetUser.email, resetLink: '', emailSent: false });
           } finally {
             setResendingWelcomeFor(null);
           }
@@ -900,6 +901,40 @@ const AdminUserManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {welcomeModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Welcome Email</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{welcomeModal.email}</p>
+            {welcomeModal.emailSent ? (
+              <p className="text-sm text-green-700 dark:text-green-300 mb-4">Email sent successfully.</p>
+            ) : (
+              <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">Email not sent. You can copy the reset link below and send manually.</p>
+            )}
+            {welcomeModal.resetLink && (
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-4">
+                <p className="text-xs break-all text-gray-800 dark:text-gray-200">{welcomeModal.resetLink}</p>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              {welcomeModal.resetLink && (
+                <button
+                  onClick={() => navigator.clipboard.writeText(welcomeModal.resetLink)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                >
+                  Copy Link
+                </button>
+              )}
+              <button
+                onClick={() => setWelcomeModal(null)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
           User Management

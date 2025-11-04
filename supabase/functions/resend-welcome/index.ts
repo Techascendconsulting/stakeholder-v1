@@ -49,11 +49,8 @@ serve(async (req) => {
     }
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    if (!RESEND_API_KEY) {
-      return new Response(JSON.stringify({ success: false, error: 'RESEND_API_KEY not configured' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
 
-    // Generate recovery link
+    // Generate recovery link (always)
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({ type: 'recovery', email })
     if (resetError || !resetData?.properties?.action_link) {
       return new Response(JSON.stringify({ success: false, error: resetError?.message || 'Failed to generate reset link' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -61,32 +58,39 @@ serve(async (req) => {
 
     const resetLink = resetData.properties.action_link
 
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: 'BA WorkXP <onboarding@resend.dev>',
-        to: [email],
-        subject: 'BA WorkXP – Set Your Password',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #7c3aed;">Welcome${name ? `, ${name}` : ''}!</h2>
-            <p>Please set your password using the secure link below:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetLink}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-                Set Your Password
-              </a>
+    let emailSent = false
+    let emailData: any = null
+
+    if (RESEND_API_KEY) {
+      const emailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        body: JSON.stringify({
+          from: 'BA WorkXP <onboarding@resend.dev>',
+          to: [email],
+          subject: 'BA WorkXP – Set Your Password',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #7c3aed;">Welcome${name ? `, ${name}` : ''}!</h2>
+              <p>Please set your password using the secure link below:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                  Set Your Password
+                </a>
+              </div>
+              <p style="color: #6b7280; font-size: 12px;">Link expires in 24 hours.</p>
             </div>
-            <p style="color: #6b7280; font-size: 12px;">Link expires in 24 hours.</p>
-          </div>
-        `
+          `
+        })
       })
-    })
+      emailSent = emailResponse.ok
+      emailData = await emailResponse.json().catch(() => ({}))
+    }
 
-    const ok = emailResponse.ok
-    const responseJson = await emailResponse.json().catch(() => ({}))
-
-    return new Response(JSON.stringify({ success: ok, data: responseJson }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return new Response(
+      JSON.stringify({ success: true, emailSent, resetLink, data: emailData }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message || 'Internal error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })

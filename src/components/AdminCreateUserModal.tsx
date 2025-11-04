@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, User, Lock, Shield, Eye, EyeOff, RefreshCw, Copy, CheckCircle } from 'lucide-react';
+import { X, Mail, User, Lock, Shield, Eye, EyeOff, RefreshCw, Copy, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface AdminCreateUserModalProps {
@@ -33,6 +33,8 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
     status?: number;
     details?: string;
   } | null>(null);
+
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
@@ -205,23 +207,78 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
         {errorModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60" onClick={() => setErrorModal(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full p-6">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-6">
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{errorModal.title}</h3>
-                  {errorModal.status && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Status: {errorModal.status}</p>
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{errorModal.title}</h3>
+                    {errorModal.status && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 mt-1">HTTP {errorModal.status}</span>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => setErrorModal(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{errorModal.message}</p>
-              {errorModal.details && (
-                <pre className="mt-3 max-h-48 overflow-auto text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{errorModal.details}</pre>
+
+              {/* Friendly message */}
+              <p className="mt-4 text-sm text-gray-800 dark:text-gray-200">
+                {errorModal.message}
+              </p>
+
+              {/* Contextual action if email already registered */}
+              {(/already been registered/i).test(errorModal.message) && (
+                <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-blue-900 dark:text-blue-100 mb-3">
+                    This email is already in our system. You can resend the welcome email with a password reset link.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const token = session?.access_token;
+                        const { data, error } = await supabase.functions.invoke('resend-welcome', {
+                          body: { email: formData.email, name: formData.name },
+                          headers: token ? { Authorization: `Bearer ${token}` } : {}
+                        });
+                        if (error || !data?.success) {
+                          setShowErrorDetails(true);
+                        } else {
+                          setErrorModal({ title: 'Email sent', message: 'Welcome email has been resent with a password reset link.' });
+                        }
+                      } catch {
+                        setShowErrorDetails(true);
+                      }
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold"
+                  >
+                    <Mail className="w-4 h-4 mr-2" /> Resend Welcome Email
+                  </button>
+                </div>
               )}
-              <div className="mt-5 flex justify-end gap-2">
+
+              {/* Technical details toggle */}
+              {errorModal.details && (
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowErrorDetails(!showErrorDetails)}
+                    className="text-xs text-gray-600 dark:text-gray-300 hover:underline"
+                  >
+                    {showErrorDetails ? 'Hide technical details' : 'Show technical details'}
+                  </button>
+                  {showErrorDetails && (
+                    <pre className="mt-2 max-h-48 overflow-auto text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{errorModal.details}</pre>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 flex justify-end gap-2">
                 <button onClick={() => setErrorModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600">Close</button>
               </div>
             </div>
