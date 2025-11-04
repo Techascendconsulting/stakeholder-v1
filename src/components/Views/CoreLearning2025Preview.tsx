@@ -110,6 +110,15 @@ const CoreLearning2025Preview: React.FC = () => {
   const isLastTopic = selectedIndex === topics.length - 1;
   const topicColor = selectedTopic ? getTopicColor(selectedIndex) : getTopicColor(0);
 
+  // Create readable paragraphs from dense text by inserting blank lines after sentence boundaries
+  const formatContent = (raw: string) => {
+    if (!raw) return raw;
+    // Insert a blank line after sentence-ending punctuation followed by the start of a new sentence
+    const withParagraphs = raw.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
+    // Keep markdown lists tight (avoid adding extra blank lines before list markers)
+    return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
+  };
+
   // Keyboard navigation for selected topic
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -313,7 +322,7 @@ d) There's no difference
                     prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                     prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
                   ">
-                    <ReactMarkdown>{selectedTopic.content}</ReactMarkdown>
+                    <ReactMarkdown>{formatContent(selectedTopic.content)}</ReactMarkdown>
                   </div>
 
                   {/* Final Assignment (After Topic 14) */}
