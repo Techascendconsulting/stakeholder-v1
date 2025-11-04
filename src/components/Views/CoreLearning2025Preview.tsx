@@ -310,7 +310,7 @@ d) There's no difference
                           isSelected
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold'
                             : completed
-                            ? 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 hover:bg-green-100/70 dark:hover:bg-green-900/30'
                             : accessible
                             ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                             : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
@@ -320,7 +320,7 @@ d) There's no difference
                           completed ? 'bg-green-100 dark:bg-green-900/30' : isSelected ? 'bg-purple-200 dark:bg-purple-800' : color.icon
                         }`}>
                           {completed ? (
-                            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            <CheckCircle className="w-4 h-4 text-green-700 dark:text-green-300" />
                           ) : !accessible ? (
                             <Lock className="w-4 h-4" />
                           ) : (
@@ -328,6 +328,9 @@ d) There's no difference
                           )}
                         </div>
                         <span className="flex-1 text-left truncate">{topic.title}</span>
+                        {completed && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800">Done</span>
+                        )}
                       </button>
                     );
                   })}
@@ -585,30 +588,37 @@ d) There's no difference
                 disabled={!accessible}
                 className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800'
+                    ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700'
                     : accessible
                     ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/50' : color.icon}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/40' : color.icon}`}>
                     {completed ? (
-                      <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      <CheckCircle className="w-6 h-6 text-green-700 dark:text-green-300" />
                     ) : !accessible ? (
                       <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
                     ) : (
                       <Icon className={`w-6 h-6 ${color.text}`} />
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Topic {idx + 1}</span>
+                  <span className={`text-xs font-semibold ${completed ? 'text-green-700 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   {topic.title}
                 </h3>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <Clock className="w-3 h-3" />
-                  <span>{topic.duration || '10 min'}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{topic.duration || '10 min'}</span>
+                  </div>
+                  {completed && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800">
+                      <CheckCircle className="w-3 h-3" /> Completed
+                    </span>
+                  )}
                 </div>
               </button>
             );
