@@ -110,6 +110,23 @@ const CoreLearning2025Preview: React.FC = () => {
   const isLastTopic = selectedIndex === topics.length - 1;
   const topicColor = selectedTopic ? getTopicColor(selectedIndex) : getTopicColor(0);
 
+  // Keyboard navigation for selected topic
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (!selectedTopicId) return;
+      if (e.key === 'ArrowLeft') {
+        if (prevTopic) setSelectedTopicId(prevTopic.id);
+      } else if (e.key === 'ArrowRight') {
+        const nextIndex = topics.findIndex(t => t.id === selectedTopicId) + 1;
+        if (nextIndex < topics.length && isTopicAccessible(nextIndex)) {
+          setSelectedTopicId(topics[nextIndex].id);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedTopicId, prevTopic, topics]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
@@ -500,6 +517,33 @@ d) There's no difference
           })}
         </div>
       </div>
+
+      {/* Bottom Navigation when a topic is open */}
+      {selectedTopicId && (
+        <div className="sticky bottom-0 z-30 border-t border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <button
+              onClick={() => prevTopic && setSelectedTopicId(prevTopic.id)}
+              disabled={!prevTopic}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Previous topic"
+            >
+              Previous
+            </button>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Tip: Use ← and → to navigate
+            </div>
+            <button
+              onClick={() => nextTopic && isTopicAccessible(selectedIndex + 1) && setSelectedTopicId(nextTopic.id)}
+              disabled={!nextTopic || !isTopicAccessible(selectedIndex + 1)}
+              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Next topic"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
