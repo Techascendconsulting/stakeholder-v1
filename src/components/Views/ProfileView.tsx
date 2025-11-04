@@ -71,6 +71,14 @@ export const ProfileView: React.FC = () => {
 
   useEffect(() => {
     loadProfile();
+    // Navigate to target tab if requested
+    try {
+      const target = localStorage.getItem('profile_target_tab');
+      if (target) {
+        setActiveTab(target as any);
+        localStorage.removeItem('profile_target_tab');
+      }
+    } catch {}
     loadDeviceStatus();
   }, [user?.id]);
 
@@ -210,6 +218,7 @@ export const ProfileView: React.FC = () => {
       setNewPassword('');
       setConfirmPassword('');
       setStatusModal({ title: 'Password updated', message: 'Your password has been changed successfully.', success: true });
+      try { localStorage.setItem('password_changed_at', Date.now().toString()); } catch {}
     } catch (error) {
       console.error('Error changing password:', error);
       setStatusModal({ title: 'Error', message: 'An error occurred while changing your password. Please try again.' });

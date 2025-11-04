@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw } from 'lucide-react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
@@ -21,6 +21,8 @@ const Dashboard: React.FC = () => {
   const [userType, setUserType] = useState<'new' | 'existing' | 'admin'>('existing');
   const [userPhase, setUserPhase] = useState<UserPhase>('learning');
   const [resumeState, setResumeState] = useState<ResumeState | null>(null);
+  const [registeredDevice, setRegisteredDevice] = useState<string | null>(null);
+  const [showSecurityCard, setShowSecurityCard] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -39,6 +41,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+    loadSecurityHints();
     // Load resume state for "Continue where you left off"
     if (user?.id) {
       const state = loadResumeState(user.id);
@@ -101,6 +104,30 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const loadSecurityHints = async () => {
+    try {
+      if (!user?.id) return;
+      // Fetch device registration
+      const { data } = await window.supabase?.from?.('user_profiles')?.select?.('registered_device')?.eq?.('user_id', user.id)?.single?.() || { data: null };
+      const device = data?.registered_device || null;
+      setRegisteredDevice(device);
+      // Determine if password is fresh (7 days)
+      let needsPassword = false;
+      try {
+        const tsStr = localStorage.getItem('password_changed_at');
+        if (!tsStr) needsPassword = true; else {
+          const age = Date.now() - parseInt(tsStr, 10);
+          needsPassword = age > 7 * 24 * 60 * 60 * 1000;
+        }
+      } catch { needsPassword = true; }
+      // Respect dismissal
+      const dismissed = localStorage.getItem('security_card_dismissed') === '1';
+      setShowSecurityCard(!dismissed && (needsPassword || !device));
+    } catch {
+      // Non-blocking
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -146,6 +173,54 @@ const Dashboard: React.FC = () => {
           Here's your stakeholder interview progress and recent activity
         </p>
       </div>
+
+      {/* Security nudges */}
+      {showSecurityCard && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-400/80 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-amber-900" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">Security tips</h3>
+                <ul className="text-sm text-amber-900/90 dark:text-amber-200/90 list-disc pl-5 space-y-1">
+                  <li>
+                    <span className="font-medium">Change your password</span> regularly to keep your account secure.
+                  </li>
+                  {!registeredDevice && (
+                    <li>
+                      <span className="font-medium">Register this device</span> so we recognize it next time you sign in.
+                    </li>
+                  )}
+                </ul>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => { localStorage.setItem('profile_target_tab', 'security'); setCurrentView('profile'); }}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold"
+                  >
+                    <KeyRound className="w-4 h-4" /> Change password
+                  </button>
+                  {!registeredDevice && (
+                    <button
+                      onClick={() => { localStorage.removeItem('device_registration_skipped'); setCurrentView('profile'); localStorage.setItem('profile_target_tab', 'security'); }}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold"
+                    >
+                      <Laptop className="w-4 h-4" /> Register device
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { localStorage.setItem('security_card_dismissed', '1'); setShowSecurityCard(false); }}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-300 text-amber-900 dark:text-amber-200 text-sm"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Continue Where You Left Off */}
       {resumeState && (
