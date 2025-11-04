@@ -468,77 +468,33 @@ d) There's no difference
                 key={topic.id}
                 onClick={() => accessible && setSelectedTopicId(topic.id)}
                 disabled={!accessible}
-                className={`group relative p-8 rounded-2xl border transition-all duration-300 text-left overflow-hidden ${
+                className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 border-green-200/50 dark:border-green-800/50 shadow-sm hover:shadow-md'
+                    ? 'bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800'
                     : accessible
-                    ? 'bg-white dark:bg-gray-800 border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-xl hover:scale-[1.02] hover:border-purple-300 dark:hover:border-purple-600'
-                    : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 opacity-50 cursor-not-allowed'
+                    ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
+                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
                 }`}
               >
-                {/* Subtle background pattern */}
-                {accessible && !completed && (
-                  <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.3),transparent_50%)]" />
-                  </div>
-                )}
-
-                <div className="relative">
-                  {/* Icon and Status Row */}
-                  <div className="flex items-start justify-between mb-5">
-                    <div className={`relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110 ${
-                      completed 
-                        ? 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40' 
-                        : accessible
-                        ? `${color.icon} ring-2 ring-white/50 dark:ring-gray-700/50`
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}>
-                      {completed ? (
-                        <CheckCircle className="w-7 h-7 text-green-600 dark:text-green-400" />
-                      ) : !accessible ? (
-                        <Lock className="w-7 h-7 text-gray-400 dark:text-gray-600" />
-                      ) : (
-                        <Icon className={`w-7 h-7 ${color.text}`} />
-                      )}
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      completed
-                        ? 'bg-green-100/80 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : accessible
-                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                    }`}>
-                      Topic {idx + 1}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className={`text-lg font-bold mb-3 leading-tight transition-colors ${
-                    completed
-                      ? 'text-gray-900 dark:text-white'
-                      : accessible
-                      ? 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'
-                      : 'text-gray-500 dark:text-gray-500'
-                  }`}>
-                    {topic.title}
-                  </h3>
-
-                  {/* Duration */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-medium">{topic.duration || '10 min'}</span>
-                    {completed && (
-                      <span className="ml-auto text-xs font-semibold text-green-600 dark:text-green-400">
-                        Completed
-                      </span>
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/50' : color.icon}`}>
+                    {completed ? (
+                      <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    ) : !accessible ? (
+                      <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
+                    ) : (
+                      <Icon className={`w-6 h-6 ${color.text}`} />
                     )}
                   </div>
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Topic {idx + 1}</span>
                 </div>
-
-                {/* Hover accent line */}
-                {accessible && !completed && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                )}
+                <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  {topic.title}
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <Clock className="w-3 h-3" />
+                  <span>{topic.duration || '10 min'}</span>
+                </div>
               </button>
             );
           })}
