@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
 import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
@@ -108,7 +109,11 @@ const Dashboard: React.FC = () => {
     try {
       if (!user?.id) return;
       // Fetch device registration
-      const { data } = await window.supabase?.from?.('user_profiles')?.select?.('registered_device')?.eq?.('user_id', user.id)?.single?.() || { data: null };
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('registered_device')
+        .eq('user_id', user.id)
+        .single();
       const device = data?.registered_device || null;
       setRegisteredDevice(device);
       // Determine if password is fresh (7 days)
@@ -121,12 +126,27 @@ const Dashboard: React.FC = () => {
         }
       } catch { needsPassword = true; }
       // Respect dismissal
-      const dismissed = localStorage.getItem('security_card_dismissed') === '1';
+      const dismissed = localStorage.getItem(`security_card_dismissed_${user.id}`) === '1';
       setShowSecurityCard(!dismissed && (needsPassword || !device));
     } catch {
       // Non-blocking
     }
   };
+
+  // Re-evaluate security card visibility when device registration state changes
+  useEffect(() => {
+    if (!user?.id) return;
+    const tsStr = localStorage.getItem('password_changed_at');
+    let needsPassword = true;
+    try {
+      if (tsStr) {
+        const age = Date.now() - parseInt(tsStr, 10);
+        needsPassword = age > 7 * 24 * 60 * 60 * 1000;
+      }
+    } catch { /* ignore */ }
+    const dismissed = localStorage.getItem(`security_card_dismissed_${user.id}`) === '1';
+    setShowSecurityCard(!dismissed && (needsPassword || !registeredDevice));
+  }, [registeredDevice, user?.id]);
 
   if (loading) {
     return (
@@ -210,7 +230,7 @@ const Dashboard: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => { localStorage.setItem('security_card_dismissed', '1'); setShowSecurityCard(false); }}
+                    onClick={() => { if (user?.id) localStorage.setItem(`security_card_dismissed_${user.id}`, '1'); setShowSecurityCard(false); }}
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-300 text-amber-900 dark:text-amber-200 text-sm"
                   >
                     Dismiss
