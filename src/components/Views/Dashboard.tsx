@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
+import { deviceLockService } from '../../services/deviceLockService';
 import { useAuth } from '../../contexts/AuthContext';
 import { JourneyProgressService, JourneyProgress, LearningProgress, PracticeProgress, NextStepGuidance } from '../../services/journeyProgressService';
 import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgressPhase';
@@ -114,12 +115,32 @@ const Dashboard: React.FC = () => {
         .select('registered_device')
         .eq('user_id', user.id)
         .single();
-      const device = data?.registered_device || null;
+      const deviceRaw = (data?.registered_device as string | null) || null;
+      const device = deviceRaw && typeof deviceRaw === 'string' && deviceRaw.trim().length > 0 ? deviceRaw.trim() : null;
       setRegisteredDevice(device);
+      
+      // If user is admin, never show the card
+      const isAdminEmail = user?.email === 'admin@baworkxp.com' || user?.email === 'techascendconsulting1@gmail.com';
+      if (isAdminEmail) {
+        setShowSecurityCard(false);
+        return;
+      }
+
+      // Compare against current device fingerprint for robustness
+      let isRegistered = !!device;
+      try {
+        const currentDeviceId = await deviceLockService.getDeviceId();
+        if (device && currentDeviceId) {
+          isRegistered = device === currentDeviceId;
+        }
+      } catch {
+        // If fingerprint unavailable, fall back to server value
+        isRegistered = !!device;
+      }
       // Respect dismissal
       const dismissed = localStorage.getItem(`security_card_dismissed_${user.id}`) === '1';
       // Show card ONLY when device not registered
-      setShowSecurityCard(!dismissed && !device);
+      setShowSecurityCard(!dismissed && !isRegistered);
     } catch {
       // Non-blocking
     }
