@@ -468,7 +468,7 @@ d) There's no difference
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-8 py-6">
+                <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-8 py-6 pr-28 md:pr-96">
                   <div className="flex items-center justify-between">
                     <div>
                       {prevTopic && (
@@ -588,23 +588,23 @@ d) There's no difference
                 disabled={!accessible}
                 className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700'
+                    ? 'bg-green-100 dark:bg-green-900/40 border-green-400 dark:border-green-600'
                     : accessible
                     ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/40' : color.icon}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-200 dark:bg-green-900/50' : color.icon}`}>
                     {completed ? (
-                      <CheckCircle className="w-6 h-6 text-green-700 dark:text-green-300" />
+                      <CheckCircle className="w-6 h-6 text-green-800 dark:text-green-200" />
                     ) : !accessible ? (
                       <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
                     ) : (
                       <Icon className={`w-6 h-6 ${color.text}`} />
                     )}
                   </div>
-                  <span className={`text-xs font-semibold ${completed ? 'text-green-700 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
+                  <span className={`text-xs font-semibold ${completed ? 'text-green-800 dark:text-green-200' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   {topic.title}
@@ -615,7 +615,7 @@ d) There's no difference
                     <span>{topic.duration || '10 min'}</span>
                   </div>
                   {completed && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-200 text-green-800 dark:bg-green-900/60 dark:text-green-200 border border-green-300 dark:border-green-700">
                       <CheckCircle className="w-3 h-3" /> Completed
                     </span>
                   )}
