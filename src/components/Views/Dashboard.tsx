@@ -116,18 +116,10 @@ const Dashboard: React.FC = () => {
         .single();
       const device = data?.registered_device || null;
       setRegisteredDevice(device);
-      // Determine if password is fresh (7 days)
-      let needsPassword = false;
-      try {
-        const tsStr = localStorage.getItem('password_changed_at');
-        if (!tsStr) needsPassword = true; else {
-          const age = Date.now() - parseInt(tsStr, 10);
-          needsPassword = age > 7 * 24 * 60 * 60 * 1000;
-        }
-      } catch { needsPassword = true; }
       // Respect dismissal
       const dismissed = localStorage.getItem(`security_card_dismissed_${user.id}`) === '1';
-      setShowSecurityCard(!dismissed && (needsPassword || !device));
+      // Show card ONLY when device not registered
+      setShowSecurityCard(!dismissed && !device);
     } catch {
       // Non-blocking
     }
@@ -136,16 +128,8 @@ const Dashboard: React.FC = () => {
   // Re-evaluate security card visibility when device registration state changes
   useEffect(() => {
     if (!user?.id) return;
-    const tsStr = localStorage.getItem('password_changed_at');
-    let needsPassword = true;
-    try {
-      if (tsStr) {
-        const age = Date.now() - parseInt(tsStr, 10);
-        needsPassword = age > 7 * 24 * 60 * 60 * 1000;
-      }
-    } catch { /* ignore */ }
     const dismissed = localStorage.getItem(`security_card_dismissed_${user.id}`) === '1';
-    setShowSecurityCard(!dismissed && (needsPassword || !registeredDevice));
+    setShowSecurityCard(!dismissed && !registeredDevice);
   }, [registeredDevice, user?.id]);
 
   if (loading) {
