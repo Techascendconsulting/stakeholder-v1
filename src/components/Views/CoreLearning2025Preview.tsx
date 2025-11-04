@@ -150,6 +150,22 @@ const CoreLearning2025Preview: React.FC = () => {
     return md.trim();
   };
 
+  // Remove any leading markdown heading that repeats the topic title (e.g., "# Who is a BA?")
+  const removeLeadingHeading = (raw: string, title?: string) => {
+    if (!raw) return raw;
+    let text = raw.trimStart();
+    // If the very first line is a markdown heading (one or more #) remove it
+    text = text.replace(/^\s*#{1,6}\s+.*\n+/, '');
+    // Also remove plain first-line title duplicates
+    if (title) {
+      const firstLine = text.split('\n')[0]?.trim();
+      if (firstLine && firstLine.toLowerCase() === title.trim().toLowerCase()) {
+        text = text.substring(text.indexOf('\n') + 1);
+      }
+    }
+    return text.trimStart();
+  };
+
   // Keyboard navigation for selected topic
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -353,7 +369,7 @@ d) There's no difference
                     prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                     prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
                   ">
-                    {formatContent(selectedTopic.content).split('\n\n').map((section, index) => {
+                    {formatContent(removeLeadingHeading(selectedTopic.content, selectedTopic.title)).split('\n\n').map((section, index) => {
                       if (section.startsWith('## ')) {
                         return (
                           <h2 key={index} className="text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-4 first:mt-0">
