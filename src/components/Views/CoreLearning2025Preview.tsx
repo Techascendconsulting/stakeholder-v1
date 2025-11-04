@@ -464,6 +464,44 @@ d) There's no difference
             const color = getTopicColor(idx);
             const statusLabel = completed ? 'Review' : accessible ? 'Start' : 'Locked';
 
+            // For comparison: render the FIRST card with the previous, simpler design
+            if (idx === 0) {
+              return (
+                <button
+                  key={topic.id}
+                  onClick={() => accessible && setSelectedTopicId(topic.id)}
+                  disabled={!accessible}
+                  className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
+                    completed
+                      ? 'bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800'
+                      : accessible
+                      ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
+                      : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-100 dark:bg-green-900/50' : color.icon}`}>
+                      {completed ? (
+                        <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      ) : !accessible ? (
+                        <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
+                      ) : (
+                        <Icon className={`w-6 h-6 ${color.text}`} />
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Topic {idx + 1}</span>
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {topic.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{topic.duration || '10 min'}</span>
+                  </div>
+                </button>
+              );
+            }
+
             return (
               <button
                 key={topic.id}
