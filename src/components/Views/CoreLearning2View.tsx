@@ -12,6 +12,7 @@ import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
 import { saveResumeState, loadResumeState } from '../../services/resumeStore';
 import { getPageTitle } from '../../services/resumeStore';
 import type { PageType } from '../../types/resume';
+import CoreLearning2025Preview from './CoreLearning2025Preview';
 
 const CoreLearning2View: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -187,6 +188,16 @@ const CoreLearning2View: React.FC = () => {
 
   const selectedTopic = topics.find(t => t.id === selectedTopicId);
   const selectedIndex = topics.findIndex(t => t.id === selectedTopicId);
+
+  // Preview mode: Check if user is preview email or has preview flag
+  const isPreviewMode = user?.email === 'baworkxp@gmail.com' || 
+                       localStorage.getItem('preview_learning2025') === 'true' ||
+                       new URLSearchParams(window.location.search).has('preview');
+
+  // Show new 2025 design for preview users (after loading check)
+  if (!loading && isPreviewMode) {
+    return <CoreLearning2025Preview />;
+  }
 
   if (loading) {
     return (
