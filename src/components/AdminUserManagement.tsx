@@ -22,6 +22,7 @@ import { adminService } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
 import EmailService from '../services/emailService';
 import { adminInviteService } from '../services/adminInviteService';
+import AdminCreateUserModal from './AdminCreateUserModal';
 import { supabase } from '../lib/supabase';
 
 interface User {
@@ -60,6 +61,7 @@ const AdminUserManagement: React.FC = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'senior_admin' | 'super_admin'>('admin');
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   
   // Unlock/Reset Device modal states
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -876,6 +878,16 @@ const AdminUserManagement: React.FC = () => {
           User Management
         </h2>
         <div className="flex space-x-3">
+          {/* Create User Button - visible for Admin/Senior/Super */}
+          {(currentUserRole.is_admin || currentUserRole.is_senior_admin || currentUserRole.is_super_admin) && (
+            <button
+              onClick={() => setShowCreateUserModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              <UserCheck className="h-4 w-4" />
+              <span>Create User</span>
+            </button>
+          )}
           {/* Invite Admin Button - Only for Super Admin and Senior Admin */}
           {(currentUserRole.is_super_admin || currentUserRole.is_senior_admin) && (
             <button
@@ -1571,6 +1583,14 @@ const AdminUserManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUserModal && (
+        <AdminCreateUserModal
+          onClose={() => setShowCreateUserModal(false)}
+          onUserCreated={() => loadUsers()}
+        />
       )}
     </div>
   );
