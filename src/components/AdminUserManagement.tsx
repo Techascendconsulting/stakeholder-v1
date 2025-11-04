@@ -74,6 +74,7 @@ const AdminUserManagement: React.FC = () => {
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showUnblockModal, setShowUnblockModal] = useState(false);
   const [blockReason, setBlockReason] = useState('');
+  const [resendingWelcomeFor, setResendingWelcomeFor] = useState<string | null>(null);
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -742,6 +743,32 @@ const AdminUserManagement: React.FC = () => {
     
     // Student actions (for all admin levels) - add these for any student user
     if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
+      // Resend welcome email (password reset link)
+      actions.push({
+        label: resendingWelcomeFor === targetUser.id ? 'Sending…' : 'Resend Welcome Email',
+        onClick: async () => {
+          try {
+            setResendingWelcomeFor(targetUser.id);
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+            const { data, error } = await supabase.functions.invoke('resend-welcome', {
+              body: { email: targetUser.email, name: targetUser.display_name },
+              headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            if (error || !data?.success) {
+              alert('Failed to send welcome email. Please check email settings.');
+            } else {
+              alert('Welcome email sent.');
+            }
+          } catch (e) {
+            alert('Failed to send welcome email.');
+          } finally {
+            setResendingWelcomeFor(null);
+          }
+        },
+        className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors',
+        icon: <Mail className="h-3 w-3 mr-1" />
+      });
       if (targetUser.locked) {
         actions.push({
           label: 'Unlock Account',
