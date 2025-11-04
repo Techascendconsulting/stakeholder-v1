@@ -602,7 +602,7 @@ d) There's no difference
 
       {/* Bottom Navigation when a topic is open */}
       {selectedTopicId && (
-        <div className="sticky bottom-0 z-30 border-t border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur">
+        <div className="sticky bottom-0 z-40 border-t border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur pr-24 md:pr-96">
           <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
             <button
               onClick={() => prevTopic && setSelectedTopicId(prevTopic.id)}
