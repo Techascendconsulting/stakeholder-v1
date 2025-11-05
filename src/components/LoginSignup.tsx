@@ -118,25 +118,13 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
     setDeviceLockResult(null)
     setErrors({})
 
-    // Check for deviceLockError before attempting sign-in
-    const storedError = localStorage.getItem('deviceLockError')
-    if (storedError) {
-      try {
-        const deviceLockResult = JSON.parse(storedError)
-        setDeviceLockResult(deviceLockResult)
-        setLoading(false)
-        return
-      } catch (error) {
-        console.error('Error parsing device lock error:', error)
-        localStorage.removeItem('deviceLockError')
-      }
-    }
-
     try {
       const { error, deviceLockResult } = await signIn(formData.email, formData.password)
       if (error) {
         setErrors({ general: error.message })
-        if (deviceLockResult) {
+        // CRITICAL: Show lock modal IMMEDIATELY on first attempt
+        if (deviceLockResult && deviceLockResult.locked) {
+          console.log('🔐 LoginSignup: Device lock detected, showing modal immediately')
           setDeviceLockResult(deviceLockResult)
         }
       }

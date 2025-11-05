@@ -854,6 +854,17 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const getStatusBadge = (user: User) => {
+    // ⚠️ CRITICAL: Check locked status FIRST, before admin roles
+    // A locked admin should show as "Locked", not "Admin"
+    if (user.locked) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+          <Lock className="w-3 h-3 mr-1" />
+          Locked
+        </span>
+      );
+    }
+    
     if (user.blocked) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -886,15 +897,6 @@ const AdminUserManagement: React.FC = () => {
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
           <Shield className="w-3 h-3 mr-1" />
           Admin
-        </span>
-      );
-    }
-    
-    if (user.locked) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-          <Lock className="w-3 h-3 mr-1" />
-          Locked
         </span>
       );
     }

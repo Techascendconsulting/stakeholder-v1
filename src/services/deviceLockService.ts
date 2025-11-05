@@ -72,88 +72,40 @@ class DeviceLockService {
 
   /**
    * Check device lock status and handle login logic
+   * SECURITY: Uses server-side RPC function to prevent client-side tampering
    */
   async checkDeviceLock(userId: string): Promise<DeviceLockResult> {
     try {
       console.debug('🔐 [devicelock] start checkDeviceLock', { userId });
-      // Removed: skip device registration bypass. All devices must be registered immediately.
-      
-      // FIRST: Check if user is admin - admins bypass device lock entirely
-      try {
-        // FORCE ADMIN BYPASS FOR BA WORKXP ADMIN EMAIL
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email === 'admin@baworkxp.com' || userData?.user?.email === 'techascendconsulting1@gmail.com') {
-          console.log('🔐 DEVICE LOCK - FORCED ADMIN BYPASS for', userData?.user?.email);
-          const deviceId = await this.getDeviceId();
-          return {
-            success: true,
-            locked: false,
-            message: 'Admin access granted - device lock bypassed.',
-            deviceId: deviceId || undefined
-          };
-        }
-        
-        const { data: adminCheck, error: adminError } = await supabase
-          .from('user_profiles')
-          .select('is_admin, is_super_admin, is_senior_admin')
-          .eq('user_id', userId)
-          .single();
-        
-        if (adminCheck && !adminError) {
-          const isAdmin = adminCheck.is_admin || adminCheck.is_super_admin || adminCheck.is_senior_admin;
-          if (isAdmin) {
-            console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock entirely');
-            const deviceId = await this.getDeviceId();
-            return {
-              success: true,
-              locked: false,
-              message: 'Admin access granted - device lock bypassed.',
-              deviceId: deviceId || undefined
-            };
-          }
-        }
-      } catch (adminCheckError) {
-        console.log('🔐 DEVICE LOCK - Admin check failed, proceeding with device lock');
-      }
       
       // Get current device ID
       const currentDeviceId = await this.getDeviceId();
       console.debug('🔐 [devicelock] currentDeviceId', { currentDeviceId });
+      
       if (!currentDeviceId) {
-        // Fail-open: let user proceed if fingerprint not available
-        return {
-          success: true,
-          locked: false,
-          message: 'Proceed allowed (unable to identify device).'
-        };
-      }
-
-      // Fetch user's device lock status
-      // Try user_profiles table (your actual table name)
-      let { data: user, error } = await supabase
-        .from('user_profiles')
-        .select('registered_device, locked, is_admin')
-        .eq('user_id', userId)
-        .single();
-
-      console.debug('🔐 [devicelock] user record', { registered_device: user?.registered_device, locked: user?.locked, is_admin: user?.is_admin, error: error?.message, code: (error as any)?.code });
-      console.debug('🔐 [devicelock] compare', { current: currentDeviceId, registered: user?.registered_device, isMatch: user?.registered_device === currentDeviceId });
-
-      // Handle RLS recursion error - if we can't access user_profiles due to RLS issues,
-      // we'll assume the user is not an admin and proceed with device lock
-      if (error && error.code === '42P17') {
-        console.log('🔐 DEVICE LOCK - RLS recursion error detected, treating as non-admin user');
+        // Fail-closed: deny access if we can't identify the device
         return {
           success: false,
           locked: true,
-          message: 'Your account has been locked due to multiple device usage. Please contact support to unlock your account.'
+          message: 'Unable to verify device. Please enable JavaScript and cookies.'
         };
       }
 
+      // Call secure server-side RPC function
+      // This function handles ALL logic server-side to prevent client tampering
+      console.debug('🔐 [devicelock] Calling secure RPC: register_user_device');
+      const { data, error } = await supabase.rpc('register_user_device', {
+        p_user_id: userId,
+        p_device_id: currentDeviceId
+      });
+
       if (error) {
-        console.error('🔐 [devicelock] DB ERROR fetching user device data', { error: error.message, code: (error as any)?.code, details: (error as any)?.details, hint: (error as any)?.hint });
+        console.error('🔐 [devicelock] RPC ERROR', { 
+          error: error.message, 
+          code: (error as any)?.code, 
+          details: (error as any)?.details 
+        });
         // SECURITY: Fail-closed - deny access when device check cannot complete
-        // This prevents bypassing device lock via database errors (RLS, network, etc.)
         return {
           success: false,
           locked: true,
@@ -161,103 +113,37 @@ class DeviceLockService {
         };
       }
 
-      // If account is locked, check if user is admin or same device and auto-unlock
-      if (user.locked) {
-        // Admin bypass
-        if (user.is_admin) {
-          console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock');
-          return {
-            success: true,
-            locked: false,
-            message: 'Admin access granted - device lock bypassed.',
-            deviceId: currentDeviceId
-          };
-        }
+      console.debug('🔐 [devicelock] RPC result', data);
 
-        // Auto-unlock if the current device matches the registered device (including legacy format)
-        const isLegacyMatch = typeof user.registered_device === 'string' && user.registered_device.startsWith(currentDeviceId + '-');
-        if (user.registered_device === currentDeviceId || isLegacyMatch) {
-          console.debug('🔐 [devicelock] locked=true but same device -> auto unlock');
-          await this.unlockAccount(userId, currentDeviceId);
-          return {
-            success: true,
-            locked: false,
-            message: 'Device verified (auto-unlocked).',
-            deviceId: currentDeviceId
-          };
-        }
-
-        return {
-          success: false,
-          locked: true,
-          message: 'Your account has been locked due to multiple device login attempts. For security reasons, you can only access your account from the device you originally registered with. Please contact support to unlock your account.'
-        };
-      }
-
-      // If no device is registered, register current device for THIS user
-      // NOTE: Multiple users CAN share the same device - each user has their own registered_device
-      // This allows different users to use the same laptop/device with their own logins
-      if (!user.registered_device) {
-        await this.registerDevice(userId, currentDeviceId);
-        return {
-          success: true,
-          locked: false,
-          message: 'Device registered successfully.',
-          deviceId: currentDeviceId
-        };
-      }
-
-      // If THIS user's registered device matches current device, allow login
-      // This check is per-user, so different users can use the same device
-      if (user.registered_device === currentDeviceId) {
-        const result = {
-          success: true,
-          locked: false,
-          message: 'Device verified successfully.',
-          deviceId: currentDeviceId
-        };
-        console.debug('🔐 [devicelock] allow (exact match)', result);
-        return result;
-      }
-
-      // Removed: partial/legacy match allowances. Any mismatch now locks immediately.
-
-      // SECURITY: THIS user's registered device differs from current device
-      // LOCK THIS USER'S account (not the device) to enforce single-device-per-user policy
-      // This does NOT prevent other users from using the same device - each user has their own registered_device
-      console.warn('🔐 [devicelock] MISMATCH -> LOCK account', { userId, registered: user?.registered_device, current: currentDeviceId });
-      await this.lockAccount(userId);
-      const lockedResult = {
-        success: false,
-        locked: true,
-        message: 'Your account has been LOCKED due to login from a different device. For security reasons, you can only access your account from one registered device at a time. Please contact support to unlock your account and register a new device if needed.'
+      // Parse RPC response
+      const result = data as { success: boolean; locked: boolean; message: string };
+      
+      return {
+        success: result.success,
+        locked: result.locked,
+        message: result.message,
+        deviceId: result.success ? currentDeviceId : undefined
       };
-      console.debug('🔐 [devicelock] return locked result', lockedResult);
-      return lockedResult;
 
     } catch (error) {
       console.error('🔐 [devicelock] check failed', error);
+      // SECURITY: Fail-closed on unexpected errors
       return {
         success: false,
-        locked: false,
-        message: 'An error occurred during device verification. Please try again.'
+        locked: true,
+        message: 'An error occurred during device verification. Please contact support.'
       };
     }
   }
 
   /**
    * Register a new device for the user
+   * DEPRECATED: Device registration now handled by secure server-side RPC
+   * Keeping this for backward compatibility but it should not be called
    */
   private async registerDevice(userId: string, deviceId: string): Promise<void> {
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ registered_device: deviceId })
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('Failed to register device:', error);
-      throw error;
-    }
+    console.warn('⚠️ registerDevice() is deprecated - device registration is now handled server-side');
+    // No-op: device registration is now handled by register_user_device RPC
   }
 
   /**
