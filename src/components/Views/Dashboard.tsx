@@ -342,9 +342,6 @@ const Dashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your BA Journey</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">Career, Learning, Practice, and Project in one place</p>
           </div>
-          <button onClick={() => setCurrentView('career-journey')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
-            View details <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
