@@ -297,18 +297,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           .eq('user_id', user?.id)
           .maybeSingle(); // Use maybeSingle() instead of single() to handle missing profiles gracefully
         
-        console.log('🔍 User profile query result:', { userProfile, profileError, userId: user?.id });
+        console.log('🔍 NAVIGATE: User profile query result:', { 
+          userProfile, 
+          profileError, 
+          userId: user?.id,
+          errorCode: profileError?.code,
+          errorMessage: profileError?.message
+        });
         
+        // If query failed, check if it's an RLS error
+        if (profileError) {
+          console.error('❌ NAVIGATE: Failed to fetch user profile - BYPASSING locks to prevent false lockouts', profileError);
+          setLockMessage(null);
+          // Don't block on DB errors - fail open for existing users
+        }
         // DOUBLE CHECK: If user has admin flags in DB, bypass all locks
-        const isDbAdmin = !!(userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin);
-        if (isDbAdmin) {
+        else if (userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin) {
           console.log('✅ NAVIGATE: DB admin flags detected, bypassing ALL content locks');
           setLockMessage(null);
           // Skip navigation locks
+        }
+        // If user_type is 'existing', bypass all locks
+        else if (userProfile?.user_type === 'existing') {
+          console.log('✅ NAVIGATE: Existing user detected, bypassing ALL content locks');
+          setLockMessage(null);
+          // Skip navigation locks for existing users
         } else {
-          // If user profile doesn't exist or doesn't have user_type, default to 'new' for safety
+          // Only apply locks for 'new' users or when user_type is explicitly set to 'new'
           const userType = userProfile?.user_type || 'new';
-          console.log('🔐 Checking navigation permission for:', view, 'User type:', userType);
+          console.log('🔐 NAVIGATE: Checking navigation permission for:', view, 'User type:', userType);
 
         if (userType === 'new') {
           // Get user's current phase (learning, practice, or hands-on)
