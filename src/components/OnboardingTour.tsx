@@ -1,8 +1,6 @@
 import React from 'react';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
-import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 
 interface OnboardingTourProps {
   onComplete: () => void;
@@ -10,7 +8,6 @@ interface OnboardingTourProps {
 }
 
 const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) => {
-  const { setCurrentView } = useApp();
   const { user } = useAuth();
   const [run, setRun] = React.useState(true);
   const [steps, setSteps] = React.useState<Step[]>([]);
@@ -105,7 +102,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
     console.log('🎯 Tour callback:', { status, action });
     
     // Handle all close scenarios
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRun(false);
       if (status === STATUS.FINISHED) {
         console.log('✅ Tour completed');
