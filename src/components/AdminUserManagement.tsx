@@ -279,21 +279,32 @@ const AdminUserManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      const updateData: any = { locked: false };
+      console.log('🔓 Calling admin_unlock_user RPC:', { 
+        targetUserId: selectedUserForAction.id, 
+        resetDevice 
+      });
       
-      if (resetDevice) {
-        updateData.registered_device = null; // Clear device for device change
-      }
-      
-      const { error } = await supabase
-        .from('user_profiles')
-        .update(updateData)
-        .eq('user_id', selectedUserForAction.id);
+      // Use secure server-side RPC function to bypass RLS
+      const { data, error } = await supabase.rpc('admin_unlock_user', {
+        p_target_user_id: selectedUserForAction.id,
+        p_reset_device: resetDevice
+      });
+
+      console.log('🔓 RPC result:', { data, error });
 
       if (error) {
-        console.error('Error unlocking user:', error);
+        console.error('❌ Error unlocking user (RPC):', error);
+        alert(`Failed to unlock user: ${error.message}`);
         return;
       }
+
+      if (data && !data.success) {
+        console.error('❌ Unlock failed:', data.error);
+        alert(`Failed to unlock user: ${data.error}`);
+        return;
+      }
+
+      console.log('✅ User unlocked successfully:', data);
 
       // Log the action
       console.log('🔍 Logging unlock account action...');
