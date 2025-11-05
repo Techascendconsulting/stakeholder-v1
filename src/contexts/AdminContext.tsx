@@ -56,10 +56,8 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       console.log('🔐 ADMIN - Checking admin status for user:', user.id, 'email:', user.email);
       
-      // FORCE ADMIN ACCESS FOR BA WORKXP ADMIN EMAILS
-      const isYourEmail = user.email === 'admin@baworkxp.com' || 
-                         user.email === 'techascendconsulting1@gmail.com' ||
-                         user.email === 'admin@batraining.com';
+      // FORCE ADMIN ACCESS FOR BA WORKXP ADMIN EMAIL ONLY
+      const isYourEmail = user.email === 'admin@baworkxp.com' || user.email === 'techascendconsulting1@gmail.com';
       console.log('🔐 ADMIN - Is your email?', isYourEmail);
       
       if (isYourEmail) {
