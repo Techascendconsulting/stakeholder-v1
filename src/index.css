@@ -217,19 +217,26 @@ div[aria-live="polite"][role="status"] {
 }
 
 /* Custom scrollbar */
+.custom-scrollbar {
+  /* Improve visibility across browsers */
+  scrollbar-width: auto;                 /* Firefox */
+  scrollbar-color: #9ca3af #e5e7eb;      /* thumb track */
+  -webkit-overflow-scrolling: touch;     /* iOS momentum */
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;   /* vertical */
-  height: 8px;  /* horizontal */
+  width: 8px;   /* vertical */
+  height: 10px; /* horizontal */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: #9ca3af; /* gray-400 */
+  border-radius: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -238,15 +245,34 @@ div[aria-live="polite"][role="status"] {
 
 /* Dark mode scrollbar */
 .dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #374151;
+  background: #374151; /* gray-700 */
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
+  background: #d1d5db; /* gray-300 for higher contrast on dark */
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Mobile: make the horizontal scrollbar thicker and higher contrast */
+@media (max-width: 640px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 14px; /* easier to see/touch */
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #e5e7eb; /* gray-200 */
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #6b7280; /* gray-500 */
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: #4b5563; /* gray-600 */
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e5e7eb; /* gray-200 on dark */
+  }
 }
 
 /* Smooth transitions for theme switching */
