@@ -17,3 +17,4 @@ WHERE
   OR (SELECT email FROM auth.users WHERE id = user_profiles.user_id) = 'baworkxp@gmail.com'
 ORDER BY created_at DESC;
 
+

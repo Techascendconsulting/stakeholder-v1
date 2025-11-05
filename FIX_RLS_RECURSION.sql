@@ -39,3 +39,4 @@ WITH CHECK (auth.uid() = user_id);
 -- Verify policies
 SELECT policyname, cmd FROM pg_policies WHERE tablename = 'user_profiles' ORDER BY cmd, policyname;
 
+

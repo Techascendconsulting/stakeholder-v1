@@ -23,3 +23,4 @@ WITH CHECK (
 -- Verify policies
 SELECT policyname, roles, cmd FROM pg_policies WHERE tablename = 'user_profiles';
 
+

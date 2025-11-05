@@ -26,6 +26,11 @@ const CoreLearning2025Preview: React.FC = () => {
   // Get Core Learning module (Module 1)
   const coreModule = LEARNING_MODULES.find(m => m.id === 'module-1-core-learning');
   const topics = coreModule?.lessons || [];
+  
+  // Debug: Log topic titles to console
+  useEffect(() => {
+    console.log('📚 Core Learning Topics:', topics.map((t, i) => `${i + 1}. ${t.title}`));
+  }, [topics.length]);
 
   // Scroll to top on topic change
   useEffect(() => {
@@ -89,13 +94,20 @@ const CoreLearning2025Preview: React.FC = () => {
 
   const getTopicColor = (index: number) => {
     const colors = [
-      { bg: 'bg-blue-50 dark:bg-blue-950/40', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', icon: 'bg-blue-100 dark:bg-blue-900/50' },
-      { bg: 'bg-purple-50 dark:bg-purple-950/40', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-700 dark:text-purple-300', icon: 'bg-purple-100 dark:bg-purple-900/50' },
-      { bg: 'bg-emerald-50 dark:bg-emerald-950/40', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', icon: 'bg-emerald-100 dark:bg-emerald-900/50' },
-      { bg: 'bg-amber-50 dark:bg-amber-950/40', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', icon: 'bg-amber-100 dark:bg-amber-900/50' },
-      { bg: 'bg-cyan-50 dark:bg-cyan-950/40', border: 'border-cyan-200 dark:border-cyan-800', text: 'text-cyan-700 dark:text-cyan-300', icon: 'bg-cyan-100 dark:bg-cyan-900/50' },
-      { bg: 'bg-rose-50 dark:bg-rose-950/40', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', icon: 'bg-rose-100 dark:bg-rose-900/50' },
-      { bg: 'bg-indigo-50 dark:bg-indigo-950/40', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300', icon: 'bg-indigo-100 dark:bg-indigo-900/50' },
+      { bg: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40', border: 'border-blue-300 dark:border-blue-700', text: 'text-blue-700 dark:text-blue-300', icon: 'bg-blue-600 dark:bg-blue-500', accent: 'bg-blue-100 dark:bg-blue-900' },
+      { bg: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/40 dark:to-pink-950/40', border: 'border-purple-300 dark:border-purple-700', text: 'text-purple-700 dark:text-purple-300', icon: 'bg-purple-600 dark:bg-purple-500', accent: 'bg-purple-100 dark:bg-purple-900' },
+      { bg: 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40', border: 'border-emerald-300 dark:border-emerald-700', text: 'text-emerald-700 dark:text-emerald-300', icon: 'bg-emerald-600 dark:bg-emerald-500', accent: 'bg-emerald-100 dark:bg-emerald-900' },
+      { bg: 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40', border: 'border-amber-300 dark:border-amber-700', text: 'text-amber-700 dark:text-amber-300', icon: 'bg-amber-600 dark:bg-amber-500', accent: 'bg-amber-100 dark:bg-amber-900' },
+      { bg: 'bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/40 dark:to-sky-950/40', border: 'border-cyan-300 dark:border-cyan-700', text: 'text-cyan-700 dark:text-cyan-300', icon: 'bg-cyan-600 dark:bg-cyan-500', accent: 'bg-cyan-100 dark:bg-cyan-900' },
+      { bg: 'bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-950/40 dark:to-red-950/40', border: 'border-rose-300 dark:border-rose-700', text: 'text-rose-700 dark:text-rose-300', icon: 'bg-rose-600 dark:bg-rose-500', accent: 'bg-rose-100 dark:bg-rose-900' },
+      { bg: 'bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40', border: 'border-indigo-300 dark:border-indigo-700', text: 'text-indigo-700 dark:text-indigo-300', icon: 'bg-indigo-600 dark:bg-indigo-500', accent: 'bg-indigo-100 dark:bg-indigo-900' },
+      { bg: 'bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-fuchsia-950/40 dark:to-purple-950/40', border: 'border-fuchsia-300 dark:border-fuchsia-700', text: 'text-fuchsia-700 dark:text-fuchsia-300', icon: 'bg-fuchsia-600 dark:bg-fuchsia-500', accent: 'bg-fuchsia-100 dark:bg-fuchsia-900' },
+      { bg: 'bg-gradient-to-br from-lime-50 to-green-50 dark:from-lime-950/40 dark:to-green-950/40', border: 'border-lime-300 dark:border-lime-700', text: 'text-lime-700 dark:text-lime-300', icon: 'bg-lime-600 dark:bg-lime-500', accent: 'bg-lime-100 dark:bg-lime-900' },
+      { bg: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/40 dark:to-red-950/40', border: 'border-orange-300 dark:border-orange-700', text: 'text-orange-700 dark:text-orange-300', icon: 'bg-orange-600 dark:bg-orange-500', accent: 'bg-orange-100 dark:bg-orange-900' },
+      { bg: 'bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/40 dark:to-indigo-950/40', border: 'border-violet-300 dark:border-violet-700', text: 'text-violet-700 dark:text-violet-300', icon: 'bg-violet-600 dark:bg-violet-500', accent: 'bg-violet-100 dark:bg-violet-900' },
+      { bg: 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/40 dark:to-cyan-950/40', border: 'border-teal-300 dark:border-teal-700', text: 'text-teal-700 dark:text-teal-300', icon: 'bg-teal-600 dark:bg-teal-500', accent: 'bg-teal-100 dark:bg-teal-900' },
+      { bg: 'bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40', border: 'border-pink-300 dark:border-pink-700', text: 'text-pink-700 dark:text-pink-300', icon: 'bg-pink-600 dark:bg-pink-500', accent: 'bg-pink-100 dark:bg-pink-900' },
+      { bg: 'bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/40 dark:to-blue-950/40', border: 'border-sky-300 dark:border-sky-700', text: 'text-sky-700 dark:text-sky-300', icon: 'bg-sky-600 dark:bg-sky-500', accent: 'bg-sky-100 dark:bg-sky-900' },
     ];
     return colors[index % colors.length];
   };
@@ -118,6 +130,18 @@ const CoreLearning2025Preview: React.FC = () => {
   const isCompleted = selectedTopic && completedTopics.includes(selectedTopic.id);
   const isLastTopic = selectedIndex === topics.length - 1;
   const topicColor = selectedTopic ? getTopicColor(selectedIndex) : getTopicColor(0);
+
+  // Debug: Log which topic is selected AND its unique content
+  useEffect(() => {
+    if (selectedTopic) {
+      console.log('═══════════════════════════════════════');
+      console.log(`📖 TOPIC ${selectedIndex + 1}/14: "${selectedTopic.title}"`);
+      console.log(`🔑 Topic ID: ${selectedTopic.id}`);
+      console.log(`📝 Content length: ${selectedTopic.content.length} characters`);
+      console.log(`📄 First 200 chars:`, selectedTopic.content.substring(0, 200));
+      console.log('═══════════════════════════════════════');
+    }
+  }, [selectedTopicId, selectedTopic, selectedIndex]);
 
   // Create readable sections if content has no markdown structure
   /**
@@ -410,15 +434,15 @@ d) Design user interfaces
                             : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
                         }`}
                       >
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                          completed ? 'bg-green-700 dark:bg-green-900' : isSelected ? 'bg-purple-200 dark:bg-purple-800' : color.icon
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm ${
+                          completed ? 'bg-green-700 dark:bg-green-900' : isSelected ? color.icon : 'bg-gray-200 dark:bg-gray-700'
                         }`}>
                           {completed ? (
                             <CheckCircle className="w-4 h-4 text-white" />
                           ) : !accessible ? (
-                            <Lock className="w-4 h-4" />
+                            <Lock className="w-4 h-4 text-gray-400" />
                           ) : (
-                            <Icon className={`w-4 h-4 ${isSelected ? 'text-purple-600 dark:text-purple-400' : color.text}`} />
+                            <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
                           )}
                         </div>
                         <span className="flex-1 text-left truncate">{topic.title}</span>
@@ -435,19 +459,19 @@ d) Design user interfaces
             {/* Main Content */}
             <main className="lg:col-span-9">
               <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-                {/* Topic Hero */}
-                <div className={`bg-gradient-to-br ${topicColor.bg} ${topicColor.border} border-b-2 p-8`}>
+                {/* Topic Hero - Unique gradient for each topic */}
+                <div className={`${topicColor.bg} ${topicColor.border} border-b-2 p-8`}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-full text-xs font-semibold mb-3">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1 ${topicColor.accent} backdrop-blur-sm rounded-full text-xs font-semibold mb-3 ${topicColor.text}`}>
                         <Clock className="w-3 h-3" />
                         {selectedTopic.duration || '10 min'}
                       </div>
                       <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{selectedTopic.title}</h2>
-                      <p className="text-gray-600 dark:text-gray-400">Foundation concept for Business Analysts</p>
+                      <p className={`${topicColor.text} font-medium`}>Topic {selectedIndex + 1} of 14 - BA Fundamentals</p>
                     </div>
-                    <div className={`w-16 h-16 rounded-xl ${topicColor.icon} flex items-center justify-center`}>
-                      {React.createElement(getTopicIcon(selectedIndex), { className: `w-8 h-8 ${topicColor.text}` })}
+                    <div className={`w-16 h-16 rounded-xl ${topicColor.icon} flex items-center justify-center shadow-lg`}>
+                      {React.createElement(getTopicIcon(selectedIndex), { className: `w-8 h-8 text-white` })}
                     </div>
                   </div>
                 </div>

@@ -26,3 +26,4 @@ FROM information_schema.routines
 WHERE routine_schema = 'public' 
 AND routine_name = 'register_user_device';
 
+

@@ -43,3 +43,4 @@ COMMENT ON COLUMN public.user_profiles.subscription_status IS 'Current subscript
 
 
 
+
