@@ -507,7 +507,7 @@ const CareerJourneyView: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full border-2 border-purple-500 animate-in zoom-in-95 duration-300">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-t-2xl">
               <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                🗺️ Welcome to Your BA Project Journey!
+                🗺️ Welcome to Your BA Project Lifecycle!
               </h2>
             </div>
             <div className="p-8">
@@ -596,7 +596,7 @@ const CareerJourneyView: React.FC = () => {
           
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-3">
-              Your BA Project Journey
+              Your BA Project Lifecycle
             </h1>
             <p className="text-base md:text-lg text-purple-100 max-w-4xl mx-auto leading-relaxed font-medium">
               Follow the complete BA lifecycle from onboarding to continuous delivery

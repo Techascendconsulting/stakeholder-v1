@@ -148,7 +148,7 @@ const CareerJourneyTourJoyride: React.FC<CareerJourneyTourJoyrideProps> = ({
         {
           target: 'body',
           placement: 'center',
-          title: 'Welcome to Your BA Project Journey',
+          title: 'Welcome to Your BA Project Lifecycle',
           content: (
             <div className="space-y-3">
               <p>This timeline shows the complete BA project lifecycle. Each phase builds on the previous one.</p>
