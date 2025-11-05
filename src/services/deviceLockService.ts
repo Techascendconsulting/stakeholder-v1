@@ -36,50 +36,10 @@ class DeviceLockService {
 
       const fp = await this.fpPromise;
       const result = await fp.get();
-
-      // IMPORTANT: Use hardware-based components only for device identification
-      // This ensures the same physical device gets the same ID across:
-      // - Multiple Chrome windows
-      // - Multiple browser instances
-      // - Browser restarts
-      // But DIFFERENT devices (or different browsers like Chrome vs Firefox) get different IDs
-      
-      const components = result.components;
-      
-      // Build stable device ID from CORE hardware components only
-      // These components should remain the same across different browsers on the same device
-      // ONLY use the most stable components - exclude vendorFlavors as it can change
-      const coreHardwareComponents = [
-        components.platform?.value?.toString() || '',           // OS platform (Windows/Mac/Linux) - STABLE
-        components.hardwareConcurrency?.value?.toString() || '', // CPU cores - STABLE
-        components.vendor?.value?.toString() || ''               // GPU vendor - STABLE
-      ].filter(Boolean);
-      
-      // REMOVED: screenResolution, timezone, languages - these change too frequently
-      // REMOVED: vendorFlavors - can change with GPU driver updates or browser updates
-      // These components can change when:
-      // - Connecting external monitors (screenResolution)
-      // - Traveling or daylight saving (timezone) 
-      // - Changing browser language settings (languages)
-      // - GPU driver updates (vendorFlavors)
-      
-      // Create hash of CORE hardware components only
-      const hardwareString = coreHardwareComponents.join('|');
-      const stableId = await this.simpleHash(hardwareString);
-      
-      console.log('🔐 DEVICE LOCK - Generated ULTRA-STABLE device ID:', stableId);
-      console.log('🔐 DEVICE LOCK - Hardware string used:', hardwareString);
-      console.log('🔐 DEVICE LOCK - CORE Hardware components (ultra-stable):', {
-        platform: components.platform?.value,
-        cores: components.hardwareConcurrency?.value,
-        gpu_vendor: components.vendor?.value
-      });
-      console.log('🔐 DEVICE LOCK - Excluded for stability:', {
-        gpu_flavors: components.vendorFlavors?.value,
-        reason: 'Can change with driver/browser updates'
-      });
-      
-      return stableId;
+      // Use FingerprintJS visitorId to strictly bind to a single device/browser profile
+      const deviceId = result.visitorId;
+      console.log('🔐 DEVICE LOCK - Using FingerprintJS visitorId as device ID:', deviceId);
+      return deviceId || null;
     } catch (error) {
       console.error('Failed to get device ID:', error);
       return null;
@@ -267,36 +227,7 @@ class DeviceLockService {
         };
       }
 
-      // Check for partial matches (same core hardware but different browser fingerprint)
-      // This allows same device with different browsers
-      const isPartialMatch = this.isSameCoreDevice(user.registered_device, currentDeviceId);
-      if (isPartialMatch) {
-        console.log('🔐 DEVICE LOCK - Partial match detected (same device, different browser). Updating device ID.');
-        await this.registerDevice(userId, currentDeviceId);
-        return {
-          success: true,
-          locked: false,
-          message: 'Device verified (browser change detected).',
-          deviceId: currentDeviceId
-        };
-      }
-
-      // Backward compatibility: previously we stored `${visitorId}-${JSON.stringify(sessionInfo)}`
-      // If the stored value starts with the current stable ID, treat as the same device and migrate it.
-      try {
-        if (typeof user.registered_device === 'string' && user.registered_device.startsWith(currentDeviceId + '-')) {
-          console.log('🔐 DEVICE LOCK - Detected legacy registered_device format. Migrating to stable ID.');
-          await this.registerDevice(userId, currentDeviceId);
-          return {
-            success: true,
-            locked: false,
-            message: 'Device verified (migrated).',
-            deviceId: currentDeviceId
-          };
-        }
-      } catch (migrationError) {
-        console.log('🔐 DEVICE LOCK - Migration check failed:', migrationError);
-      }
+      // Removed: partial/legacy match allowances. Any mismatch now locks immediately.
 
       // SECURITY: THIS user's registered device differs from current device
       // LOCK THIS USER'S account (not the device) to enforce single-device-per-user policy
@@ -399,65 +330,20 @@ class DeviceLockService {
    * Check if two device IDs represent the same core hardware (different browsers, same device)
    */
   private isSameCoreDevice(registeredDevice: string, currentDevice: string): boolean {
-    try {
-      // If they're exactly the same, it's definitely the same device
-      if (registeredDevice === currentDevice) {
-        return true;
-      }
-
-      // For legacy format: check if current device ID is contained in registered device
-      // Legacy format was: `${deviceId}-${sessionInfo}`
-      if (registeredDevice.includes(currentDevice)) {
-        return true;
-      }
-
-      // For partial matches: check if they share core hardware characteristics
-      // This is a simplified check - in practice, we'd need to store more metadata
-      // For now, we'll be more permissive and allow similar device IDs
-      const similarity = this.calculateDeviceSimilarity(registeredDevice, currentDevice);
-      return similarity > 0.7; // 70% similarity threshold
-    } catch (error) {
-      console.error('Error checking device similarity:', error);
-      return false;
-    }
+    return registeredDevice === currentDevice;
   }
 
   /**
    * Calculate similarity between two device IDs
    */
   private calculateDeviceSimilarity(device1: string, device2: string): number {
-    // Simple character-based similarity
-    const longer = device1.length > device2.length ? device1 : device2;
-    const shorter = device1.length > device2.length ? device2 : device1;
-    
-    if (longer.length === 0) return 1.0;
-    
-    const editDistance = this.levenshteinDistance(longer, shorter);
-    return (longer.length - editDistance) / longer.length;
+    return device1 === device2 ? 1 : 0;
   }
 
   /**
    * Calculate Levenshtein distance between two strings
    */
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-    
-    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
-    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
-    
-    for (let j = 1; j <= str2.length; j++) {
-      for (let i = 1; i <= str1.length; i++) {
-        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i] + 1,
-          matrix[j - 1][i - 1] + indicator
-        );
-      }
-    }
-    
-    return matrix[str2.length][str1.length];
-  }
+  private levenshteinDistance(_str1: string, _str2: string): number { return 0; }
 
   /**
    * Get device lock status for admin purposes
