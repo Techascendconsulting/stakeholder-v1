@@ -213,11 +213,9 @@ const Dashboard: React.FC = () => {
                   <li>
                     <span className="font-medium">Change your password</span> regularly to keep your account secure.
                   </li>
-                  {!registeredDevice && (
-                    <li>
-                      <span className="font-medium">Register this device</span> so we recognize it next time you sign in.
-                    </li>
-                  )}
+                  <li>
+                    <span className="font-medium">Single device policy:</span> You can only sign in from one device at a time for security.
+                  </li>
                 </ul>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
