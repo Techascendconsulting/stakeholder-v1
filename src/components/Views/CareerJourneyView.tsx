@@ -686,22 +686,22 @@ const CareerJourneyView: React.FC = () => {
 
       {/* Journey Timeline - Beautiful Curved Path */}
       <div className="py-12 relative max-w-full">
-        {/* Left Navigation Arrow */}
-        {canScrollLeft && (
+        {/* Left Navigation Arrow - Hidden during tour */}
+        {canScrollLeft && !showTour && !showWelcomeOverlay && (
           <button
             onClick={scrollLeft}
-            className="hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full items-center justify-center shadow-xl hover:scale-105 transition-all"
+            className="hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full items-center justify-center shadow-xl hover:scale-105 transition-all"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
         )}
         
-        {/* Right Navigation Arrow with Hint */}
-        {canScrollRight && (
+        {/* Right Navigation Arrow with Hint - Hidden during tour */}
+        {canScrollRight && !showTour && !showWelcomeOverlay && (
           <button
             onClick={scrollRight}
-            className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-xl hover:scale-105 transition-all group scroll-right-arrow"
+            className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-xl hover:scale-105 transition-all group scroll-right-arrow"
             aria-label="Scroll right"
           >
             <span className="text-sm font-semibold whitespace-nowrap">More phases</span>
