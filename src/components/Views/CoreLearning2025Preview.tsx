@@ -871,7 +871,7 @@ d) Design user interfaces
                       ? 'bg-green-700 dark:bg-green-900' 
                       : accessible 
                       ? color.icon 
-                      : 'bg-gray-300 dark:bg-gray-700'
+                      : 'bg-white dark:bg-gray-800'
                   }`}>
                     {completed ? (
                       <CheckCircle className="w-6 h-6 text-white" />
