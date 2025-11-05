@@ -54,13 +54,17 @@ const getPhaseModuleInfo = (phase: JourneyPhase) => {
   
   // If phase has multiple modules defined, use those
   if (phase.learningModuleIds && phase.learningModuleNames) {
+    const modulesRaw = phase.learningModuleIds.map((id, idx) => ({
+      id,
+      name: phase.learningModuleNames![idx],
+      viewId: moduleIdToViewId[id] || id
+    }));
+    // Deduplicate by id in case data contains duplicates
+    const seen = new Set<string>();
+    const modules = modulesRaw.filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)));
     return {
-      modules: phase.learningModuleIds.map((id, idx) => ({
-        id,
-        name: phase.learningModuleNames![idx],
-        viewId: moduleIdToViewId[id] || id
-      })),
-      isMultiple: true
+      modules,
+      isMultiple: modules.length > 1
     };
   }
   
@@ -82,12 +86,13 @@ const getPhaseModuleInfo = (phase: JourneyPhase) => {
       'scrum-essentials': 'Module 11: Agile/Scrum'
     };
     
+    const single = {
+      id: phase.learningModuleId,
+      name: viewIdToDisplayName[phase.learningModuleId] || 'Learning Module',
+      viewId: phase.learningModuleId
+    };
     return {
-      modules: [{
-        id: phase.learningModuleId,
-        name: viewIdToDisplayName[phase.learningModuleId] || 'Learning Module',
-        viewId: phase.learningModuleId
-      }],
+      modules: [single],
       isMultiple: false
     };
   }
@@ -107,13 +112,16 @@ const getPhasePracticeInfo = (phase: JourneyPhase) => {
   
   // If phase has multiple practice modules defined, use those
   if (phase.practiceModuleIds && phase.practiceModuleNames) {
+    const modulesRaw = phase.practiceModuleIds.map((id, idx) => ({
+      id,
+      name: phase.practiceModuleNames![idx],
+      viewId: practiceModuleToViewId[id] || 'practice-flow'
+    }));
+    const seen = new Set<string>();
+    const modules = modulesRaw.filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)));
     return {
-      modules: phase.practiceModuleIds.map((id, idx) => ({
-        id,
-        name: phase.practiceModuleNames![idx],
-        viewId: practiceModuleToViewId[id] || 'practice-flow'
-      })),
-      isMultiple: true
+      modules,
+      isMultiple: modules.length > 1
     };
   }
   
