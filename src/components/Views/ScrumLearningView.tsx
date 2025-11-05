@@ -327,6 +327,13 @@ const ScrumLearningView: React.FC = () => {
   };
 
   const renderTextContent = (text: string) => {
+    // Debug counts for markdown markers
+    // eslint-disable-next-line no-console
+    console.debug('[md-normalize] Scrum source counts', {
+      hashes: (text.match(/^\s*#+\s/m) || []).length,
+      bold: (text.match(/\*\*[\s\S]+?\*\*/g) || []).length,
+      dashes: (text.match(/^\s*\-\s/m) || []).length,
+    });
     // Check for special BA callout formatting
     if (text.includes('**Where you, the BA, come in:**') || 
         text.includes('**How you, the BA, fit with') ||

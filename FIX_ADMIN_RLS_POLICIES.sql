@@ -106,3 +106,4 @@ CREATE POLICY "Users can update own profile" ON user_profiles
 
 
 
+

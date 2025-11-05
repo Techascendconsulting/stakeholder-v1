@@ -28,32 +28,42 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
 
   const { signIn, signUp } = useAuth()
 
-  // Check for device lock error from localStorage on component mount
+  // Check for device lock error from localStorage on component mount and periodically
   useEffect(() => {
-    const storedError = localStorage.getItem('deviceLockError')
-    if (storedError) {
-      try {
-        const deviceLockResult = JSON.parse(storedError)
-        setDeviceLockResult(deviceLockResult)
-        localStorage.removeItem('deviceLockError') // Clear after showing
-      } catch (error) {
-        console.error('Error parsing device lock error:', error)
-        localStorage.removeItem('deviceLockError')
+    const checkForErrors = () => {
+      const storedError = localStorage.getItem('deviceLockError')
+      if (storedError) {
+        try {
+          const deviceLockResult = JSON.parse(storedError)
+          setDeviceLockResult(deviceLockResult)
+          // Don't remove immediately - let user dismiss it
+        } catch (error) {
+          console.error('Error parsing device lock error:', error)
+          localStorage.removeItem('deviceLockError')
+        }
+      }
+      
+      // Check for blocked account status
+      const blockedStatus = localStorage.getItem('accountBlocked')
+      if (blockedStatus) {
+        try {
+          const blocked = JSON.parse(blockedStatus)
+          setBlockedAccount(blocked)
+          // Don't remove immediately - let user dismiss it
+        } catch (error) {
+          console.error('Error parsing blocked account:', error)
+          localStorage.removeItem('accountBlocked')
+        }
       }
     }
+
+    // Check immediately
+    checkForErrors()
+
+    // Also check periodically in case error is set after component mounts
+    const interval = setInterval(checkForErrors, 500)
     
-    // Check for blocked account status
-    const blockedStatus = localStorage.getItem('accountBlocked')
-    if (blockedStatus) {
-      try {
-        const blocked = JSON.parse(blockedStatus)
-        setBlockedAccount(blocked)
-        localStorage.removeItem('accountBlocked') // Clear after showing
-      } catch (error) {
-        console.error('Error parsing blocked account:', error)
-        localStorage.removeItem('accountBlocked')
-      }
-    }
+    return () => clearInterval(interval)
   }, [])
 
   const validateForm = () => {
@@ -106,6 +116,21 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
     setLoading(true)
     setSuccess('')
     setDeviceLockResult(null)
+    setErrors({})
+
+    // Check for deviceLockError before attempting sign-in
+    const storedError = localStorage.getItem('deviceLockError')
+    if (storedError) {
+      try {
+        const deviceLockResult = JSON.parse(storedError)
+        setDeviceLockResult(deviceLockResult)
+        setLoading(false)
+        return
+      } catch (error) {
+        console.error('Error parsing device lock error:', error)
+        localStorage.removeItem('deviceLockError')
+      }
+    }
 
     try {
       const { error, deviceLockResult } = await signIn(formData.email, formData.password)
@@ -569,7 +594,10 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
         <DeviceLockAlert
           message={deviceLockResult.message}
           isLocked={deviceLockResult.locked}
-          onClose={() => setDeviceLockResult(null)}
+          onClose={() => {
+            setDeviceLockResult(null)
+            localStorage.removeItem('deviceLockError') // Clear from localStorage when dismissed
+          }}
         />
       )}
       </div>

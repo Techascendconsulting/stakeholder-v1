@@ -62,3 +62,4 @@ END$$;
 -- FROM pg_policies pol WHERE pol.tablename = 'user_profiles';
 
 
+

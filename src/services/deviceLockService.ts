@@ -84,11 +84,12 @@ class DeviceLockService {
         const { data: userData } = await supabase.auth.getUser();
         if (userData?.user?.email === 'admin@baworkxp.com' || userData?.user?.email === 'techascendconsulting1@gmail.com') {
           console.log('🔐 DEVICE LOCK - FORCED ADMIN BYPASS for', userData?.user?.email);
+          const deviceId = await this.getDeviceId();
           return {
             success: true,
             locked: false,
             message: 'Admin access granted - device lock bypassed.',
-            deviceId: await this.getDeviceId()
+            deviceId: deviceId || undefined
           };
         }
         
@@ -102,11 +103,12 @@ class DeviceLockService {
           const isAdmin = adminCheck.is_admin || adminCheck.is_super_admin || adminCheck.is_senior_admin;
           if (isAdmin) {
             console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock entirely');
+            const deviceId = await this.getDeviceId();
             return {
               success: true,
               locked: false,
               message: 'Admin access granted - device lock bypassed.',
-              deviceId: await this.getDeviceId()
+              deviceId: deviceId || undefined
             };
           }
         }
@@ -262,6 +264,8 @@ class DeviceLockService {
    * Lock the user's account
    */
   async lockAccount(userId: string): Promise<void> {
+    console.debug('🔐 [devicelock] lockAccount START', { userId });
+    
     // Check if user is admin before locking
     try {
       const { data: adminCheck, error: adminError } = await supabase
@@ -273,22 +277,48 @@ class DeviceLockService {
       if (adminCheck && !adminError) {
         const isAdmin = adminCheck.is_admin || adminCheck.is_super_admin || adminCheck.is_senior_admin;
         if (isAdmin) {
-          console.log('🔐 DEVICE LOCK - Cannot lock admin account, skipping lock operation');
+          console.log('🔐 [devicelock] Cannot lock admin account, skipping lock operation');
           return;
         }
       }
     } catch (adminCheckError) {
-      console.log('🔐 DEVICE LOCK - Admin check failed during lock, proceeding with lock');
+      console.log('🔐 [devicelock] Admin check failed during lock, proceeding with lock');
     }
 
-    const { error } = await supabase
+    console.debug('🔐 [devicelock] Attempting to update locked=true for userId', { userId });
+    const { data, error } = await supabase
       .from('user_profiles')
       .update({ locked: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select('user_id, locked'); // Select back to verify update
 
     if (error) {
-      console.error('Failed to lock account:', error);
-      throw error;
+      console.error('🔐 [devicelock] FAILED to lock account', { 
+        userId, 
+        error: error.message, 
+        code: (error as any)?.code, 
+        details: (error as any)?.details,
+        hint: (error as any)?.hint 
+      });
+      // Don't throw - log but continue, as the lock message will still be shown to user
+      // The admin will need to manually verify in Supabase dashboard if RLS is blocking
+      return;
+    }
+
+    // Verify the update succeeded
+    if (data && data.length > 0) {
+      const updated = data[0];
+      console.debug('🔐 [devicelock] Account locked successfully', { 
+        userId, 
+        locked: updated.locked,
+        updatedRowCount: data.length 
+      });
+      
+      if (!updated.locked) {
+        console.warn('🔐 [devicelock] WARNING: Update returned but locked is still false!', { userId, data });
+      }
+    } else {
+      console.warn('🔐 [devicelock] WARNING: Update returned no rows - account may not exist or RLS blocked', { userId });
     }
   }
 
