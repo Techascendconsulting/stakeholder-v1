@@ -198,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     },
     {
       id: 'career-journey',
-      label: 'BA Project Journey',
+      label: 'Project Lifecycle',
       icon: Briefcase
     },
     { 
