@@ -736,7 +736,7 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col h-screen w-full ${
+      className={`flex flex-col h-screen w-full lg:ml-64 ${
         isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
     >
