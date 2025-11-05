@@ -164,7 +164,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .single();
         const isAdmin = !!(data?.is_admin || data?.is_super_admin || data?.is_senior_admin);
         if (!cancelled && data?.locked && !isAdmin) {
-          try { localStorage.setItem('accountLocked', '1'); } catch {}
+          try {
+            localStorage.setItem('deviceLockError', JSON.stringify({ locked: true, message: 'Your account has been LOCKED due to login from a different device. Please contact support to unlock your account.' }));
+          } catch {}
           await supabase.auth.signOut();
           setSession(null);
           setUser(null);
