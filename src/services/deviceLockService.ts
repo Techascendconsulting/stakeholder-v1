@@ -149,12 +149,13 @@ class DeviceLockService {
       }
 
       if (error) {
-        console.error('Error fetching user device data:', error);
-        // Fail-open: allow access on transient DB issues to avoid blocking learners
+        console.error('🔐 [devicelock] DB ERROR fetching user device data', { error: error.message, code: (error as any)?.code, details: (error as any)?.details, hint: (error as any)?.hint });
+        // SECURITY: Fail-closed - deny access when device check cannot complete
+        // This prevents bypassing device lock via database errors (RLS, network, etc.)
         return {
-          success: true,
-          locked: false,
-          message: 'Proceed allowed (temporary service issue).'
+          success: false,
+          locked: true,
+          message: 'Device verification failed. Please contact support if this persists.'
         };
       }
 
