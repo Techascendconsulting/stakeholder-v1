@@ -52,16 +52,23 @@ const getPhaseModuleInfo = (phase: JourneyPhase) => {
     'module-11-agile-scrum': 'scrum-essentials'
   };
   
-  // If phase has multiple modules defined, use those
-  if (phase.learningModuleIds && phase.learningModuleNames) {
+  // PRIORITY: If phase has multiple modules defined (learningModuleIds), use those
+  // This takes precedence over single learningModuleId
+  if (phase.learningModuleIds && phase.learningModuleIds.length > 0 && 
+      phase.learningModuleNames && phase.learningModuleNames.length > 0) {
     const modulesRaw = phase.learningModuleIds.map((id, idx) => ({
       id,
-      name: phase.learningModuleNames![idx],
+      name: phase.learningModuleNames![idx] || `Module ${idx + 1}`,
       viewId: moduleIdToViewId[id] || id
     }));
     // Deduplicate by id in case data contains duplicates
-    const seen = new Set<string>();
-    const modules = modulesRaw.filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)));
+    const uniqueModules = new Map<string, { id: string; name: string; viewId: string }>();
+    modulesRaw.forEach(m => {
+      if (!uniqueModules.has(m.id)) {
+        uniqueModules.set(m.id, m);
+      }
+    });
+    const modules = Array.from(uniqueModules.values());
     return {
       modules,
       isMultiple: modules.length > 1
@@ -110,15 +117,23 @@ const getPhasePracticeInfo = (phase: JourneyPhase) => {
     'practice-4-scrum': 'scrum-practice'
   };
   
-  // If phase has multiple practice modules defined, use those
-  if (phase.practiceModuleIds && phase.practiceModuleNames) {
+  // PRIORITY: If phase has multiple practice modules defined, use those
+  // This takes precedence over single practiceModuleId
+  if (phase.practiceModuleIds && phase.practiceModuleIds.length > 0 && 
+      phase.practiceModuleNames && phase.practiceModuleNames.length > 0) {
     const modulesRaw = phase.practiceModuleIds.map((id, idx) => ({
       id,
-      name: phase.practiceModuleNames![idx],
+      name: phase.practiceModuleNames![idx] || `Practice ${idx + 1}`,
       viewId: practiceModuleToViewId[id] || 'practice-flow'
     }));
-    const seen = new Set<string>();
-    const modules = modulesRaw.filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)));
+    // Deduplicate by id in case data contains duplicates
+    const uniqueModules = new Map<string, { id: string; name: string; viewId: string }>();
+    modulesRaw.forEach(m => {
+      if (!uniqueModules.has(m.id)) {
+        uniqueModules.set(m.id, m);
+      }
+    });
+    const modules = Array.from(uniqueModules.values());
     return {
       modules,
       isMultiple: modules.length > 1
