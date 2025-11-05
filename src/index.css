@@ -78,37 +78,49 @@ body {
   animation: shimmer 2s infinite;
 }
 
-/* Core Learning Content - Force proper paragraph spacing */
+/* Core Learning Content - Readable spacing like a book */
 .core-learning-content p {
-  margin-top: 1.5rem !important;
-  margin-bottom: 1.5rem !important;
-  line-height: 1.8 !important;
+  margin-bottom: 1.25rem !important;
+  line-height: 1.75 !important;
+  font-size: 1.0625rem !important; /* 17px */
 }
 
-.core-learning-content p:first-child {
-  margin-top: 0 !important;
+.core-learning-content p + p {
+  margin-top: 1.25rem !important; /* Space between consecutive paragraphs */
 }
 
 .core-learning-content h2 {
-  margin-top: 3rem !important;
-  margin-bottom: 1.5rem !important;
+  margin-top: 2.5rem !important;
+  margin-bottom: 1.25rem !important;
+  padding-bottom: 0.75rem !important;
 }
 
 .core-learning-content h3 {
-  margin-top: 2.5rem !important;
+  margin-top: 2rem !important;
   margin-bottom: 1rem !important;
+}
+
+.core-learning-content h4 {
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 .core-learning-content ul,
 .core-learning-content ol {
-  margin-top: 2rem !important;
-  margin-bottom: 2rem !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  padding-left: 1.5rem !important;
 }
 
 .core-learning-content li {
-  margin-top: 0.75rem !important;
-  margin-bottom: 0.75rem !important;
-  line-height: 1.7 !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.65 !important;
+}
+
+.core-learning-content blockquote {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
 }
 
 /* Joyride tour progress indicator - TOP RIGHT */

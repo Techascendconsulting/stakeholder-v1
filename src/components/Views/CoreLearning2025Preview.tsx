@@ -113,42 +113,14 @@ const CoreLearning2025Preview: React.FC = () => {
 
   // Create readable sections if content has no markdown structure
   /**
-   * Format content for optimal readability with proper paragraph spacing
-   * Ensures markdown is properly structured without being too aggressive
+   * Format content - Let markdown handle most formatting, just ensure paragraph breaks exist
    */
   const formatContent = (raw: string) => {
     if (!raw) return raw;
     
-    let formatted = raw;
-    
-    // Step 1: Ensure proper spacing after sentences (create paragraphs)
-    // Match: period/question/exclamation followed by space and capital letter
-    // Don't match: numbered lists (1. 2.) or abbreviations
-    formatted = formatted.replace(
-      /([.!?])\s+(?=[A-Z][a-z])/g,
-      '$1\n\n'
-    );
-    
-    // Step 2: Ensure headings have proper spacing
-    // Add blank line before headings (unless it's at the start)
-    formatted = formatted.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
-    // Add blank line after headings
-    formatted = formatted.replace(/(#{1,6}\s.+)\n([^\n])/g, '$1\n\n$2');
-    
-    // Step 3: Ensure list items are properly formatted
-    // Add blank line before lists
-    formatted = formatted.replace(/([^\n])\n([-*+]\s)/g, '$1\n\n$2');
-    formatted = formatted.replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2');
-    
-    // Step 4: Ensure bold text doesn't create awkward spacing
-    // Keep bold text inline with its paragraph
-    formatted = formatted.replace(/\n\n(\*\*)/g, '\n$1');
-    
-    // Step 5: Clean up excessive blank lines (max 2 newlines)
-    formatted = formatted.replace(/\n{3,}/g, '\n\n');
-    
-    // Step 6: Trim and return
-    return formatted.trim();
+    // The content already has proper markdown structure from learningData.ts
+    // Just clean up any excessive blank lines
+    return raw.replace(/\n{3,}/g, '\n\n').trim();
   };
 
   // Remove any leading markdown heading that repeats the topic title (e.g., "# Who is a BA?")
