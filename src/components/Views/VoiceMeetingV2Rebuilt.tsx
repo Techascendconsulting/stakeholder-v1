@@ -51,6 +51,11 @@ export default function VoiceMeetingV2Rebuilt() {
   const [aiThinking, setAiThinking] = useState(false);
   const [generatingAudio, setGeneratingAudio] = useState(false);
   
+  // Enhanced Memory System
+  const [meetingSummary, setMeetingSummary] = useState<string[]>([]);
+  const [decisionsLog, setDecisionsLog] = useState<string[]>([]);
+  const [topicsDiscussed, setTopicsDiscussed] = useState<Set<string>>(new Set());
+  
   // Refs
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -58,6 +63,8 @@ export default function VoiceMeetingV2Rebuilt() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<any>(null);
   const isUserSpeakingRef = useRef<boolean>(false);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
   
   // Meeting timer
   useEffect(() => {
@@ -74,6 +81,35 @@ export default function VoiceMeetingV2Rebuilt() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [state.status]);
+  
+  // Auto-end meeting after 4 minutes of inactivity
+  useEffect(() => {
+    if (state.status === 'idle' || state.status === 'ended') return;
+    
+    // Check inactivity every 30 seconds
+    inactivityTimerRef.current = setInterval(() => {
+      const timeSinceLastActivity = Date.now() - lastActivityRef.current;
+      const fourMinutes = 4 * 60 * 1000; // 4 minutes in milliseconds
+      
+      if (timeSinceLastActivity >= fourMinutes) {
+        console.log('⏰ Auto-ending meeting due to 4 minutes of inactivity');
+        confirmEnd();
+      }
+    }, 30000); // Check every 30 seconds
+    
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearInterval(inactivityTimerRef.current);
+      }
+    };
+  }, [state.status]);
+  
+  // Update last activity time whenever there's voice activity
+  useEffect(() => {
+    if (state.status === 'listening' || state.status === 'speaking') {
+      lastActivityRef.current = Date.now();
+    }
+  }, [state.status, messages.length]);
   
   // Auto-scroll
   useEffect(() => {
@@ -103,6 +139,83 @@ export default function VoiceMeetingV2Rebuilt() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  // Extract key topics from text
+  const extractTopics = (text: string): string[] => {
+    const topics: string[] = [];
+    const lowerText = text.toLowerCase();
+    
+    // Key topic keywords
+    const topicKeywords = [
+      'onboarding', 'implementation', 'training', 'integration',
+      'delay', 'bottleneck', 'churn', 'timeline', 'department',
+      'system', 'handoff', 'automation', 'process', 'customer',
+      'revenue', 'cost', 'efficiency'
+    ];
+    
+    topicKeywords.forEach(keyword => {
+      if (lowerText.includes(keyword)) {
+        topics.push(keyword);
+      }
+    });
+    
+    return topics;
+  };
+  
+  // Build memory context from meeting history
+  const buildMemoryContext = (): string => {
+    if (messages.length === 0) return '';
+    
+    const parts: string[] = [];
+    
+    // Recent conversation summary (last 3-4 exchanges)
+    if (messages.length > 0) {
+      const recentMessages = messages.slice(-6); // Last 6 messages (3 exchanges)
+      const summary = recentMessages.map(m => `${m.who}: ${m.text}`).join('\n');
+      parts.push(`RECENT DISCUSSION:\n${summary}`);
+    }
+    
+    // Topics covered so far
+    if (topicsDiscussed.size > 0) {
+      parts.push(`\nTOPICS DISCUSSED: ${Array.from(topicsDiscussed).join(', ')}`);
+    }
+    
+    // Decisions made (detect from keywords in messages)
+    const decisions = messages
+      .filter(m => {
+        const lower = m.text.toLowerCase();
+        return lower.includes('we should') || 
+               lower.includes('let\'s') || 
+               lower.includes('we need to') ||
+               lower.includes('agreed') ||
+               lower.includes('decision');
+      })
+      .slice(-3); // Last 3 decisions
+    
+    if (decisions.length > 0) {
+      parts.push(`\nDECISIONS/ACTION ITEMS:\n${decisions.map(d => `- ${d.who}: ${d.text}`).join('\n')}`);
+    }
+    
+    // Stakeholder contributions (who said what about what)
+    const stakeholderContributions = new Map<string, string[]>();
+    messages.forEach(msg => {
+      if (msg.who !== 'You') {
+        if (!stakeholderContributions.has(msg.who)) {
+          stakeholderContributions.set(msg.who, []);
+        }
+        stakeholderContributions.get(msg.who)?.push(msg.text.substring(0, 100));
+      }
+    });
+    
+    if (stakeholderContributions.size > 0) {
+      const contributions = Array.from(stakeholderContributions.entries())
+        .map(([name, texts]) => `- ${name} has discussed: ${texts[texts.length - 1]}`)
+        .join('\n');
+      parts.push(`\nSTAKEHOLDER CONTEXT:\n${contributions}`);
+    }
+    
+    return parts.join('\n');
   };
   
   // ADAPTER 1: Fast transcription using Web Speech API
@@ -208,7 +321,7 @@ export default function VoiceMeetingV2Rebuilt() {
     });
   }
 
-  // ADAPTER 2: AI-driven agent reply with IMPROVED CONTEXT
+  // ADAPTER 2: AI-driven agent reply with ENHANCED MEMORY & CONTEXT
   async function getAgentReply(userText: string): Promise<{ 
     reply: string; 
     speaker: string; 
@@ -219,10 +332,17 @@ export default function VoiceMeetingV2Rebuilt() {
       setAiThinking(true);
       
       const participantNames = selectedStakeholders.map(s => s.name);
+      
+      // Build CLEAN conversation history - ONLY what was actually said
       const conversationHistory = messages.map(msg => ({
         role: msg.who === "You" ? "user" : "assistant",
         content: msg.who === "You" ? msg.text : `[${msg.who}]: ${msg.text}`
       }));
+      
+      // SIMPLE memory: just last 2-3 exchanges for natural flow
+      const recentContext = messages.length > 0 
+        ? `\nRECENT CONVERSATION (for natural flow, don't repeat):\n${messages.slice(-4).map(m => `${m.who}: ${m.text}`).join('\n')}`
+        : '';
 
       // DETECT MENTIONED NAMES
       const userTextLower = userText.toLowerCase();
@@ -237,23 +357,20 @@ export default function VoiceMeetingV2Rebuilt() {
         ? `\n\n🚨 MANDATORY: User mentioned "${mentionedStakeholder.name}" so this person MUST respond.`
         : '';
 
-      // ENHANCED PROJECT CONTEXT
+      // DYNAMIC PROJECT CONTEXT - Uses actual selected project
       const projectContext = `
-PROJECT: ${selectedProject.name}
-DESCRIPTION: ${selectedProject.description || 'Customer onboarding optimization'}
+MEETING: ${selectedProject.name}
 
-KEY PROBLEMS:
-- New customers take 6 to 8 weeks to get up and running (target: 3 to 4 weeks)
-- 23% churn in first 90 days
-- 7 internal departments involved (Sales, Implementation, IT, Support)
-- 4 disconnected systems (Salesforce, Monday.com, staging, production)
-- Manual handoffs cause 24 to 48 hour delays
-- Costs $2.3M per year in lost revenue
+PEOPLE IN THIS MEETING:
+${selectedStakeholders.map(s => `- ${s.name}: ${s.role}, ${s.department}`).join('\n')}
 
-STAKEHOLDERS IN THIS MEETING:
-${selectedStakeholders.map(s => `- ${s.name} (${s.role}, ${s.department}): ${s.priorities?.join(', ') || 'General concerns'}`).join('\n')}
-
-CONTEXT: This is about onboarding NEW CUSTOMERS/CLIENTS to our software platform, NOT employee onboarding.
+PROJECT DETAILS (everyone knows this, but ONLY mention if directly asked):
+${selectedProject.description ? `- Description: ${selectedProject.description}` : ''}
+${selectedProject.painPoints && selectedProject.painPoints.length > 0 ? `- Key Problems: ${selectedProject.painPoints.join(', ')}` : ''}
+${selectedProject.asIsProcess ? `- Current Process: ${selectedProject.asIsProcess}` : ''}
+${selectedProject.goals && selectedProject.goals.length > 0 ? `- Goals: ${selectedProject.goals.join(', ')}` : ''}
+${selectedProject.constraints && selectedProject.constraints.length > 0 ? `- Constraints: ${selectedProject.constraints.join(', ')}` : ''}
+${recentContext}
 `.trim();
 
       const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -269,13 +386,16 @@ CONTEXT: This is about onboarding NEW CUSTOMERS/CLIENTS to our software platform
               role: "system",
               content: `${projectContext}
 
-MEETING RULES:
-- ONE stakeholder responds per turn${mandatorySpeaker ? '' : ' (choose most relevant based on their role)'}
-- Natural conversation: "I'm good, thanks" not "I'm excited to dive into..."
-- Brief replies (2-3 sentences max)
-- Be specific with YOUR role's perspective and metrics
-- HARD RULE: Use "to" for ranges, never dashes (e.g., "6 to 8 weeks" not "6-8 weeks")
-- Output strict JSON: {"speaker":"<exact name>","reply":"<response text>"}${mandatorySpeaker}`
+HOW TO ACT LIKE A REAL HUMAN:
+1. **Social Greetings:** If asked "how are you", respond naturally: "I'm doing well, thanks! How about you?" or "Pretty good, thanks for asking"
+2. **ONLY reference what was ACTUALLY said** - Don't make up context or hallucinate previous comments
+3. **Natural flow:** Match the user's tone (casual chat vs. business discussion)
+4. **Brief replies:** 1-2 sentences max unless asked for details
+5. **Be helpful:** If asked about what someone said, ONLY quote if they actually said it. Otherwise say "I don't think they've mentioned that yet"
+6. **Personality:** Each person has their own style - David is direct, Sarah is diplomatic, James is technical
+7. Use "to" not dashes for ranges (e.g., "6 to 8 weeks")
+
+Output JSON ONLY: {"speaker":"<exact name>","reply":"<natural response>"}${mandatorySpeaker}`
             },
             ...conversationHistory,
             { role: "user", content: userText }
@@ -428,6 +548,9 @@ MEETING RULES:
       loopRef.current.end();
       loopRef.current = null;
     }
+    if (inactivityTimerRef.current) {
+      clearInterval(inactivityTimerRef.current);
+    }
     setState({ status: 'ended', currentSpeaker: null });
     sessionStorage.removeItem('voiceMeeting_messages');
     sessionStorage.removeItem('voiceMeeting_duration');
@@ -494,7 +617,7 @@ MEETING RULES:
             </span>
           </div>
           
-          <button
+            <button
             onClick={() => setShowTranscript(!showTranscript)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
               showTranscript 
@@ -505,6 +628,14 @@ MEETING RULES:
             <MessageSquare className="w-4 h-4" />
             <span className="hidden sm:inline">Transcript</span>
           </button>
+          
+          <button
+            onClick={endMeeting}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">End</span>
+          </button>
         </div>
       </div>
       
@@ -513,23 +644,24 @@ MEETING RULES:
         <div className="flex-1 flex flex-col p-6 overflow-auto">
           <div className="max-w-4xl w-full space-y-6">
             
-            {/* Status Indicators - FULL WIDTH, TOP ALIGNED */}
-            {state.status === 'listening' && (
-              <div className={`w-full rounded-xl p-6 border ${
+            {/* Status Indicators - COMPACT */}
+            <div className="w-full max-w-3xl">
+              {state.status === 'listening' && (
+              <div className={`w-full rounded-xl p-3 border ${
                 isDark 
                   ? 'bg-green-900/40 border-green-500/50' 
                   : 'bg-green-50 border-green-300'
               }`}>
-                <div className="flex items-center gap-4">
-                  <Mic className={`w-6 h-6 animate-pulse ${
+                <div className="flex items-center gap-3">
+                  <Mic className={`w-5 h-5 animate-pulse ${
                     isDark ? 'text-green-400' : 'text-green-600'
                   }`} />
-                  <div className="flex-1">
-                    <p className={`font-semibold text-lg ${isDark ? 'text-green-300' : 'text-green-700'}`}>
-                      Listening...
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-semibold mb-0.5 ${isDark ? 'text-green-300' : 'text-green-700'}`}>
+                      Listening
                     </p>
                     {liveTranscript && (
-                      <p className={`text-base mt-2 ${isDark ? 'text-green-400/80' : 'text-green-600'}`}>
+                      <p className={`text-sm truncate ${isDark ? 'text-green-400/80' : 'text-green-600'}`}>
                         "{liveTranscript}"
                       </p>
                     )}
@@ -539,42 +671,235 @@ MEETING RULES:
             )}
             
             {(state.status === 'thinking' || aiThinking) && (
-              <div className={`w-full rounded-xl p-6 border ${
+              <div className={`w-full rounded-xl p-3 border ${
                 isDark 
                   ? 'bg-purple-900/40 border-purple-500/50' 
                   : 'bg-purple-50 border-purple-300'
               }`}>
-                <div className="flex items-center gap-4">
-                  <Loader2 className={`w-6 h-6 animate-spin ${
-                    isDark ? 'text-purple-400' : 'text-purple-600'
-                  }`} />
-                  <div className="flex-1">
-                    <p className={`font-semibold text-lg ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
-                      {generatingAudio ? 'Generating audio...' : 'Thinking...'}
-                    </p>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex gap-1">
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '0ms' }} />
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '150ms' }} />
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '300ms' }} />
                   </div>
+                  <p className={`text-sm font-medium ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
+                    {generatingAudio ? 'Generating audio...' : 'Thinking...'}
+                  </p>
                 </div>
               </div>
             )}
             
             {state.status === 'speaking' && state.currentSpeaker && (
-              <div className={`w-full rounded-xl p-6 border ${
+              <div className={`w-full rounded-xl p-3 border ${
                 isDark 
                   ? 'bg-blue-900/40 border-blue-500/50' 
                   : 'bg-blue-50 border-blue-300'
               }`}>
-                <div className="flex items-center gap-4">
-                  <div className="flex gap-1.5">
-                    <div className={`w-3 h-3 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '0ms' }} />
-                    <div className={`w-3 h-3 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '150ms' }} />
-                    <div className={`w-3 h-3 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '300ms' }} />
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex gap-1">
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '0ms' }} />
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '150ms' }} />
+                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '300ms' }} />
                   </div>
-                  <p className={`font-semibold text-lg ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
-                    {state.currentSpeaker} is speaking...
+                  <p className={`text-sm font-medium ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
+                    {state.currentSpeaker} speaking...
                   </p>
                 </div>
               </div>
             )}
+            </div>
+            
+            {/* STAKEHOLDER PARTICIPANT GRID */}
+            <div className="flex-1 w-full flex flex-col items-center justify-center gap-4">
+              {/* First Row */}
+              <div className={`grid gap-4 ${
+                selectedStakeholders.length + 1 === 2 ? 'grid-cols-2 max-w-xl' :
+                selectedStakeholders.length + 1 === 3 ? 'grid-cols-3 max-w-3xl' :
+                selectedStakeholders.length + 1 === 4 ? 'grid-cols-2 max-w-xl' :
+                selectedStakeholders.length + 1 === 5 ? 'grid-cols-2 max-w-xl' :
+                'grid-cols-3 max-w-4xl'
+              }`}>
+                {/* User Card */}
+                <div
+                  className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
+                    isDark 
+                      ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${state.status === 'listening' && state.currentSpeaker === 'You' ? 'border-green-500 shadow-lg shadow-green-500/30' : 'border-gray-700'}`
+                      : state.status === 'listening' && state.currentSpeaker === 'You'
+                        ? 'bg-gradient-to-br from-green-100 to-emerald-100 border-green-500 shadow-xl shadow-green-400/40 ring-2 ring-green-300'
+                        : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400'
+                  }`}
+                >
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="relative">
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
+                        state.status === 'listening' && state.currentSpeaker === 'You'
+                          ? 'bg-gradient-to-br from-green-600 to-emerald-600 border-green-500 text-white' 
+                          : isDark 
+                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 border-blue-600 text-white' 
+                            : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-300 text-white'
+                      }`}>
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                      
+                      {state.status === 'listening' && state.currentSpeaker === 'You' && (
+                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1.5 shadow-lg">
+                          <Mic className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="text-center">
+                      <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        You
+                      </p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Business Analyst
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* First Row Stakeholders */}
+                {selectedStakeholders.slice(0, 
+                  selectedStakeholders.length + 1 === 2 ? 1 :  // 2 total = show 1 stakeholder (+ user = 2)
+                  selectedStakeholders.length + 1 === 3 ? 2 :  // 3 total = show 2 stakeholders (+ user = 3)
+                  selectedStakeholders.length + 1 === 4 ? 1 :  // 4 total = show 1 stakeholder (+ user = 2 on top)
+                  selectedStakeholders.length + 1 === 5 ? 1 :  // 5 total = show 1 stakeholder (+ user = 2 on top)
+                  2  // 6+ total = show 2 stakeholders (+ user = 3 on top)
+                ).map((stakeholder, idx) => {
+                  const isSpeaking = state.status === 'speaking' && state.currentSpeaker === stakeholder.name;
+                  
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
+                        isDark 
+                          ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isSpeaking ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
+                          : isSpeaking 
+                            ? 'bg-gradient-to-br from-purple-100 to-indigo-100 border-purple-500 shadow-xl shadow-purple-400/40 ring-2 ring-purple-300'
+                            : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400 hover:shadow-lg'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="relative">
+                          {stakeholder.photo ? (
+                            <img
+                              src={stakeholder.photo}
+                              alt={stakeholder.name}
+                              className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
+                                isSpeaking ? 'border-purple-500 ring-2 ring-purple-300' : isDark ? 'border-gray-600' : 'border-purple-200'
+                              }`}
+                            />
+                          ) : (
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
+                              isSpeaking 
+                                ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 text-white' 
+                                : isDark 
+                                  ? 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600 text-white' 
+                                  : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-300 text-gray-700'
+                            }`}>
+                              {stakeholder.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                            </div>
+                          )}
+                          
+                          {isSpeaking && (
+                            <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1.5 shadow-lg">
+                              <div className="flex gap-0.5 items-end">
+                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '8px' }} />
+                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
+                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {stakeholder.name}
+                          </p>
+                          <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {stakeholder.role}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Second Row (for 4+ participants) */}
+              {selectedStakeholders.length + 1 >= 4 && (
+                <div className={`grid gap-4 ${
+                  selectedStakeholders.length + 1 === 4 ? 'grid-cols-2 max-w-xl' :
+                  selectedStakeholders.length + 1 === 5 ? 'grid-cols-3 max-w-3xl' :
+                  'grid-cols-3 max-w-4xl'
+                }`}>
+                  {selectedStakeholders.slice(
+                    selectedStakeholders.length + 1 === 4 ? 1 :  // 4 total: skip first 1
+                    selectedStakeholders.length + 1 === 5 ? 1 :  // 5 total: skip first 1
+                    2  // 6+ total: skip first 2
+                  ).map((stakeholder, idx) => {
+                    const isSpeaking = state.status === 'speaking' && state.currentSpeaker === stakeholder.name;
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
+                          isDark 
+                            ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isSpeaking ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
+                            : isSpeaking 
+                              ? 'bg-gradient-to-br from-purple-100 to-indigo-100 border-purple-500 shadow-xl shadow-purple-400/40 ring-2 ring-purple-300'
+                              : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400 hover:shadow-lg'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center space-y-2">
+                          <div className="relative">
+                            {stakeholder.photo ? (
+                              <img
+                                src={stakeholder.photo}
+                                alt={stakeholder.name}
+                                className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
+                                  isSpeaking ? 'border-purple-500 ring-2 ring-purple-300' : isDark ? 'border-gray-600' : 'border-purple-200'
+                                }`}
+                              />
+                            ) : (
+                              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
+                                isSpeaking 
+                                  ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 text-white' 
+                                  : isDark 
+                                    ? 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600 text-white' 
+                                    : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-300 text-gray-700'
+                              }`}>
+                                {stakeholder.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                              </div>
+                            )}
+                            
+                            {isSpeaking && (
+                              <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1.5 shadow-lg">
+                                <div className="flex gap-0.5 items-end">
+                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '8px' }} />
+                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
+                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="text-center">
+                            <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                              {stakeholder.name}
+                            </p>
+                            <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {stakeholder.role}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             
             {/* Transcript */}
             {showTranscript && messages.length > 0 && (

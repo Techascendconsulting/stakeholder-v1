@@ -32,28 +32,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [showDeviceRegistration, setShowDeviceRegistration] = useState(false)
   const deviceRegistrationCompleted = useRef<boolean>(false)
 
-  // Shared admin check used in multiple places
-  const checkIfAdmin = async (): Promise<boolean> => {
-    try {
-      if (!user) return false;
-      const { data: profile, error } = await supabase
-        .from('user_profiles')
-        .select('is_admin, is_super_admin, is_senior_admin')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) {
-        console.error('🔐 AUTH - Error checking admin status:', error);
-        return false;
-      }
-
-      const isAdmin = !!(profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin);
-      return isAdmin;
-    } catch (error) {
-      console.error('🔐 AUTH - Error checking admin status:', error);
-      return false;
-    }
-  };
 
   useEffect(() => {
     // Safety timeout: Force loading to false after 5 seconds to prevent blank screen
@@ -93,8 +71,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               await userActivityService.logActivity(
                 session.user.id,
                 'session_restored',
-                'Session restored on page refresh',
-                true
+                {
+                  success: true,
+                  metadata: { event: 'page_refresh' }
+                }
               )
             } catch (logError) {
               console.log('Failed to log session restoration:', logError)
@@ -119,7 +99,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event: any, session: any) => {
         console.log('🔐 AUTH - State changed:', event, session?.user?.email)
         
         // Handle different auth events
@@ -150,10 +130,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [])
 
-  // Enforce device lock on focus/visibility change without constant polling
+  // Enforce device lock: Check on focus/visibility AND periodically (every 15 seconds)
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
+    let intervalId: NodeJS.Timeout;
 
     const checkLocked = async () => {
       try {
@@ -164,27 +145,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .single();
         const isAdmin = !!(data?.is_admin || data?.is_super_admin || data?.is_senior_admin);
         if (!cancelled && data?.locked && !isAdmin) {
+          console.error('🚨 DEVICE LOCK: Account locked detected - signing out immediately');
           try {
-            localStorage.setItem('deviceLockError', JSON.stringify({ locked: true, message: 'Your account has been LOCKED due to login from a different device. Please contact support to unlock your account.' }));
+            localStorage.setItem('deviceLockError', JSON.stringify({ 
+              locked: true, 
+              message: 'Your account has been LOCKED due to login from a different device. Please contact support to unlock your account.' 
+            }));
           } catch {}
           await supabase.auth.signOut();
           setSession(null);
           setUser(null);
+          // Force reload to show lock message
+          window.location.reload();
         }
       } catch (_) {
         // ignore
       }
     };
 
-    // Check immediately and whenever the tab gains focus or visibility changes
+    // Check immediately
     checkLocked();
+    
+    // Check on focus/visibility changes
     const onFocusOrVis = () => { checkLocked(); };
     window.addEventListener('focus', onFocusOrVis);
     document.addEventListener('visibilitychange', onFocusOrVis);
+    
+    // CRITICAL: Also check periodically every 15 seconds to catch device locks quickly
+    intervalId = setInterval(() => {
+      checkLocked();
+    }, 15000); // 15 seconds
+    
     return () => {
       cancelled = true;
       window.removeEventListener('focus', onFocusOrVis);
       document.removeEventListener('visibilitychange', onFocusOrVis);
+      if (intervalId) clearInterval(intervalId);
     };
   }, [user?.id])
 
@@ -358,11 +354,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Store device lock error for AppContext to detect
           localStorage.setItem('deviceLockError', JSON.stringify(deviceLockResult))
           
-          supabase.auth.signOut() // Don't await this to avoid blocking
+          // CRITICAL: Await sign out to prevent navigation to homepage
+          await supabase.auth.signOut()
           
           // Clear the session locally to prevent redirect
           setSession(null)
           setUser(null)
+          
+          // Force immediate redirect to login page to show lock message
+          window.location.href = '/';
           
           return { 
             error: new Error(deviceLockResult.message),

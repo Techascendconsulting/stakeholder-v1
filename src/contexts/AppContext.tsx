@@ -305,29 +305,47 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           errorMessage: profileError?.message
         });
         
-        // If query failed, check if it's an RLS error
+        // 🔒 SECURITY: FAIL CLOSED - If we can't verify permissions, DENY ACCESS
         if (profileError) {
-          console.error('❌ NAVIGATE: Failed to fetch user profile - BYPASSING locks to prevent false lockouts', profileError);
-          setLockMessage(null);
-          // Don't block on DB errors - fail open for existing users
+          console.error('🚨 SECURITY: Failed to fetch user profile - DENYING ACCESS', profileError);
+          console.error('🚨 SECURITY: User ID:', user?.id, 'Attempted view:', view);
+          
+          // CRITICAL: Treat as new user in learning phase (most restrictive)
+          const phase = await getUserPhase(user?.id || '');
+          const canAccess = isPageAccessible(view, phase, 'new');
+          
+          if (!canAccess) {
+            console.error('🚨 SECURITY: Access DENIED due to profile fetch error');
+            setLockMessage('⚠️ Unable to verify your access permissions. Please refresh the page or contact support.');
+            setCurrentViewState(currentView); // Stay on current page
+            return;
+          } else {
+            console.warn('⚠️ SECURITY: Allowing access despite error because page is in Phase 1');
+          }
         }
-        // DOUBLE CHECK: If user has admin flags in DB, bypass all locks
-        else if (userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin) {
-          console.log('✅ NAVIGATE: DB admin flags detected, bypassing ALL content locks');
+        
+        // 🔒 SECURITY: EXPLICIT CHECKS - Only bypass for confirmed admins or existing users
+        // DOUBLE CHECK: Admin flags must be explicitly TRUE (not null/undefined)
+        else if (userProfile?.is_admin === true || 
+                 userProfile?.is_super_admin === true || 
+                 userProfile?.is_senior_admin === true) {
+          console.log('✅ NAVIGATE: Admin confirmed, bypassing content locks');
           setLockMessage(null);
-          // Skip navigation locks
         }
-        // If user_type is 'existing', bypass all locks
+        // DOUBLE CHECK: user_type must be explicitly 'existing' (not null/undefined)
         else if (userProfile?.user_type === 'existing') {
-          console.log('✅ NAVIGATE: Existing user detected, bypassing ALL content locks');
+          console.log('✅ NAVIGATE: Existing user confirmed, bypassing content locks');
           setLockMessage(null);
-          // Skip navigation locks for existing users
-        } else {
-          // Only apply locks for 'new' users or when user_type is explicitly set to 'new'
+        }
+        // 🔒 DEFAULT: Apply navigation locks for everyone else
+        else {
+          // If user_type is null/undefined OR 'new', treat as 'new' student
           const userType = userProfile?.user_type || 'new';
-          console.log('🔐 NAVIGATE: Checking navigation permission for:', view, 'User type:', userType);
+          console.log('🔐 NAVIGATE: Student user detected. Checking permissions for:', view);
+          console.log('🔐 NAVIGATE: User type:', userType, '| User ID:', user?.id);
 
         if (userType === 'new') {
+          console.log('🔒 SECURITY: Applying progressive unlock for NEW student');
           // Get user's current phase (learning, practice, or hands-on)
           const phase = await getUserPhase(user?.id || '');
           const canAccess = isPageAccessible(view, phase, userType);
@@ -453,8 +471,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           pageType = 'settings';
         }
         
-        // Only save resume state if it's a returnable route
-        if (isReturnableRoute(view) && pageType !== 'dashboard' && pageType !== 'admin' && pageType !== 'settings') {
+        // Meeting views to exclude from resume state (they're temporary)
+        const meetingViews = ['meeting', 'voice-only-meeting', 'voice-meeting-v2', 'meeting-mode-selection'];
+        
+        // Only save resume state if it's a returnable route and NOT a meeting view
+        if (isReturnableRoute(view) && 
+            pageType !== 'dashboard' && 
+            pageType !== 'admin' && 
+            pageType !== 'settings' &&
+            !meetingViews.includes(view)) {
           // Capture current scroll position
           const scrollY = window.scrollY || document.documentElement.scrollTop;
           
