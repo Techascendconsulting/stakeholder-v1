@@ -57,6 +57,10 @@ const CoreLearning2025Preview: React.FC = () => {
           const progress = JSON.parse(savedProgress);
           setCompletedTopics(progress.completedTopics || []);
           setMidAssignmentCompleted(progress.midAssignmentCompleted || false);
+          // Restore the last selected topic on page refresh
+          if (progress.selectedTopicId) {
+            setSelectedTopicId(progress.selectedTopicId);
+          }
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -70,13 +74,17 @@ const CoreLearning2025Preview: React.FC = () => {
 
   const saveProgress = () => {
     if (!user?.id) return;
-    const progress = { completedTopics, midAssignmentCompleted };
+    const progress = { 
+      completedTopics, 
+      midAssignmentCompleted,
+      selectedTopicId // Save current topic selection
+    };
     localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
   };
 
   useEffect(() => {
     saveProgress();
-  }, [completedTopics, midAssignmentCompleted]);
+  }, [completedTopics, midAssignmentCompleted, selectedTopicId]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
