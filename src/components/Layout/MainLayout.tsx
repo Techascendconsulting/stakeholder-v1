@@ -25,6 +25,7 @@ import ProjectsView from '../Views/ProjectsView';
 import MeetingView from '../Views/MeetingView';
 import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
 import VoiceMeetingV2 from '../Views/VoiceMeetingV2';
+import VoiceMeetingV2Rebuilt from '../Views/VoiceMeetingV2Rebuilt';
 import VoiceMeetingV2Simple from '../Views/VoiceMeetingV2Simple';
 import { MyMeetingsView } from '../Views/MyMeetingsView';
 import { MeetingSummaryView } from '../Views/MeetingSummaryView';
@@ -328,7 +329,8 @@ const MainLayout: React.FC = () => {
       case 'voice-only-meeting':
         return <VoiceOnlyMeetingView />;
       case 'voice-meeting-v2':
-        return <VoiceMeetingV2 />;
+        // TESTING: Using rebuilt version (can revert to VoiceMeetingV2 if needed)
+        return <VoiceMeetingV2Rebuilt />;
       case 'voice-meeting-simple':
         return <VoiceMeetingV2Simple />;
       case 'meeting-summary':
@@ -453,31 +455,26 @@ const MainLayout: React.FC = () => {
         Menu
       </button>
       <Sidebar />
-      {currentView === 'voice-meeting-v2' ? (
-        // Voice meeting: no grid, no wrapper - just render directly
-        renderView()
-      ) : (
-        <main
-          className="grid grid-rows-[auto,1fr] min-h-screen flex-1 bg-gray-50 dark:bg-gray-900"
-        >
-          {/* Global Breadcrumbs - Always visible */}
-          <GlobalBreadcrumbs />
-          
-          {/* Content row that can actually stretch */}
-          <section className="min-h-0 overflow-auto">
-            {lockMessage ? (
-              <LockMessageToast
-                message={lockMessage}
-                onClose={clearLockMessage}
-              />
-            ) : (
-              <ErrorBoundary>
-                {renderView()}
-              </ErrorBoundary>
-            )}
-          </section>
-        </main>
-      )}
+      <main
+        className="grid grid-rows-[auto,1fr] min-h-screen flex-1 bg-gray-50 dark:bg-gray-900"
+      >
+        {/* Global Breadcrumbs - Always visible */}
+        <GlobalBreadcrumbs />
+        
+        {/* Content row that can actually stretch */}
+        <section className="min-h-0 overflow-auto">
+          {lockMessage ? (
+            <LockMessageToast
+              message={lockMessage}
+              onClose={clearLockMessage}
+            />
+          ) : (
+            <ErrorBoundary>
+              {renderView()}
+            </ErrorBoundary>
+          )}
+        </section>
+      </main>
       
       {/* Verity Assistant - Hide on conversational AI pages AND admin pages */}
       {!isAdmin && !['voice-only-meeting', 'voice-meeting-v2', 'meeting', 'documentation'].includes(currentView) && (
