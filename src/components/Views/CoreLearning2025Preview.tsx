@@ -287,14 +287,14 @@ d) There's no difference
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Sticky Sidebar - Topics List */}
             <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden'} lg:block`}>
-              <div className="sticky top-24 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+              <div className="sticky top-24 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 max-h-[calc(100vh-7rem)] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Topics</h2>
                   <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <nav className="space-y-1">
+                <nav className="space-y-1 pb-4">
                   {topics.map((topic, idx) => {
                     const accessible = isTopicAccessible(idx);
                     const completed = completedTopics.includes(topic.id);
@@ -362,7 +362,7 @@ d) There's no difference
 
                 {/* Content */}
                 <div className="p-8 lg:p-12">
-                  <div className="prose prose-lg max-w-none dark:prose-invert
+                  <div className="core-learning-content prose prose-lg max-w-none dark:prose-invert
                     /* Headings - clean, prominent, well-spaced */
                     prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-gray-900 dark:prose-headings:text-white
                     prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-8 md:prose-h1:text-4xl
