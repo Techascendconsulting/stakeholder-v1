@@ -562,7 +562,7 @@ function getPageTitle(view: string): string {
     'profile': 'Profile'
   };
   
-  return titles[view] || 'BA WorkXP Platform';
+  return titles[view] || 'BA WorkXP™';
 }
 
 // Add this before the export

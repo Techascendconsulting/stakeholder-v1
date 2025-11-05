@@ -100,7 +100,7 @@ serve(async (req) => {
         .insert({
           channel_id: channel.id,
           user_id: '00000000-0000-0000-0000-000000000000', // System user ID
-          body: `💬 **Daily Motivation**\n\n${randomQuote}\n\n*Posted by BA WorkXP Platform*`,
+          body: `💬 **Daily Motivation**\n\n${randomQuote}\n\n*Posted by BA WorkXP™*`,
           created_at: new Date().toISOString()
         })
         .select()
@@ -119,7 +119,7 @@ serve(async (req) => {
       .from('forum_posts')
       .insert({
         user_id: '00000000-0000-0000-0000-000000000000', // System user ID
-        content: `💬 **Daily Motivation**\n\n${randomQuote}\n\n*Posted by BA WorkXP Platform*`,
+        content: `💬 **Daily Motivation**\n\n${randomQuote}\n\n*Posted by BA WorkXP™*`,
         category: 'general',
         system_generated: true
       })

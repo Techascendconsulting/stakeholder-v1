@@ -81,7 +81,7 @@ async function sendContactNotificationEmail(data: {
     ${data.message}
     
     ---
-    Submitted via BA WorkXP Platform
+    Submitted via BA WorkXP™
     Date: ${new Date().toISOString()}
   `;
 
@@ -111,7 +111,7 @@ async function sendContactNotificationEmail(data: {
                 <p style="line-height: 1.6; color: #4b5563;">${data.message}</p>
               </div>
               <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 14px;">
-                <p>Submitted via BA WorkXP Platform</p>
+                <p>Submitted via BA WorkXP™</p>
                 <p>${new Date().toLocaleString()}</p>
               </div>
             </div>

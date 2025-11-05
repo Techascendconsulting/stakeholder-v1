@@ -171,7 +171,7 @@ const GetStartedView: React.FC = () => {
           <User className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Welcome to the BA WorkXP Platform 👋
+          Welcome to BA WorkXP™ 👋
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed">
           Let's get you started based on your current experience and goals.

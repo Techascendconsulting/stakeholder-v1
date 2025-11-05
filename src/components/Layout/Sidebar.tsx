@@ -343,7 +343,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">BA WorkXP Platform</h1>
+                <h1 className="text-lg font-bold text-white">BA WorkXP™</h1>
 
               </div>
             </div>
