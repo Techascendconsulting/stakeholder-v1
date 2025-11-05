@@ -89,18 +89,56 @@ body {
   margin-top: 1.25rem !important; /* Space between consecutive paragraphs */
 }
 
+.core-learning-content h1,
+.core-learning-content h2,
+.core-learning-content h3,
+.core-learning-content h4,
+.core-learning-content h5,
+.core-learning-content h6 {
+  font-weight: 700 !important; /* Bold */
+  color: #111827 !important; /* Dark gray in light mode */
+}
+
+.dark .core-learning-content h1,
+.dark .core-learning-content h2,
+.dark .core-learning-content h3,
+.dark .core-learning-content h4,
+.dark .core-learning-content h5,
+.dark .core-learning-content h6 {
+  color: #ffffff !important; /* White in dark mode */
+}
+
+.core-learning-content h1 {
+  font-size: 2rem !important; /* 32px */
+  margin-top: 3rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
 .core-learning-content h2 {
+  font-size: 1.75rem !important; /* 28px */
   margin-top: 2.5rem !important;
   margin-bottom: 1.25rem !important;
   padding-bottom: 0.75rem !important;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+
+.dark .core-learning-content h2 {
+  border-bottom-color: #374151 !important;
 }
 
 .core-learning-content h3 {
+  font-size: 1.5rem !important; /* 24px */
   margin-top: 2rem !important;
   margin-bottom: 1rem !important;
+  color: #7c3aed !important; /* Purple accent */
+}
+
+.dark .core-learning-content h3 {
+  color: #a78bfa !important; /* Lighter purple in dark mode */
 }
 
 .core-learning-content h4 {
+  font-size: 1.25rem !important; /* 20px */
   margin-top: 1.5rem !important;
   margin-bottom: 0.75rem !important;
 }
