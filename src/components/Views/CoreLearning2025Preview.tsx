@@ -112,48 +112,43 @@ const CoreLearning2025Preview: React.FC = () => {
   const topicColor = selectedTopic ? getTopicColor(selectedIndex) : getTopicColor(0);
 
   // Create readable sections if content has no markdown structure
+  /**
+   * Format content for optimal readability with proper paragraph spacing
+   * Ensures markdown is properly structured without being too aggressive
+   */
   const formatContent = (raw: string) => {
     if (!raw) return raw;
-    const hasHeadings = /\n\s*#+\s|^\s*#+\s/m.test(raw);
-    const hasParagraphs = /\n\n/.test(raw);
-    const hasBold = /\*\*[\s\S]+?\*\*/.test(raw);
-    const hasHyphenLists = /^\s*[-*]\s+/m.test(raw);
-    const hasNumberedLists = /^\s*\d+\.\s+/m.test(raw);
-
-    if (hasHeadings || hasParagraphs || hasBold || hasHyphenLists || hasNumberedLists) {
-      // Light paragraphization for already-structured text
-      const normalizedNumbers = raw.replace(/\s(\d+\.)\s/g, '\n$1 ');
-      const withParagraphs = normalizedNumbers.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
-      return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
-    }
-
-    // Auto-structure dense blocks: Overview, Key ideas, Example
-    const sentences = raw
-      .replace(/\s+/g, ' ')
-      .split(/(?<=[.!?])\s+/)
-      .filter(Boolean);
-
-    if (sentences.length <= 3) {
-      return sentences.join(' \n\n');
-    }
-
-    const overview = sentences.slice(0, Math.min(2, sentences.length)).join(' ');
-    const middleStart = Math.min(2, sentences.length);
-    const middleEnd = Math.min(middleStart + 5, sentences.length - 1);
-    const middle = sentences.slice(middleStart, middleEnd);
-    const tail = sentences.slice(middleEnd).join(' ');
-
-    const keyIdeas = middle.join('\n\n');
-
-    let md = `### Overview\n\n${overview}\n\n`;
-    if (middle.length) {
-      md += `### Key ideas\n\n${keyIdeas}\n\n`;
-    }
-    if (tail.trim().length) {
-      md += `### Example\n\n${tail}\n`;
-    }
-
-    return md.trim();
+    
+    let formatted = raw;
+    
+    // Step 1: Ensure proper spacing after sentences (create paragraphs)
+    // Match: period/question/exclamation followed by space and capital letter
+    // Don't match: numbered lists (1. 2.) or abbreviations
+    formatted = formatted.replace(
+      /([.!?])\s+(?=[A-Z][a-z])/g,
+      '$1\n\n'
+    );
+    
+    // Step 2: Ensure headings have proper spacing
+    // Add blank line before headings (unless it's at the start)
+    formatted = formatted.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
+    // Add blank line after headings
+    formatted = formatted.replace(/(#{1,6}\s.+)\n([^\n])/g, '$1\n\n$2');
+    
+    // Step 3: Ensure list items are properly formatted
+    // Add blank line before lists
+    formatted = formatted.replace(/([^\n])\n([-*+]\s)/g, '$1\n\n$2');
+    formatted = formatted.replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2');
+    
+    // Step 4: Ensure bold text doesn't create awkward spacing
+    // Keep bold text inline with its paragraph
+    formatted = formatted.replace(/\n\n(\*\*)/g, '\n$1');
+    
+    // Step 5: Clean up excessive blank lines (max 2 newlines)
+    formatted = formatted.replace(/\n{3,}/g, '\n\n');
+    
+    // Step 6: Trim and return
+    return formatted.trim();
   };
 
   // Remove any leading markdown heading that repeats the topic title (e.g., "# Who is a BA?")
@@ -367,17 +362,54 @@ d) There's no difference
 
                 {/* Content */}
                 <div className="p-8 lg:p-12">
-                  <div className="prose prose-lg max-w-3xl mx-auto dark:prose-invert
-                    prose-headings:font-bold prose-headings:tracking-tight
-                    prose-h1:text-3xl prose-h1:mb-4 md:prose-h1:text-4xl
-                    prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-gray-700 prose-h2:pb-2
-                    prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-                    prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:my-5 prose-p:leading-7 md:prose-p:leading-8
-                    prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold prose-strong:block prose-strong:mt-6 prose-strong:mb-2
-                    prose-ul:my-6 prose-ul:space-y-2 marker:text-gray-500 dark:marker:text-gray-400 list-disc list-inside
-                    prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:my-2 md:prose-li:my-2.5
-                    prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-                    prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
+                  <div className="prose prose-lg max-w-none dark:prose-invert
+                    /* Headings - clean, prominent, well-spaced */
+                    prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-gray-900 dark:prose-headings:text-white
+                    prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-8 md:prose-h1:text-4xl
+                    prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b-2 prose-h2:border-gray-200 dark:prose-h2:border-gray-700 prose-h2:pb-3
+                    prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-h3:text-purple-700 dark:prose-h3:text-purple-400
+                    prose-h4:text-lg md:prose-h4:text-xl prose-h4:mt-8 prose-h4:mb-3
+                    
+                    /* Paragraphs - generous spacing, readable line height */
+                    prose-p:text-gray-700 dark:prose-p:text-gray-300 
+                    prose-p:text-base md:prose-p:text-lg 
+                    prose-p:leading-relaxed md:prose-p:leading-loose
+                    prose-p:my-6
+                    prose-p:max-w-4xl
+                    
+                    /* Strong/Bold - inline emphasis, not block-level */
+                    prose-strong:text-gray-900 dark:prose-strong:text-white 
+                    prose-strong:font-bold 
+                    prose-strong:inline
+                    
+                    /* Lists - clear hierarchy, proper spacing */
+                    prose-ul:my-8 prose-ul:space-y-3 prose-ul:pl-6
+                    prose-ol:my-8 prose-ol:space-y-3 prose-ol:pl-6
+                    prose-li:text-gray-700 dark:prose-li:text-gray-300 
+                    prose-li:text-base md:prose-li:text-lg
+                    prose-li:leading-relaxed
+                    prose-li:my-2
+                    marker:text-purple-600 dark:marker:text-purple-400
+                    
+                    /* Code - subtle highlight */
+                    prose-code:text-purple-600 dark:prose-code:text-purple-400 
+                    prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 
+                    prose-code:px-2 prose-code:py-0.5 prose-code:rounded 
+                    prose-code:text-sm prose-code:font-medium
+                    prose-code:before:content-none prose-code:after:content-none
+                    
+                    /* Blockquotes - callout boxes */
+                    prose-blockquote:border-l-4 prose-blockquote:border-purple-500 
+                    prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 
+                    prose-blockquote:px-6 prose-blockquote:py-4 
+                    prose-blockquote:my-8 prose-blockquote:rounded-r-lg
+                    prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
+                    prose-blockquote:italic
+                    
+                    /* Links */
+                    prose-a:text-purple-600 dark:prose-a:text-purple-400 
+                    prose-a:no-underline prose-a:font-medium
+                    hover:prose-a:underline
                   ">
                     {(() => {
                       const source = removeLeadingHeading(normalizeCurrency(selectedTopic.content), selectedTopic.title);
