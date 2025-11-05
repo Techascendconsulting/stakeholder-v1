@@ -12,6 +12,15 @@
   </head>
   <body>
     <script>
+      // Backward-compat: define no-op device monitoring globals to avoid ReferenceErrors on cached clients
+      (function(){
+        try {
+          if (typeof window !== 'undefined') {
+            window.startDeviceMonitoring = window.startDeviceMonitoring || function(){ /* no-op */ };
+            window.stopDeviceMonitoring = window.stopDeviceMonitoring || function(){ /* no-op */ };
+          }
+        } catch(_) {}
+      })();
       // Minimal global error banner to reveal mobile-only runtime issues before React mounts
       (function () {
         function showBanner(message) {

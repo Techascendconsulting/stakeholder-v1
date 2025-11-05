@@ -556,107 +556,17 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {/* BA Career Journey - Always visible */}
-        <button
-          onClick={() => setCurrentView('career-journey')}
-          className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-          data-tour="quick-action-career"
-        >
-          <div className="flex items-center space-x-3">
-            <Map className="w-6 h-6" />
-            <span className="font-semibold">BA Career Journey</span>
+      {/* Consolidated Journey CTA */}
+      <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your BA Journey</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Career, Learning, Practice, and Project in one place</p>
           </div>
-          <p className="text-purple-100 text-sm mt-2">Follow the complete BA lifecycle from onboarding to delivery</p>
-        </button>
-
-        {/* Learning Journey - Always accessible */}
-        <button
-          onClick={() => setCurrentView('learning-flow')}
-          className="p-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-          data-tour="quick-action-learning"
-        >
-          <div className="flex items-center space-x-3">
-            <Brain className="w-6 h-6" />
-            <span className="font-semibold">Learning Journey</span>
-          </div>
-          <p className="text-blue-100 text-sm mt-2">Master BA skills through 11 comprehensive modules</p>
-        </button>
-
-        {/* Practice Journey - Quick Exercises (Unlocks at 3 modules) */}
-        <button
-          onClick={() => {
-            if (isPageAccessible('practice-flow', userPhase, userType)) {
-              setCurrentView('practice-flow');
-            }
-          }}
-          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
-            isPageAccessible('practice-flow', userPhase, userType)
-              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
-              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
-          }`}
-          data-tour="quick-action-practice"
-        >
-          {!isPageAccessible('practice-flow', userPhase, userType) && (
-            <div className="absolute top-3 right-3">
-              <Lock className="w-5 h-5 text-white/70" />
-            </div>
-          )}
-          <div className="flex items-center space-x-3">
-            {isPageAccessible('practice-flow', userPhase, userType) ? (
-              <Target className="w-6 h-6" />
-            ) : (
-              <Lock className="w-6 h-6" />
-            )}
-            <span className="font-semibold">Practice Journey</span>
-          </div>
-          <p className={`text-sm mt-2 ${
-            isPageAccessible('practice-flow', userPhase, userType) ? 'text-green-100' : 'text-white/80'
-          }`}>
-            {isPageAccessible('practice-flow', userPhase, userType)
-              ? 'Quick practice: Elicitation, Docs, MVP, Scrum'
-              : '🔒 Complete 3 modules to unlock'
-            }
-          </p>
-        </button>
-
-        {/* Project Journey - Hands-On Projects (Unlocks at 10 modules) */}
-        <button
-          onClick={() => {
-            if (isPageAccessible('project-flow', userPhase, userType)) {
-              setCurrentView('project-flow');
-            }
-          }}
-          className={`p-6 rounded-xl transition-all duration-200 shadow-lg relative ${
-            isPageAccessible('project-flow', userPhase, userType)
-              ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 hover:shadow-xl transform hover:scale-105 cursor-pointer'
-              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
-          }`}
-          data-tour="quick-action-project"
-        >
-          {!isPageAccessible('project-flow', userPhase, userType) && (
-            <div className="absolute top-3 right-3">
-              <Lock className="w-5 h-5 text-white/70" />
-            </div>
-          )}
-          <div className="flex items-center space-x-3">
-            {isPageAccessible('project-flow', userPhase, userType) ? (
-              <Rocket className="w-6 h-6" />
-            ) : (
-              <Lock className="w-6 h-6" />
-            )}
-            <span className="font-semibold">Project Journey</span>
-          </div>
-          <p className={`text-sm mt-2 ${
-            isPageAccessible('project-flow', userPhase, userType) ? 'text-orange-100' : 'text-white/80'
-          }`}>
-            {isPageAccessible('project-flow', userPhase, userType)
-              ? 'End-to-end projects with stakeholder meetings'
-              : '🔒 Complete all 10 modules to unlock'
-            }
-          </p>
-        </button>
+          <button onClick={() => setCurrentView('career-journey')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
+            View details <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
