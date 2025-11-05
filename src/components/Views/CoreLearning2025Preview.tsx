@@ -20,8 +20,6 @@ const CoreLearning2025Preview: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [completedTopics, setCompletedTopics] = useState<string[]>([]);
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
-  const [showMidAssignment, setShowMidAssignment] = useState(false);
-  const [midAssignmentCompleted, setMidAssignmentCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -56,7 +54,6 @@ const CoreLearning2025Preview: React.FC = () => {
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
           setCompletedTopics(progress.completedTopics || []);
-          setMidAssignmentCompleted(progress.midAssignmentCompleted || false);
           // Restore the last selected topic on page refresh
           if (progress.selectedTopicId) {
             setSelectedTopicId(progress.selectedTopicId);
@@ -75,8 +72,7 @@ const CoreLearning2025Preview: React.FC = () => {
   const saveProgress = () => {
     if (!user?.id) return;
     const progress = { 
-      completedTopics, 
-      midAssignmentCompleted,
+      completedTopics,
       selectedTopicId // Save current topic selection
     };
     localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
@@ -84,7 +80,7 @@ const CoreLearning2025Preview: React.FC = () => {
 
   useEffect(() => {
     saveProgress();
-  }, [completedTopics, midAssignmentCompleted, selectedTopicId]);
+  }, [completedTopics, selectedTopicId]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
@@ -105,9 +101,13 @@ const CoreLearning2025Preview: React.FC = () => {
   };
 
   const isTopicAccessible = (topicIndex: number) => {
+    // Existing users can access all topics
     if (userType === 'existing') return true;
+    
+    // New users: Topic 1 is always accessible
     if (topicIndex === 0) return true;
-    if (topicIndex >= 7 && !midAssignmentCompleted) return false;
+    
+    // New users: Next topic unlocks when previous topic is completed (via assignment)
     return completedTopics.includes(topics[topicIndex - 1].id);
   };
 
@@ -129,6 +129,177 @@ const CoreLearning2025Preview: React.FC = () => {
     // The content already has proper markdown structure from learningData.ts
     // Just clean up any excessive blank lines
     return raw.replace(/\n{3,}/g, '\n\n').trim();
+  };
+
+  /**
+   * Get topic-specific assignment for each of the 14 topics
+   */
+  const getTopicAssignment = (topicIndex: number, topicTitle: string) => {
+    const assignments = [
+      // Topic 1: Who Is a Business Analyst?
+      {
+        title: `Topic 1 Quiz: ${topicTitle}`,
+        description: `Test your understanding of the BA role.
+
+**Question 1:** What is the PRIMARY role of a Business Analyst?
+a) Write code and build software
+b) Bridge the gap between business problems and technical solutions ✓
+c) Manage project timelines
+d) Design user interfaces
+
+**Question 2:** Give a real-world example of when a BA would prevent wasted effort on a project.
+
+**Question 3:** True or False: A BA's main job is to decide HOW a solution will be built.`
+      },
+      // Topic 2: How Organisations Work
+      {
+        title: `Topic 2 Quiz: ${topicTitle}`,
+        description: `Test your understanding of organizational structure.
+
+**Question 1:** Why do BAs need to understand how organizations work?
+
+**Question 2:** Explain the difference between organizational structure and organizational culture.
+
+**Question 3:** Name 2 ways a BA can navigate organizational politics effectively.`
+      },
+      // Topic 3: Departments in an Organisation
+      {
+        title: `Topic 3 Quiz: ${topicTitle}`,
+        description: `Test your understanding of departments and teams.
+
+**Question 1:** What's the main difference between a department and a project team?
+
+**Question 2:** List 3 common departments a BA might work with and explain what each does.
+
+**Question 3:** Why do cross-functional teams often need a BA?`
+      },
+      // Topic 4: Why Projects Happen
+      {
+        title: `Topic 4 Quiz: ${topicTitle}`,
+        description: `Test your understanding of project triggers.
+
+**Question 1:** List 4 common reasons why organizations start projects.
+
+**Question 2:** Give an example of a regulatory change that might trigger a project.
+
+**Question 3:** Why is it important for a BA to understand the TRUE reason behind a project?`
+      },
+      // Topic 5: Why BAs Are Hired
+      {
+        title: `Topic 5 Quiz: ${topicTitle}`,
+        description: `Test your understanding of the BA's value.
+
+**Question 1:** What are 3 problems that happen when organizations DON'T have a BA?
+
+**Question 2:** Explain how a BA saves time and money.
+
+**Question 3:** A company wants to "improve customer satisfaction." How would a BA approach this vague request?`
+      },
+      // Topic 6: What a BA Does (and Doesn't Do)
+      {
+        title: `Topic 6 Quiz: ${topicTitle}`,
+        description: `Test your understanding of BA responsibilities.
+
+**Question 1:** List 4 things a BA DOES do.
+
+**Question 2:** List 3 things a BA DOESN'T do (and who does them instead).
+
+**Question 3:** Why is it important for a BA to understand what they DON'T do?`
+      },
+      // Topic 7: Business Problems BAs Solve
+      {
+        title: `Topic 7 Quiz: ${topicTitle}`,
+        description: `Test your understanding of business problems.
+
+**Question 1:** Give 3 examples of business problems a BA might solve.
+
+**Question 2:** What's the difference between a symptom and a root cause?
+
+**Question 3:** A business says "we need faster delivery." What questions would a BA ask?`
+      },
+      // Topic 8: SDLC, Agile, and Waterfall
+      {
+        title: `Topic 8 Quiz: ${topicTitle}`,
+        description: `Test your understanding of SDLC and methodologies.
+
+**Question 1:** What is the Software Development Life Cycle (SDLC)?
+
+**Question 2:** Compare Agile vs Waterfall - when would you use each?
+
+**Question 3:** What does a BA do in the Requirements phase?`
+      },
+      // Topic 9: Understanding the Problem
+      {
+        title: `Topic 9 Quiz: ${topicTitle}`,
+        description: `Test your understanding of problem analysis.
+
+**Question 1:** What is the "5 Whys" technique?
+
+**Question 2:** A manager says "Our app crashes too much." Use 5 Whys to find a potential root cause.
+
+**Question 3:** Why is it dangerous to jump straight to solutions?`
+      },
+      // Topic 10: Working With Stakeholders
+      {
+        title: `Topic 10 Quiz: ${topicTitle}`,
+        description: `Test your understanding of stakeholder management.
+
+**Question 1:** Who are stakeholders? Give 4 examples.
+
+**Question 2:** Why might different stakeholders have conflicting needs?
+
+**Question 3:** You're a BA on a hospital project. Who would you interview and why?`
+      },
+      // Topic 11: Working With Developers
+      {
+        title: `Topic 11 Quiz: ${topicTitle}`,
+        description: `Test your understanding of BA-developer collaboration.
+
+**Question 1:** Why do BAs and developers sometimes misunderstand each other?
+
+**Question 2:** What information should a BA provide to developers?
+
+**Question 3:** Give an example of a good requirement vs a vague requirement.`
+      },
+      // Topic 12: Understanding Systems and Processes
+      {
+        title: `Topic 12 Quiz: ${topicTitle}`,
+        description: `Test your understanding of systems and processes.
+
+**Question 1:** What's the difference between a system and a process?
+
+**Question 2:** Why do BAs need to understand current processes before suggesting changes?
+
+**Question 3:** Give an example of a business process (step-by-step).`
+      },
+      // Topic 13: Spotting Inefficiencies
+      {
+        title: `Topic 13 Quiz: ${topicTitle}`,
+        description: `Test your understanding of inefficiency identification.
+
+**Question 1:** List 3 signs of an inefficient process.
+
+**Question 2:** How would a BA document inefficiencies they discover?
+
+**Question 3:** A team manually enters data from emails into a spreadsheet daily. What's the inefficiency and potential solution?`
+      },
+      // Topic 14: BA Tools and Next Steps
+      {
+        title: `Topic 14 Quiz: ${topicTitle}`,
+        description: `Test your understanding of BA tools and career growth.
+
+**Question 1:** Name 4 tools BAs commonly use and what each is for.
+
+**Question 2:** What skills should a BA continue developing?
+
+**Question 3:** How has your understanding of the BA role changed since Topic 1?`
+      }
+    ];
+
+    return assignments[topicIndex] || {
+      title: `Topic ${topicIndex + 1} Quiz`,
+      description: 'Complete this quiz to test your understanding.'
+    };
   };
 
   // Remove any leading markdown heading that repeats the topic title (e.g., "# Who is a BA?")
@@ -168,65 +339,6 @@ const CoreLearning2025Preview: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-purple-600 border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  // MID-POINT ASSIGNMENT (same as before, but with modern styling)
-  if (showMidAssignment) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-          <div className="max-w-5xl mx-auto px-6 py-4">
-            <button onClick={() => setShowMidAssignment(false)} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm mb-4">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mid-Point Assessment</h1>
-          </div>
-        </div>
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <AssignmentPlaceholder
-            moduleId="module-1-core-learning-mid"
-            moduleTitle="Core Learning (Part 1)"
-            title="Mid-Point Assessment: Topics 1-7"
-            description={`Answer ALL questions below. You need **70% or higher** to unlock Topics 8-14.
-
-**PART A: Multiple Choice** *(Choose the best answer)*
-
-**Question 1:** What is the PRIMARY role of a Business Analyst?
-a) Write code and build software applications
-b) Define what needs to be built and why, ensuring the right problem is solved  ✓
-c) Manage project timelines and budgets
-d) Design user interfaces and create mockups
-
-**Question 2:** Which of these is NOT a common trigger for projects?
-a) A problem that's costing the business money
-b) New government regulations or compliance requirements
-c) A competitor launching a new feature
-d) A BA deciding they want to build something new  ✓
-
-**Question 3:** What is the main difference between departments and teams?
-a) Departments are larger, teams are smaller
-b) Departments are permanent organizational structures, teams are temporary project groups  ✓
-c) Departments have managers, teams don't
-d) There's no difference
-
-**PART B: Written Responses** *(Show your understanding)*
-
-**Question 4:** Explain why a BA needs to understand how organizations work. Give a specific example from Topics 1-7.
-
-**Question 5:** Describe one way a BA can help prevent wasted projects. Use concepts from Topics 1-7.
-
-**Question 6:** A stakeholder says "We need a mobile app." Using what you learned, what questions would you ask to understand the real problem?`}
-            isCompleted={false}
-            canAccess={true}
-            onComplete={() => {
-              setMidAssignmentCompleted(true);
-              saveProgress();
-              setShowMidAssignment(false);
-            }}
-          />
-        </div>
       </div>
     );
   }
@@ -404,52 +516,36 @@ d) There's no difference
                     })()}
                   </div>
 
-                  {/* Final Assignment (After Topic 14) */}
-                  {isLastTopic && (
+                  {/* Topic Assignment - Appears after EVERY topic */}
+                  {selectedTopic && (
                     <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
-                      {userType === 'new' ? (
-                        <AssignmentPlaceholder
-                          moduleId="module-1-core-learning"
-                          moduleTitle="Core Learning"
-                          title="Final Assessment: Complete BA Fundamentals"
-                          description={`Demonstrate your mastery of all 14 topics.
-
-**Question 1:** You're hired as a BA for a food delivery app. Customers complain: "My food always arrives cold." Using the 5 Whys technique from Topic 9, investigate the root cause. Then, using what you learned in Topics 8-14, explain:
-- What stakeholders would you talk to? (Topic 10)
-- How would you work with developers to solve it? (Topic 11)
-- What process improvements would you recommend? (Topics 12-13)
-- Which SDLC approach (Agile or Waterfall) would you use and why? (Topic 8)
-
-**Question 2:** Compare how a BA works in Agile vs Waterfall (Topic 8). Give a real example from Topics 1-7 showing when each approach would be better.
-
-**Question 3:** A stakeholder says "We need a mobile app." Using what you learned in Topics 1-7, explain:
-- What questions would you ask to understand the real problem? (Topic 9)
-- What might be the actual root cause?
-- How would you prevent this from becoming a wasted project? (Topic 5)
-
-**Question 4:** Describe the BA's role in the full Software Development Life Cycle (Topic 8). For each phase (Planning, Requirements, Design, Development, Testing, Deployment, Maintenance), explain what a BA does with specific examples from Topics 1-14.
-
----
-
-**Be thorough!** Use specific examples from the topics. Show you understand the BA role comprehensively.`}
-                          isCompleted={false}
-                          canAccess={true}
-                          onComplete={() => {}}
-                        />
-                      ) : (
-                        <div className="space-y-6">
-                          <AssignmentPlaceholder
-                            moduleId="module-1-core-learning"
-                            moduleTitle="Core Learning"
-                            title="Final Assessment: Complete BA Fundamentals"
-                            description={`Demonstrate your mastery of all 14 topics.`}
-                            isCompleted={false}
-                            canAccess={true}
-                            onComplete={() => {}}
-                          />
-                          <MarkCompleteButton moduleId="module-1-core-learning" moduleTitle="Core Learning" />
-                        </div>
-                      )}
+                      {(() => {
+                        const assignment = getTopicAssignment(selectedIndex, selectedTopic.title);
+                        return (
+                          <div className="space-y-6">
+                            <AssignmentPlaceholder
+                              moduleId={`module-1-core-learning-topic-${selectedIndex + 1}`}
+                              moduleTitle={`Core Learning - ${selectedTopic.title}`}
+                              title={assignment.title}
+                              description={assignment.description}
+                              isCompleted={false}
+                              canAccess={true}
+                              onComplete={() => {
+                                // Mark topic complete after assignment submission
+                                if (!completedTopics.includes(selectedTopic.id)) {
+                                  setCompletedTopics([...completedTopics, selectedTopic.id]);
+                                }
+                              }}
+                            />
+                            {/* Existing users can also manually mark complete */}
+                            {userType === 'existing' && (
+                              <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                                <p>Assignment is optional for existing users</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
@@ -481,19 +577,16 @@ d) There's no difference
                         </button>
                       )}
 
-                      {isCompleted && !isLastTopic && (
+                      {isCompleted && !isLastTopic && nextTopic && (
                         <button
                           onClick={() => {
-                            if (selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted) {
-                              setShowMidAssignment(true);
-                              setSelectedTopicId(null);
-                            } else if (nextTopic) {
+                            if (nextTopic) {
                               setSelectedTopicId(nextTopic.id);
                             }
                           }}
                           className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
                         >
-                          {selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted ? 'Take Assessment' : 'Next Topic'}
+                          Next Topic
                           <ArrowRight className="w-4 h-4" />
                         </button>
                       )}
@@ -519,8 +612,6 @@ d) There's no difference
   }
 
   // OVERVIEW PAGE - Modern Card Grid
-  const firstHalfCompleted = topics.slice(0, 7).every(t => completedTopics.includes(t.id));
-  const canAccessSecondHalf = userType === 'existing' || (firstHalfCompleted && midAssignmentCompleted);
   const progressPercent = Math.round((completedTopics.length / topics.length) * 100);
 
   return (
