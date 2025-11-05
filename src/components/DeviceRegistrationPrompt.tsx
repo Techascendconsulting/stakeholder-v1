@@ -113,24 +113,10 @@ const DeviceRegistrationPrompt: React.FC<DeviceRegistrationPromptProps> = ({ use
           >
             {isRegistering ? 'Registering...' : 'Register Device'}
           </button>
-          
-          <button
-            onClick={() => {
-              try {
-                const payload = { skippedAt: Date.now() };
-                localStorage.setItem('device_registration_skipped', JSON.stringify(payload));
-              } catch {}
-              onComplete();
-            }}
-            disabled={isRegistering}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-          >
-            Skip
-          </button>
         </div>
 
         <p className="text-xs text-gray-500 dark:text-gray-500 text-center mt-4">
-          You can register your device later in settings if you skip now.
+          This device must be registered to continue using your account.
         </p>
       </div>
     </div>

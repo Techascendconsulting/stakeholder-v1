@@ -226,14 +226,7 @@ const Dashboard: React.FC = () => {
                   >
                     <KeyRound className="w-4 h-4" /> Change password
                   </button>
-                  {!registeredDevice && (
-                    <button
-                      onClick={() => { localStorage.removeItem('device_registration_skipped'); setCurrentView('profile'); localStorage.setItem('profile_target_tab', 'security'); }}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold"
-                    >
-                      <Laptop className="w-4 h-4" /> Register device
-                    </button>
-                  )}
+                  {/* Removed register device action: devices are auto-registered */}
                   <button
                     onClick={() => { if (user?.id) localStorage.setItem(`security_card_dismissed_${user.id}`, '1'); setShowSecurityCard(false); }}
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-300 text-amber-900 dark:text-amber-200 text-sm"

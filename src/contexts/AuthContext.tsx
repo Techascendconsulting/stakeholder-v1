@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 import { deviceLockService, DeviceLockResult } from '../services/deviceLockService'
 import { userActivityService } from '../services/userActivityService'
-import DeviceRegistrationPrompt from '../components/DeviceRegistrationPrompt'
 
 interface AuthContextType {
   user: User | null
@@ -150,6 +149,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       subscription.unsubscribe()
     }
   }, [])
+
+  // Enforce device lock on focus/visibility change without constant polling
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    const checkLocked = async () => {
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('locked, is_admin, is_super_admin, is_senior_admin')
+          .eq('user_id', user.id)
+          .single();
+        const isAdmin = !!(data?.is_admin || data?.is_super_admin || data?.is_senior_admin);
+        if (!cancelled && data?.locked && !isAdmin) {
+          try { localStorage.setItem('accountLocked', '1'); } catch {}
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    // Check immediately and whenever the tab gains focus or visibility changes
+    checkLocked();
+    const onFocusOrVis = () => { checkLocked(); };
+    window.addEventListener('focus', onFocusOrVis);
+    document.addEventListener('visibilitychange', onFocusOrVis);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', onFocusOrVis);
+      document.removeEventListener('visibilitychange', onFocusOrVis);
+    };
+  }, [user?.id])
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -350,10 +385,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const isAdminForRegistration = finalUserProfile?.is_admin || finalUserProfile?.is_super_admin || finalUserProfile?.is_senior_admin;
         
         if (!finalUserProfile?.registered_device && !isAdminForRegistration) {
-          console.log('🔐 AUTH - No device registered for student user, showing registration prompt');
-          setShowDeviceRegistration(true);
-          // Don't start monitoring until device registration is complete
-          deviceRegistrationCompleted.current = false;
+          console.log('🔐 AUTH - No device registered for student user, auto-registering current device');
+          const autoDeviceId = await deviceLockService.getDeviceId();
+          if (autoDeviceId) {
+            await supabase
+              .from('user_profiles')
+              .update({ registered_device: autoDeviceId })
+              .eq('user_id', data.user.id);
+          }
+          deviceRegistrationCompleted.current = true;
         } else if (isAdminForRegistration) {
           console.log('🔐 AUTH - Admin user detected, skipping device registration prompt');
           // Admin users can start monitoring immediately (but won't due to admin check)
@@ -452,12 +492,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <AuthContext.Provider value={value}>
       {children}
-      {showDeviceRegistration && user && (
-        <DeviceRegistrationPrompt
-          userId={user.id}
-          onComplete={completeDeviceRegistration}
-        />
-      )}
+      {/* DeviceRegistrationPrompt removed: devices are auto-registered silently */}
     </AuthContext.Provider>
   )
 }
