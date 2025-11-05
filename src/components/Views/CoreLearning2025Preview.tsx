@@ -866,13 +866,19 @@ d) Design user interfaces
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${completed ? 'bg-green-800 dark:bg-green-950' : color.icon}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
+                    completed 
+                      ? 'bg-green-700 dark:bg-green-900' 
+                      : accessible 
+                      ? color.icon 
+                      : 'bg-gray-300 dark:bg-gray-700'
+                  }`}>
                     {completed ? (
                       <CheckCircle className="w-6 h-6 text-white" />
                     ) : !accessible ? (
-                      <Lock className="w-6 h-6 text-gray-400 dark:text-gray-600" />
+                      <Lock className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                     ) : (
-                      <Icon className={`w-6 h-6 ${color.text}`} />
+                      <Icon className="w-6 h-6 text-white" />
                     )}
                   </div>
                   <span className={`text-xs font-semibold ${completed ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
