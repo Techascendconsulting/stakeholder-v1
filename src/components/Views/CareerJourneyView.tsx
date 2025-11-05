@@ -226,21 +226,35 @@ const CareerJourneyView: React.FC = () => {
     }
   }, [loading, progress, userType]);
 
-  // Check scroll position for navigation arrows
+  // Check scroll position for navigation arrows (with RAF for performance)
   useEffect(() => {
+    let rafId: number | null = null;
+    
     const checkScrollPosition = () => {
       if (scrollContainerRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollLeft(scrollLeft > 10);
         setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
       }
+    };
+
+    // Use requestAnimationFrame for smooth performance
+    const handleScroll = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(checkScrollPosition);
     };
 
     const container = scrollContainerRef.current;
     if (container) {
       checkScrollPosition();
-      container.addEventListener('scroll', checkScrollPosition);
-      return () => container.removeEventListener('scroll', checkScrollPosition);
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        container.removeEventListener('scroll', handleScroll);
+      };
     }
   }, [loading]);
 
@@ -676,7 +690,7 @@ const CareerJourneyView: React.FC = () => {
         {canScrollLeft && (
           <button
             onClick={scrollLeft}
-            className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full items-center justify-center shadow-2xl hover:scale-110 transition-all"
+            className="hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full items-center justify-center shadow-xl hover:scale-105 transition-all"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -687,7 +701,7 @@ const CareerJourneyView: React.FC = () => {
         {canScrollRight && (
           <button
             onClick={scrollRight}
-            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-30 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-2xl hover:scale-110 transition-all group scroll-right-arrow"
+            className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-3 shadow-xl hover:scale-105 transition-all group scroll-right-arrow"
             aria-label="Scroll right"
           >
             <span className="text-sm font-semibold whitespace-nowrap">More phases</span>

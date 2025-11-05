@@ -370,12 +370,16 @@ d) Design user interfaces
   // TOPIC DETAIL VIEW - Different layout for each topic!
   if (selectedTopic) {
     // Helper to render common header
-    const renderHeader = () => (
+    const renderHeader = (showTopicList = false) => (
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSelectedTopicId(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+              <button 
+                onClick={() => setSelectedTopicId(null)} 
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="Back to all topics"
+              >
                 <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
               <div>
@@ -386,6 +390,15 @@ d) Design user interfaces
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {!showTopicList && (
+                <button
+                  onClick={() => setSelectedTopicId(null)}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>View All Topics</span>
+                </button>
+              )}
               <div className="text-right">
                 <div className="text-xs text-gray-500 dark:text-gray-400">Progress</div>
                 <div className="text-sm font-bold text-gray-900 dark:text-white">
@@ -402,7 +415,7 @@ d) Design user interfaces
     if (selectedIndex === 0) {
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-          {renderHeader()}
+          {renderHeader(true)}
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Sticky Sidebar - Topics List (ONLY FOR TOPIC 1) */}
@@ -643,7 +656,7 @@ d) Design user interfaces
     // Each topic gets unique styling through topicColor
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        {renderHeader()}
+        {renderHeader(false)}
         
         {/* Full-Width Content - No Sidebar */}
         <div className="max-w-5xl mx-auto px-6 py-8">
@@ -871,7 +884,7 @@ d) Design user interfaces
                       ? 'bg-green-700 dark:bg-green-900' 
                       : accessible 
                       ? color.icon 
-                      : 'bg-white dark:bg-gray-800'
+                      : 'bg-gray-300 dark:bg-gray-700'
                   }`}>
                     {completed ? (
                       <CheckCircle className="w-6 h-6 text-white" />
