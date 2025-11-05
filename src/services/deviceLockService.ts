@@ -75,7 +75,7 @@ class DeviceLockService {
    */
   async checkDeviceLock(userId: string): Promise<DeviceLockResult> {
     try {
-      console.log('🔐 DEVICE LOCK - Starting device lock check for user:', userId);
+      console.debug('🔐 [devicelock] start checkDeviceLock', { userId });
       // Removed: skip device registration bypass. All devices must be registered immediately.
       
       // FIRST: Check if user is admin - admins bypass device lock entirely
@@ -116,7 +116,7 @@ class DeviceLockService {
       
       // Get current device ID
       const currentDeviceId = await this.getDeviceId();
-      console.log('🔐 DEVICE LOCK - Current device ID:', currentDeviceId);
+      console.debug('🔐 [devicelock] currentDeviceId', { currentDeviceId });
       if (!currentDeviceId) {
         // Fail-open: let user proceed if fingerprint not available
         return {
@@ -134,20 +134,8 @@ class DeviceLockService {
         .eq('user_id', userId)
         .single();
 
-      console.log('🔐 DEVICE LOCK - User profiles table result:', { user, error: error?.message, code: error?.code });
-
-      console.log('🔐 DEVICE LOCK - Final user data:', { 
-        userId, 
-        currentDeviceId, 
-        user, 
-        error: error?.message 
-      });
-      
-      console.log('🔐 DEVICE LOCK - Device comparison:', {
-        currentDevice: currentDeviceId,
-        registeredDevice: user?.registered_device,
-        isMatch: user?.registered_device === currentDeviceId
-      });
+      console.debug('🔐 [devicelock] user record', { registered_device: user?.registered_device, locked: user?.locked, is_admin: user?.is_admin, error: error?.message, code: (error as any)?.code });
+      console.debug('🔐 [devicelock] compare', { current: currentDeviceId, registered: user?.registered_device, isMatch: user?.registered_device === currentDeviceId });
 
       // Handle RLS recursion error - if we can't access user_profiles due to RLS issues,
       // we'll assume the user is not an admin and proceed with device lock
@@ -186,7 +174,7 @@ class DeviceLockService {
         // Auto-unlock if the current device matches the registered device (including legacy format)
         const isLegacyMatch = typeof user.registered_device === 'string' && user.registered_device.startsWith(currentDeviceId + '-');
         if (user.registered_device === currentDeviceId || isLegacyMatch) {
-          console.log('🔐 DEVICE LOCK - Locked but same device detected. Auto-unlocking and migrating if needed.');
+          console.debug('🔐 [devicelock] locked=true but same device -> auto unlock');
           await this.unlockAccount(userId, currentDeviceId);
           return {
             success: true,
@@ -219,12 +207,14 @@ class DeviceLockService {
       // If THIS user's registered device matches current device, allow login
       // This check is per-user, so different users can use the same device
       if (user.registered_device === currentDeviceId) {
-        return {
+        const result = {
           success: true,
           locked: false,
           message: 'Device verified successfully.',
           deviceId: currentDeviceId
         };
+        console.debug('🔐 [devicelock] allow (exact match)', result);
+        return result;
       }
 
       // Removed: partial/legacy match allowances. Any mismatch now locks immediately.
@@ -232,16 +222,18 @@ class DeviceLockService {
       // SECURITY: THIS user's registered device differs from current device
       // LOCK THIS USER'S account (not the device) to enforce single-device-per-user policy
       // This does NOT prevent other users from using the same device - each user has their own registered_device
-      console.warn('🔐 DEVICE LOCK - DIFFERENT DEVICE DETECTED for user', userId, '. LOCKING THIS USER\'S ACCOUNT.');
+      console.warn('🔐 [devicelock] MISMATCH -> LOCK account', { userId, registered: user?.registered_device, current: currentDeviceId });
       await this.lockAccount(userId);
-      return {
+      const lockedResult = {
         success: false,
         locked: true,
         message: 'Your account has been LOCKED due to login from a different device. For security reasons, you can only access your account from one registered device at a time. Please contact support to unlock your account and register a new device if needed.'
       };
+      console.debug('🔐 [devicelock] return locked result', lockedResult);
+      return lockedResult;
 
     } catch (error) {
-      console.error('Device lock check failed:', error);
+      console.error('🔐 [devicelock] check failed', error);
       return {
         success: false,
         locked: false,

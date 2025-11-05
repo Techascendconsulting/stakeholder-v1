@@ -234,7 +234,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // If login successful, check if user is blocked FIRST
       if (data.user) {
-        console.log('🔐 AUTH - Checking if user is blocked:', data.user.id)
+        console.debug('🔐 [auth] signIn -> begin checks', { userId: data.user.id, email })
         
         // Check if user is blocked
         const { data: userProfile } = await supabase
@@ -298,7 +298,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
         
-        console.log('🔐 AUTH - User not blocked or locked, proceeding with device lock check');
+        console.debug('🔐 [auth] not blocked/locked -> proceeding to device lock check')
         
         const isAdminUser = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
         const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdminUser;
@@ -338,12 +338,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // This blocks the new login attempt AND prevents any existing sessions from continuing
         const deviceLockResult = await deviceLockService.checkDeviceLock(data.user.id)
         
-        console.log('🔐 AUTH - Device lock result:', deviceLockResult)
+        console.debug('🔐 [auth] device lock result', deviceLockResult)
         
         if (!deviceLockResult.success) {
           // Device mismatch detected at login - account locked immediately
           // This blocks this login attempt AND any existing sessions on other devices
-          console.log('🔐 AUTH - Different device detected at login - account LOCKED, blocking login')
+          console.warn('🔐 [auth] device mismatch -> account LOCKED, aborting login')
           
           // Log device lock failure
           const deviceId = await deviceLockService.getDeviceId()
@@ -368,7 +368,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
         
-        console.log('🔐 AUTH - Device lock successful')
+        console.debug('🔐 [auth] device lock successful -> continue sign-in')
         
         // Log successful sign-in
         const deviceId = await deviceLockService.getDeviceId()
