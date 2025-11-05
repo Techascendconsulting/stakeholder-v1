@@ -367,42 +367,46 @@ d) Design user interfaces
     );
   }
 
-  // TOPIC DETAIL VIEW
+  // TOPIC DETAIL VIEW - Different layout for each topic!
   if (selectedTopic) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        {/* Modern Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button onClick={() => setSelectedTopicId(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                </button>
-                <div>
-                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Topic {selectedIndex + 1} of {topics.length}
-                  </div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{selectedTopic.title}</h1>
+    // Helper to render common header
+    const renderHeader = () => (
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={() => setSelectedTopicId(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+              <div>
+                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                  Topic {selectedIndex + 1} of {topics.length}
                 </div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{selectedTopic.title}</h1>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Progress</div>
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">
-                    {completedTopics.length}/{topics.length}
-                  </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400">Progress</div>
+                <div className="text-sm font-bold text-gray-900 dark:text-white">
+                  {completedTopics.length}/{topics.length}
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    );
 
-        {/* Two-Column Layout: Sidebar + Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Sticky Sidebar - Topics List */}
-            <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden'} lg:block`}>
+    // LAYOUT 1: Topic 1 - With Sidebar (original design)
+    if (selectedIndex === 0) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+          {renderHeader()}
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Sticky Sidebar - Topics List (ONLY FOR TOPIC 1) */}
+              <aside className={`lg:col-span-3 ${sidebarOpen ? 'block' : 'hidden'} lg:block`}>
               <div className="sticky top-24 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 max-h-[calc(100vh-7rem)] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Topics</h2>
@@ -629,6 +633,170 @@ d) Design user interfaces
                 </div>
               </div>
             </main>
+          </div>
+        </div>
+      </div>
+      );
+    }
+
+    // LAYOUT 2-14: Full-width centered content (NO SIDEBAR)
+    // Each topic gets unique styling through topicColor
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        {renderHeader()}
+        
+        {/* Full-Width Content - No Sidebar */}
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+            {/* Topic Hero - Unique gradient for each topic */}
+            <div className={`${topicColor.bg} ${topicColor.border} border-b-2 p-8 lg:p-12`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 ${topicColor.accent} backdrop-blur-sm rounded-full text-xs font-semibold mb-3 ${topicColor.text}`}>
+                    <Clock className="w-3 h-3" />
+                    {selectedTopic.duration || '10 min'}
+                  </div>
+                  <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">{selectedTopic.title}</h2>
+                  <p className={`${topicColor.text} font-medium text-lg`}>Topic {selectedIndex + 1} of 14 - BA Fundamentals</p>
+                </div>
+                <div className={`flex-shrink-0 w-20 h-20 rounded-xl ${topicColor.icon} flex items-center justify-center shadow-lg`}>
+                  {React.createElement(getTopicIcon(selectedIndex), { className: `w-10 h-10 text-white` })}
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-8 lg:p-12">
+              <div className="core-learning-content prose prose-lg max-w-none dark:prose-invert
+                /* Headings - clean, prominent, well-spaced */
+                prose-headings:font-bold 
+                prose-headings:text-gray-900 dark:prose-headings:text-white
+                prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-8
+                prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-7
+                prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-6
+                prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-5
+                
+                /* Paragraphs */
+                prose-p:text-gray-700 dark:prose-p:text-gray-300
+                prose-p:text-base prose-p:leading-relaxed
+                prose-p:mb-5
+                
+                /* Lists */
+                prose-ul:my-6 prose-ol:my-6
+                prose-li:text-gray-700 dark:prose-li:text-gray-300
+                prose-li:my-2
+                
+                /* Strong/Bold text */
+                prose-strong:text-gray-900 dark:prose-strong:text-white
+                prose-strong:font-bold
+                
+                /* Blockquotes */
+                prose-blockquote:border-l-4 prose-blockquote:border-purple-500 
+                prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 
+                prose-blockquote:px-6 prose-blockquote:py-4 
+                prose-blockquote:my-8 prose-blockquote:rounded-r-lg
+                prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
+                prose-blockquote:italic
+                
+                /* Links */
+                prose-a:text-purple-600 dark:prose-a:text-purple-400 
+                prose-a:no-underline prose-a:font-medium
+                hover:prose-a:underline
+              ">
+                {(() => {
+                  const source = removeLeadingHeading(normalizeCurrency(selectedTopic.content), selectedTopic.title);
+                  const normalized = formatContent(source);
+                  return <ReactMarkdown>{normalized}</ReactMarkdown>;
+                })()}
+              </div>
+
+              {/* Topic Assignment - Appears after EVERY topic */}
+              {selectedTopic && (
+                <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
+                  {(() => {
+                    const assignment = getTopicAssignment(selectedIndex, selectedTopic.title);
+                    return (
+                      <div className="space-y-6">
+                        <AssignmentPlaceholder
+                          moduleId={`module-1-core-learning-topic-${selectedIndex + 1}`}
+                          moduleTitle={`Core Learning - ${selectedTopic.title}`}
+                          title={assignment.title}
+                          description={assignment.description}
+                          isCompleted={false}
+                          canAccess={true}
+                          onComplete={() => {
+                            // Mark topic complete after assignment submission
+                            if (!completedTopics.includes(selectedTopic.id)) {
+                              setCompletedTopics([...completedTopics, selectedTopic.id]);
+                            }
+                          }}
+                        />
+                        {/* Existing users can also manually mark complete */}
+                        {userType === 'existing' && (
+                          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                            <p>Assignment is optional for existing users</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {/* Footer Navigation */}
+            <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  {prevTopic && (
+                    <button
+                      onClick={() => setSelectedTopicId(prevTopic.id)}
+                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span className="hidden sm:inline">Previous: {prevTopic.title}</span>
+                      <span className="sm:hidden">Previous</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {!isCompleted && (
+                    <button
+                      onClick={() => setCompletedTopics(prev => [...prev, selectedTopic.id])}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Mark Complete
+                    </button>
+                  )}
+
+                  {isCompleted && !isLastTopic && nextTopic && (
+                    <button
+                      onClick={() => {
+                        if (nextTopic) {
+                          setSelectedTopicId(nextTopic.id);
+                        }
+                      }}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                      Next Topic
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {isCompleted && isLastTopic && (
+                    <button
+                      onClick={() => setSelectedTopicId(null)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                      <Award className="w-4 h-4" />
+                      Complete Module
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
