@@ -1,10 +1,12 @@
 // Voice Meeting V2 - REBUILT FOR PERFORMANCE & PROPER LAYOUT
-// Senior Engineer Rewrite: Optimized processing, true full-screen layout, all functionality preserved
+// Full working implementation with conversation loop, AI, and TTS
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useApp } from "../../contexts/AppContext";
-import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { createStakeholderConversationLoop } from "../../services/conversationLoop";
+import { synthesizeToBlob, resolveVoiceId } from "../../services/elevenLabsTTS";
+import { playBrowserTTS } from "../../lib/browserTTS";
 import { 
   ArrowLeft, Mic, MicOff, Users, Clock, MessageSquare, X, 
   FileText, HelpCircle, Loader2
@@ -46,12 +48,16 @@ export default function VoiceMeetingV2Rebuilt() {
   const [showTranscript, setShowTranscript] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [showExitModal, setShowExitModal] = useState(false);
+  const [aiThinking, setAiThinking] = useState(false);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
   
   // Refs
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef<any>(null);
+  const isUserSpeakingRef = useRef<boolean>(false);
   
   // Meeting timer
   useEffect(() => {
@@ -99,12 +105,318 @@ export default function VoiceMeetingV2Rebuilt() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   
-  // Auto-start meeting when component mounts
-  useEffect(() => {
-    if (state.status === 'idle') {
-      setState({ status: 'listening', currentSpeaker: null });
-      // TODO: Start conversation loop
+  // ADAPTER 1: Fast transcription using Web Speech API
+  async function transcribeOnce(): Promise<string> {
+    return new Promise((resolve) => {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        console.error('❌ SpeechRecognition not supported');
+        resolve('');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-GB";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognitionRef.current = recognition;
+      
+      let finalTranscript = "";
+      let isResolved = false;
+      let silenceTimeout: any = null;
+
+      recognition.onspeechstart = () => {
+        console.log('🎤 Listening');
+        isUserSpeakingRef.current = true;
+        setState({ status: 'listening', currentSpeaker: 'You' });
+        setLiveTranscript("");
+        if (silenceTimeout) clearTimeout(silenceTimeout);
+      };
+
+      recognition.onresult = (event: any) => {
+        if (isResolved) return;
+        
+        let interim = "";
+        let newFinal = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const transcript = result[0].transcript;
+          
+          if (result.isFinal) {
+            newFinal += transcript + " ";
+            
+            if (silenceTimeout) clearTimeout(silenceTimeout);
+            
+            const currentText = (finalTranscript + newFinal).trim();
+            const wordCount = currentText.split(/\s+/).filter(Boolean).length;
+            
+            // Adaptive timeout
+            let timeout;
+            if (wordCount < 5) timeout = 800;
+            else if (wordCount < 12) timeout = 1500;
+            else timeout = 2500;
+            
+            silenceTimeout = setTimeout(() => {
+              if (!isResolved && finalTranscript.trim()) {
+                isResolved = true;
+                try { recognition.stop(); } catch {}
+                isUserSpeakingRef.current = false;
+                setState({ status: 'thinking', currentSpeaker: null });
+                setLiveTranscript("");
+                resolve(finalTranscript.trim());
+              }
+            }, timeout);
+          } else {
+            interim += transcript;
+          }
+        }
+
+        if (newFinal) finalTranscript += newFinal;
+        setLiveTranscript(interim || finalTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('⚠️ Speech error:', event.error);
+        if (silenceTimeout) clearTimeout(silenceTimeout);
+        if (!isResolved) {
+          isResolved = true;
+          isUserSpeakingRef.current = false;
+          setState({ status: 'idle', currentSpeaker: null });
+          setLiveTranscript("");
+          resolve(finalTranscript.trim());
+        }
+      };
+
+      recognition.onend = () => {
+        if (silenceTimeout) clearTimeout(silenceTimeout);
+        if (!isResolved) {
+          isResolved = true;
+          isUserSpeakingRef.current = false;
+          resolve(finalTranscript.trim());
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error('❌ Start failed:', e);
+        resolve('');
+      }
+    });
+  }
+
+  // ADAPTER 2: AI-driven agent reply with IMPROVED CONTEXT
+  async function getAgentReply(userText: string): Promise<{ 
+    reply: string; 
+    speaker: string; 
+    voiceId?: string; 
+    stakeholderName?: string 
+  }> {
+    try {
+      setAiThinking(true);
+      
+      const participantNames = selectedStakeholders.map(s => s.name);
+      const conversationHistory = messages.map(msg => ({
+        role: msg.who === "You" ? "user" : "assistant",
+        content: msg.who === "You" ? msg.text : `[${msg.who}]: ${msg.text}`
+      }));
+
+      // DETECT MENTIONED NAMES
+      const userTextLower = userText.toLowerCase();
+      const mentionedStakeholder = selectedStakeholders.find(s => {
+        const fullName = s.name.toLowerCase();
+        const firstName = s.name.split(' ')[0].toLowerCase();
+        const namePattern = new RegExp(`\\b${firstName}\\b|\\b${fullName}\\b`, 'i');
+        return namePattern.test(userText);
+      });
+      
+      const mandatorySpeaker = mentionedStakeholder 
+        ? `\n\n🚨 MANDATORY: User mentioned "${mentionedStakeholder.name}" so this person MUST respond.`
+        : '';
+
+      // ENHANCED PROJECT CONTEXT
+      const projectContext = `
+PROJECT: ${selectedProject.name}
+DESCRIPTION: ${selectedProject.description || 'Customer onboarding optimization'}
+
+KEY PROBLEMS:
+- New customers take 6 to 8 weeks to get up and running (target: 3 to 4 weeks)
+- 23% churn in first 90 days
+- 7 internal departments involved (Sales, Implementation, IT, Support)
+- 4 disconnected systems (Salesforce, Monday.com, staging, production)
+- Manual handoffs cause 24 to 48 hour delays
+- Costs $2.3M per year in lost revenue
+
+STAKEHOLDERS IN THIS MEETING:
+${selectedStakeholders.map(s => `- ${s.name} (${s.role}, ${s.department}): ${s.priorities?.join(', ') || 'General concerns'}`).join('\n')}
+
+CONTEXT: This is about onboarding NEW CUSTOMERS/CLIENTS to our software platform, NOT employee onboarding.
+`.trim();
+
+      const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `${projectContext}
+
+MEETING RULES:
+- ONE stakeholder responds per turn${mandatorySpeaker ? '' : ' (choose most relevant based on their role)'}
+- Natural conversation: "I'm good, thanks" not "I'm excited to dive into..."
+- Brief replies (2-3 sentences max)
+- Be specific with YOUR role's perspective and metrics
+- HARD RULE: Use "to" for ranges, never dashes (e.g., "6 to 8 weeks" not "6-8 weeks")
+- Output strict JSON: {"speaker":"<exact name>","reply":"<response text>"}${mandatorySpeaker}`
+            },
+            ...conversationHistory,
+            { role: "user", content: userText }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+          max_tokens: 120,
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        throw new Error(`OpenAI error: ${openaiResponse.status}`);
+      }
+
+      const data = await openaiResponse.json();
+      let payload = {};
+      try {
+        payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+      } catch {
+        payload = { 
+          speaker: participantNames[0], 
+          reply: "Could you elaborate on that?" 
+        };
+      }
+
+      const speaker = (payload as any).speaker || participantNames[0];
+      const reply = (payload as any).reply || "I see what you mean.";
+      
+      // Find matching stakeholder for voice
+      const matchedStakeholder = selectedStakeholders.find(s => 
+        s.name.toLowerCase() === speaker.toLowerCase()
+      );
+      
+      const voiceId = matchedStakeholder?.voiceId || resolveVoiceId(speaker);
+
+      setAiThinking(false);
+      return { 
+        reply, 
+        speaker, 
+        voiceId,
+        stakeholderName: speaker 
+      };
+
+    } catch (error) {
+      console.error('❌ getAgentReply error:', error);
+      setAiThinking(false);
+      return {
+        reply: "Sorry, could you repeat that?",
+        speaker: selectedStakeholders[0]?.name || "Stakeholder",
+      };
     }
+  }
+
+  // ADAPTER 3: High-quality TTS playback
+  async function speak(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
+    try {
+      setGeneratingAudio(true);
+      setState(prev => ({ ...prev, status: 'speaking', currentSpeaker: options?.stakeholderName || 'Stakeholder' }));
+      
+      console.log('🔊 Generating audio with ElevenLabs...');
+      const audioBlob = await synthesizeToBlob(text, { 
+        stakeholderName: options?.stakeholderName 
+      });
+      
+      setGeneratingAudio(false);
+
+      if (!audioBlob) {
+        console.warn('⚠️ No audio blob, falling back to browser TTS');
+        await playBrowserTTS(text);
+        return;
+      }
+
+      // Play audio
+      return new Promise((resolve, reject) => {
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          audioRef.current = null;
+          setState(prev => ({ ...prev, status: 'listening', currentSpeaker: null }));
+          resolve();
+        };
+
+        audio.onerror = (e) => {
+          URL.revokeObjectURL(audioUrl);
+          audioRef.current = null;
+          console.error('❌ Audio playback error:', e);
+          reject(e);
+        };
+
+        audio.play().catch(reject);
+      });
+
+    } catch (error) {
+      console.error('❌ speak error:', error);
+      setGeneratingAudio(false);
+      setState(prev => ({ ...prev, status: 'listening', currentSpeaker: null }));
+    }
+  }
+
+  // Auto-start meeting
+  useEffect(() => {
+    if (state.status === 'idle' && !loopRef.current) {
+      console.log('🚀 Auto-starting meeting...');
+      
+      const loop = createStakeholderConversationLoop({
+        transcribeOnce,
+        getAgentReply,
+        speak,
+        onState: (loopState) => {
+          console.log('🔄 Loop state:', loopState);
+        },
+        onUserUtterance: (text) => {
+          addMessage({
+            who: "You",
+            text,
+            timestamp: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+          });
+        },
+        onAgentUtterance: ({ text, speaker }) => {
+          addMessage({
+            who: speaker,
+            text,
+            timestamp: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+          });
+        }
+      });
+
+      loopRef.current = loop;
+      loop.start();
+      setState({ status: 'listening', currentSpeaker: null });
+    }
+
+    return () => {
+      if (loopRef.current) {
+        loopRef.current.end();
+        loopRef.current = null;
+      }
+    };
   }, []);
   
   const endMeeting = () => {
@@ -112,6 +424,10 @@ export default function VoiceMeetingV2Rebuilt() {
   };
   
   const confirmEnd = () => {
+    if (loopRef.current) {
+      loopRef.current.end();
+      loopRef.current = null;
+    }
     setState({ status: 'ended', currentSpeaker: null });
     sessionStorage.removeItem('voiceMeeting_messages');
     sessionStorage.removeItem('voiceMeeting_duration');
@@ -119,7 +435,7 @@ export default function VoiceMeetingV2Rebuilt() {
   };
   
   return (
-    // Full height container that works WITH sidebar (not over it)
+    // Full height container with sidebar
     <div 
       className="flex flex-col h-screen w-full"
       style={{ 
@@ -189,22 +505,15 @@ export default function VoiceMeetingV2Rebuilt() {
             <MessageSquare className="w-4 h-4" />
             <span className="hidden sm:inline">Transcript</span>
           </button>
-          
-          <div className="flex items-center gap-2">
-            <Users className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
-            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-              {selectedStakeholders.length + 1}
-            </span>
-          </div>
         </div>
       </div>
       
-      {/* Main Content Area */}
+      {/* Main Content Area - ALIGNED TO TOP */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex flex-col p-6 overflow-auto">
           <div className="max-w-4xl w-full space-y-6">
             
-            {/* Status Indicator - FULL WIDTH */}
+            {/* Status Indicators - FULL WIDTH, TOP ALIGNED */}
             {state.status === 'listening' && (
               <div className={`w-full rounded-xl p-6 border ${
                 isDark 
@@ -229,7 +538,7 @@ export default function VoiceMeetingV2Rebuilt() {
               </div>
             )}
             
-            {state.status === 'thinking' && (
+            {(state.status === 'thinking' || aiThinking) && (
               <div className={`w-full rounded-xl p-6 border ${
                 isDark 
                   ? 'bg-purple-900/40 border-purple-500/50' 
@@ -239,9 +548,11 @@ export default function VoiceMeetingV2Rebuilt() {
                   <Loader2 className={`w-6 h-6 animate-spin ${
                     isDark ? 'text-purple-400' : 'text-purple-600'
                   }`} />
-                  <p className={`font-semibold text-lg ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
-                    Processing your message...
-                  </p>
+                  <div className="flex-1">
+                    <p className={`font-semibold text-lg ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
+                      {generatingAudio ? 'Generating audio...' : 'Thinking...'}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -346,4 +657,3 @@ export default function VoiceMeetingV2Rebuilt() {
     </div>
   );
 }
-
