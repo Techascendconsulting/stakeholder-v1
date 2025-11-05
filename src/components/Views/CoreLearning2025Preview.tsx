@@ -392,8 +392,12 @@ d) There's no difference
                           </div>
                         );
                       }
-                      if (section.trim().startsWith('- ')) {
-                        const items = section.split('\n').filter(Boolean).map(s => s.replace(/^\-\s*/, ''));
+                      if (/^\s*\-\s/m.test(section)) {
+                        const items = section
+                          .split('\n')
+                          .map(s => s.trim())
+                          .filter(Boolean)
+                          .map(s => s.replace(/^\s*\-\s*/, ''));
                         return (
                           <ul key={index} className="list-disc list-inside my-6">
                             {items.map((it, i) => (
