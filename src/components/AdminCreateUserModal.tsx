@@ -18,8 +18,6 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
     name: prefillData?.name || '',
     password: '',
     userType: 'existing' as 'new' | 'existing',
-    subscriptionTier: 'free' as 'free' | 'premium' | 'enterprise',
-    maxProjects: 1,
     sendEmail: true
   });
   
@@ -88,8 +86,6 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
           name: formData.name,
           password: formData.password,
           userType: formData.userType,
-          subscriptionTier: formData.subscriptionTier,
-          maxProjects: formData.maxProjects,
           sendEmail: formData.sendEmail,
           accessRequestId: prefillData?.accessRequestId
         })
@@ -421,73 +417,7 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
             </div>
           </div>
 
-          {/* Subscription Tier */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Subscription Tier
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, subscriptionTier: 'free', maxProjects: 1 }))}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  formData.subscriptionTier === 'free'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
-                }`}
-              >
-                <div className="text-center">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Free</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">1 project</p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, subscriptionTier: 'premium', maxProjects: 3 }))}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  formData.subscriptionTier === 'premium'
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-purple-300'
-                }`}
-              >
-                <div className="text-center">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Premium</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">3 projects</p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, subscriptionTier: 'enterprise', maxProjects: 999 }))}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  formData.subscriptionTier === 'enterprise'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-green-300'
-                }`}
-              >
-                <div className="text-center">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Enterprise</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Unlimited</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Max Projects (if not enterprise) */}
-          {formData.subscriptionTier !== 'enterprise' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Max Projects
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={formData.maxProjects}
-                onChange={(e) => setFormData(prev => ({ ...prev, maxProjects: parseInt(e.target.value) || 1 }))}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-          )}
+          {/* Subscription fields removed - not in database schema */}
 
           {/* Send Email */}
           <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">

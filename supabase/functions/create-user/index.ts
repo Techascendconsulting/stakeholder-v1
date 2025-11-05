@@ -11,8 +11,6 @@ interface CreateUserRequest {
   name: string;
   password: string;
   userType: 'new' | 'existing';
-  subscriptionTier: 'free' | 'premium' | 'enterprise';
-  maxProjects: number;
   sendEmail: boolean;
   accessRequestId?: string;
 }
@@ -96,16 +94,13 @@ serve(async (req) => {
       )
     }
 
-    // Step 2: Create/Update user profile with ALL necessary fields
+    // Step 2: Create/Update user profile with ALL necessary fields (only columns that exist)
     const { error: profileUpsertError } = await supabaseAdmin
       .from('user_profiles')
       .upsert({
         user_id: authData.user.id,
         display_name: body.name,
         user_type: body.userType || 'existing',
-        subscription_tier: body.subscriptionTier || 'free',
-        max_projects: body.maxProjects || 1,
-        subscription_status: 'active',
         // Security fields (default to false/null for regular users)
         blocked: false,
         locked: false,
@@ -147,7 +142,6 @@ serve(async (req) => {
             email: body.email,
             name: body.name,
             userType: body.userType,
-            tier: body.subscriptionTier,
             sendEmail: body.sendEmail
           },
           created_at: new Date().toISOString()
