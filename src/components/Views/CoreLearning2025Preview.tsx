@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
-import { normalizeCurrency } from '../../../utils/text';
+import { normalizeCurrency } from '../../utils/text';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
 import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
