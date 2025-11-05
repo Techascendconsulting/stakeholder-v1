@@ -96,7 +96,7 @@ serve(async (req) => {
       )
     }
 
-    // Step 2: Create/Update user profile
+    // Step 2: Create/Update user profile with ALL necessary fields
     const { error: profileUpsertError } = await supabaseAdmin
       .from('user_profiles')
       .upsert({
@@ -106,7 +106,13 @@ serve(async (req) => {
         subscription_tier: body.subscriptionTier || 'free',
         max_projects: body.maxProjects || 1,
         subscription_status: 'active',
+        // Security fields (default to false/null for regular users)
         blocked: false,
+        locked: false,
+        registered_device: null,
+        is_admin: false,
+        is_super_admin: false,
+        is_senior_admin: false,
         created_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'
