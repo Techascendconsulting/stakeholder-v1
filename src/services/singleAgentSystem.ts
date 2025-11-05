@@ -238,6 +238,7 @@ class SingleAgentSystem {
         temperature: 0.7, // Balanced creativity
         presence_penalty: 0.2, // Encourage diverse responses
         frequency_penalty: 0.2, // Reduce repetition
+        stream: false, // Keep non-streaming for now (streaming requires callback pattern)
       });
 
       const generatedResponse = response.choices[0]?.message?.content;

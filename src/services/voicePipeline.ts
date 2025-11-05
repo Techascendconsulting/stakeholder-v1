@@ -58,16 +58,81 @@ export async function processVoiceTurn({
 
     console.log('✅ Voice Pipeline: Got reply:', reply.substring(0, 50));
 
-    // 2) ElevenLabs TTS
-    console.log('🔊 Voice Pipeline: Generating audio with ElevenLabs...');
+    // 2) ElevenLabs TTS - Generate audio in PARALLEL (don't await yet)
+    console.log('🔊 Voice Pipeline: Starting ElevenLabs audio generation (parallel)...');
+    const audioPromise = synthesizeToBlob(reply, { 
+      stakeholderName: stakeholder.name 
+    });
+
+    // Return reply immediately with audio promise
+    // This allows UI to show text while audio is still generating
+    return { 
+      reply, 
+      audioBlob: await audioPromise // Await here so caller gets blob
+    };
+  } catch (error) {
+    console.error('❌ Voice Pipeline: Error processing turn:', error);
+    throw error;
+  }
+}
+
+// New: Process voice turn with immediate text callback
+export async function processVoiceTurnWithCallback({
+  transcript,
+  stakeholder,
+  project,
+  conversationHistory,
+  totalStakeholders,
+  onTextReady
+}: ProcessVoiceTurnOptions & { onTextReady?: (reply: string, speaker: string) => void }): Promise<VoiceTurnResult> {
+  console.log('🔄 Voice Pipeline: Processing turn with callback...', { transcript: transcript.substring(0, 50) });
+  
+  try {
+    const stakeholderContext = {
+      name: stakeholder.name,
+      role: stakeholder.role,
+      department: stakeholder.department,
+      priorities: stakeholder.priorities || [],
+      personality: stakeholder.personality || 'Professional and helpful',
+      expertise: stakeholder.expertise || []
+    };
+
+    const projectContext = {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      type: project.type || 'General',
+      painPoints: project.painPoints || [],
+      asIsProcess: project.asIsProcess || ''
+    };
+
+    console.log('🤖 Voice Pipeline: Calling singleAgentSystem...');
+    const reply = await singleAgentSystem.processUserMessage(
+      transcript,
+      stakeholderContext,
+      projectContext,
+      conversationHistory,
+      totalStakeholders
+    );
+
+    console.log('✅ Voice Pipeline: Got reply:', reply.substring(0, 50));
+    
+    // 🚀 OPTIMIZATION: Notify UI immediately with text
+    if (onTextReady) {
+      console.log('⚡ Voice Pipeline: Calling onTextReady callback - UI can show text now');
+      onTextReady(reply, stakeholder.name);
+    }
+
+    // Start audio generation in parallel (UI already showing text)
+    console.log('🔊 Voice Pipeline: Generating ElevenLabs audio (parallel while UI shows text)...');
     const audioBlob = await synthesizeToBlob(reply, { 
       stakeholderName: stakeholder.name 
     });
 
     if (!audioBlob) {
-      console.warn('⚠️ Voice Pipeline: ElevenLabs returned null, will use browser TTS as fallback');
+      console.warn('⚠️ Voice Pipeline: ElevenLabs returned null');
     } else {
-      console.log('✅ Voice Pipeline: Audio generated successfully');
+      console.log('✅ Voice Pipeline: Audio ready');
     }
 
     return { reply, audioBlob };

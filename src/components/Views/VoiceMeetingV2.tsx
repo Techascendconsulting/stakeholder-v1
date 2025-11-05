@@ -736,16 +736,9 @@ Rules:
 
   return (
     <div 
-      className={`flex flex-col overflow-hidden ${
+      className={`flex flex-col h-screen w-full ${
         isDark ? 'bg-[#0D0D0D] text-white' : 'bg-gradient-to-br from-purple-50 via-white to-indigo-50 text-gray-900'
       }`}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: '256px',
-        right: 0,
-        bottom: 0
-      }}
     >
       {/* Header */}
       <div className={`${
@@ -894,9 +887,15 @@ Rules:
                       ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/50 shadow-lg' 
                       : 'bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-100 border-purple-300 shadow-md shadow-purple-200/50'
                   }`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className={`w-2 h-2 rounded-full animate-pulse ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} />
-                      <p className={`text-sm font-medium ${isDark ? 'text-purple-200' : 'text-purple-700'}`}>Processing...</p>
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="flex gap-1">
+                        <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '0ms' }} />
+                        <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '150ms' }} />
+                        <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <p className={`text-sm font-medium ${isDark ? 'text-purple-200' : 'text-purple-700'}`}>
+                        {conversationState === 'processing' ? 'Thinking...' : 'Generating audio...'}
+                      </p>
                     </div>
                   </div>
                 </div>
