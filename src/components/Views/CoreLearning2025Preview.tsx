@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
+import { normalizeCurrency } from '../../utils/text';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
 import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
@@ -115,9 +116,14 @@ const CoreLearning2025Preview: React.FC = () => {
     if (!raw) return raw;
     const hasHeadings = /\n\s*#+\s|^\s*#+\s/m.test(raw);
     const hasParagraphs = /\n\n/.test(raw);
-    if (hasHeadings || hasParagraphs) {
+    const hasBold = /\*\*[\s\S]+?\*\*/.test(raw);
+    const hasHyphenLists = /^\s*[-*]\s+/m.test(raw);
+    const hasNumberedLists = /^\s*\d+\.\s+/m.test(raw);
+
+    if (hasHeadings || hasParagraphs || hasBold || hasHyphenLists || hasNumberedLists) {
       // Light paragraphization for already-structured text
-      const withParagraphs = raw.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
+      const normalizedNumbers = raw.replace(/\s(\d+\.)\s/g, '\n$1 ');
+      const withParagraphs = normalizedNumbers.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
       return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
     }
 
@@ -137,7 +143,7 @@ const CoreLearning2025Preview: React.FC = () => {
     const middle = sentences.slice(middleStart, middleEnd);
     const tail = sentences.slice(middleEnd).join(' ');
 
-    const keyIdeas = middle.map(s => `- ${s}`).join('\n');
+    const keyIdeas = middle.join('\n\n');
 
     let md = `### Overview\n\n${overview}\n\n`;
     if (middle.length) {
@@ -373,53 +379,17 @@ d) There's no difference
                     prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                     prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-6
                   ">
-                    {formatContent(removeLeadingHeading(selectedTopic.content, selectedTopic.title)).split('\n\n').map((section, index) => {
-                      if (section.startsWith('## ')) {
-                        return (
-                          <h2 key={index} className="text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-4 first:mt-0">
-                            {section.replace('## ', '')}
-                          </h2>
-                        );
-                      }
-                      if (section.trim() === '---') {
-                        return <hr key={index} className="my-8 border-t-2 border-gray-200 dark:border-gray-700" />;
-                      }
-                      if (section.startsWith('**') && section.endsWith('**')) {
-                        const text = section.replace(/\*\*/g, '');
-                        return (
-                          <div key={index} className="bg-purple-100 dark:bg-purple-900/30 border-l-4 border-purple-500 p-4 rounded-r-lg my-4">
-                            <p className="text-gray-900 dark:text-white font-semibold m-0">{text}</p>
-                          </div>
-                        );
-                      }
-                      if (/^\s*\-\s/m.test(section)) {
-                        const items = section
-                          .split('\n')
-                          .map(s => s.trim())
-                          .filter(Boolean)
-                          .map(s => s.replace(/^\s*\-\s*/, ''));
-                        return (
-                          <ul key={index} className="list-disc list-inside my-6">
-                            {items.map((it, i) => (
-                              <li key={i} className="my-2 text-gray-700 dark:text-gray-300">{it}</li>
-                            ))}
-                          </ul>
-                        );
-                      }
-                      if (section.includes('**')) {
-                        const parts = section.split('**');
-                        return (
-                          <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                            {parts.map((part, i) => (
-                              i % 2 === 0 ? part : <strong key={i} className="font-bold text-gray-900 dark:text-white">{part}</strong>
-                            ))}
-                          </p>
-                        );
-                      }
-                      return section.trim() ? (
-                        <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{section}</p>
-                      ) : null;
-                    })}
+                    {(() => {
+                      const source = removeLeadingHeading(normalizeCurrency(selectedTopic.content), selectedTopic.title);
+                      // eslint-disable-next-line no-console
+                      console.debug('[md-normalize] CoreLearning source counts', {
+                        hashes: (source.match(/^\s*#+\s/m) || []).length,
+                        bold: (source.match(/\*\*[\s\S]+?\*\*/g) || []).length,
+                        dashes: (source.match(/^\s*\-\s/m) || []).length,
+                      });
+                      const normalized = formatContent(source);
+                      return <ReactMarkdown>{normalized}</ReactMarkdown>;
+                    })()}
                   </div>
 
                   {/* Final Assignment (After Topic 14) */}

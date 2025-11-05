@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactMarkdown from 'react-markdown';
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { Users, Grid, MessageCircle, Mic, Target, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, FileText } from "lucide-react";
@@ -6,6 +7,23 @@ import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
+
+// Light formatter to preserve headings and paragraphs before markdown render
+const formatLessonContent = (raw: string) => {
+  if (!raw) return raw;
+  const hasHeadings = /\n\s*#+\s|^\s*#+\s/m.test(raw);
+  const hasParagraphs = /\n\n/.test(raw);
+  if (hasHeadings || hasParagraphs) {
+    const normalizedNumbers = raw.replace(/\s(\d+\.)\s/g, '\n$1 ');
+    const withParagraphs = normalizedNumbers.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n');
+    return withParagraphs.replace(/\n\n(-|\d+\.)/g, '\n$1').trim();
+  }
+  // Fallback: split sentences into paragraphs
+  return raw
+    .replace(/\s+/g, ' ')
+    .replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n')
+    .trim();
+};
 
 const lessons = [
   { 
@@ -842,54 +860,17 @@ const StakeholderMappingView: React.FC = () => {
                 {/* Lesson Content */}
                 <div className={`p-8 bg-gradient-to-br ${selectedLesson.bgColor}`}>
                   <div className="prose prose-lg dark:prose-invert max-w-none">
-                    {selectedLesson.content.split('\n\n').map((section, index) => {
-                      // Handle headers
-                      if (section.startsWith('## ')) {
-                        return (
-                          <h2 key={index} className="text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-4 first:mt-0">
-                            {section.replace('## ', '')}
-                          </h2>
-                        );
-                      }
-                      
-                      // Handle bold markers (questions/emphasis)
-                      if (section.startsWith('**') && section.endsWith('**')) {
-                        const text = section.replace(/\*\*/g, '');
-                        return (
-                          <div key={index} className="bg-purple-100 dark:bg-purple-900/30 border-l-4 border-purple-500 p-4 rounded-r-lg my-4">
-                            <p className="text-gray-900 dark:text-white font-semibold m-0">{text}</p>
-                          </div>
-                        );
-                      }
-                      
-                      // Handle paragraphs with bold text
-                      if (section.includes('**')) {
-                        const parts = section.split('**');
-                        return (
-                          <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                            {parts.map((part, i) => (
-                              i % 2 === 0 ? part : <strong key={i} className="font-bold text-gray-900 dark:text-white">{part}</strong>
-                            ))}
-                          </p>
-                        );
-                      }
-                      
-                      // Handle horizontal rules
-                      if (section.trim() === '---') {
-                        return <hr key={index} className="my-8 border-t-2 border-gray-200 dark:border-gray-700" />;
-                      }
-                      
-                      // Regular paragraphs
-                      if (section.trim()) {
-                        return (
-                          <p key={index} className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                            {section}
-                          </p>
-                        );
-                      }
-                      
-                      return null;
-                    })}
+                    {(() => {
+                      const raw = selectedLesson.content;
+                      // eslint-disable-next-line no-console
+                      console.debug('[md-normalize] StakeholderMapping source counts', {
+                        hashes: (raw.match(/^\s*#+\s/m) || []).length,
+                        bold: (raw.match(/\*\*[\s\S]+?\*\*/g) || []).length,
+                        dashes: (raw.match(/^\s*\-\s/m) || []).length,
+                      });
+                      const formatted = formatLessonContent(raw);
+                      return <ReactMarkdown>{formatted}</ReactMarkdown>;
+                    })()}
                   </div>
 
                   {/* Lesson Actions */}
