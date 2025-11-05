@@ -218,7 +218,8 @@ div[aria-live="polite"][role="status"] {
 
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 6px;   /* vertical */
+  height: 8px;  /* horizontal */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

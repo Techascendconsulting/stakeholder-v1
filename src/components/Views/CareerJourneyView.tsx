@@ -696,7 +696,7 @@ const CareerJourneyView: React.FC = () => {
         )}
         
         {/* Constrained horizontal scroll container */}
-        <div className="max-w-full overflow-x-auto pb-8 pt-4" ref={scrollContainerRef}>
+        <div className="max-w-full overflow-x-auto pb-8 pt-4 custom-scrollbar" ref={scrollContainerRef}>
           <div className="relative min-w-max px-8 max-w-none">
             {/* Curved Path SVG - Purple/Indigo Gradient (Hidden on mobile, visible on desktop) */}
             <svg className="hidden md:block absolute top-[260px] left-0 h-2 pointer-events-none" style={{ zIndex: 0, width: `${CAREER_JOURNEY_PHASES.length * 280}px` }}>
