@@ -93,30 +93,30 @@ const MarkCompleteButton: React.FC<MarkCompleteButtonProps> = ({ moduleId, modul
   }
 
   return (
-    <div className="flex justify-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+    <div className="flex justify-center mt-6 pt-4">
       <button
         onClick={handleToggleComplete}
         disabled={loading}
         className={`
-          flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all
+          group flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
           ${isCompleted
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 border-2 border-green-200 dark:border-green-800'
-            : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 shadow-lg hover:shadow-xl'
+            ? 'bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600'
+            : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 shadow-md hover:shadow-lg'
           }
           ${loading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
+        title={isCompleted ? 'Click to mark as incomplete' : 'Mark this topic as complete'}
       >
         {isCompleted ? (
           <>
-            <CheckCircle className="w-5 h-5" />
+            <CheckCircle className="w-4 h-4" />
             <span>Completed</span>
-            <RotateCcw className="w-4 h-4 ml-2 opacity-60" />
-            <span className="text-sm opacity-75">(Click to mark incomplete)</span>
+            <RotateCcw className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
           </>
         ) : (
           <>
-            <CheckCircle className="w-5 h-5" />
-            <span>Mark as Complete</span>
+            <CheckCircle className="w-4 h-4" />
+            <span>Mark Complete</span>
           </>
         )}
       </button>
@@ -125,10 +125,6 @@ const MarkCompleteButton: React.FC<MarkCompleteButtonProps> = ({ moduleId, modul
 };
 
 export default MarkCompleteButton;
-
-
-
-
 
 
 
