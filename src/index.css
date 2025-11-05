@@ -83,6 +83,11 @@ body {
   margin-bottom: 1.25rem !important;
   line-height: 1.75 !important;
   font-size: 1.0625rem !important; /* 17px */
+  color: #374151 !important; /* Dark gray in light mode */
+}
+
+.dark .core-learning-content p {
+  color: #d1d5db !important; /* Light gray in dark mode */
 }
 
 .core-learning-content p + p {
@@ -154,6 +159,11 @@ body {
   margin-top: 0.5rem !important;
   margin-bottom: 0.5rem !important;
   line-height: 1.65 !important;
+  color: #374151 !important; /* Dark gray in light mode */
+}
+
+.dark .core-learning-content li {
+  color: #d1d5db !important; /* Light gray in dark mode */
 }
 
 .core-learning-content blockquote {
