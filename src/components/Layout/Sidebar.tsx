@@ -211,11 +211,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Practice', 
       icon: Target
     },
-    { 
-      id: 'project-flow',
-      label: 'My Hands-On Project', 
-      icon: FolderOpen
-    },
+    // { 
+    //   id: 'project-flow',
+    //   label: 'My Hands-On Project', 
+    //   icon: FolderOpen
+    // }, // Removed as requested
     { 
       id: 'project-journey',
       label: 'Project Journey', 
