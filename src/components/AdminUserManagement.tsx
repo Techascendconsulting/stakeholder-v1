@@ -49,6 +49,7 @@ const AdminUserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const lockedCount = users.filter(u => !!u.locked).length;
   const [loading, setLoading] = useState(false);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<{
@@ -231,9 +232,29 @@ const AdminUserManagement: React.FC = () => {
         return;
       }
 
-      const formattedUsers = userData || [];
+      let formattedUsers = (userData as any[]) || [];
+      // If RPC doesn't include locked/registered_device, merge from user_profiles
+      const needsMerge = formattedUsers.some(u => typeof u.locked === 'undefined' || typeof u.registered_device === 'undefined');
+      if (needsMerge) {
+        try {
+          const userIds = formattedUsers.map(u => u.id).filter(Boolean);
+          const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('user_id, locked, registered_device')
+            .in('user_id', userIds);
+          const map = new Map<string, { locked?: boolean; registered_device?: string | null }>();
+          (profiles || []).forEach(p => map.set(p.user_id, { locked: p.locked, registered_device: p.registered_device }));
+          formattedUsers = formattedUsers.map(u => ({
+            ...u,
+            locked: typeof u.locked === 'undefined' ? map.get(u.id)?.locked ?? false : u.locked,
+            registered_device: typeof u.registered_device === 'undefined' ? map.get(u.id)?.registered_device ?? null : u.registered_device,
+          }));
+        } catch (e) {
+          console.warn('Admin merge fallback failed; showing RPC data only');
+        }
+      }
 
-      setUsers(formattedUsers);
+      setUsers(formattedUsers as any);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -988,10 +1009,15 @@ const AdminUserManagement: React.FC = () => {
 
       {/* Users Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             Users ({filteredUsers.length})
           </h3>
+          <div className="inline-flex items-center gap-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+              <Lock className="w-3 h-3 mr-1" /> Locked: {lockedCount}
+            </span>
+          </div>
         </div>
         
         <div>

@@ -141,17 +141,30 @@ const AdminDashboard: React.FC = () => {
 
   const loadSystemStats = async () => {
     try {
-      // Get all users with their details
+      // Get all users (may not include locked flag reliably)
       const { data: users, error } = await supabase.rpc('get_user_details_with_emails');
-      
       if (error) {
-        console.error('Error loading system stats:', error);
-        return;
+        console.error('Error loading system stats (rpc):', error);
       }
 
-      const totalUsers = users.length;
-      const lockedAccounts = users.filter(u => u.locked).length;
-      const adminUsers = users.filter(u => u.is_admin || u.is_senior_admin || u.is_super_admin).length;
+      const totalUsers = (users || []).length;
+      
+      // Authoritative locked count directly from user_profiles
+      let lockedAccounts = 0;
+      try {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('user_profiles')
+          .select('locked');
+        if (!profilesError) {
+          lockedAccounts = (profiles || []).filter(p => p.locked).length;
+        } else {
+          // Fallback to RPC field if available
+          lockedAccounts = (users || []).filter((u: any) => u.locked).length;
+        }
+      } catch (e) {
+        lockedAccounts = (users || []).filter((u: any) => u.locked).length;
+      }
+      const adminUsers = (users || []).filter((u: any) => u.is_admin || u.is_senior_admin || u.is_super_admin).length;
       
       // For active sessions, we'll use a more accurate calculation
       // Consider users active if they logged in within the last 7 days
@@ -168,7 +181,7 @@ const AdminDashboard: React.FC = () => {
       console.log(`- Active sessions (last 7 days): ${activeSessions}`);
       
       // Log individual user activity for debugging
-      users.forEach(user => {
+      (users || []).forEach((user: any) => {
         if (user.last_sign_in_at) {
           const lastSignIn = new Date(user.last_sign_in_at);
           const daysSinceLogin = Math.floor((Date.now() - lastSignIn.getTime()) / (24 * 60 * 60 * 1000));
