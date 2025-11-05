@@ -218,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     // }, // Removed as requested
     { 
       id: 'project-journey',
-      label: 'Project Journey', 
+      label: 'My Project', 
       icon: Rocket
     },
     // { 
