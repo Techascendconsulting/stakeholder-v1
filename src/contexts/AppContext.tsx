@@ -281,21 +281,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'design-hub', 'mvp-hub', 'scrum-essentials', 'agile-hub'
     ].includes(view);
 
+    // CRITICAL: ADMINS BYPASS ALL CONTENT LOCKS
+    if (isAdmin) {
+      console.log('✅ NAVIGATE: Admin user detected, bypassing ALL content locks');
+      setLockMessage(null);
+      // Skip all navigation lock checks - proceed directly to navigation
+    }
     // Navigation locks for 'new' students - progressive unlock system
-    if (!alwaysAllowed.includes(view)) {
+    else if (!alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
         const { data: userProfile, error: profileError } = await supabase
           .from('user_profiles')
-          .select('user_type, user_id')
+          .select('user_type, user_id, is_admin, is_super_admin, is_senior_admin')
           .eq('user_id', user?.id)
           .maybeSingle(); // Use maybeSingle() instead of single() to handle missing profiles gracefully
         
         console.log('🔍 User profile query result:', { userProfile, profileError, userId: user?.id });
         
-        // If user profile doesn't exist or doesn't have user_type, default to 'new' for safety
-        const userType = userProfile?.user_type || 'new';
-        console.log('🔐 Checking navigation permission for:', view, 'User type:', userType);
+        // DOUBLE CHECK: If user has admin flags in DB, bypass all locks
+        const isDbAdmin = !!(userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin);
+        if (isDbAdmin) {
+          console.log('✅ NAVIGATE: DB admin flags detected, bypassing ALL content locks');
+          setLockMessage(null);
+          // Skip navigation locks
+        } else {
+          // If user profile doesn't exist or doesn't have user_type, default to 'new' for safety
+          const userType = userProfile?.user_type || 'new';
+          console.log('🔐 Checking navigation permission for:', view, 'User type:', userType);
 
         if (userType === 'new') {
           // Get user's current phase (learning, practice, or hands-on)
@@ -357,11 +370,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             console.log('✅ NAVIGATE: Page accessible for new user, clearing lock message');
             setLockMessage(null);
           }
-        } else {
-          // Existing user - always clear lock message
-          console.log('✅ NAVIGATE: Existing user, clearing lock message');
-          setLockMessage(null);
-        }
+          } else {
+            // Existing user - always clear lock message
+            console.log('✅ NAVIGATE: Existing user, clearing lock message');
+            setLockMessage(null);
+          }
+        } // End of isDbAdmin else block
       } catch (error) {
         console.error('Error checking navigation permissions:', error);
       }
