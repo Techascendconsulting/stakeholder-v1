@@ -101,31 +101,69 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
   }, [user?.id]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+    const { status, action } = data;
+    console.log('🎯 Tour callback:', { status, action });
+    
+    // Handle all close scenarios
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       setRun(false);
-      if (status === STATUS.FINISHED) onComplete(); else onSkip();
+      if (status === STATUS.FINISHED) {
+        console.log('✅ Tour completed');
+        onComplete();
+      } else {
+        console.log('⏭️ Tour skipped');
+        onSkip();
+      }
+    }
+    // Force close on any close action
+    else if (action === 'close' || action === 'skip') {
+      console.log('🚪 Tour force closed');
+      setRun(false);
+      onSkip();
     }
   };
 
   return (
-    <Joyride
-      steps={steps}
-      run={run}
-      continuous
-      showSkipButton
-      showProgress
-      disableScrolling={false}
-      scrollToFirstStep
-      styles={{
-        options: {
-          primaryColor: '#7c3aed',
-          textColor: '#111827',
-          zIndex: 10000
-        }
-      }}
-      callback={handleJoyrideCallback}
-    />
+    <>
+      <Joyride
+        steps={steps}
+        run={run}
+        continuous
+        showSkipButton
+        showProgress
+        disableScrolling={false}
+        scrollToFirstStep
+        styles={{
+          options: {
+            primaryColor: '#7c3aed',
+            textColor: '#111827',
+            zIndex: 10000
+          }
+        }}
+        locale={{
+          skip: 'Close Tour',
+          last: 'Finish',
+          next: 'Next',
+          back: 'Back'
+        }}
+        callback={handleJoyrideCallback}
+      />
+      
+      {/* Emergency close button if tour gets stuck */}
+      {run && (
+        <button
+          onClick={() => {
+            console.log('🚪 Emergency close clicked');
+            setRun(false);
+            onSkip();
+          }}
+          className="fixed top-4 right-4 z-[10001] px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold shadow-lg"
+          style={{ zIndex: 10001 }}
+        >
+          ✕ Close Tour
+        </button>
+      )}
+    </>
   );
 };
 

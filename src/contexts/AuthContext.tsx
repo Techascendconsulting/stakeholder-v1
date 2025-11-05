@@ -454,9 +454,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('🔐 AUTH - Attempting signout...')
       
-      // Log sign-out before actually signing out
+      // Log sign-out before actually signing out (don't await, don't block)
       if (user) {
-        await userActivityService.logSignOut(user.id, session?.access_token)
+        userActivityService.logSignOut(user.id, session?.access_token).catch(err => {
+          console.warn('Failed to log signout:', err);
+        });
       }
       
       await supabase.auth.signOut()

@@ -306,21 +306,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
         
         // 🔒 SECURITY: FAIL CLOSED - If we can't verify permissions, DENY ACCESS
+        // BUT: Admins and existing users should still work even with DB errors
         if (profileError) {
-          console.error('🚨 SECURITY: Failed to fetch user profile - DENYING ACCESS', profileError);
+          console.error('🚨 SECURITY: Failed to fetch user profile', profileError);
           console.error('🚨 SECURITY: User ID:', user?.id, 'Attempted view:', view);
           
-          // CRITICAL: Treat as new user in learning phase (most restrictive)
-          const phase = await getUserPhase(user?.id || '');
-          const canAccess = isPageAccessible(view, phase, 'new');
-          
-          if (!canAccess) {
-            console.error('🚨 SECURITY: Access DENIED due to profile fetch error');
-            setLockMessage('⚠️ Unable to verify your access permissions. Please refresh the page or contact support.');
-            setCurrentViewState(currentView); // Stay on current page
-            return;
-          } else {
-            console.warn('⚠️ SECURITY: Allowing access despite error because page is in Phase 1');
+          // CRITICAL: If AdminContext says they're admin, TRUST IT (bypass fail-closed)
+          if (isAdmin) {
+            console.log('✅ NAVIGATE: Admin flag from AdminContext - bypassing fail-closed security');
+            setLockMessage(null);
+          }
+          // Otherwise, treat as new user in learning phase (most restrictive)
+          else {
+            const phase = await getUserPhase(user?.id || '');
+            const canAccess = isPageAccessible(view, phase, 'new');
+            
+            if (!canAccess) {
+              console.error('🚨 SECURITY: Access DENIED due to profile fetch error');
+              setLockMessage('⚠️ Unable to verify your access permissions. Please refresh the page or contact support.');
+              setCurrentViewState(currentView); // Stay on current page
+              return;
+            } else {
+              console.warn('⚠️ SECURITY: Allowing access despite error because page is in Phase 1');
+            }
           }
         }
         
