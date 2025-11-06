@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 2025 Modern Animations */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 6s ease infinite;
+}
+
 @layer utilities {
   /* Hide scrollbar but keep scroll functionality */
   .scrollbar-hide {

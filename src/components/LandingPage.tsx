@@ -31,6 +31,8 @@ import TermsOfServiceView from './Views/TermsOfServiceView'
 import CookiePolicyView from './Views/CookiePolicyView'
 import CookieConsent from './CookieConsent'
 import { useTheme } from '../contexts/ThemeContext'
+import ConversationTypingPreview from './ConversationTypingPreview'
+import MeetingPreview from './MeetingPreview'
 
 const LandingPage: React.FC = () => {
   const { resolvedTheme, toggleTheme } = useTheme()
@@ -217,81 +219,127 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-purple-900/20" />
-        <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+      {/* Combined Hero + Demo Section with Continuous Background */}
+      <section className="relative overflow-hidden">
+        {/* Background Image - Spans entire section */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/images/home7.jpg" 
+            alt="Business Analysis Work Environment"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-white/95 dark:to-gray-900/95" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium">
-                <Rocket className="w-4 h-4" />
-                <span>AI-Powered BA Training Platform</span>
-              </div>
+        {/* Hero Header Section - Centered */}
+        <div className="relative z-10 pt-24 pb-12">
+          <div className="max-w-4xl mx-auto px-6 text-center text-white space-y-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight drop-shadow-lg">
+              Do the Actual Work of a Business Analyst.
+            </h1>
+            
+            <p className="text-lg sm:text-xl text-white/95 leading-relaxed drop-shadow-md max-w-3xl mx-auto">
+              Master business analysis through real stakeholder conversations, meetings, and deliverables.
+              <br />
+              Learn by doing — not by watching someone else.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+              <button
+                onClick={() => setShowAuth(true)}
+                className="px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 group"
+              >
+                <span>Start the Work</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              
+              <button
+                onClick={() => setShowRequestAccess(true)}
+                className="px-8 py-4 rounded-xl bg-white/20 hover:bg-white/30 text-white font-medium ring-1 ring-white/50 backdrop-blur-md transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 shadow-xl"
+              >
+                <Play className="w-5 h-5" />
+                <span>See How It Works</span>
+              </button>
+            </div>
+            
+            <p className="text-sm text-white/80 pt-2 drop-shadow-md font-medium">
+              No theory. No guesswork. Real experience.
+            </p>
+          </div>
+        </div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Do the actual work of a{' '}
-                <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  business analyst
-                </span>
-              </h1>
-
-              <p className={`text-xl leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Master business analysis through hands-on practice with AI-powered stakeholders. 
-                Build real requirements, conduct meetings, and create deliverables that matter.
+        {/* Side-by-Side Demos: Chat (Left) & Meeting (Right) */}
+        <div className="relative z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 py-16">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <h2 className={`text-3xl lg:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Conduct professional stakeholder meetings live
+              </h2>
+              <p className={`text-lg lg:text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
+                Practice communication and negotiation skills in a controlled environment
               </p>
+            </div>
 
-              <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={() => setShowAuth(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl hover:shadow-purple-500/50 transition-all flex items-center gap-2 group"
-                >
-                  <span>Start Learning Free</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button
-                  onClick={() => setShowRequestAccess(true)}
-                  className={`px-8 py-4 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                    isDark 
-                      ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
-                >
-                  <Play className="w-5 h-5" />
-                  <span>Watch Demo</span>
-                </button>
+            {/* Demos Grid */}
+            <div className="grid lg:grid-cols-2 gap-8 mb-16">
+              {/* Left: Chat Conversation */}
+              <div className="relative">
+                <ConversationTypingPreview />
               </div>
-
-              <div className="flex items-center gap-8 pt-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 border-2 border-white dark:border-gray-900" />
-                    ))}
-                  </div>
-                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    <div className="font-semibold text-gray-900 dark:text-white">500+ Learners</div>
-                    <div>Active this month</div>
-                  </div>
-                </div>
+              
+              {/* Right: Meeting Preview */}
+              <div className="relative">
+                <MeetingPreview />
               </div>
             </div>
 
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="/images/home7.jpg" 
-                  alt="Business Analysis Training Platform"
-                  className="w-full h-auto"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            {/* Step Into the Work Section - Below Demos */}
+            <div className="text-center space-y-8 pt-8 border-t border-gray-200 dark:border-gray-800">
+              <div className="space-y-4">
+                <h2 className={`text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Step Into the Work.
+                </h2>
+                
+                <p className={`text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Run meetings, ask questions, gather requirements, collaborate with technical and business teams, 
+                  and produce real deliverables — exactly how it happens in real organisations.
+                </p>
               </div>
-              <div className="absolute -bottom-6 -left-6 w-48 h-48 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl blur-3xl opacity-30" />
-              <div className="absolute -top-6 -right-6 w-48 h-48 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl blur-3xl opacity-30" />
+              
+              {/* Feature highlights - 3 columns */}
+              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto pt-8">
+                <div className="space-y-3">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Real stakeholder conversations</div>
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>AI-powered stakeholders respond like real people</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Live team meetings</div>
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Practice elicitation in realistic meeting scenarios</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Professional deliverables</div>
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Create requirements docs, process maps, and user stories</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

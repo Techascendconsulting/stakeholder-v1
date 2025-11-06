@@ -11,6 +11,7 @@ const script = [
 export default function ConversationTypingPreview() {
   const [displayed, setDisplayed] = useState<any[]>([]);
   const [currentText, setCurrentText] = useState("");
+  const [key, setKey] = useState(0); // Force re-render for loop
 
   useEffect(() => {
     let i = 0;
@@ -31,12 +32,18 @@ export default function ConversationTypingPreview() {
           setCurrentText("");
         }
       } else {
+        // Animation complete - wait 3 seconds then restart
         clearInterval(interval);
+        setTimeout(() => {
+          setDisplayed([]);
+          setCurrentText("");
+          setKey(prev => prev + 1); // Trigger re-render to restart animation
+        }, 3000);
       }
     }, 35);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [key]);
 
   const Bubble = ({ who, text, align, intent }: any) => (
     <div className={`flex ${align === "right" ? "justify-end" : "justify-start"}`}>
@@ -62,7 +69,7 @@ export default function ConversationTypingPreview() {
           <Bubble key={i} {...m} />
         ))}
 
-        {currentText && (
+        {currentText && displayed.length < script.length && (
           <Bubble who={script[displayed.length].who} text={currentText} align={script[displayed.length].align} />
         )}
       </div>
