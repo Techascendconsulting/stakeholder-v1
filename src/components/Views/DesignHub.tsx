@@ -5,7 +5,6 @@ import { PenTool, ArrowRight, Palette, Layers, Eye, Code, Zap, Sparkles } from '
 import { supabase } from '../../lib/supabase';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
-import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 const DesignHub: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -488,14 +487,6 @@ In summary, linking design to user stories is how you ensure the work done in de
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-fuchsia-900/20">
-      {/* Context-Aware Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <LearningBreadcrumbs 
-          currentModule="Design" 
-          className="text-purple-600 dark:text-purple-400"
-        />
-      </div>
-
       {/* UX/UI Design Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.1),transparent_50%)]"></div>

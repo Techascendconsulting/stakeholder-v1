@@ -208,18 +208,18 @@ const GlobalBreadcrumbs: React.FC = () => {
     return null;
   }
 
-  // Collapse breadcrumbs if more than 4 levels
-  const shouldCollapse = enhancedBreadcrumbs.length > 4;
+  // Collapse breadcrumbs if more than 3 levels (best practice: max 3 visible items)
+  const shouldCollapse = enhancedBreadcrumbs.length > 3;
   const displayedBreadcrumbs = shouldCollapse
-    ? [enhancedBreadcrumbs[0], '...', ...enhancedBreadcrumbs.slice(-2)]
+    ? [enhancedBreadcrumbs[0], '...', enhancedBreadcrumbs[enhancedBreadcrumbs.length - 1]]
     : enhancedBreadcrumbs;
 
   return (
     <nav
-      className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 transition-all"
+      className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 transition-all"
       aria-label="Breadcrumb"
     >
-      <ol className="flex flex-wrap items-center gap-2 text-sm">
+      <ol className="flex items-center gap-2 text-sm overflow-x-auto scrollbar-hide">
         {displayedBreadcrumbs.map((view, index) => {
           const isEllipsis = view === '...';
           const isLast = index === displayedBreadcrumbs.length - 1;
@@ -241,12 +241,13 @@ const GlobalBreadcrumbs: React.FC = () => {
                 <button
                   onClick={() => !isLast && handleClick(actualIndex)}
                   disabled={isLast}
-                  className={`capitalize transition-colors ${
+                  className={`capitalize transition-colors whitespace-nowrap max-w-[200px] truncate ${
                     isLast
                       ? 'text-gray-900 dark:text-white font-semibold cursor-default'
                       : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer'
                   }`}
                   aria-current={isLast ? 'page' : undefined}
+                  title={displayTitle}
                 >
                   {displayTitle}
                 </button>

@@ -6,7 +6,6 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 import MarkCompleteButton from '../MarkCompleteButton';
-import LearningBreadcrumbs from '../Common/LearningBreadcrumbs';
 
 interface ScrumSection {
   id: number;
@@ -428,14 +427,6 @@ const ScrumLearningView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Context-Aware Breadcrumbs */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <LearningBreadcrumbs 
-          currentModule="Agile & Scrum" 
-          className="text-gray-600 dark:text-gray-400"
-        />
-      </div>
-
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
