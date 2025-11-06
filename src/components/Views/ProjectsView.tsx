@@ -43,7 +43,9 @@ const ProjectsView: React.FC = () => {
 
   const handleViewBrief = async (project: any) => {
     try {
+      console.log('🎯 PROJECTS VIEW: User selected project =', project.name);
       await selectProject(project)
+      console.log('✅ PROJECTS VIEW: selectProject completed for =', project.name);
       setCurrentView('project-brief')
     } catch (error) {
       // Show upgrade modal if project limit reached

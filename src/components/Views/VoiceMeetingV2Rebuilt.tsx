@@ -29,6 +29,13 @@ export default function VoiceMeetingV2Rebuilt() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   
+  // Debug: Log selected project on mount
+  useEffect(() => {
+    console.log('🎯 VOICE MEETING V2: Component mounted');
+    console.log('📁 VOICE MEETING V2: Selected Project =', selectedProject);
+    console.log('👥 VOICE MEETING V2: Selected Stakeholders =', selectedStakeholders?.map(s => s.name));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  
   // Core state
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = sessionStorage.getItem('voiceMeeting_messages');
