@@ -25,7 +25,7 @@ const CareerJourneyTour: React.FC<CareerJourneyTourProps> = ({ onComplete, onSki
   const steps: TourStep[] = [
     {
       id: 'welcome',
-      title: 'Your BA Project Journey',
+      title: 'Your Project Lifecycle',
       description: 'This timeline shows the complete BA project lifecycle from onboarding through continuous delivery. Let me show you around!',
       tooltipPosition: 'bottom-center',
       action: () => {

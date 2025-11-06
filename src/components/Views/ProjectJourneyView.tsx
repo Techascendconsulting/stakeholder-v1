@@ -134,7 +134,7 @@ const ProjectJourneyView: React.FC = () => {
               </div>
               <div>
                 <p className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  Start Your BA Project Journey
+                  Start Your Project Lifecycle
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   Follow the stages below to complete a full business analysis project. Each stage builds on the previous one, giving you hands-on experience with real BA work.

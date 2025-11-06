@@ -277,7 +277,7 @@ export class JourneyProgressService {
     if (careerProgress.progressPercentage > 0 && careerProgress.progressPercentage < 100) {
       return {
         title: `Continue: ${careerProgress.currentPhaseTitle}`,
-        description: `You're ${careerProgress.progressPercentage}% through your BA Project Journey`,
+        description: `You're ${careerProgress.progressPercentage}% through your Project Lifecycle`,
         action: 'Continue Journey',
         actionView: 'career-journey',
         priority: 'high',

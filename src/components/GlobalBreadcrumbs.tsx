@@ -15,7 +15,7 @@ const viewTitleMap: Record<string, string> = {
   'stage-selection': 'Select Meeting Stage',
   'agile-scrum': 'Agile Hub',
   'scrum-practice': 'Scrum Practice',
-  'career-journey': 'BA Career Journey',
+  'career-journey': 'Project Lifecycle',
   'learning-flow': 'Learning Journey',
   'practice-flow': 'Practice Journey',
   'project-flow': 'Project Journey',

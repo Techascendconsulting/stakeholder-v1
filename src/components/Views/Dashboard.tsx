@@ -339,7 +339,7 @@ const Dashboard: React.FC = () => {
       {/* Journey Progress Cards */}
       {(careerProgress || learningProgress || practiceProgress) && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* BA Career Journey Progress */}
+          {/* Project Lifecycle Progress */}
           {careerProgress && (
             <div 
               className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
@@ -351,7 +351,7 @@ const Dashboard: React.FC = () => {
                     <Map className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">BA Project Journey</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Project Lifecycle</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {careerProgress.phasesCompleted}/{careerProgress.totalPhases} phases
                     </p>

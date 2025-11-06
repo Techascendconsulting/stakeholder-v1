@@ -29,7 +29,7 @@ const SidebarTour: React.FC<SidebarTourProps> = ({ onComplete, onSkip, isAdmin =
     {
       id: 'main-menu',
       title: 'Main Navigation',
-      description: 'Dashboard, BA Project Journey, Learning, Practice, Resources.',
+      description: 'Dashboard, Project Lifecycle, Learning, Practice, Resources.',
       highlightSelector: '[data-tour="main-menu"]',
       tooltipPosition: 'middle-left'
     },

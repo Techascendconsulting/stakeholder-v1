@@ -32,8 +32,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete, onSkip }) =
         {
           target: '[data-tour="career-journey"]',
           placement: 'right',
-          title: 'BA Project Journey',
-          content: 'Complete BA lifecycle from onboarding to delivery.',
+          title: 'Project Lifecycle',
+          content: 'The step-by-step phases a Business Analyst follows from discovery to delivery.',
         },
         {
           target: '[data-tour="learning-journey"]',
