@@ -558,420 +558,282 @@ Output JSON ONLY: {"speaker":"<exact name>","reply":"<natural response>"}${manda
   };
   
   return (
-    // Full height container with sidebar
+    // Full height container - Teams style
     <div 
       className="flex flex-col h-screen w-full"
       style={{ 
-        backgroundColor: isDark ? '#0D0D0D' : '#FAFAFF',
+        backgroundColor: '#1F1F1F', // Teams dark background
       }}
     >
-      {/* Header Bar */}
+      {/* Top Bar - Minimal (Teams style) */}
       <div 
-        className={`flex items-center justify-between px-6 py-4 border-b ${
-          isDark 
-            ? 'bg-gray-900/95 border-gray-800' 
-            : 'bg-white/90 border-purple-200 backdrop-blur-md'
-        }`}
+        className="flex items-center justify-between px-4 py-2"
+        style={{ backgroundColor: '#292929' }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => endMeeting()}
-            className={`p-2 rounded-lg transition-colors ${
-              isDark 
-                ? 'hover:bg-gray-800 text-gray-400 hover:text-white' 
-                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-            }`}
+            className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
           
           <div>
-            <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className="text-base font-medium text-white">
               {selectedProject.name}
             </h1>
-            <div className="flex items-center gap-3 mt-1">
-              <div className="flex items-center gap-2">
-                <div className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </div>
-                <span className={`text-sm font-medium ${
-                  isDark ? 'text-green-400' : 'text-green-600'
-                }`}>
-                  Live Meeting
-                </span>
-              </div>
-              <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>•</span>
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                {selectedStakeholders.length} stakeholder{selectedStakeholders.length !== 1 ? 's' : ''}
-              </span>
-            </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Clock className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
-            <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              {formatTime(meetingDuration)}
-            </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1 rounded text-xs text-gray-400">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{formatTime(meetingDuration)}</span>
           </div>
-          
-            <button
-            onClick={() => setShowTranscript(!showTranscript)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-              showTranscript 
-                ? 'bg-blue-600 text-white' 
-                : isDark ? 'bg-white/10 hover:bg-white/20 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Transcript</span>
-          </button>
-          
-          <button
-            onClick={endMeeting}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-            <span className="hidden sm:inline">End</span>
-          </button>
         </div>
       </div>
       
-      {/* Main Content Area - ALIGNED TO TOP */}
+      {/* Main Content Area - Teams Grid Layout */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 flex flex-col p-6 overflow-auto">
-          <div className="max-w-4xl w-full space-y-6">
+        <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
+          <div className="w-full max-w-7xl space-y-4">
             
-            {/* Status Indicators - COMPACT */}
-            <div className="w-full max-w-3xl">
-              {state.status === 'listening' && (
-              <div className={`w-full rounded-xl p-3 border ${
-                isDark 
-                  ? 'bg-green-900/40 border-green-500/50' 
-                  : 'bg-green-50 border-green-300'
-              }`}>
-                <div className="flex items-center gap-3">
-                  <Mic className={`w-5 h-5 animate-pulse ${
-                    isDark ? 'text-green-400' : 'text-green-600'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold mb-0.5 ${isDark ? 'text-green-300' : 'text-green-700'}`}>
-                      Listening
-                    </p>
-                    {liveTranscript && (
-                      <p className={`text-sm truncate ${isDark ? 'text-green-400/80' : 'text-green-600'}`}>
-                        "{liveTranscript}"
-                      </p>
-                    )}
-                  </div>
-                </div>
+            {/* Subtle Status Banner - Teams style */}
+            {liveTranscript && state.status === 'listening' && (
+              <div className="w-full text-center py-2 px-4 rounded bg-white/5 border border-white/10">
+                <p className="text-sm text-gray-400">
+                  <span className="text-green-500 font-medium">Listening:</span> "{liveTranscript}"
+                </p>
               </div>
             )}
             
-            {(state.status === 'thinking' || aiThinking) && (
-              <div className={`w-full rounded-xl p-3 border ${
-                isDark 
-                  ? 'bg-purple-900/40 border-purple-500/50' 
-                  : 'bg-purple-50 border-purple-300'
-              }`}>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex gap-1">
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '0ms' }} />
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '150ms' }} />
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} style={{ animationDelay: '300ms' }} />
+            {/* PARTICIPANT GRID - Teams Style Rectangular Tiles */}
+            <div className="grid gap-3 w-full"
+              style={{
+                gridTemplateColumns: selectedStakeholders.length + 1 <= 2 
+                  ? 'repeat(2, 1fr)' 
+                  : selectedStakeholders.length + 1 === 3
+                  ? 'repeat(3, 1fr)'
+                  : 'repeat(2, 1fr)',
+                gridAutoRows: '1fr'
+              }}
+            >
+              {/* User Tile - Teams Style */}
+              <div
+                className="relative rounded-lg overflow-hidden bg-[#242424] transition-all duration-200"
+                style={{
+                  aspectRatio: '16/9',
+                  border: state.status === 'listening' && state.currentSpeaker === 'You' 
+                    ? '3px solid #00FFFF'  // Teams cyan glow for active speaker
+                    : '2px solid #3A3A3A'
+                }}
+              >
+                {/* Video tile background with avatar */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-3xl font-semibold text-white">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
-                    {generatingAudio ? 'Generating audio...' : 'Thinking...'}
-                  </p>
                 </div>
-              </div>
-            )}
-            
-            {state.status === 'speaking' && state.currentSpeaker && (
-              <div className={`w-full rounded-xl p-3 border ${
-                isDark 
-                  ? 'bg-blue-900/40 border-blue-500/50' 
-                  : 'bg-blue-50 border-blue-300'
-              }`}>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex gap-1">
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '0ms' }} />
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '150ms' }} />
-                    <div className={`w-2 h-2 rounded-full animate-bounce ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`} style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
-                    {state.currentSpeaker} speaking...
-                  </p>
-                </div>
-              </div>
-            )}
-            </div>
-            
-            {/* STAKEHOLDER PARTICIPANT GRID */}
-            <div className="flex-1 w-full flex flex-col items-center justify-center gap-4">
-              {/* First Row */}
-              <div className={`grid gap-4 ${
-                selectedStakeholders.length + 1 === 2 ? 'grid-cols-2 max-w-xl' :
-                selectedStakeholders.length + 1 === 3 ? 'grid-cols-3 max-w-3xl' :
-                selectedStakeholders.length + 1 === 4 ? 'grid-cols-2 max-w-xl' :
-                selectedStakeholders.length + 1 === 5 ? 'grid-cols-2 max-w-xl' :
-                'grid-cols-3 max-w-4xl'
-              }`}>
-                {/* User Card */}
-                <div
-                  className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
-                    isDark 
-                      ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${state.status === 'listening' && state.currentSpeaker === 'You' ? 'border-green-500 shadow-lg shadow-green-500/30' : 'border-gray-700'}`
-                      : state.status === 'listening' && state.currentSpeaker === 'You'
-                        ? 'bg-gradient-to-br from-green-100 to-emerald-100 border-green-500 shadow-xl shadow-green-400/40 ring-2 ring-green-300'
-                        : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400'
-                  }`}
-                >
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="relative">
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
-                        state.status === 'listening' && state.currentSpeaker === 'You'
-                          ? 'bg-gradient-to-br from-green-600 to-emerald-600 border-green-500 text-white' 
-                          : isDark 
-                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 border-blue-600 text-white' 
-                            : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-300 text-white'
-                      }`}>
-                        {user?.email?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      
+                
+                {/* Bottom overlay with name - Teams style */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       {state.status === 'listening' && state.currentSpeaker === 'You' && (
-                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1.5 shadow-lg">
-                          <Mic className="w-3 h-3 text-white" />
+                        <div className="flex items-center gap-1 text-green-400">
+                          <Mic className="w-3 h-3" />
+                        </div>
+                      )}
+                      <span className="text-white text-sm font-medium">
+                        You
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Stakeholder Tiles - Teams Style */}
+              {selectedStakeholders.map((stakeholder, idx) => {
+                const isSpeaking = state.status === 'speaking' && state.currentSpeaker === stakeholder.name;
+                
+                return (
+                  <div
+                    key={idx}
+                    className="relative rounded-lg overflow-hidden bg-[#242424] transition-all duration-200"
+                    style={{
+                      aspectRatio: '16/9',
+                      border: isSpeaking 
+                        ? '3px solid #00FFFF'  // Teams cyan glow for active speaker
+                        : '2px solid #3A3A3A'
+                    }}
+                  >
+                    {/* Video tile background with avatar or photo */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {stakeholder.photo ? (
+                        <img
+                          src={stakeholder.photo}
+                          alt={stakeholder.name}
+                          className="w-24 h-24 rounded-full object-cover border-4 border-gray-700"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-purple-600 flex items-center justify-center text-3xl font-semibold text-white">
+                          {stakeholder.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                         </div>
                       )}
                     </div>
                     
-                    <div className="text-center">
-                      <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        You
-                      </p>
-                      <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Business Analyst
-                      </p>
+                    {/* Speaking indicator */}
+                    {isSpeaking && (
+                      <div className="absolute top-3 right-3">
+                        <div className="flex gap-0.5 items-end bg-black/50 rounded px-2 py-1">
+                          <div className="w-1 bg-cyan-400 rounded-full animate-pulse" style={{ height: '8px' }} />
+                          <div className="w-1 bg-cyan-400 rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
+                          <div className="w-1 bg-cyan-400 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Bottom overlay with name - Teams style */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <div>
+                        <span className="text-white text-sm font-medium block">
+                          {stakeholder.name}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          {stakeholder.role}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* First Row Stakeholders */}
-                {selectedStakeholders.slice(0, 
-                  selectedStakeholders.length + 1 === 2 ? 1 :  // 2 total = show 1 stakeholder (+ user = 2)
-                  selectedStakeholders.length + 1 === 3 ? 2 :  // 3 total = show 2 stakeholders (+ user = 3)
-                  selectedStakeholders.length + 1 === 4 ? 1 :  // 4 total = show 1 stakeholder (+ user = 2 on top)
-                  selectedStakeholders.length + 1 === 5 ? 1 :  // 5 total = show 1 stakeholder (+ user = 2 on top)
-                  2  // 6+ total = show 2 stakeholders (+ user = 3 on top)
-                ).map((stakeholder, idx) => {
-                  const isSpeaking = state.status === 'speaking' && state.currentSpeaker === stakeholder.name;
-                  
-                  return (
-                    <div
-                      key={idx}
-                      className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
-                        isDark 
-                          ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isSpeaking ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
-                          : isSpeaking 
-                            ? 'bg-gradient-to-br from-purple-100 to-indigo-100 border-purple-500 shadow-xl shadow-purple-400/40 ring-2 ring-purple-300'
-                            : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400 hover:shadow-lg'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center space-y-2">
-                        <div className="relative">
-                          {stakeholder.photo ? (
-                            <img
-                              src={stakeholder.photo}
-                              alt={stakeholder.name}
-                              className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
-                                isSpeaking ? 'border-purple-500 ring-2 ring-purple-300' : isDark ? 'border-gray-600' : 'border-purple-200'
-                              }`}
-                            />
-                          ) : (
-                            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
-                              isSpeaking 
-                                ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 text-white' 
-                                : isDark 
-                                  ? 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600 text-white' 
-                                  : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-300 text-gray-700'
-                            }`}>
-                              {stakeholder.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                            </div>
-                          )}
-                          
-                          {isSpeaking && (
-                            <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1.5 shadow-lg">
-                              <div className="flex gap-0.5 items-end">
-                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '8px' }} />
-                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
-                                <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="text-center">
-                          <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {stakeholder.name}
-                          </p>
-                          <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {stakeholder.role}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {/* Second Row (for 4+ participants) */}
-              {selectedStakeholders.length + 1 >= 4 && (
-                <div className={`grid gap-4 ${
-                  selectedStakeholders.length + 1 === 4 ? 'grid-cols-2 max-w-xl' :
-                  selectedStakeholders.length + 1 === 5 ? 'grid-cols-3 max-w-3xl' :
-                  'grid-cols-3 max-w-4xl'
-                }`}>
-                  {selectedStakeholders.slice(
-                    selectedStakeholders.length + 1 === 4 ? 1 :  // 4 total: skip first 1
-                    selectedStakeholders.length + 1 === 5 ? 1 :  // 5 total: skip first 1
-                    2  // 6+ total: skip first 2
-                  ).map((stakeholder, idx) => {
-                    const isSpeaking = state.status === 'speaking' && state.currentSpeaker === stakeholder.name;
-                    
-                    return (
-                      <div
-                        key={idx}
-                        className={`relative rounded-xl p-4 border-2 transition-all duration-200 ${
-                          isDark 
-                            ? `bg-gradient-to-br from-[#1A1A1A] to-[#242424] ${isSpeaking ? 'border-purple-500 shadow-lg shadow-purple-500/30' : 'border-gray-700'}`
-                            : isSpeaking 
-                              ? 'bg-gradient-to-br from-purple-100 to-indigo-100 border-purple-500 shadow-xl shadow-purple-400/40 ring-2 ring-purple-300'
-                              : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 shadow-md hover:border-purple-400 hover:shadow-lg'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center space-y-2">
-                          <div className="relative">
-                            {stakeholder.photo ? (
-                              <img
-                                src={stakeholder.photo}
-                                alt={stakeholder.name}
-                                className={`w-16 h-16 rounded-full object-cover border-3 transition-colors duration-200 ${
-                                  isSpeaking ? 'border-purple-500 ring-2 ring-purple-300' : isDark ? 'border-gray-600' : 'border-purple-200'
-                                }`}
-                              />
-                            ) : (
-                              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold border-3 transition-colors duration-200 ${
-                                isSpeaking 
-                                  ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-500 text-white' 
-                                  : isDark 
-                                    ? 'bg-gradient-to-br from-gray-600 to-gray-700 border-gray-600 text-white' 
-                                    : 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-300 text-gray-700'
-                              }`}>
-                                {stakeholder.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                              </div>
-                            )}
-                            
-                            {isSpeaking && (
-                              <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1.5 shadow-lg">
-                                <div className="flex gap-0.5 items-end">
-                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '8px' }} />
-                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
-                                  <div className="w-0.5 bg-white rounded-full animate-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="text-center">
-                            <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                              {stakeholder.name}
-                            </p>
-                            <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {stakeholder.role}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                );
+              })}
             </div>
             
-            {/* Transcript */}
-            {showTranscript && messages.length > 0 && (
-              <div className={`rounded-xl border max-h-96 overflow-y-auto ${
-                isDark 
-                  ? 'bg-gray-800/90 border-gray-700' 
-                  : 'bg-white/95 border-purple-200'
-              }`}>
-                <div className={`sticky top-0 px-4 py-3 border-b ${
-                  isDark 
-                    ? 'bg-gray-800 border-gray-700' 
-                    : 'bg-white border-purple-100'
-                }`}>
-                  <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    Transcript ({messages.length})
-                  </h3>
-                </div>
-                <div className="p-4 space-y-3">
-                  {messages.map((msg, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className={`text-xs font-medium ${
-                          msg.who === "You" 
-                            ? isDark ? 'text-green-400' : 'text-green-600'
-                            : isDark ? 'text-blue-400' : 'text-blue-600'
-                        }`}>
-                          {msg.who}
-                        </span>
-                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                          {msg.timestamp}
-                        </span>
-                      </div>
-                      <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {msg.text}
-                      </p>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              </div>
-            )}
             
           </div>
         </div>
       </div>
       
-      {/* Exit Modal */}
+      {/* Bottom Control Bar - Teams Style */}
+      <div className="border-t border-gray-800 px-6 py-4" style={{ backgroundColor: '#292929' }}>
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          {/* Left - Mic controls */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => state.status === 'idle' ? startConversation() : null}
+              disabled={state.status !== 'idle'}
+              className={`p-3 rounded-full transition-colors ${
+                state.status === 'listening'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-white/10 hover:bg-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed'
+              }`}
+              title={state.status === 'idle' ? 'Start meeting' : state.status === 'listening' ? 'Listening...' : 'In meeting'}
+            >
+              {state.status === 'listening' ? (
+                <Mic className="w-5 h-5" />
+              ) : (
+                <MicOff className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+          
+          {/* Center - Meeting info */}
+          <div className="text-center">
+            <div className="text-sm text-gray-400">
+              {state.status === 'idle' ? 'Ready to start' : 
+               state.status === 'ended' ? 'Meeting ended' : 
+               'Meeting in progress'}
+            </div>
+          </div>
+          
+          {/* Right - Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowTranscript(!showTranscript)}
+              className={`p-3 rounded-full transition-colors ${
+                showTranscript 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+              title="Toggle transcript"
+            >
+              <MessageSquare className="w-5 h-5" />
+            </button>
+            
+            <button
+              className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              title={`${selectedStakeholders.length + 1} participants`}
+            >
+              <Users className="w-5 h-5" />
+            </button>
+            
+            <button
+              onClick={endMeeting}
+              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors flex items-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              <span>Leave</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Transcript Sidebar - Teams Style */}
+      {showTranscript && messages.length > 0 && (
+        <div 
+          className="fixed right-0 top-0 bottom-0 w-80 border-l border-gray-800 flex flex-col"
+          style={{ backgroundColor: '#292929' }}
+        >
+          <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+            <h3 className="text-white font-medium">Meeting chat</h3>
+            <button 
+              onClick={() => setShowTranscript(false)}
+              className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.map((msg, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm font-medium">
+                    {msg.who}
+                  </span>
+                  <span className="text-gray-500 text-xs">
+                    {msg.timestamp}
+                  </span>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  {msg.text}
+                </p>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      )}
+      
+      {/* Exit Modal - Teams Style */}
       {showExitModal && (
-        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className={`rounded-2xl p-6 max-w-md w-full mx-4 ${
-            isDark ? 'bg-gray-800' : 'bg-white'
-          }`}>
-            <h3 className={`text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              End Meeting?
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="rounded-lg p-6 max-w-md w-full mx-4 bg-[#292929] border border-gray-700">
+            <h3 className="text-xl font-semibold mb-2 text-white">
+              Leave meeting?
             </h3>
-            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              Are you sure you want to end this meeting? Your transcript will be saved.
+            <p className="mb-6 text-gray-400">
+              Your transcript will be saved automatically.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={confirmEnd}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors"
               >
-                End Meeting
+                Leave
               </button>
               <button
                 onClick={() => setShowExitModal(false)}
-                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isDark 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                    : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                }`}
+                className="flex-1 px-4 py-2 rounded font-medium transition-colors bg-white/10 hover:bg-white/20 text-white"
               >
                 Cancel
               </button>
