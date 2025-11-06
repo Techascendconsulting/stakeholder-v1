@@ -19,7 +19,8 @@ import {
   Play,
   TrendingUp,
   MessageSquare,
-  BarChart3
+  BarChart3,
+  GraduationCap
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
