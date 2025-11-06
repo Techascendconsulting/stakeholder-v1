@@ -122,7 +122,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
@@ -167,7 +167,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => setShowAuth(true)}
                 className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/50 transition-all"
               >
-                Start Now
+                Request Access
               </button>
             </div>
 
@@ -219,574 +219,254 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Combined Hero + Demo Section with Continuous Background */}
-      <section className="relative overflow-hidden">
-        {/* Background Image - Spans entire section */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/home7.jpg" 
-            alt="Business Analysis Work Environment"
-            className="w-full h-full object-cover"
-          />
-          {/* Dark overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-white/95 dark:to-gray-900/95" />
-        </div>
-
-        {/* Hero Header Section - Centered */}
-        <div className="relative z-10 pt-24 pb-12">
-          <div className="max-w-4xl mx-auto px-6 text-center text-white space-y-6">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight drop-shadow-lg">
-              Do the Actual Work of a Business Analyst.
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-white/95 leading-relaxed drop-shadow-md max-w-3xl mx-auto">
-              Master business analysis through real stakeholder conversations, meetings, and deliverables.
-              <br />
-              Learn by doing — not by watching someone else.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-              <button
-                onClick={() => setShowAuth(true)}
-                className="px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 group"
-              >
-                <span>Start the Work</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+      {/* Hero Section */}
+      <section className="pt-24 pb-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left: Text Content */}
+            <div className="space-y-6">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight text-white">
+                Do the actual work of a Business Analyst
+              </h1>
               
-              <button
-                onClick={() => setShowRequestAccess(true)}
-                className="px-8 py-4 rounded-xl bg-white/20 hover:bg-white/30 text-white font-medium ring-1 ring-white/50 backdrop-blur-md transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 shadow-xl"
-              >
-                <Play className="w-5 h-5" />
-                <span>See How It Works</span>
-              </button>
-            </div>
-            
-            <p className="text-sm text-white/80 pt-2 drop-shadow-md font-medium">
-              No theory. No guesswork. Real experience.
-            </p>
-          </div>
-        </div>
-
-        {/* Side-by-Side Demos: Chat (Left) & Meeting (Right) */}
-        <div className="relative z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 py-16">
-            {/* Section Header */}
-            <div className="text-center mb-12">
-              <h2 className={`text-3xl lg:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Conduct professional stakeholder meetings live
-              </h2>
-              <p className={`text-lg lg:text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
-                Practice communication and negotiation skills in a controlled environment
+              <p className="text-lg text-gray-300">
+                Step into the Business Analyst role inside realistic project environments — practicing stakeholder conversations, documentation, and delivery work with guidance as you go.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                >
+                  Start the Work
+                </button>
+                
+                <button
+                  onClick={() => setShowRequestAccess(true)}
+                  className="px-8 py-3 rounded-lg font-medium bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 transition-colors"
+                >
+                  See How It Works
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-400 pt-2">
+                Not theory. Not passive learning. Real role performance.
               </p>
             </div>
-
-            {/* Demos Grid */}
-            <div className="grid lg:grid-cols-2 gap-8 mb-16">
-              {/* Left: Chat Conversation */}
-              <div className="relative">
-                <ConversationTypingPreview />
-              </div>
-              
-              {/* Right: Meeting Preview */}
-              <div className="relative">
-                <MeetingPreview />
-              </div>
-            </div>
-
-            {/* Step Into the Work Section - Below Demos */}
-            <div className="text-center space-y-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-              <div className="space-y-4">
-                <h2 className={`text-3xl lg:text-4xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Step Into the Work.
-                </h2>
-                
-                <p className={`text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Run meetings, ask questions, gather requirements, collaborate with technical and business teams, 
-                  and produce real deliverables — exactly how it happens in real organisations.
-                </p>
-              </div>
-              
-              {/* Feature highlights - 3 columns */}
-              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto pt-8">
-                <div className="space-y-3">
-                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
-                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                  </div>
-                  <div>
-                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Real stakeholder conversations</div>
-                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>AI-powered stakeholders respond like real people</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
-                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                  </div>
-                  <div>
-                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Live team meetings</div>
-                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Practice elicitation in realistic meeting scenarios</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
-                    <CheckCircle className={`w-6 h-6 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                  </div>
-                  <div>
-                    <div className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>Professional deliverables</div>
-                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Create requirements docs, process maps, and user stories</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Transform Your Skills Section */}
-      <section className={`py-20 px-6 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
-              Transform your business analysis skills
-            </h2>
-            <p className={`text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
-              Learn by doing with our comprehensive, hands-on training platform
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: BookOpen,
-                title: 'Do the actual work',
-                description: 'Practice real BA tasks with AI-powered stakeholders and realistic project scenarios',
-                image: '/images/home3.jpg'
-              },
-              {
-                icon: Users,
-                title: 'Learn collaboratively and build skills',
-                description: 'Master stakeholder management through live conversations and real-time feedback',
-                image: '/images/home4.jpg'
-              },
-              {
-                icon: Award,
-                title: 'Proven application skills',
-                description: 'Build a portfolio of actual deliverables that showcase your capabilities',
-                image: '/images/home5.jpg'
-              }
-            ].map((item, index) => (
-              <div 
-                key={index}
-                className={`group rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl ${
-                  isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-purple-100'
-                }`}
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/90 dark:bg-gray-900/90 flex items-center justify-center">
-                      <item.icon className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                  <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                    {item.description}
-                  </p>
-                  <button className="mt-4 text-purple-600 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-                    Learn more
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* End-to-End Workflow Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
-              End-to-end business analysis workflow
-            </h2>
-            <p className={`text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
-              Experience the complete BA lifecycle from discovery to delivery
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: Target, title: 'Discover needs', description: 'Identify business problems and opportunities' },
-              { icon: Users, title: 'Engage stakeholders', description: 'Conduct meetings and gather requirements' },
-              { icon: FileText, title: 'Document requirements', description: 'Create clear, actionable specifications' },
-              { icon: TrendingUp, title: 'Analyze options', description: 'Evaluate and recommend solutions' },
-              { icon: BarChart3, title: 'Model processes', description: 'Visualize current and future states' },
-              { icon: CheckCircle, title: 'Deliver value', description: 'Support implementation and measure success' }
-            ].map((step, index) => (
-              <div 
-                key={index}
-                className={`p-6 rounded-xl transition-all duration-300 border-2 hover:border-purple-500 hover:shadow-lg ${
-                  isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                }`}
-              >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-4">
-                  <step.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  {step.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Live Stakeholder Meetings */}
-      <section className={`py-20 px-6 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                Live stakeholder meetings
-              </h2>
-              <p className={`text-xl mb-8 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Practice real conversations with AI-powered stakeholders who respond naturally to your questions 
-                and challenge your assumptions just like real people.
-              </p>
-              <div className="space-y-4">
-                {[
-                  'Realistic voice conversations',
-                  'Dynamic stakeholder personalities',
-                  'Real-time feedback and coaching',
-                  'Unlimited practice scenarios'
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-lg">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            
+            {/* Right: Chat Preview */}
             <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <ConversationTypingPreview />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* New Text Section with Curved Background */}
+      <section className="relative py-20 mt-16 overflow-hidden">
+        {/* Curved background with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-200 rounded-[80px] mx-4 sm:mx-8"></div>
+        
+        {/* Geometric shapes */}
+        <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-[60px] opacity-20 rotate-12"></div>
+        <div className="absolute bottom-10 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[40px] opacity-15 -rotate-6"></div>
+        
+        {/* Content */}
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight mb-6 text-gray-900">
+            BA WorkXP gives you the closest thing to real work experience.
+          </h2>
+          <p className="text-xl leading-relaxed text-gray-700 max-w-3xl mx-auto">
+            You'll interact with stakeholders, run workshops, write user stories, participate in Scrum ceremonies, and support solution delivery — just like a Business Analyst in a real team.
+          </p>
+        </div>
+      </section>
+
+      {/* Second Section */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2">
+            {/* Left: Meeting Preview with Lavender Background */}
+            <div className={`py-12 px-6 flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-[#C5CAE9]'} rounded-3xl`}>
+              <MeetingPreview />
+            </div>
+            
+            {/* Right: Text Content with White Background */}
+            <div className={`py-12 px-6 flex items-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="space-y-6">
+              <div>
+                <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Platform
+                </p>
+                <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Be the Business Analyst — inside a real project environment, with guidance every step of the way.
+                </h2>
+                <p className={`text-lg font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  You learn the role by performing it:
+                </p>
+                <ul className={`space-y-2 text-base ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                    <span>Interacting with stakeholders</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                    <span>Clarifying requirements</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                    <span>Exploring business problems</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                    <span>Participating in Scrum ceremonies</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                    <span>Creating real deliverables</span>
+                  </li>
+                </ul>
+                <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  And you're guided and corrected as you go — so you know you're doing it right.
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${
+                    isDark 
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
+                      : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
+                  }`}
+                >
+                  Start Now
+                </button>
+                
+                <button
+                  onClick={() => setShowRequestAccess(true)}
+                  className={`px-8 py-3 font-medium transition-colors flex items-center gap-2 ${
+                    isDark 
+                      ? 'text-white hover:text-gray-200' 
+                      : 'text-gray-900 hover:text-gray-700'
+                  }`}
+                >
+                  <span>Watch demo</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Third Section: Platform Features */}
+      <section className={`py-20 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              What You'll Do Inside the Platform
+            </h2>
+            <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Real project experience through guided role performance.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Card 1 */}
+            <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="h-48 overflow-hidden">
                 <img 
-                  src="/images/home6.jpg" 
-                  alt="Live stakeholder meetings"
-                  className="w-full h-auto"
+                  src="/images/home4.jpg" 
+                  alt="Explore Business Problem" 
+                  className="w-full h-full object-cover"
                 />
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Career Development */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
-              Develop your business analysis career
-            </h2>
-            <p className={`text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
-              Build the skills and portfolio that employers are looking for
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Hands-on projects',
-                description: 'Work on realistic business scenarios across multiple industries',
-                icon: Briefcase
-              },
-              {
-                title: 'Portfolio building',
-                description: 'Create professional deliverables you can showcase to employers',
-                icon: FileText
-              },
-              {
-                title: 'Industry recognition',
-                description: 'Earn certificates that validate your practical skills',
-                icon: Award
-              }
-            ].map((item, index) => (
-              <div 
-                key={index}
-                className={`p-8 rounded-2xl text-center transition-all duration-300 hover:scale-105 ${
-                  isDark ? 'bg-gray-800' : 'bg-white shadow-lg'
-                }`}
-              >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mx-auto mb-6">
-                  <item.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  {item.description}
+              <div className="p-6 bg-gray-900">
+                <h3 className="text-xl font-bold mb-3 text-white">
+                  Explore the Business Problem
+                </h3>
+                <p className="text-sm text-gray-300">
+                  Step into real project scenarios. Understand context, map processes, uncover pain points, and define what needs to change.
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className={`rounded-3xl p-12 relative overflow-hidden ${
-            isDark ? 'bg-gradient-to-br from-purple-900 to-blue-900' : 'bg-gradient-to-br from-purple-600 to-blue-600'
-          }`}>
-            <div className="absolute inset-0 bg-[url('/images/home2.jpg')] opacity-10 bg-cover bg-center" />
-            <div className="relative">
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-                Begin your business analysis journey
-              </h2>
-              <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-                Join hundreds of aspiring business analysts who are building real skills through hands-on practice
-              </p>
+            {/* Card 2 */}
+            <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="h-48 overflow-hidden">
+                <img 
+                  src="/images/collaborate1.jpg" 
+                  alt="Work With Stakeholders" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6 bg-gray-900">
+                <h3 className="text-xl font-bold mb-3 text-white">
+                  Work With Stakeholders
+                </h3>
+                <p className="text-sm text-gray-300">
+                  Practice communicating with stakeholders. Ask clarifying questions, resolve ambiguity, capture requirements, and get guided feedback.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="rounded-xl overflow-hidden shadow-lg">
+              <div className="h-48 overflow-hidden">
+                <img 
+                  src="/images/scrum1.jpg" 
+                  alt="Deliver in a Scrum Team" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6 bg-gray-900">
+                <h3 className="text-xl font-bold mb-3 text-white">
+                  Deliver in a Scrum Team
+                </h3>
+                <p className="text-sm text-gray-300">
+                  Write user stories and acceptance criteria, take part in refinement and planning, and support developers/testers — with direction as you work.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p className={`text-lg mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              You don't just learn about the role.<br />
+              You perform the role — with guidance.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setShowAuth(true)}
-                className="px-8 py-4 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2 group"
+                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isDark ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
               >
-                <span>Get Started Free</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                Start free
               </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Get in Touch */}
-      <section className={`py-20 px-6 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                Get in touch
-              </h2>
-              <p className={`text-xl mb-8 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Have questions about our platform? We're here to help you start your BA journey.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <Mail className="w-6 h-6 text-purple-600 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Email Us</div>
-                    <a href="mailto:support@baworkxp.com" className="text-purple-600 hover:underline">
-                      support@baworkxp.com
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <Phone className="w-6 h-6 text-purple-600 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Call Us</div>
-                    <a href="tel:+1234567890" className="text-purple-600 hover:underline">
-                      +1 (234) 567-890
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <MapPin className="w-6 h-6 text-purple-600 mt-1" />
-                  <div>
-                    <div className="font-semibold mb-1">Visit Us</div>
-                    <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                      123 BA Street, Training City, TC 12345
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800' : 'bg-white shadow-lg'}`}>
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowContact(true); }}>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <input
-                    type="text"
-                    className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 focus:border-purple-500' 
-                        : 'bg-gray-50 border-gray-300 focus:border-purple-500'
-                    } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                    placeholder="Your name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 focus:border-purple-500' 
-                        : 'bg-gray-50 border-gray-300 focus:border-purple-500'
-                    } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                    placeholder="your@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <textarea
-                    rows={4}
-                    className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 focus:border-purple-500' 
-                        : 'bg-gray-50 border-gray-300 focus:border-purple-500'
-                    } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                    placeholder="How can we help you?"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Limited Access Training */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src="/images/home.jpg" 
-                alt="Limited access training"
-                className="w-full h-auto"
-              />
-            </div>
-            <div>
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                Limited access business analysis training
-              </h2>
-              <p className={`text-xl mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Get early access to our premium features and shape the future of BA training.
-              </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Priority access to new features',
-                  'Exclusive training content',
-                  'Direct feedback channel',
-                  'Special pricing for early adopters'
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              
               <button
                 onClick={() => setShowRequestAccess(true)}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2"
+                className={`px-8 py-3 font-medium transition-colors flex items-center justify-center gap-2 ${
+                  isDark 
+                    ? 'text-white hover:text-gray-200' 
+                    : 'text-gray-900 hover:text-gray-700'
+                }`}
               >
-                Request Early Access
-                <ArrowRight className="w-5 h-5" />
+                <span>Learn more</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Training for Instructors */}
-      <section className={`py-20 px-6 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
-              Training for academies and instructors
-            </h2>
-            <p className={`text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
-              Empower your students with hands-on BA training that complements your curriculum
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {[
-              {
-                title: 'Integrate with your curriculum',
-                description: 'Seamlessly add practical exercises to your existing courses',
-                icon: BookOpen
-              },
-              {
-                title: 'Track student progress',
-                description: 'Monitor learning outcomes with detailed analytics and reports',
-                icon: BarChart3
-              },
-              {
-                title: 'Customizable scenarios',
-                description: 'Create custom projects that match your teaching objectives',
-                icon: Target
-              },
-              {
-                title: 'Instructor dashboard',
-                description: 'Manage multiple classes and review student deliverables',
-                icon: Users
-              }
-            ].map((feature, index) => (
-              <div 
-                key={index}
-                className={`p-6 rounded-xl ${isDark ? 'bg-gray-800' : 'bg-white shadow-lg'}`}
-              >
-                <feature.icon className="w-10 h-10 text-purple-600 mb-4" />
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <button
-              onClick={() => setShowContact(true)}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2"
-            >
-              Contact Sales
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Become a Trainer */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className={`rounded-3xl p-12 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              Become a certified trainer
-            </h2>
-            <p className={`text-xl mb-8 ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto`}>
-              Join our network of expert BA trainers and help shape the next generation of business analysts
-            </p>
-            <button
-              onClick={() => setShowRequestAccess(true)}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition-all inline-flex items-center gap-2"
-            >
-              Apply Now
-              <ArrowRight className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className={`py-12 px-6 border-t ${isDark ? 'border-gray-800 bg-gray-900' : 'border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
+      <footer className={`py-16 ${isDark ? 'bg-gray-900 border-t border-gray-800' : 'bg-gray-50 border-t border-gray-200'}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div className="col-span-2 md:col-span-1">
               <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
                 BA WorkXP™
               </div>
@@ -850,3 +530,4 @@ const LandingPage: React.FC = () => {
 }
 
 export default LandingPage
+

@@ -4,6 +4,9 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
         purplePrimary: "hsl(var(--purple-primary))",
         purpleSecondary: "hsl(var(--purple-secondary))",
