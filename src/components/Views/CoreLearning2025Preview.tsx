@@ -13,6 +13,7 @@ import { saveResumeState, loadResumeState } from '../../services/resumeStore';
 import { getPageTitle } from '../../services/resumeStore';
 import type { PageType } from '../../types/resume';
 import { getModuleProgress, markLessonCompleted, type LearningProgressRow } from '../../utils/learningProgress';
+import { useUserJourney } from '../../hooks/useUserJourney';
 
 const MODULE_ID = 'module-1-core-learning';
 
@@ -28,6 +29,7 @@ const moduleFromStableKey = (stableKey?: string) => {
 const CoreLearning2025Preview: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
+  const { refresh: refreshUserProgress } = useUserJourney(user?.id || null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [completedTopics, setCompletedTopics] = useState<string[]>([]);
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
@@ -91,7 +93,6 @@ const CoreLearning2025Preview: React.FC = () => {
         }
 
         if (progress) {
-          setModuleProgress(progress);
           const completedKeys = progress.completed_lessons || [];
           console.log('✅ Loaded', completedKeys.length, 'completed topics from learning_progress:', completedKeys);
           setCompletedTopics(completedKeys);
@@ -653,11 +654,7 @@ d) Design user interfaces
                             if (!user?.id || !selectedTopic) return;
                             try {
                               await markLessonCompleted(user.id, MODULE_ID, selectedTopic.id);
-                              const updated = await getModuleProgress(user.id, MODULE_ID);
-                              if (updated) {
-                                setModuleProgress(updated);
-                                setCompletedTopics(updated.completed_lessons || []);
-                              }
+                              await refreshUserProgress();
                             } catch (error) {
                               console.error('❌ Failed to mark topic complete:', error);
                             }
