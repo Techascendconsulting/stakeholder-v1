@@ -723,18 +723,6 @@ d) Design user interfaces
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{progressPercent}%</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Complete</div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
-            <div
-              className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
           </div>
         </div>
       </div>
@@ -744,12 +732,12 @@ d) Design user interfaces
         {/* Progress Counter and Bar */}
         <div className="mb-6">
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {completedTopics.length} of {topics.length} completed
+            {completedTopics.length} of {topics.length} completed · {progressPercent}%
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
             <div
               className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(completedTopics.length / topics.length) * 100}%` }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
