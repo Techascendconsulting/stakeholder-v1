@@ -45,6 +45,7 @@ const CoreLearning2025Preview: React.FC = () => {
       if (!user?.id) return;
 
       try {
+        // Load user type
         const { data: profileData } = await supabase
           .from('user_profiles')
           .select('user_type')
@@ -55,10 +56,23 @@ const CoreLearning2025Preview: React.FC = () => {
           setUserType(profileData.user_type || 'existing');
         }
 
+        // Load completed topics from database
+        const { data: progressData } = await supabase
+          .from('user_progress')
+          .select('stable_key, status')
+          .eq('user_id', user.id)
+          .eq('unit_type', 'topic')
+          .eq('status', 'completed');
+
+        if (progressData && progressData.length > 0) {
+          const completedKeys = progressData.map(p => p.stable_key);
+          setCompletedTopics(completedKeys);
+        }
+
+        // Also check localStorage for last selected topic
         const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
-          setCompletedTopics(progress.completedTopics || []);
           // Restore the last selected topic on page refresh
           if (progress.selectedTopicId) {
             setSelectedTopicId(progress.selectedTopicId);
@@ -74,18 +88,61 @@ const CoreLearning2025Preview: React.FC = () => {
     loadUserData();
   }, [user?.id]);
 
-  const saveProgress = () => {
+  const saveProgress = async () => {
     if (!user?.id) return;
+    
+    // Save to localStorage for quick access
     const progress = { 
       completedTopics,
       selectedTopicId // Save current topic selection
     };
     localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
+    
+    // Save each completed topic to database
+    for (const topicId of completedTopics) {
+      const stableKey = topicId; // topic IDs are already stable keys (lesson-1-1, lesson-1-2, etc.)
+      
+      try {
+        // Check if progress record exists
+        const { data: existing } = await supabase
+          .from('user_progress')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('stable_key', stableKey)
+          .eq('unit_type', 'topic')
+          .single();
+        
+        if (!existing) {
+          // Create new progress record
+          await supabase
+            .from('user_progress')
+            .insert({
+              user_id: user.id,
+              stable_key: stableKey,
+              unit_type: 'topic',
+              status: 'completed',
+              completed_at: new Date().toISOString()
+            });
+        } else {
+          // Update existing record
+          await supabase
+            .from('user_progress')
+            .update({
+              status: 'completed',
+              completed_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id)
+            .eq('stable_key', stableKey);
+        }
+      } catch (error) {
+        console.error('Error saving topic progress:', error);
+      }
+    }
   };
 
   useEffect(() => {
     saveProgress();
-  }, [completedTopics, selectedTopicId]);
+  }, [completedTopics]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
@@ -411,9 +468,8 @@ d) Design user interfaces
       </div>
     );
 
-    // LAYOUT 1: Topic 1 - With Sidebar (original design)
-    if (selectedIndex === 0) {
-      return (
+    // LAYOUT: All Topics - With Sidebar for easy navigation
+    return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           {renderHeader(true)}
           <div className="max-w-7xl mx-auto px-6 py-8">
@@ -645,165 +701,6 @@ d) Design user interfaces
         </div>
       </div>
       );
-    }
-
-    // LAYOUT 2-14: Full-width centered content (NO SIDEBAR)
-    // Each topic gets unique styling through topicColor
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        {renderHeader(false)}
-        
-        {/* Full-Width Content - No Sidebar */}
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-            {/* Topic Hero - Unique gradient for each topic */}
-            <div className={`${topicColor.bg} ${topicColor.border} border-b-2 p-8 lg:p-12`}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 ${topicColor.accent} backdrop-blur-sm rounded-full text-xs font-semibold mb-3 ${topicColor.text}`}>
-                    <Clock className="w-3 h-3" />
-                    {selectedTopic.duration || '10 min'}
-                  </div>
-                  <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">{selectedTopic.title}</h2>
-                  <p className={`${topicColor.text} font-medium text-lg`}>Topic {selectedIndex + 1} of 14 - BA Fundamentals</p>
-                </div>
-                <div className={`flex-shrink-0 w-20 h-20 rounded-xl ${topicColor.icon} flex items-center justify-center shadow-lg`}>
-                  {React.createElement(getTopicIcon(selectedIndex), { className: `w-10 h-10 text-white` })}
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-8 lg:p-12">
-              <div className="core-learning-content prose prose-lg max-w-none dark:prose-invert
-                /* Headings - clean, prominent, well-spaced */
-                prose-headings:font-bold 
-                prose-headings:text-gray-900 dark:prose-headings:text-white
-                prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-8
-                prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-7
-                prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-6
-                prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-5
-                
-                /* Paragraphs */
-                prose-p:text-gray-700 dark:prose-p:text-gray-300
-                prose-p:text-base prose-p:leading-relaxed
-                prose-p:mb-5
-                
-                /* Lists */
-                prose-ul:my-6 prose-ol:my-6
-                prose-li:text-gray-700 dark:prose-li:text-gray-300
-                prose-li:my-2
-                
-                /* Strong/Bold text */
-                prose-strong:text-gray-900 dark:prose-strong:text-white
-                prose-strong:font-bold
-                
-                /* Blockquotes */
-                prose-blockquote:border-l-4 prose-blockquote:border-purple-500 
-                prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 
-                prose-blockquote:px-6 prose-blockquote:py-4 
-                prose-blockquote:my-8 prose-blockquote:rounded-r-lg
-                prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
-                prose-blockquote:italic
-                
-                /* Links */
-                prose-a:text-purple-600 dark:prose-a:text-purple-400 
-                prose-a:no-underline prose-a:font-medium
-                hover:prose-a:underline
-              ">
-                {(() => {
-                  const source = removeLeadingHeading(normalizeCurrency(selectedTopic.content), selectedTopic.title);
-                  const normalized = formatContent(source);
-                  return <ReactMarkdown>{normalized}</ReactMarkdown>;
-                })()}
-              </div>
-
-              {/* Module Assignment - Only appears after LAST topic (topic 14) */}
-              {selectedTopic && selectedIndex === topics.length - 1 && (
-                <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
-                  <div className="space-y-6">
-                    <AssignmentPlaceholder
-                      moduleId="module-1-core-learning"
-                      moduleTitle="Core Learning"
-                      title={coreModule?.assignmentTitle || 'BA Fundamentals Assessment'}
-                      description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
-                      isCompleted={false}
-                      canAccess={true}
-                      onComplete={() => {
-                        // Mark module complete after assignment submission
-                        if (!completedTopics.includes(selectedTopic.id)) {
-                          setCompletedTopics([...completedTopics, selectedTopic.id]);
-                        }
-                      }}
-                    />
-                    {/* Existing users can also manually mark complete */}
-                    {userType === 'existing' && (
-                      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        <p>Assignment is optional for existing users</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Navigation */}
-            <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-8 py-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  {prevTopic && (
-                    <button
-                      onClick={() => setSelectedTopicId(prevTopic.id)}
-                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      <span className="hidden sm:inline">Previous: {prevTopic.title}</span>
-                      <span className="sm:hidden">Previous</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {!isCompleted && (
-                    <button
-                      onClick={() => setCompletedTopics(prev => [...prev, selectedTopic.id])}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Mark Complete
-                    </button>
-                  )}
-
-                  {isCompleted && !isLastTopic && nextTopic && (
-                    <button
-                      onClick={() => {
-                        if (nextTopic) {
-                          setSelectedTopicId(nextTopic.id);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      Next Topic
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
-
-                  {isCompleted && isLastTopic && (
-                    <button
-                      onClick={() => setSelectedTopicId(null)}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      <Award className="w-4 h-4" />
-                      Complete Module
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   // OVERVIEW PAGE - Modern Card Grid
