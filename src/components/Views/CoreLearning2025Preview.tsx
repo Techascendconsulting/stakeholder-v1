@@ -112,11 +112,13 @@ const CoreLearning2025Preview: React.FC = () => {
           user_id: user.id,
           stable_key: stableKey,
           unit_type: 'topic',
+          content_version: 1,
           status: 'completed',
+          percent: 100,
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id,stable_key',
+          onConflict: 'user_id,unit_type,stable_key',
           ignoreDuplicates: false
         });
       
