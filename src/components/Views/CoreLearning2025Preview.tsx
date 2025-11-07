@@ -57,16 +57,24 @@ const CoreLearning2025Preview: React.FC = () => {
         }
 
         // Load completed topics from database
-        const { data: progressData } = await supabase
+        console.log('📖 Loading completed topics from database for user:', user.id);
+        const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
           .select('stable_key, status')
           .eq('user_id', user.id)
           .eq('unit_type', 'topic')
           .eq('status', 'completed');
 
+        if (progressError) {
+          console.error('❌ Error loading progress from database:', progressError);
+        }
+
         if (progressData && progressData.length > 0) {
           const completedKeys = progressData.map(p => p.stable_key);
+          console.log('✅ Loaded', completedKeys.length, 'completed topics from database:', completedKeys);
           setCompletedTopics(completedKeys);
+        } else {
+          console.log('ℹ️ No completed topics found in database');
         }
 
         // Also check localStorage for last selected topic
@@ -88,61 +96,51 @@ const CoreLearning2025Preview: React.FC = () => {
     loadUserData();
   }, [user?.id]);
 
-  const saveProgress = async () => {
+  // Save progress to database when topics are marked complete
+  const saveTopicToDatabase = async (topicId: string) => {
     if (!user?.id) return;
     
-    // Save to localStorage for quick access
-    const progress = { 
-      completedTopics,
-      selectedTopicId // Save current topic selection
-    };
-    localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
+    const stableKey = topicId; // topic IDs are already stable keys (lesson-1-1, lesson-1-2, etc.)
     
-    // Save each completed topic to database
-    for (const topicId of completedTopics) {
-      const stableKey = topicId; // topic IDs are already stable keys (lesson-1-1, lesson-1-2, etc.)
+    try {
+      console.log('💾 Saving topic to database:', stableKey);
       
-      try {
-        // Check if progress record exists
-        const { data: existing } = await supabase
-          .from('user_progress')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('stable_key', stableKey)
-          .eq('unit_type', 'topic')
-          .single();
-        
-        if (!existing) {
-          // Create new progress record
-          await supabase
-            .from('user_progress')
-            .insert({
-              user_id: user.id,
-              stable_key: stableKey,
-              unit_type: 'topic',
-              status: 'completed',
-              completed_at: new Date().toISOString()
-            });
-        } else {
-          // Update existing record
-          await supabase
-            .from('user_progress')
-            .update({
-              status: 'completed',
-              completed_at: new Date().toISOString()
-            })
-            .eq('user_id', user.id)
-            .eq('stable_key', stableKey);
-        }
-      } catch (error) {
-        console.error('Error saving topic progress:', error);
+      // Use upsert to handle insert or update in one operation
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: user.id,
+          stable_key: stableKey,
+          unit_type: 'topic',
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,stable_key',
+          ignoreDuplicates: false
+        });
+      
+      if (error) {
+        console.error('❌ Error saving topic progress:', error);
+      } else {
+        console.log('✅ Topic saved successfully:', stableKey);
       }
+    } catch (error) {
+      console.error('❌ Exception saving topic progress:', error);
     }
   };
 
+  // Save to localStorage immediately when completedTopics changes
   useEffect(() => {
-    saveProgress();
-  }, [completedTopics]);
+    if (!user?.id) return;
+    
+    const progress = { 
+      completedTopics,
+      selectedTopicId
+    };
+    localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
+    console.log('💾 Saved to localStorage:', completedTopics.length, 'topics');
+  }, [completedTopics, selectedTopicId, user?.id]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
@@ -661,7 +659,12 @@ d) Design user interfaces
                     <div className="flex items-center gap-3">
                       {!isCompleted && (
                         <button
-                          onClick={() => setCompletedTopics(prev => [...prev, selectedTopic.id])}
+                          onClick={async () => {
+                            // Update state immediately
+                            setCompletedTopics(prev => [...prev, selectedTopic.id]);
+                            // Save to database immediately (don't wait)
+                            await saveTopicToDatabase(selectedTopic.id);
+                          }}
                           className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
                         >
                           <CheckCircle className="w-4 h-4" />
