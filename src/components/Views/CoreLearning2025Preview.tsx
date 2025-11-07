@@ -741,6 +741,19 @@ d) Design user interfaces
 
       {/* Topic Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Progress Counter and Bar */}
+        <div className="mb-6">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {completedTopics.length} of {topics.length} completed
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+            <div
+              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(completedTopics.length / topics.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {topics.map((topic, idx) => {
             const accessible = isTopicAccessible(idx);
