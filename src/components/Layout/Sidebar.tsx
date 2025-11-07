@@ -420,15 +420,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             const hasSubItems = item.subItems && item.subItems.length > 0;
 
             // Check if this item is locked
-            const isLocked = 
-              (item.id === 'practice-flow' && !practiceUnlocked) || 
-              (item.id === 'project-journey' && !projectUnlocked);
+            const isPracticeLocked = item.id === 'practice-flow' && !practiceUnlocked;
+            const isProjectLocked = item.id === 'project-journey' && !projectUnlocked;
+            const isLocked = isPracticeLocked || isProjectLocked;
 
             return (
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
                     console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
+                    
+                    // Early return for locked items with alerts
+                    if (isPracticeLocked) {
+                      alert('Your Practice Journey unlocks after completing Modules 1–3 and submitting assignments.');
+                      return;
+                    }
+                    if (isProjectLocked) {
+                      alert('Complete your Practice Journey to unlock your Final Project.');
+                      return;
+                    }
                     
                     // Special handling for "How to Navigate" - trigger tour
                     if (item.id === 'how-to-navigate') {
@@ -460,7 +470,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   } ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  title={isCollapsed ? item.label : ''}
+                  title={
+                    isPracticeLocked ? 'Complete Modules 1–3 and assignments to unlock Practice'
+                    : isProjectLocked ? 'Complete Practice to unlock Final Project'
+                    : isCollapsed ? item.label
+                    : undefined
+                  }
                 >
                   <Icon size={isCollapsed ? 20 : 16} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && (

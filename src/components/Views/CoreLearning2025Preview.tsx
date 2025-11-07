@@ -12,6 +12,17 @@ import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
 import { saveResumeState, loadResumeState } from '../../services/resumeStore';
 import { getPageTitle } from '../../services/resumeStore';
 import type { PageType } from '../../types/resume';
+import { getModuleProgress, markLessonCompleted, type LearningProgressRow } from '../../utils/learningProgress';
+
+const MODULE_ID = 'module-1-core-learning';
+
+// Helper to extract module number from stable_key like "lesson-1-2" => 1
+const moduleFromStableKey = (stableKey?: string) => {
+  if (!stableKey) return null;
+  // stableKey pattern like "lesson-1-2" => module 1
+  const m = stableKey.match(/^lesson-(\d+)-/);
+  return m ? Number(m[1]) : null;
+};
 
 // Modern 2025 Preview Component - Only for baworkxp@gmail.com
 const CoreLearning2025Preview: React.FC = () => {
@@ -56,25 +67,37 @@ const CoreLearning2025Preview: React.FC = () => {
           setUserType(profileData.user_type || 'existing');
         }
 
-        // Load completed topics from database
-        console.log('📖 Loading completed topics from database for user:', user.id);
-        const { data: progressData, error: progressError } = await supabase
-          .from('user_progress')
-          .select('stable_key, status')
-          .eq('user_id', user.id)
-          .eq('unit_type', 'topic')
-          .eq('status', 'completed');
+        // Load or initialize module progress
+        console.log('📖 Loading module progress for user:', user.id);
+        let progress = await getModuleProgress(user.id, MODULE_ID);
 
-        if (progressError) {
-          console.error('❌ Error loading progress from database:', progressError);
+        if (!progress) {
+          console.log('ℹ️ No module progress found. Creating initial record.');
+          const { error: insertError } = await supabase
+            .from('learning_progress')
+            .insert({
+              user_id: user.id,
+              module_id: MODULE_ID,
+              status: 'unlocked',
+              completed_lessons: [],
+              assignment_completed: false
+            });
+
+          if (insertError) {
+            console.error('❌ Failed to create module progress record:', insertError);
+          } else {
+            progress = await getModuleProgress(user.id, MODULE_ID);
+          }
         }
 
-        if (progressData && progressData.length > 0) {
-          const completedKeys = progressData.map(p => p.stable_key);
-          console.log('✅ Loaded', completedKeys.length, 'completed topics from database:', completedKeys);
+        if (progress) {
+          setModuleProgress(progress);
+          const completedKeys = progress.completed_lessons || [];
+          console.log('✅ Loaded', completedKeys.length, 'completed topics from learning_progress:', completedKeys);
           setCompletedTopics(completedKeys);
         } else {
-          console.log('ℹ️ No completed topics found in database');
+          console.log('ℹ️ Module progress still missing after initialization');
+          setCompletedTopics([]);
         }
 
         // Also check localStorage for last selected topic
@@ -96,58 +119,15 @@ const CoreLearning2025Preview: React.FC = () => {
     loadUserData();
   }, [user?.id]);
 
-  // Save progress to database when topics are marked complete
-  const saveTopicToDatabase = async (topicId: string) => {
-    if (!user?.id) return;
-    
-    const stableKey = topicId; // topic IDs are already stable keys (lesson-1-1, lesson-1-2, etc.)
-    
-    try {
-      console.log('💾 Saving topic to database:', stableKey);
-      
-      // Use upsert to handle insert or update in one operation
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: user.id,
-          stable_key: stableKey,
-          unit_type: 'topic',
-          content_version: 1,
-          status: 'completed',
-          percent: 100,
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,unit_type,stable_key',
-          ignoreDuplicates: false
-        });
-      
-      if (error) {
-        console.error('❌ Error saving topic progress:', {
-          message: error.message,
-          details: (error as any)?.details,
-          hint: (error as any)?.hint,
-          code: (error as any)?.code,
-        });
-      } else {
-        console.log('✅ Topic saved successfully:', stableKey);
-      }
-    } catch (error) {
-      console.error('❌ Exception saving topic progress:', error);
-    }
-  };
-
-  // Save to localStorage immediately when completedTopics changes
+  // Persist current topic locally (for convenience)
   useEffect(() => {
     if (!user?.id) return;
-    
-    const progress = { 
-      completedTopics,
+
+    const progress = {
       selectedTopicId
     };
     localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
-    console.log('💾 Saved to localStorage:', completedTopics.length, 'topics');
-  }, [completedTopics, selectedTopicId, user?.id]);
+  }, [selectedTopicId, user?.id]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
@@ -523,7 +503,10 @@ d) Design user interfaces
                             <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
                           )}
                         </div>
-                        <span className="flex-1 text-left truncate">{topic.title}</span>
+                        <span className="flex-1 text-left truncate">
+                          {topic.title}
+                          {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
+                        </span>
                         {completed && (
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-800 text-white dark:bg-green-950 dark:text-green-100 border border-green-900 dark:border-green-900">Done</span>
                         )}
@@ -667,10 +650,17 @@ d) Design user interfaces
                       {!isCompleted && (
                         <button
                           onClick={async () => {
-                            // Update state immediately
-                            setCompletedTopics(prev => [...prev, selectedTopic.id]);
-                            // Save to database immediately (don't wait)
-                            await saveTopicToDatabase(selectedTopic.id);
+                            if (!user?.id || !selectedTopic) return;
+                            try {
+                              await markLessonCompleted(user.id, MODULE_ID, selectedTopic.id);
+                              const updated = await getModuleProgress(user.id, MODULE_ID);
+                              if (updated) {
+                                setModuleProgress(updated);
+                                setCompletedTopics(updated.completed_lessons || []);
+                              }
+                            } catch (error) {
+                              console.error('❌ Failed to mark topic complete:', error);
+                            }
                           }}
                           className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
                         >
@@ -795,6 +785,7 @@ d) Design user interfaces
                 </div>
                 <h3 className={`font-bold mb-2 transition-colors ${completed ? 'text-white' : 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'}`}>
                   {topic.title}
+                  {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
                 </h3>
                 <div className="flex items-center justify-between">
                   <div className={`flex items-center gap-2 text-xs ${completed ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>

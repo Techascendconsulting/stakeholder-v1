@@ -9,10 +9,13 @@ import { getUserPhase, isPageAccessible, UserPhase } from '../../utils/userProgr
 import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
 import { loadResumeState } from '../../services/resumeStore';
 import type { ResumeState } from '../../types/resume';
+import { useUserJourney } from '../../hooks/useUserJourney';
 
 const Dashboard: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
+  const { getNextAction } = useUserJourney(user?.id || null);
+  const next = getNextAction?.();
   const [loading, setLoading] = useState(true);
   
   // Journey progress state
@@ -198,6 +201,14 @@ const Dashboard: React.FC = () => {
           Here's your stakeholder interview progress and recent activity
         </p>
       </div>
+
+      {/* Next Step Strip */}
+      {next && (
+        <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
+          <div className="font-semibold">Next step: {next.title}</div>
+          <div className="opacity-80">{next.description}</div>
+        </div>
+      )}
 
       {/* Security nudges */}
       {showSecurityCard && (
