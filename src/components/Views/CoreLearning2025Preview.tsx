@@ -123,7 +123,12 @@ const CoreLearning2025Preview: React.FC = () => {
         });
       
       if (error) {
-        console.error('❌ Error saving topic progress:', error);
+        console.error('❌ Error saving topic progress:', {
+          message: error.message,
+          details: (error as any)?.details,
+          hint: (error as any)?.hint,
+          code: (error as any)?.code,
+        });
       } else {
         console.log('✅ Topic saved successfully:', stableKey);
       }
