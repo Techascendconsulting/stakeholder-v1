@@ -582,7 +582,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
           {/* User Dropdown Menu - Only show when not collapsed */}
           {!isCollapsed && showUserMenu && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg border border-purple-100 shadow-lg overflow-hidden">
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg border border-purple-100 shadow-lg overflow-hidden z-50">
               <button
                 onClick={() => {
                   setCurrentView('profile');
@@ -595,7 +595,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               </button>
               <div className="border-t border-gray-100">
                 <button
-                  onClick={handleSignOut}
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    handleSignOut();
+                  }}
                   className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
                 >
                   <LogOut size={16} className="text-gray-500" />
