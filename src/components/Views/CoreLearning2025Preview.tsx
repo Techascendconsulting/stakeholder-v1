@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart, AlertCircle, Send, ArrowLeft, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,73 +52,74 @@ const CoreLearning2025Preview: React.FC = () => {
     }
   }, [selectedTopicId]);
 
-  // Load user data
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user?.id) return;
+  // Load user data - extracted as useCallback so it can be called from onClick
+  const loadUserData = useCallback(async () => {
+    if (!user?.id) return;
 
-      try {
-        // Load user type
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('user_type')
-          .eq('user_id', user.id)
-          .single();
+    try {
+      // Load user type
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('user_type')
+        .eq('user_id', user.id)
+        .single();
 
-        if (profileData) {
-          setUserType(profileData.user_type || 'existing');
-        }
-
-        // Load or initialize module progress
-        console.log('📖 Loading module progress for user:', user.id);
-        let progress = await getModuleProgress(user.id, MODULE_ID);
-
-        if (!progress) {
-          console.log('ℹ️ No module progress found. Creating initial record.');
-          const { error: insertError } = await supabase
-            .from('learning_progress')
-            .insert({
-              user_id: user.id,
-              module_id: MODULE_ID,
-              status: 'unlocked',
-              completed_lessons: [],
-              assignment_completed: false
-            });
-
-          if (insertError) {
-            console.error('❌ Failed to create module progress record:', insertError);
-          } else {
-            progress = await getModuleProgress(user.id, MODULE_ID);
-          }
-        }
-
-        if (progress) {
-          const completedKeys = progress.completed_lessons || [];
-          console.log('✅ Loaded', completedKeys.length, 'completed topics from learning_progress:', completedKeys);
-          setCompletedTopics(completedKeys);
-        } else {
-          console.log('ℹ️ Module progress still missing after initialization');
-          setCompletedTopics([]);
-        }
-
-        // Also check localStorage for last selected topic
-        const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
-        if (savedProgress) {
-          const progress = JSON.parse(savedProgress);
-          // Restore the last selected topic on page refresh
-          if (progress.selectedTopicId) {
-            setSelectedTopicId(progress.selectedTopicId);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      } finally {
-        setLoading(false);
+      if (profileData) {
+        setUserType(profileData.user_type || 'existing');
       }
-    };
 
-    loadUserData();
+      // Load or initialize module progress
+      console.log('📖 Loading module progress for user:', user.id);
+      let progress = await getModuleProgress(user.id, MODULE_ID);
+
+      if (!progress) {
+        console.log('ℹ️ No module progress found. Creating initial record.');
+        const { error: insertError } = await supabase
+          .from('learning_progress')
+          .insert({
+            user_id: user.id,
+            module_id: MODULE_ID,
+            status: 'unlocked',
+            completed_lessons: [],
+            assignment_completed: false
+          });
+
+        if (insertError) {
+          console.error('❌ Failed to create module progress record:', insertError);
+        } else {
+          progress = await getModuleProgress(user.id, MODULE_ID);
+        }
+      }
+
+      if (progress) {
+        const completedKeys = progress.completed_lessons || [];
+        console.log('✅ Loaded', completedKeys.length, 'completed topics from learning_progress:', completedKeys);
+        setCompletedTopics(completedKeys);
+      } else {
+        console.log('ℹ️ Module progress still missing after initialization');
+        setCompletedTopics([]);
+      }
+
+      // Also check localStorage for last selected topic
+      const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
+      if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        // Restore the last selected topic on page refresh
+        if (progress.selectedTopicId) {
+          setSelectedTopicId(progress.selectedTopicId);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
+
+  // Load user data on mount
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
 
   // Persist current topic locally (for convenience)
   useEffect(() => {
@@ -613,11 +614,9 @@ d) Design user interfaces
                           description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
                           isCompleted={false}
                           canAccess={true}
-                          onComplete={() => {
+                          onComplete={async () => {
                             // Mark module complete after assignment submission
-                            if (!completedTopics.includes(selectedTopic.id)) {
-                              setCompletedTopics([...completedTopics, selectedTopic.id]);
-                            }
+                            await loadUserData(); // Reload to reflect assignment completion
                           }}
                         />
                         {/* Existing users can also manually mark complete */}
@@ -655,6 +654,7 @@ d) Design user interfaces
                             try {
                               await markLessonCompleted(user.id, MODULE_ID, selectedTopic.id);
                               await refreshUserProgress();
+                              await loadUserData(); // Reload completed topics to update UI
                             } catch (error) {
                               console.error('❌ Failed to mark topic complete:', error);
                             }
