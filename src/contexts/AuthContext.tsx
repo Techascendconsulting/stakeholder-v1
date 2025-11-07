@@ -461,13 +461,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       }
       
+      // Try to sign out from Supabase (may fail with 403, but we'll clear locally anyway)
       await supabase.auth.signOut()
       console.log('🔐 AUTH - Signout successful')
     } catch (error) {
-      console.error('🔐 AUTH - Signout failed, clearing session locally:', error)
-      // If signout fails, clear the session locally
+      console.error('🔐 AUTH - Signout failed on server, clearing locally:', error)
+    } finally {
+      // ALWAYS clear local state, even if Supabase returns 403
+      console.log('🔐 AUTH - Clearing local session and redirecting to login')
       setSession(null)
       setUser(null)
+      // Clear any local storage
+      localStorage.clear()
+      // Force redirect to login page
+      window.location.href = '/login'
     }
   }
 

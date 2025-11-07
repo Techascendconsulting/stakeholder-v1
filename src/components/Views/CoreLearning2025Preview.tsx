@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart, AlertCircle, Send, ArrowLeft, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,11 +12,24 @@ import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
 import { saveResumeState, loadResumeState } from '../../services/resumeStore';
 import { getPageTitle } from '../../services/resumeStore';
 import type { PageType } from '../../types/resume';
+import { getModuleProgress, markLessonCompleted, type LearningProgressRow } from '../../utils/learningProgress';
+import { useUserJourney } from '../../hooks/useUserJourney';
+
+const MODULE_ID = 'module-1-core-learning';
+
+// Helper to extract module number from stable_key like "lesson-1-2" => 1
+const moduleFromStableKey = (stableKey?: string) => {
+  if (!stableKey) return null;
+  // stableKey pattern like "lesson-1-2" => module 1
+  const m = stableKey.match(/^lesson-(\d+)-/);
+  return m ? Number(m[1]) : null;
+};
 
 // Modern 2025 Preview Component - Only for baworkxp@gmail.com
 const CoreLearning2025Preview: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
+  const { refresh: refreshUserProgress } = useUserJourney(user?.id || null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [completedTopics, setCompletedTopics] = useState<string[]>([]);
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
@@ -39,53 +52,84 @@ const CoreLearning2025Preview: React.FC = () => {
     }
   }, [selectedTopicId]);
 
-  // Load user data
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user?.id) return;
+  // Load user data - extracted as useCallback so it can be called from onClick
+  const loadUserData = useCallback(async () => {
+    if (!user?.id) return;
 
-      try {
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('user_type')
-          .eq('user_id', user.id)
-          .single();
+    try {
+      // Load user type
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('user_type')
+        .eq('user_id', user.id)
+        .single();
 
-        if (profileData) {
-          setUserType(profileData.user_type || 'existing');
-        }
-
-        const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
-        if (savedProgress) {
-          const progress = JSON.parse(savedProgress);
-          setCompletedTopics(progress.completedTopics || []);
-          // Restore the last selected topic on page refresh
-          if (progress.selectedTopicId) {
-            setSelectedTopicId(progress.selectedTopicId);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      } finally {
-        setLoading(false);
+      if (profileData) {
+        setUserType(profileData.user_type || 'existing');
       }
-    };
 
-    loadUserData();
+      // Load or initialize module progress
+      console.log('📖 Loading module progress for user:', user.id);
+      let progress = await getModuleProgress(user.id, MODULE_ID);
+
+      if (!progress) {
+        console.log('ℹ️ No module progress found. Creating initial record.');
+        const { error: insertError } = await supabase
+          .from('learning_progress')
+          .insert({
+            user_id: user.id,
+            module_id: MODULE_ID,
+            status: 'unlocked',
+            completed_lessons: [],
+            assignment_completed: false
+          });
+
+        if (insertError) {
+          console.error('❌ Failed to create module progress record:', insertError);
+        } else {
+          progress = await getModuleProgress(user.id, MODULE_ID);
+        }
+      }
+
+      if (progress) {
+        const completedKeys = progress.completed_lessons || [];
+        console.log('✅ Loaded', completedKeys.length, 'completed topics from learning_progress:', completedKeys);
+        setCompletedTopics(completedKeys);
+      } else {
+        console.log('ℹ️ Module progress still missing after initialization');
+        setCompletedTopics([]);
+      }
+
+      // Also check localStorage for last selected topic
+      const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
+      if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        // Restore the last selected topic on page refresh
+        if (progress.selectedTopicId) {
+          setSelectedTopicId(progress.selectedTopicId);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
 
-  const saveProgress = () => {
+  // Load user data on mount
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
+
+  // Persist current topic locally (for convenience)
+  useEffect(() => {
     if (!user?.id) return;
-    const progress = { 
-      completedTopics,
-      selectedTopicId // Save current topic selection
+
+    const progress = {
+      selectedTopicId
     };
     localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
-  };
-
-  useEffect(() => {
-    saveProgress();
-  }, [completedTopics, selectedTopicId]);
+  }, [selectedTopicId, user?.id]);
 
   const getTopicIcon = (index: number) => {
     const icons = [Users, Briefcase, Target, Lightbulb, TrendingUp, ShieldCheck, MessageSquare, Zap, Rocket, Users, FileText, BookOpen, Award, GraduationCap];
@@ -411,9 +455,8 @@ d) Design user interfaces
       </div>
     );
 
-    // LAYOUT 1: Topic 1 - With Sidebar (original design)
-    if (selectedIndex === 0) {
-      return (
+    // LAYOUT: All Topics - With Sidebar for easy navigation
+    return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           {renderHeader(true)}
           <div className="max-w-7xl mx-auto px-6 py-8">
@@ -462,7 +505,10 @@ d) Design user interfaces
                             <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
                           )}
                         </div>
-                        <span className="flex-1 text-left truncate">{topic.title}</span>
+                        <span className="flex-1 text-left truncate">
+                          {topic.title}
+                          {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
+                        </span>
                         {completed && (
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-800 text-white dark:bg-green-950 dark:text-green-100 border border-green-900 dark:border-green-900">Done</span>
                         )}
@@ -568,11 +614,9 @@ d) Design user interfaces
                           description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
                           isCompleted={false}
                           canAccess={true}
-                          onComplete={() => {
+                          onComplete={async () => {
                             // Mark module complete after assignment submission
-                            if (!completedTopics.includes(selectedTopic.id)) {
-                              setCompletedTopics([...completedTopics, selectedTopic.id]);
-                            }
+                            await loadUserData(); // Reload to reflect assignment completion
                           }}
                         />
                         {/* Existing users can also manually mark complete */}
@@ -605,7 +649,16 @@ d) Design user interfaces
                     <div className="flex items-center gap-3">
                       {!isCompleted && (
                         <button
-                          onClick={() => setCompletedTopics(prev => [...prev, selectedTopic.id])}
+                          onClick={async () => {
+                            if (!user?.id || !selectedTopic) return;
+                            try {
+                              await markLessonCompleted(user.id, MODULE_ID, selectedTopic.id);
+                              await refreshUserProgress();
+                              await loadUserData(); // Reload completed topics to update UI
+                            } catch (error) {
+                              console.error('❌ Failed to mark topic complete:', error);
+                            }
+                          }}
                           className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
                         >
                           <CheckCircle className="w-4 h-4" />
@@ -645,165 +698,6 @@ d) Design user interfaces
         </div>
       </div>
       );
-    }
-
-    // LAYOUT 2-14: Full-width centered content (NO SIDEBAR)
-    // Each topic gets unique styling through topicColor
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        {renderHeader(false)}
-        
-        {/* Full-Width Content - No Sidebar */}
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-            {/* Topic Hero - Unique gradient for each topic */}
-            <div className={`${topicColor.bg} ${topicColor.border} border-b-2 p-8 lg:p-12`}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 ${topicColor.accent} backdrop-blur-sm rounded-full text-xs font-semibold mb-3 ${topicColor.text}`}>
-                    <Clock className="w-3 h-3" />
-                    {selectedTopic.duration || '10 min'}
-                  </div>
-                  <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">{selectedTopic.title}</h2>
-                  <p className={`${topicColor.text} font-medium text-lg`}>Topic {selectedIndex + 1} of 14 - BA Fundamentals</p>
-                </div>
-                <div className={`flex-shrink-0 w-20 h-20 rounded-xl ${topicColor.icon} flex items-center justify-center shadow-lg`}>
-                  {React.createElement(getTopicIcon(selectedIndex), { className: `w-10 h-10 text-white` })}
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-8 lg:p-12">
-              <div className="core-learning-content prose prose-lg max-w-none dark:prose-invert
-                /* Headings - clean, prominent, well-spaced */
-                prose-headings:font-bold 
-                prose-headings:text-gray-900 dark:prose-headings:text-white
-                prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-8
-                prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-7
-                prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-6
-                prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-5
-                
-                /* Paragraphs */
-                prose-p:text-gray-700 dark:prose-p:text-gray-300
-                prose-p:text-base prose-p:leading-relaxed
-                prose-p:mb-5
-                
-                /* Lists */
-                prose-ul:my-6 prose-ol:my-6
-                prose-li:text-gray-700 dark:prose-li:text-gray-300
-                prose-li:my-2
-                
-                /* Strong/Bold text */
-                prose-strong:text-gray-900 dark:prose-strong:text-white
-                prose-strong:font-bold
-                
-                /* Blockquotes */
-                prose-blockquote:border-l-4 prose-blockquote:border-purple-500 
-                prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 
-                prose-blockquote:px-6 prose-blockquote:py-4 
-                prose-blockquote:my-8 prose-blockquote:rounded-r-lg
-                prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300
-                prose-blockquote:italic
-                
-                /* Links */
-                prose-a:text-purple-600 dark:prose-a:text-purple-400 
-                prose-a:no-underline prose-a:font-medium
-                hover:prose-a:underline
-              ">
-                {(() => {
-                  const source = removeLeadingHeading(normalizeCurrency(selectedTopic.content), selectedTopic.title);
-                  const normalized = formatContent(source);
-                  return <ReactMarkdown>{normalized}</ReactMarkdown>;
-                })()}
-              </div>
-
-              {/* Module Assignment - Only appears after LAST topic (topic 14) */}
-              {selectedTopic && selectedIndex === topics.length - 1 && (
-                <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
-                  <div className="space-y-6">
-                    <AssignmentPlaceholder
-                      moduleId="module-1-core-learning"
-                      moduleTitle="Core Learning"
-                      title={coreModule?.assignmentTitle || 'BA Fundamentals Assessment'}
-                      description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
-                      isCompleted={false}
-                      canAccess={true}
-                      onComplete={() => {
-                        // Mark module complete after assignment submission
-                        if (!completedTopics.includes(selectedTopic.id)) {
-                          setCompletedTopics([...completedTopics, selectedTopic.id]);
-                        }
-                      }}
-                    />
-                    {/* Existing users can also manually mark complete */}
-                    {userType === 'existing' && (
-                      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        <p>Assignment is optional for existing users</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Navigation */}
-            <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-8 py-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  {prevTopic && (
-                    <button
-                      onClick={() => setSelectedTopicId(prevTopic.id)}
-                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      <span className="hidden sm:inline">Previous: {prevTopic.title}</span>
-                      <span className="sm:hidden">Previous</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {!isCompleted && (
-                    <button
-                      onClick={() => setCompletedTopics(prev => [...prev, selectedTopic.id])}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Mark Complete
-                    </button>
-                  )}
-
-                  {isCompleted && !isLastTopic && nextTopic && (
-                    <button
-                      onClick={() => {
-                        if (nextTopic) {
-                          setSelectedTopicId(nextTopic.id);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      Next Topic
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
-
-                  {isCompleted && isLastTopic && (
-                    <button
-                      onClick={() => setSelectedTopicId(null)}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold text-sm transition-colors"
-                    >
-                      <Award className="w-4 h-4" />
-                      Complete Module
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   // OVERVIEW PAGE - Modern Card Grid
@@ -829,24 +723,25 @@ d) Design user interfaces
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{progressPercent}%</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Complete</div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
-            <div
-              className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
           </div>
         </div>
       </div>
 
       {/* Topic Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Progress Counter and Bar */}
+        <div className="mb-6">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {completedTopics.length} of {topics.length} completed · {progressPercent}%
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+            <div
+              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {topics.map((topic, idx) => {
             const accessible = isTopicAccessible(idx);
@@ -888,6 +783,7 @@ d) Design user interfaces
                 </div>
                 <h3 className={`font-bold mb-2 transition-colors ${completed ? 'text-white' : 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'}`}>
                   {topic.title}
+                  {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
                 </h3>
                 <div className="flex items-center justify-between">
                   <div className={`flex items-center gap-2 text-xs ${completed ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>

@@ -218,72 +218,32 @@ export function useUserJourney(userId: string | null) {
       };
     }
 
-    // If there's a current topic in progress, continue it
-    if (data.currentTopic) {
-      return {
-        type: 'topic',
-        title: `Continue: ${data.currentTopic.title}`,
-        description: 'Pick up where you left off in your learning',
-        navigationId: 'learning-flow',
-      };
-    }
+    // Calculate completed modules based on topics (14 topics = 1 module)
+    const completedModules = Math.floor((data.topicsCompletedCount || 0) / 14);
 
-    // If there's a current module in progress, continue it
-    if (data.currentModule) {
+    if (completedModules < 3) {
       return {
         type: 'module',
-        title: `Continue: ${data.currentModule.title}`,
-        description: 'Complete this module to unlock more content',
+        title: "Continue Core Learning",
+        description: "You're still building your foundation. Continue your BA Learning Journey.",
         navigationId: 'learning-flow',
       };
     }
 
-    // Check for pending assignments
-    if (data.modulesCompletedCount > data.assignmentsCompletedCount) {
-      return {
-        type: 'assignment',
-        title: 'Complete Assignment',
-        description: 'Submit your assignment to unlock the next module',
-        navigationId: 'learning-flow',
-      };
-    }
-
-    // If practice is unlocked but not started, suggest it
-    if (data.practiceUnlocked && data.modulesCompletedCount > 0) {
+    if (completedModules >= 3 && completedModules < 10) {
       return {
         type: 'practice',
-        title: 'Start Practice Exercises',
-        description: 'Apply what you learned in hands-on scenarios',
+        title: "Begin Practice Journey",
+        description: "You've learned the fundamentals. Now it's time to start applying them with assisted exercises.",
         navigationId: 'practice-flow',
       };
     }
 
-    // If project is unlocked, suggest it
-    if (data.projectUnlocked) {
-      return {
-        type: 'project',
-        title: 'Start Your Project',
-        description: 'Begin working on your capstone project',
-        navigationId: 'project-journey',
-      };
-    }
-
-    // Everything complete
-    if (data.overallProgress === 100) {
-      return {
-        type: 'complete',
-        title: 'Journey Complete!',
-        description: 'Congratulations on completing your learning journey',
-        navigationId: 'dashboard',
-      };
-    }
-
-    // Default: start learning
     return {
-      type: 'module',
-      title: 'Start Learning',
-      description: 'Begin your Business Analyst learning journey',
-      navigationId: 'learning-flow',
+      type: 'project',
+      title: "Begin Project Journey",
+      description: "You're ready. Start working like a real BA on a live project.",
+      navigationId: 'project-journey',
     };
   }, [data]);
 
