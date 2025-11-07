@@ -557,36 +557,31 @@ d) Design user interfaces
                     })()}
                   </div>
 
-                  {/* Topic Assignment - Appears after EVERY topic */}
-                  {selectedTopic && (
+                  {/* Module Assignment - Only appears after LAST topic (topic 14) */}
+                  {selectedTopic && selectedIndex === topics.length - 1 && (
                     <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
-                      {(() => {
-                        const assignment = getTopicAssignment(selectedIndex, selectedTopic.title);
-                        return (
-                          <div className="space-y-6">
-                            <AssignmentPlaceholder
-                              moduleId={`module-1-core-learning-topic-${selectedIndex + 1}`}
-                              moduleTitle={`Core Learning - ${selectedTopic.title}`}
-                              title={assignment.title}
-                              description={assignment.description}
-                              isCompleted={false}
-                              canAccess={true}
-                              onComplete={() => {
-                                // Mark topic complete after assignment submission
-                                if (!completedTopics.includes(selectedTopic.id)) {
-                                  setCompletedTopics([...completedTopics, selectedTopic.id]);
-                                }
-                              }}
-                            />
-                            {/* Existing users can also manually mark complete */}
-                            {userType === 'existing' && (
-                              <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                                <p>Assignment is optional for existing users</p>
-                              </div>
-                            )}
+                      <div className="space-y-6">
+                        <AssignmentPlaceholder
+                          moduleId="module-1-core-learning"
+                          moduleTitle="Core Learning"
+                          title={coreModule?.assignmentTitle || 'BA Fundamentals Assessment'}
+                          description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
+                          isCompleted={false}
+                          canAccess={true}
+                          onComplete={() => {
+                            // Mark module complete after assignment submission
+                            if (!completedTopics.includes(selectedTopic.id)) {
+                              setCompletedTopics([...completedTopics, selectedTopic.id]);
+                            }
+                          }}
+                        />
+                        {/* Existing users can also manually mark complete */}
+                        {userType === 'existing' && (
+                          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                            <p>Assignment is optional for existing users</p>
                           </div>
-                        );
-                      })()}
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -723,36 +718,31 @@ d) Design user interfaces
                 })()}
               </div>
 
-              {/* Topic Assignment - Appears after EVERY topic */}
-              {selectedTopic && (
+              {/* Module Assignment - Only appears after LAST topic (topic 14) */}
+              {selectedTopic && selectedIndex === topics.length - 1 && (
                 <div className="mt-12 pt-8 border-t-2 border-gray-200 dark:border-gray-800">
-                  {(() => {
-                    const assignment = getTopicAssignment(selectedIndex, selectedTopic.title);
-                    return (
-                      <div className="space-y-6">
-                        <AssignmentPlaceholder
-                          moduleId={`module-1-core-learning-topic-${selectedIndex + 1}`}
-                          moduleTitle={`Core Learning - ${selectedTopic.title}`}
-                          title={assignment.title}
-                          description={assignment.description}
-                          isCompleted={false}
-                          canAccess={true}
-                          onComplete={() => {
-                            // Mark topic complete after assignment submission
-                            if (!completedTopics.includes(selectedTopic.id)) {
-                              setCompletedTopics([...completedTopics, selectedTopic.id]);
-                            }
-                          }}
-                        />
-                        {/* Existing users can also manually mark complete */}
-                        {userType === 'existing' && (
-                          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                            <p>Assignment is optional for existing users</p>
-                          </div>
-                        )}
+                  <div className="space-y-6">
+                    <AssignmentPlaceholder
+                      moduleId="module-1-core-learning"
+                      moduleTitle="Core Learning"
+                      title={coreModule?.assignmentTitle || 'BA Fundamentals Assessment'}
+                      description={coreModule?.assignmentDescription || 'Complete the module assessment to demonstrate your understanding of BA fundamentals.'}
+                      isCompleted={false}
+                      canAccess={true}
+                      onComplete={() => {
+                        // Mark module complete after assignment submission
+                        if (!completedTopics.includes(selectedTopic.id)) {
+                          setCompletedTopics([...completedTopics, selectedTopic.id]);
+                        }
+                      }}
+                    />
+                    {/* Existing users can also manually mark complete */}
+                    {userType === 'existing' && (
+                      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                        <p>Assignment is optional for existing users</p>
                       </div>
-                    );
-                  })()}
+                    )}
+                  </div>
                 </div>
               )}
             </div>
