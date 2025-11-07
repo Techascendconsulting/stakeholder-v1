@@ -28,6 +28,7 @@ import {
   Sun,
   HelpCircle,
   Briefcase,
+  Lock,
   // Sparkles // Archived with AI Process Mapper
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -37,6 +38,7 @@ import { useAdmin } from '../../contexts/AdminContext';
 import { UserAvatar } from '../Common/UserAvatar';
 import SidebarAudioPlayer from './SidebarAudioPlayer';
 import { supabase } from '../../lib/supabase';
+import { useUserJourney } from '../../hooks/useUserJourney';
 
 interface SidebarProps {
   className?: string;
@@ -70,6 +72,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [displayName, setDisplayName] = useState<string>('');
+  
+  // Get unlock status from useUserJourney
+  const { practiceUnlocked, projectUnlocked } = useUserJourney(user?.id || null);
 
   // Load user type from database
   useEffect(() => {
@@ -414,6 +419,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             const isExpanded = expandedSections.has(item.id);
             const hasSubItems = item.subItems && item.subItems.length > 0;
 
+            // Check if this item is locked
+            const isLocked = 
+              (item.id === 'practice-flow' && !practiceUnlocked) || 
+              (item.id === 'project-journey' && !projectUnlocked);
+
             return (
               <li key={item.id} className="relative group">
                 <button
@@ -449,7 +459,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
-                  }`}
+                  } ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   title={isCollapsed ? item.label : ''}
                 >
                   <Icon size={isCollapsed ? 20 : 16} className={isActive ? 'text-white' : 'text-purple-200'} />
@@ -464,6 +474,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                             <ChevronDown size={14} className="text-purple-200" />
                           )}
                         </div>
+                      )}
+                      {isLocked && (
+                        <Lock className="w-4 h-4 text-gray-400 ml-auto" />
                       )}
                     </>
                   )}
