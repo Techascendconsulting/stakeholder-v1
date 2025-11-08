@@ -165,13 +165,13 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                 How BA WorkXP Works
               </h2>
               <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
-                Four simple steps to go from uncertain to interview-ready
+                Experience the full BA lifecycle from stakeholder interviews to Scrum ceremonies
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8 relative">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
               {/* Connecting Line */}
-              <div className="hidden md:block absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 opacity-20"></div>
+              <div className="hidden lg:block absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 via-emerald-500 to-orange-500 opacity-20"></div>
 
               {/* Step 1 */}
               <div className="relative">
@@ -205,9 +205,9 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-6 mx-auto relative z-10">
                     <span className="text-2xl font-bold text-white">3</span>
                   </div>
-                  <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Create Deliverables</h3>
+                  <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Write User Stories in Jira</h3>
                   <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Build process maps, user stories, requirements docs — actual work products for your portfolio
+                    Create properly formatted user stories with acceptance criteria. Interact with developers to ensure clarity.
                   </p>
                 </div>
               </div>
@@ -218,9 +218,9 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-6 mx-auto relative z-10">
                     <span className="text-2xl font-bold text-white">4</span>
                   </div>
-                  <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Land the Job</h3>
+                  <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Attend Scrum Ceremonies</h3>
                   <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Walk into interviews confident with real examples and a portfolio that proves you can do the work
+                    Participate in Sprint Planning, Refinement, and Retrospectives to ensure implementation meets business goals.
                   </p>
                 </div>
               </div>
