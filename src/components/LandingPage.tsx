@@ -389,7 +389,7 @@ const LandingPage: React.FC = () => {
                   <span className="text-sm font-bold text-emerald-100">YOU Practicing Right Now</span>
                 </div>
                 <h3 className="text-2xl font-bold text-white max-w-md mx-auto leading-tight">
-                  This Is You Interviewing Real Stakeholders
+                  This Is You Interviewing<br />Real Stakeholders
                 </h3>
                 <p className="text-gray-300 text-sm max-w-md mx-auto leading-relaxed">
                   Practice eliciting requirements from multiple AI stakeholders with real business problems. Build confidence before your first interview.
