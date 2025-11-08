@@ -93,17 +93,27 @@ const LandingPage: React.FC = () => {
   }
 
   if (showContact) {
-    return <ContactUsView 
-      onBack={() => setShowContact(false)} 
-      onFAQClick={() => {
-        setShowContact(false);
-        setShowFAQ(true);
-      }}
-    />
+    return (
+      <ContactUsView 
+        onClose={() => setShowContact(false)}
+        onStartNow={() => { setShowContact(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowContact(false); setShowFeatures(true); }}
+        onShowPricing={() => { setShowContact(false); setShowPricing(true); }}
+        onShowFAQ={() => { setShowContact(false); setShowFAQ(true); }}
+      />
+    )
   }
 
   if (showFAQ) {
-    return <FAQView onBack={() => setShowFAQ(false)} />
+    return (
+      <FAQView 
+        onClose={() => setShowFAQ(false)}
+        onStartNow={() => { setShowFAQ(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowFAQ(false); setShowFeatures(true); }}
+        onShowPricing={() => { setShowFAQ(false); setShowPricing(true); }}
+        onShowContact={() => { setShowFAQ(false); setShowContact(true); }}
+      />
+    )
   }
 
   if (showPrivacyPolicy) {

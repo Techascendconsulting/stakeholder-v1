@@ -17,19 +17,26 @@ import {
   Award,
   ArrowLeft,
   Search,
-  BookOpen
+  BookOpen,
+  Moon,
+  Sun,
+  Menu,
+  X
 } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FAQViewProps {
-  onBack?: () => void;
-  onContactClick?: () => void;
-  onTabChange?: (tab: 'help' | 'faq') => void;
-  showTabs?: boolean;
+  onClose: () => void;
+  onStartNow?: () => void;
+  onShowFeatures?: () => void;
+  onShowPricing?: () => void;
+  onShowContact?: () => void;
 }
 
-import PublicLayout from '../Layout/PublicLayout';
-
-const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, showTabs = false }) => {
+const FAQView: React.FC<FAQViewProps> = ({ onClose, onStartNow, onShowFeatures, onShowPricing, onShowContact }) => {
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openCategories, setOpenCategories] = useState<string[]>(['getting-started', 'experience-portfolio', 'career']);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -188,10 +195,134 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
 
 
   return (
-    <PublicLayout active="faq" onHome={onBack} onFAQClick={() => {}} onContactClick={onContactClick}>
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Navigation - Same as Landing Page */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={onClose}>
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-white">BA WorkXP</span>
+            </div>
 
-      {/* Hero Section */}
-      <section className="relative py-12 md:py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <button 
+                onClick={onClose}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Home
+              </button>
+              <button 
+                onClick={onShowFeatures}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={onShowPricing}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
+              </button>
+              <button 
+                className="text-white font-medium border-b-2 border-purple-500"
+              >
+                FAQ
+              </button>
+              <button 
+                onClick={onShowContact}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Contact
+              </button>
+            </nav>
+
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+                aria-label="Toggle theme"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              <button
+                onClick={onStartNow}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+              >
+                Start Free
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-white"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-800">
+              <nav className="flex flex-col space-y-4">
+                <button 
+                  onClick={onClose}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={onShowFeatures}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={onShowPricing}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Pricing
+                </button>
+                <button 
+                  className="text-left text-white font-medium"
+                >
+                  FAQ
+                </button>
+                <button 
+                  onClick={onShowContact}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Contact
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
+                <button
+                  onClick={onStartNow}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-center"
+                >
+                  Start Free
+                </button>
+              </nav>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="pt-16">
+        {/* Hero Section */}
+        <section className="relative py-12 md:py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
@@ -200,32 +331,12 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 px-6 py-3 rounded-full text-sm font-medium mb-6 text-white">
             <HelpCircle className="w-4 h-4 mr-2" />
-            {showTabs ? 'Support Center' : 'Frequently Asked Questions'}
+            Frequently Asked Questions
           </div>
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">How Can We Help You?</h1>
           <p className="text-base md:text-lg lg:text-xl text-purple-100 max-w-2xl mx-auto mb-8">
             Find answers to common questions about the platform, learning journey, and getting started
           </p>
-
-          {/* Tab Navigation (only shown when embedded in Support Center) */}
-          {showTabs && onTabChange && (
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <button
-                onClick={() => onTabChange('help')}
-                className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
-              >
-                <BookOpen className="w-5 h-5" />
-                Help Articles
-              </button>
-              <button
-                onClick={() => onTabChange('faq')}
-                className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 bg-white text-purple-600 shadow-xl scale-105"
-              >
-                <MessageSquare className="w-5 h-5" />
-                FAQ
-              </button>
-            </div>
-          )}
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
@@ -340,17 +451,7 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => {
-                  if (onContactClick) {
-                    onContactClick();
-                  } else if (onBack) {
-                    onBack();
-                    setTimeout(() => {
-                      const contactBtn = document.querySelector('[aria-label="Contact Us"]') as HTMLElement;
-                      contactBtn?.click();
-                    }, 100);
-                  }
-                }}
+                onClick={onShowContact}
                 className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center space-x-2"
               >
                 <Mail className="w-5 h-5" />
@@ -360,7 +461,8 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
           </div>
         </div>
       </section>
-    </PublicLayout>
+      </div>
+    </div>
   );
 };
 
