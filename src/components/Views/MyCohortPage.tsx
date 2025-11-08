@@ -194,46 +194,20 @@ const MyCohortPage: React.FC = () => {
         </h1>
         
         <p className="text-base text-gray-700 dark:text-gray-300">
-          You're learning on your own right now — and you're doing well.
-          But growth happens faster when you're not walking the journey alone.
+          Progress is easier when you're not doing it alone.
         </p>
         
-        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 space-y-1">
-          <li>Live weekly group sessions</li>
-          <li>Real discussion and shared learning</li>
-          <li>Accountability that keeps you progressing</li>
-          <li>A supportive environment where questions are welcome</li>
-        </ul>
-        
-        <p className="text-gray-700 dark:text-gray-300">
-          You're still in control — the Cohort just makes it easier to stay consistent.
+        <p className="text-base text-gray-700 dark:text-gray-300">
+          Learn alongside others, stay accountable, and get guidance as you progress.
         </p>
-
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-          <p className="text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Next Cohort Start Date:</span> January 2026 (UK Time)
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 mt-1">
-            <span className="font-medium">Sessions:</span> Tuesdays & Saturdays
-          </p>
-        </div>
 
         <a
-          href="https://wa.me/447359666711"
+          href="https://wa.me/447359666711?text=Hi%20team,%20I'd%20like%20to%20join%20the%20cohort.%20Can%20you%20help%20me%20get%20started?"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block px-6 py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition text-white font-medium"
         >
-          Join the Cohort
-        </a>
-
-        <a
-          href="https://wa.me/447359666711"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline mt-2"
-        >
-          Message Support
+          Request to Join Cohort
         </a>
       </div>
     </div>

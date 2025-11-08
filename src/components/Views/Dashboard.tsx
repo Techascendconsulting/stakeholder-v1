@@ -10,6 +10,8 @@ import { syncModuleProgressToPhases } from '../../utils/modulePhaseMapping';
 import { loadResumeState } from '../../services/resumeStore';
 import type { ResumeState } from '../../types/resume';
 import { useUserJourney } from '../../hooks/useUserJourney';
+import { getUserCohort } from '../../utils/cohortHelpers';
+import type { UserCohortInfo } from '../../types/cohorts';
 
 const Dashboard: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -28,6 +30,8 @@ const Dashboard: React.FC = () => {
   const [resumeState, setResumeState] = useState<ResumeState | null>(null);
   const [registeredDevice, setRegisteredDevice] = useState<string | null>(null);
   const [showSecurityCard, setShowSecurityCard] = useState(false);
+  const [cohortInfo, setCohortInfo] = useState<UserCohortInfo | null>(null);
+  const [cohortLoading, setCohortLoading] = useState(true);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -47,6 +51,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadDashboardData();
     loadSecurityHints();
+    loadCohortData();
     // Load resume state for "Continue where you left off"
     if (user?.id) {
       const state = loadResumeState(user.id);
@@ -55,6 +60,22 @@ const Dashboard: React.FC = () => {
       }
     }
   }, [user?.id]);
+
+  const loadCohortData = async () => {
+    if (!user?.id) {
+      setCohortLoading(false);
+      return;
+    }
+
+    try {
+      const data = await getUserCohort(user.id);
+      setCohortInfo(data);
+    } catch (error) {
+      console.error('Error loading cohort:', error);
+    } finally {
+      setCohortLoading(false);
+    }
+  };
 
   const loadDashboardData = async () => {
     if (!user?.id) {
@@ -243,6 +264,36 @@ const Dashboard: React.FC = () => {
                     Dismiss
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cohort Promotional Card - Only show if user is NOT in a cohort */}
+      {!cohortLoading && !cohortInfo && (
+        <div className="mb-6 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 dark:border-purple-700 p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+                <Target className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                  Want support while learning?
+                </h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                  Join a cohort and progress with others — you don't have to do this alone.
+                </p>
+                <a
+                  href="https://wa.me/447359666711?text=Hi%20team,%20I'd%20like%20to%20join%20the%20cohort.%20Can%20you%20help%20me%20get%20started?"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
+                >
+                  <span>Request to Join</span>
+                  <ChevronRight className="w-4 h-4" />
+                </a>
               </div>
             </div>
           </div>
