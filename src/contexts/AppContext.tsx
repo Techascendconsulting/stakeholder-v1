@@ -335,9 +335,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         // 🔒 SECURITY: EXPLICIT CHECKS - Only bypass for confirmed admins or existing users
         // DOUBLE CHECK: Admin flags must be explicitly TRUE (not null/undefined)
+        // Also check for hardcoded admin emails
         else if (userProfile?.is_admin === true || 
                  userProfile?.is_super_admin === true || 
-                 userProfile?.is_senior_admin === true) {
+                 userProfile?.is_senior_admin === true ||
+                 user?.email === 'admin@baworkxp.com' ||
+                 user?.email === 'techascendconsulting1@gmail.com') {
           console.log('✅ NAVIGATE: Admin confirmed, bypassing content locks');
           setLockMessage(null);
         }

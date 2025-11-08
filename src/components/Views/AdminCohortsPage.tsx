@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAdmin } from '../../contexts/AdminContext';
 import { 
   getAllCohorts, 
   createCohort, 
@@ -14,13 +15,14 @@ import {
   deleteCohortSession
 } from '../../utils/cohortHelpers';
 import type { Cohort, CohortStudent, CohortSession } from '../../types/cohorts';
-import { Users, Calendar, Plus, Edit2, Trash2, X, Search } from 'lucide-react';
+import { Users, Calendar, Plus, Edit2, Trash2, X, Search, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 type TabType = 'cohorts' | 'students' | 'sessions';
 
 const AdminCohortsPage: React.FC = () => {
   const { user } = useAuth();
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<TabType>('cohorts');
   const [loading, setLoading] = useState(false);
 
@@ -217,6 +219,31 @@ const AdminCohortsPage: React.FC = () => {
     u.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
     !cohortStudents.some(cs => cs.user_id === u.user_id)
   );
+
+  // Check admin access
+  if (adminLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Access Denied
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            You do not have permission to access the Cohort Manager. This area is restricted to administrators only.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
