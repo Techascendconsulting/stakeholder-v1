@@ -20,7 +20,9 @@ import {
   TrendingUp,
   MessageSquare,
   BarChart3,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
@@ -44,6 +46,7 @@ const LandingPage: React.FC = () => {
   const [showTermsOfService, setShowTermsOfService] = useState(false)
   const [showCookiePolicy, setShowCookiePolicy] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showFullExperience, setShowFullExperience] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -414,61 +417,85 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-lg text-gray-700 text-center mb-8 font-medium">
-              You do the same BA work as any employed BA:
-            </p>
-
-            <div className="grid md:grid-cols-2 gap-4 mb-8 text-base">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Interview stakeholders in virtual meetings</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Gather and document requirements</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Create process maps and workflows</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Write user stories with acceptance criteria</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Manage scope and handle changes</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Get AI coaching when you're stuck</span>
-              </div>
-            </div>
-
             <div className="bg-emerald-100 border-l-4 border-emerald-600 p-6 my-8 rounded-r-xl">
               <p className="text-xl font-bold text-emerald-900 mb-3">
                 This IS work experience.
               </p>
               <p className="text-lg text-emerald-800 leading-relaxed">
-                You're doing the actual BA job — same tasks, same deliverables, same problems to solve. The only difference? You're doing it from home, on your schedule, while keeping your current job. Not for a traditional employer (yet).
+                You're doing the actual BA job — same tasks, same deliverables, same problems to solve. The only difference? You're doing it from home, on your schedule, while keeping your current job.
               </p>
             </div>
 
-            <p className="text-xl text-gray-700 leading-relaxed mb-8">
-              When interviewers ask "Tell me about your experience..." you'll have real answers. Because you have real experience.
-            </p>
+            {/* Expandable Content */}
+            {showFullExperience && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                <p className="text-lg text-gray-700 text-center font-medium">
+                  You do the same BA work as any employed BA:
+                </p>
 
-            <div className="text-center">
+                <div className="grid md:grid-cols-2 gap-4 text-base">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Interview stakeholders in virtual meetings</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Gather and document requirements</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Create process maps and workflows</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Write user stories with acceptance criteria</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Manage scope and handle changes</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Get AI coaching when you're stuck</span>
+                  </div>
+                </div>
+
+                <p className="text-xl text-gray-700 leading-relaxed">
+                  When interviewers ask "Tell me about your experience..." you'll have real answers. Because you have real experience.
+                </p>
+              </div>
+            )}
+
+            <div className="text-center mt-8">
               <button
-                onClick={() => setShowAuth(true)}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+                onClick={() => setShowFullExperience(!showFullExperience)}
+                className="inline-flex items-center gap-2 px-6 py-3 text-emerald-700 font-semibold hover:text-emerald-800 transition-all mb-6"
               >
-                Start Building Experience Now
-                <ArrowRight className="w-5 h-5" />
+                {showFullExperience ? (
+                  <>
+                    Show Less
+                    <ChevronUp className="w-5 h-5" />
+                  </>
+                ) : (
+                  <>
+                    Learn More About The Experience
+                    <ChevronDown className="w-5 h-5" />
+                  </>
+                )}
               </button>
-              <p className="text-sm text-gray-600 mt-4">
-                No job required. No permission needed. Just start doing the work.
-              </p>
+
+              <div>
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+                >
+                  Start Building Experience Now
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <p className="text-sm text-gray-600 mt-4">
+                  No job required. No permission needed. Just start doing the work.
+                </p>
+              </div>
             </div>
           </div>
         </div>
