@@ -239,7 +239,7 @@ const LandingPage: React.FC = () => {
         <div className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl z-10 animate-pulse-slow"></div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[600px]">
             {/* Left: Text Content */}
             <div className="space-y-6">
               {/* Problem Badge */}
@@ -311,7 +311,7 @@ const LandingPage: React.FC = () => {
             </div>
             
             {/* Right: Meeting Preview - More Impressive Visual */}
-            <div className="relative">
+            <div className="relative flex items-center justify-center">
               <MeetingPreview />
             </div>
           </div>
