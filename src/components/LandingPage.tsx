@@ -135,6 +135,18 @@ const LandingPage: React.FC = () => {
                 Home
               </button>
               <button 
+                onClick={() => setShowRequestAccess(true)}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => setShowRequestAccess(true)}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
+              </button>
+              <button 
                 onClick={() => setShowFAQ(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
@@ -144,7 +156,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => setShowContact(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
-                Contact Us
+                Contact
               </button>
             </nav>
 
@@ -184,9 +196,22 @@ const LandingPage: React.FC = () => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-800 py-4 space-y-4">
               <button 
+                onClick={() => setMobileMenuOpen(false)}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Home
+              </button>
+              <button 
+                onClick={() => { setShowRequestAccess(true); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => { setShowRequestAccess(true); setMobileMenuOpen(false); }}
+                className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
               </button>
               <button 
                 onClick={() => { setShowFAQ(true); setMobileMenuOpen(false); }}
@@ -198,9 +223,9 @@ const LandingPage: React.FC = () => {
                 onClick={() => { setShowContact(true); setMobileMenuOpen(false); }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
-                Contact Us
+                Contact
               </button>
-              <div className="pt-4 space-y-2">
+              <div className="pt-4 border-t border-gray-700 space-y-2">
                 <button
                   onClick={() => { setShowAuth(true); setMobileMenuOpen(false); }}
                   className="w-full px-4 py-2 text-white hover:text-gray-200 font-medium transition-colors text-left"
@@ -328,59 +353,106 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* The Painful Reality - Emotional Storytelling Section */}
-      <section className="py-20 bg-white">
+      {/* The Solution - Breaking the Catch-22 */}
+      <section className="py-20 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-              You've spent months learning.<br />But you still can't get hired.
+              You can't get experience without a job?<br />
+              <span className="text-emerald-600">Actually, you can.</span>
             </h2>
           </div>
 
           <div className="prose prose-lg max-w-none">
-            <p className="text-xl text-gray-700 leading-relaxed mb-6">
-              You've watched the videos. Done the courses. Read the books. You understand what a Business Analyst does. You know about requirements gathering, process mapping, stakeholder management.
+            <p className="text-xl text-gray-700 leading-relaxed mb-8">
+              Here's what everyone misses: BA work doesn't require an employer's permission. You just need organizations, stakeholders, and projects.
             </p>
 
-            <p className="text-xl text-gray-700 leading-relaxed mb-6">
-              But you've never actually <span className="font-bold text-gray-900">done</span> the work.
+            {/* Virtual Organizations Visual */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {/* Card 1: Join Organizations */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Join Virtual Companies</h3>
+                <p className="text-sm text-gray-600 text-center">Get employed virtually at realistic organizations with real business challenges</p>
+              </div>
+
+              {/* Card 2: Real Stakeholders */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Meet Your Stakeholders</h3>
+                <p className="text-sm text-gray-600 text-center">Interview department heads, product managers, and end users with unique needs</p>
+              </div>
+
+              {/* Card 3: Complex Projects */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Solve Complex Projects</h3>
+                <p className="text-sm text-gray-600 text-center">Work on enterprise-level projects with AI guidance every step of the way</p>
+              </div>
+            </div>
+
+            <p className="text-lg text-gray-700 text-center mb-8 font-medium">
+              You do the same BA work as any employed BA:
             </p>
 
-            <p className="text-xl text-gray-700 leading-relaxed mb-6">
-              You apply to jobs. Nothing. Or worse — you get the interview. They ask: <span className="italic">"Tell me about a time you dealt with conflicting stakeholder requirements..."</span>
-            </p>
+            <div className="grid md:grid-cols-2 gap-4 mb-8 text-base">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Interview stakeholders in virtual meetings</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Gather and document requirements</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Create process maps and workflows</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Write user stories with acceptance criteria</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Manage scope and handle changes</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                <span className="text-gray-700">Get AI coaching when you're stuck</span>
+              </div>
+            </div>
 
-            <p className="text-xl text-gray-700 leading-relaxed mb-6">
-              Your mind goes blank. You haven't. You've only read about it.
-            </p>
-
-            <div className="bg-red-50 border-l-4 border-red-500 p-6 my-8 rounded-r-xl">
-              <p className="text-xl font-bold text-red-900 mb-2">
-                The Catch-22:
+            <div className="bg-emerald-100 border-l-4 border-emerald-600 p-6 my-8 rounded-r-xl">
+              <p className="text-xl font-bold text-emerald-900 mb-3">
+                This IS work experience.
               </p>
-              <p className="text-lg text-red-800 leading-relaxed">
-                You can't get a BA job without experience. But you can't get experience without a job. Every job posting wants "2+ years experience." Every interview asks for real examples you don't have.
+              <p className="text-lg text-emerald-800 leading-relaxed">
+                You're doing the actual BA job — same tasks, same deliverables, same problems to solve. The only difference? You're doing it from home, on your schedule, while keeping your current job. Not for a traditional employer (yet).
               </p>
             </div>
 
             <p className="text-xl text-gray-700 leading-relaxed mb-8">
-              Meanwhile, your certificates sit on your resume, proving you <span className="font-bold">learned</span> — but not that you can <span className="font-bold">do</span>. And employers care about what you can do.
+              When interviewers ask "Tell me about your experience..." you'll have real answers. Because you have real experience.
             </p>
 
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 mb-4">
-                This is the problem BA WorkXP solves.
-              </p>
-              <p className="text-lg text-gray-600 mb-8">
-                We give you the experience before you need it.
-              </p>
               <button
                 onClick={() => setShowAuth(true)}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
               >
-                Start Practicing Free
+                Start Building Experience Now
                 <ArrowRight className="w-5 h-5" />
               </button>
+              <p className="text-sm text-gray-600 mt-4">
+                No job required. No permission needed. Just start doing the work.
+              </p>
             </div>
           </div>
         </div>
