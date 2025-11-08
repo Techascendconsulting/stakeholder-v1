@@ -12,14 +12,15 @@ Before testing, you **MUST** run the SQL migration in Supabase:
 
 ### Steps:
 1. Go to Supabase Dashboard → SQL Editor
-2. Copy the entire contents of: `supabase/migrations/20250108000001_cohorts_complete_setup.sql`
+2. Copy the entire contents of: `supabase/migrations/20250108000002_cohorts_clean_setup.sql`
 3. Paste and click **Run**
-4. Verify success: Should see "✅ Cohorts complete setup migration applied successfully"
+4. Verify success: Should see "✅ Cohorts clean setup migration applied successfully (using cohort_live_sessions)"
 
 ### What the Migration Does:
 - Creates `cohorts` table (id, name, description, coach_user_id, status)
 - Creates `cohort_students` junction table (cohort_id, user_id, role, joined_at)
-- Creates `cohort_sessions` table (id, cohort_id, starts_at, duration_minutes, meeting_link, topic)
+- Creates `cohort_live_sessions` table (id, cohort_id, starts_at, duration_minutes, meeting_link, topic)
+- **Uses `cohort_live_sessions` to avoid conflicts with any existing `cohort_sessions` table**
 - Sets up RLS policies (authenticated read, admin/coach write)
 - Seeds test cohort: **"January BA WorkXP Cohort"**
 - Assigns Joy (d417f9f5-2e1f-41b3-8273-3111996dbdb4) as coach
@@ -122,7 +123,7 @@ After running migration, verify in Supabase Dashboard → Table Editor:
 - user_id: d417f9f5-2e1f-41b3-8273-3111996dbdb4
 - role: coach
 
-### Check `cohort_sessions` table:
+### Check `cohort_live_sessions` table:
 - Should have 1 row
 - cohort_id: b6904011-acaf-49e5-ac43-51b77bd32d63
 - starts_at: [now + 3 days]
@@ -172,7 +173,7 @@ role text CHECK (student|coach)
 joined_at timestamptz
 PRIMARY KEY (cohort_id, user_id)
 
--- cohort_sessions
+-- cohort_live_sessions (renamed to avoid conflicts)
 id uuid PK
 cohort_id uuid FK → cohorts(id) ON DELETE CASCADE
 starts_at timestamptz NOT NULL
@@ -203,7 +204,8 @@ After successful staging testing and approval:
 ## Files Modified/Created
 
 ### New Files:
-- `supabase/migrations/20250108000001_cohorts_complete_setup.sql`
+- `supabase/migrations/20250108000002_cohorts_clean_setup.sql` (CURRENT - use this one!)
+- ~~`supabase/migrations/20250108000001_cohorts_complete_setup.sql`~~ (deprecated - had conflicts)
 
 ### Modified Files:
 - `src/components/Views/MyCohortPage.tsx` (updated for new schema)
