@@ -28,6 +28,7 @@ import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
 import PricingView from './Views/PricingView'
+import FeaturesView from './Views/FeaturesView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
@@ -43,6 +44,7 @@ const LandingPage: React.FC = () => {
   const [showContact, setShowContact] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
   const [showPricing, setShowPricing] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
@@ -145,10 +147,7 @@ const LandingPage: React.FC = () => {
                 Home
               </button>
               <button 
-                onClick={() => {
-                  const section = document.querySelector('[data-section="how-it-works"]');
-                  section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
+                onClick={() => setShowFeatures(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Features
@@ -220,8 +219,7 @@ const LandingPage: React.FC = () => {
               <button 
                 onClick={() => { 
                   setMobileMenuOpen(false);
-                  const section = document.querySelector('[data-section="how-it-works"]');
-                  section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setShowFeatures(true);
                 }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
@@ -749,93 +747,75 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works - Step by Step */}
-      <section data-section="how-it-works" className={`py-24 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 backdrop-blur-sm rounded-full border border-blue-500/30 mb-6">
-              <Rocket className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">Simple Process</span>
-            </div>
-            
-            <h2 className={`text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              How BA WorkXP Works
+      {/* How It Works - Minimal Teaser */}
+      <section className={`py-16 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Simple. Effective. Practical.
             </h2>
-            <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              Four simple steps to go from uncertain to interview-ready
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Three steps to interview-ready
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8 relative">
-            {/* Connecting Line */}
-            <div className="hidden md:block absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 opacity-20"></div>
-
-            {/* Step 1 */}
-            <div className="relative">
-              <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border-2 border-gray-200'} shadow-xl hover:shadow-2xl transition-all`}>
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 mx-auto relative z-10">
-                  <span className="text-2xl font-bold text-white">1</span>
-                </div>
-                <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Learn or Review</h3>
-                <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  New to BA? Start with our BA Academy to learn fundamentals. Already trained? Jump straight to projects
-                </p>
+          {/* 3 Icon Steps */}
+          <div className="grid grid-cols-3 gap-6 mb-10">
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'} flex items-center justify-center`}>
+                <Target className={`w-8 h-8 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
               </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Choose Project
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                Pick realistic scenario
+              </p>
             </div>
 
-            {/* Step 2 */}
-            <div className="relative">
-              <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border-2 border-gray-200'} shadow-xl hover:shadow-2xl transition-all`}>
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-6 mx-auto relative z-10">
-                  <span className="text-2xl font-bold text-white">2</span>
-                </div>
-                <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Choose Projects</h3>
-                <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Select from 5+ realistic projects and start having stakeholder conversations with AI coaching
-                </p>
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-blue-900/50' : 'bg-blue-100'} flex items-center justify-center`}>
+                <MessageSquare className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
               </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Do the Work
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                Interview stakeholders
+              </p>
             </div>
 
-            {/* Step 3 */}
-            <div className="relative">
-              <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border-2 border-gray-200'} shadow-xl hover:shadow-2xl transition-all`}>
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-6 mx-auto relative z-10">
-                  <span className="text-2xl font-bold text-white">3</span>
-                </div>
-                <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Create Deliverables</h3>
-                <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Build process maps, user stories, requirements docs — actual work products for your portfolio
-                </p>
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'} flex items-center justify-center`}>
+                <Award className={`w-8 h-8 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="relative">
-              <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border-2 border-gray-200'} shadow-xl hover:shadow-2xl transition-all`}>
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-6 mx-auto relative z-10">
-                  <span className="text-2xl font-bold text-white">4</span>
-                </div>
-                <h3 className={`text-xl font-bold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Land the Job</h3>
-                <p className={`text-center leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Walk into interviews confident with real examples and a portfolio that proves you can do the work
-                </p>
-              </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Get Hired
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                With real portfolio
+              </p>
             </div>
           </div>
 
-          {/* CTA with Navigation */}
-          <div className="mt-16 text-center">
-            <button
-              onClick={() => setShowAuth(true)}
-              className="group px-10 py-5 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white text-lg font-bold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105 mb-6"
-            >
-              <span className="flex items-center justify-center gap-2">
-                Start Your First Project
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              Or <button onClick={() => setShowRequestAccess(true)} className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">watch a demo first</button>
+          {/* CTA */}
+          <div className="text-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+              <button
+                onClick={() => setShowAuth(true)}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+              >
+                Start Free
+              </button>
+              <button
+                onClick={() => setShowFeatures(true)}
+                className={`px-8 py-3 font-semibold rounded-xl border-2 transition-all ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              >
+                See How It Works →
+              </button>
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+              New to BA? Start with fundamentals. Already trained? Jump to projects.
             </p>
           </div>
         </div>
@@ -943,14 +923,14 @@ const LandingPage: React.FC = () => {
               </button>
               
               <button
-                onClick={() => setShowRequestAccess(true)}
+                onClick={() => setShowFeatures(true)}
                 className={`px-8 py-4 rounded-xl font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
                   isDark 
                     ? 'border-purple-500/50 text-white hover:bg-purple-900/20 hover:border-purple-400' 
                     : 'border-purple-500/30 text-gray-900 hover:bg-purple-50 hover:border-purple-500'
                 }`}
               >
-                <span>Learn more</span>
+                <span>See All Features</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -1166,6 +1146,7 @@ const LandingPage: React.FC = () => {
 
       {/* Modals */}
       {showPricing && <PricingView onClose={() => setShowPricing(false)} onStartNow={() => { setShowPricing(false); setShowAuth(true); }} />}
+      {showFeatures && <FeaturesView onClose={() => setShowFeatures(false)} onStartNow={() => { setShowFeatures(false); setShowAuth(true); }} />}
       {showRequestAccess && (
         <RequestAccessModal onClose={() => setShowRequestAccess(false)} />
       )}
