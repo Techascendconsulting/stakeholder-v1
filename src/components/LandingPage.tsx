@@ -331,75 +331,124 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Second Section */}
-      <section className="py-16">
+      {/* Second Section - Enhanced with Beautiful Design */}
+      <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2">
-            {/* Left: Meeting Preview with Lavender Background */}
-            <div className={`py-12 px-6 flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-[#C5CAE9]'} rounded-3xl`}>
-              <MeetingPreview />
-            </div>
-            
-            {/* Right: Text Content with White Background */}
-            <div className={`py-12 px-6 flex items-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="space-y-6">
-              <div>
-                <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Platform
-                </p>
-                <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Be the Business Analyst — inside a real project environment, with guidance every step of the way.
-                </h2>
-                <p className={`text-lg font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  You learn the role by performing it:
-                </p>
-                <ul className={`space-y-2 text-base ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Interacting with stakeholders</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Clarifying requirements</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Exploring business problems</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Participating in Scrum ceremonies</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Creating real deliverables</span>
-                  </li>
-                </ul>
-                <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  And you're guided and corrected as you go — so you know you're doing it right.
-                </p>
+          <div className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-2xl">
+            {/* Left: Meeting Preview with Enhanced Gradient Background */}
+            <div className={`relative py-16 px-8 flex items-center justify-center ${isDark ? 'bg-gradient-to-br from-gray-900 via-purple-900/30 to-gray-900' : 'bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100'}`}>
+              {/* Decorative elements */}
+              <div className="absolute top-10 right-10 w-32 h-32 bg-purple-400/20 rounded-full blur-3xl animate-pulse-slow"></div>
+              <div className="absolute bottom-10 left-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-2xl animate-float-slow"></div>
+              
+              {/* Badge */}
+              <div className="absolute top-6 left-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-purple-200">
+                  <Play className="w-3 h-3 text-purple-600" />
+                  <span className="text-xs font-bold text-purple-900">Live Preview</span>
+                </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button
-                  onClick={() => setShowAuth(true)}
-                  className="px-8 py-3.5 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all transform hover:-translate-y-0.5"
-                >
-                  Start Now
-                </button>
-                
-                <button
-                  onClick={() => setShowRequestAccess(true)}
-                  className={`px-8 py-3.5 rounded-xl font-semibold border-2 transition-all flex items-center gap-2 ${
-                    isDark 
-                      ? 'border-purple-500/50 text-white hover:bg-purple-900/20' 
-                      : 'border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-purple-400'
-                  }`}
-                >
-                  <span>Watch demo</span>
-                  <Play className="w-4 h-4" />
-                </button>
+              <div className="relative z-10">
+                <MeetingPreview />
               </div>
+            </div>
+            
+            {/* Right: Text Content with Enhanced Styling */}
+            <div className={`py-16 px-8 lg:px-12 flex items-center ${isDark ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50'}`}>
+              <div className="space-y-6 w-full">
+                {/* Platform Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-full border border-purple-200 dark:border-purple-700">
+                  <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="text-sm font-bold text-purple-900 dark:text-purple-100">The Platform</span>
+                </div>
+                
+                {/* Heading */}
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 dark:from-white dark:via-purple-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                  Be the Business Analyst — inside a real project environment, with guidance every step of the way.
+                </h2>
+                
+                {/* Subheading */}
+                <p className={`text-lg font-semibold ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>
+                  You learn the role by performing it:
+                </p>
+                
+                {/* Enhanced List with Checkmarks */}
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors`}>
+                      Interacting with stakeholders
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors`}>
+                      Clarifying requirements
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors`}>
+                      Exploring business problems
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors`}>
+                      Participating in Scrum ceremonies
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors`}>
+                      Creating real deliverables
+                    </span>
+                  </li>
+                </ul>
+                
+                {/* Bottom text with icon */}
+                <div className={`flex items-start gap-3 p-4 rounded-xl ${isDark ? 'bg-purple-900/20' : 'bg-purple-50'} border-l-4 border-purple-500`}>
+                  <Award className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <p className={`text-base font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    And you're guided and corrected as you go — so you know you're doing it right.
+                  </p>
+                </div>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="group px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      Start Now
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowRequestAccess(true)}
+                    className={`px-8 py-4 rounded-xl font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
+                      isDark 
+                        ? 'border-purple-500/50 text-white hover:bg-purple-900/30 hover:border-purple-400' 
+                        : 'border-purple-300 text-gray-900 hover:bg-purple-50 hover:border-purple-500'
+                    }`}
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Watch demo</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
