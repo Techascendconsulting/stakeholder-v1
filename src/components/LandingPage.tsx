@@ -318,85 +318,85 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* The Problem - Consistent Dark Section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070')] opacity-[0.03] bg-cover bg-center"></div>
+      {/* The Problem - Light Purple Section with Better Contrast */}
+      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070')] opacity-[0.02] bg-cover bg-center"></div>
         
         <div className="relative max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 backdrop-blur-sm rounded-full border border-red-500/40 mb-6">
-              <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
-              <span className="text-sm font-semibold text-red-300">The Challenge</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/10 backdrop-blur-sm rounded-full border border-purple-600/30 mb-6">
+              <div className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></div>
+              <span className="text-sm font-semibold text-purple-700">The Challenge</span>
             </div>
             
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-white">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
               The Interview Questions You Can't Answer Yet
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               You've studied. You know the theory. But when interviewers ask behavioral questions, you don't have real examples to share...
             </p>
           </div>
 
           {/* Interview Questions Grid */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <div className="bg-gray-800/50 backdrop-blur-sm border-2 border-red-500/30 rounded-xl p-6 hover:border-red-500/50 transition-all shadow-lg">
+            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-white mb-2">
+                  <p className="text-lg font-semibold text-gray-900 mb-2">
                     "Tell me about a time you dealt with a difficult stakeholder..."
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-gray-700">
                     You haven't. You've only read about it. Your mind goes blank.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border-2 border-red-500/30 rounded-xl p-6 hover:border-red-500/50 transition-all shadow-lg">
+            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-white mb-2">
+                  <p className="text-lg font-semibold text-gray-900 mb-2">
                     "Can you show me examples of requirements you've documented?"
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-gray-700">
                     You don't have any. Just course exercises that don't feel real.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border-2 border-red-500/30 rounded-xl p-6 hover:border-red-500/50 transition-all shadow-lg">
+            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <Target className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Target className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-white mb-2">
+                  <p className="text-lg font-semibold text-gray-900 mb-2">
                     "Walk me through how you'd analyze a business process..."
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-gray-700">
                     Theory is different from doing. You stumble through your answer.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border-2 border-red-500/30 rounded-xl p-6 hover:border-red-500/50 transition-all shadow-lg">
+            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-white mb-2">
+                  <p className="text-lg font-semibold text-gray-900 mb-2">
                     "How do you handle conflicting requirements from different stakeholders?"
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-gray-700">
                     You've read about it. But you've never actually been in that situation.
                   </p>
                 </div>
@@ -405,17 +405,17 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* The Insight */}
-          <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border-l-4 border-red-500 rounded-xl p-8 backdrop-blur-sm shadow-xl">
+          <div className="bg-gradient-to-br from-purple-100 to-indigo-100 border-l-4 border-purple-600 rounded-xl p-8 shadow-xl">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                <Award className="w-8 h-8 text-red-400" />
+              <div className="w-16 h-16 rounded-2xl bg-purple-200 flex items-center justify-center flex-shrink-0">
+                <Award className="w-8 h-8 text-purple-700" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white mb-3">
+                <p className="text-2xl font-bold text-gray-900 mb-3">
                   Certificates prove you learned. Experience proves you can do.
                 </p>
-                <p className="text-lg text-gray-300 leading-relaxed">
-                  Employers want evidence you can handle real stakeholders, navigate ambiguity, and deliver actual work products. They want stories. They want examples. They want confidence. <span className="font-semibold text-red-300">That's what BA WorkXP gives you.</span>
+                <p className="text-lg text-gray-800 leading-relaxed">
+                  Employers want evidence you can handle real stakeholders, navigate ambiguity, and deliver actual work products. They want stories. They want examples. They want confidence. <span className="font-semibold text-purple-700">That's what BA WorkXP gives you.</span>
                 </p>
               </div>
             </div>
@@ -1008,19 +1008,19 @@ const LandingPage: React.FC = () => {
             </table>
           </div>
 
-          {/* Bottom Stats */}
+          {/* Bottom Stats - Fixed Readability */}
           <div className="grid md:grid-cols-3 gap-6 mt-16">
-            <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-2xl p-8 border border-emerald-500/30 text-center">
-              <div className="text-5xl font-bold text-emerald-400 mb-2">90%</div>
-              <p className="text-white font-semibold">Less expensive than bootcamps</p>
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 border-2 border-emerald-200 text-center shadow-lg">
+              <div className="text-5xl font-bold text-emerald-600 mb-3">90%</div>
+              <p className="text-gray-900 font-bold text-lg">Less expensive than bootcamps</p>
             </div>
-            <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-2xl p-8 border border-blue-500/30 text-center">
-              <div className="text-5xl font-bold text-blue-400 mb-2">5x</div>
-              <p className="text-white font-semibold">More hands-on practice than courses</p>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border-2 border-blue-200 text-center shadow-lg">
+              <div className="text-5xl font-bold text-blue-600 mb-3">5x</div>
+              <p className="text-gray-900 font-bold text-lg">More hands-on practice than courses</p>
             </div>
-            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl p-8 border border-purple-500/30 text-center">
-              <div className="text-5xl font-bold text-purple-400 mb-2">30+</div>
-              <p className="text-white font-semibold">Practice sessions to build confidence</p>
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200 text-center shadow-lg">
+              <div className="text-5xl font-bold text-purple-600 mb-3">30+</div>
+              <p className="text-gray-900 font-bold text-lg">Practice sessions to build confidence</p>
             </div>
           </div>
 
