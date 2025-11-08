@@ -1,37 +1,148 @@
-import React from 'react'
-import { X, CheckCircle, ArrowRight, Briefcase, MessageSquare, Users, Target, BarChart3, FileText, Rocket, Award, BookOpen, TrendingUp, Play } from 'lucide-react'
+import React, { useState } from 'react'
+import { CheckCircle, ArrowRight, Briefcase, MessageSquare, Users, Target, BarChart3, FileText, Rocket, Award, BookOpen, TrendingUp, Play, GraduationCap, Moon, Sun, Menu, X } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import ConversationTypingPreview from '../ConversationTypingPreview'
 
 interface FeaturesViewProps {
   onClose: () => void
   onStartNow?: () => void
+  onShowPricing?: () => void
+  onShowFAQ?: () => void
+  onShowContact?: () => void
 }
 
-const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow }) => {
-  const { resolvedTheme } = useTheme()
+const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShowPricing, onShowFAQ, onShowContact }) => {
+  const { resolvedTheme, toggleTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 backdrop-blur-sm">
-      <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-        {/* Header */}
-        <header className={`sticky top-0 z-10 ${isDark ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-sm border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Features
-            </h1>
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Navigation - Same as Landing Page */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={onClose}>
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-white">BA WorkXP</span>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <button 
+                onClick={onClose}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Home
+              </button>
+              <button 
+                className="text-white font-medium border-b-2 border-purple-500"
+              >
+                Features
+              </button>
+              <button 
+                onClick={onShowPricing}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
+              </button>
+              <button 
+                onClick={onShowFAQ}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                FAQ
+              </button>
+              <button 
+                onClick={onShowContact}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Contact
+              </button>
+            </nav>
+
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+                aria-label="Toggle theme"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              <button
+                onClick={onStartNow}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+              >
+                Start Free
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
             <button
-              onClick={onClose}
-              className={`p-2 rounded-lg ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-white"
             >
-              <X className={`w-6 h-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-        </header>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-800">
+              <nav className="flex flex-col space-y-4">
+                <button 
+                  onClick={onClose}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Home
+                </button>
+                <button 
+                  className="text-left text-white font-medium"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={onShowPricing}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Pricing
+                </button>
+                <button 
+                  onClick={onShowFAQ}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  FAQ
+                </button>
+                <button 
+                  onClick={onShowContact}
+                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  Contact
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 text-left text-gray-300 hover:text-white font-medium transition-colors"
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
+                <button
+                  onClick={onStartNow}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-center"
+                >
+                  Start Free
+                </button>
+              </nav>
+            </div>
+          )}
+        </div>
+      </header>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-7xl mx-auto px-6 pt-32 pb-16">
           {/* Hero */}
           <div className="text-center mb-20">
             <h2 className={`text-4xl sm:text-5xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -386,7 +497,6 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow }) => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }
