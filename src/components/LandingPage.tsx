@@ -47,6 +47,8 @@ const LandingPage: React.FC = () => {
   const [showCookiePolicy, setShowCookiePolicy] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showFullExperience, setShowFullExperience] = useState(false)
+  const [showWhatYouBuild, setShowWhatYouBuild] = useState(false)
+  const [showPlatformFeatures, setShowPlatformFeatures] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -501,42 +503,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* The Solution - Short & Punchy with Learn More */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 backdrop-blur-sm rounded-full shadow-lg mb-6 border border-emerald-500/40">
-            <CheckCircle className="w-4 h-4 text-emerald-600" />
-            <span className="text-sm font-semibold text-emerald-700">The Solution</span>
-          </div>
-          
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
-            Practice the work. Build the portfolio. Get hired.
-          </h2>
-          
-          <p className="text-xl text-gray-700 leading-relaxed mb-8 max-w-3xl mx-auto">
-            BA WorkXP lets you perform the actual work of a Business Analyst before you need a job. Interview AI stakeholders. Write requirements. Build process maps. Create a portfolio of real deliverables.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <button
-              onClick={() => setShowAuth(true)}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
-            >
-              Start Practicing Free
-            </button>
-            <button
-              onClick={() => setShowRequestAccess(true)}
-              className="px-8 py-4 bg-white text-purple-700 font-bold rounded-xl border-2 border-purple-300 hover:bg-purple-50 transition-all"
-            >
-              Learn More →
-            </button>
-          </div>
-
-          <p className="text-sm text-gray-600">
-            When interviewers ask "Tell me about a time..." — you'll have real answers.
-          </p>
-        </div>
-      </section>
 
       {/* What You'll Build - Portfolio Outcomes */}
       <section className={`py-24 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
@@ -555,90 +521,95 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Show 3 items initially, 6 when expanded */}
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Portfolio Item 1 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <MessageSquare className="w-7 h-7 text-white" />
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Stakeholder Interview Transcripts</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                30+ practice sessions with AI stakeholders. Interview transcripts showing how you elicit requirements, handle pushback, and navigate ambiguity.
+              <h3 className="text-xl font-bold text-white mb-2">Interview Transcripts</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                30+ AI stakeholder sessions with real examples
               </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-blue-400">Interview Answer: Ready</p>
-              </div>
             </div>
 
             {/* Portfolio Item 2 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-purple-500/50 transition-all hover:shadow-2xl hover:shadow-purple-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-7 h-7 text-white" />
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all hover:shadow-2xl hover:shadow-purple-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Process Maps & Flow Diagrams</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                As-Is and To-Be process maps for multiple business processes. Visual documentation of workflows, pain points, and improvements.
+              <h3 className="text-xl font-bold text-white mb-2">Process Maps</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                As-Is and To-Be workflows with visual documentation
               </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-purple-400">Portfolio Piece: Deliverable</p>
-              </div>
             </div>
 
             {/* Portfolio Item 3 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-emerald-500/50 transition-all hover:shadow-2xl hover:shadow-emerald-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <FileText className="w-7 h-7 text-white" />
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-emerald-500/50 transition-all hover:shadow-2xl hover:shadow-emerald-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <FileText className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">User Stories & Acceptance Criteria</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                50+ user stories written across real projects. Stories with proper format, acceptance criteria, and edge cases considered.
+              <h3 className="text-xl font-bold text-white mb-2">User Stories</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                50+ stories with proper acceptance criteria
               </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-emerald-400">Portfolio Piece: Deliverable</p>
-              </div>
             </div>
 
-            {/* Portfolio Item 4 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-orange-500/50 transition-all hover:shadow-2xl hover:shadow-orange-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Target className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Requirements Documents</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                Functional and non-functional requirements, business rules, and constraints. Structured documentation employers recognize.
-              </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-orange-400">Portfolio Piece: Deliverable</p>
-              </div>
-            </div>
+            {/* Expandable items */}
+            {showWhatYouBuild && (
+              <>
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-orange-500/50 transition-all hover:shadow-2xl hover:shadow-orange-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Requirements Docs</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Functional & non-functional requirements
+                  </p>
+                </div>
 
-            {/* Portfolio Item 5 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-cyan-500/50 transition-all hover:shadow-2xl hover:shadow-cyan-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Users className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Scrum Ceremony Experience</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                Participated in Sprint Planning, Refinement, and Retrospectives. Know what to do and say as the BA in Agile ceremonies.
-              </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-cyan-400">Interview Answer: Ready</p>
-              </div>
-            </div>
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-cyan-500/50 transition-all hover:shadow-2xl hover:shadow-cyan-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Scrum Ceremonies</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Sprint Planning, Refinement & Retrospectives
+                  </p>
+                </div>
 
-            {/* Portfolio Item 6 */}
-            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-pink-500/50 transition-all hover:shadow-2xl hover:shadow-pink-500/20 transform hover:-translate-y-2">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Rocket className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Project Context & Business Cases</h3>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                Work across 5+ realistic projects. Understand context, identify problems, and articulate business value — skills employers want.
-              </p>
-              <div className="pt-4 border-t border-gray-700">
-                <p className="text-sm font-semibold text-pink-400">Interview Answer: Ready</p>
-              </div>
-            </div>
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-pink-500/50 transition-all hover:shadow-2xl hover:shadow-pink-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Rocket className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Business Cases</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    5+ projects with context and business value
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* View All Button */}
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setShowWhatYouBuild(!showWhatYouBuild)}
+              className="inline-flex items-center gap-2 px-6 py-3 text-purple-400 font-semibold hover:text-purple-300 transition-all"
+            >
+              {showWhatYouBuild ? (
+                <>
+                  Show Less
+                  <ChevronUp className="w-5 h-5" />
+                </>
+              ) : (
+                <>
+                  See All Deliverables
+                  <ChevronDown className="w-5 h-5" />
+                </>
+              )}
+            </button>
           </div>
 
           {/* Bottom CTA */}
