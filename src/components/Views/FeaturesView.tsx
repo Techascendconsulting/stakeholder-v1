@@ -236,20 +236,47 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
               </div>
               
               <h2 className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                What You'll Build Inside BA WorkXP
+                Build Your Portfolio Through the BA Lifecycle
               </h2>
               <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
-                A portfolio of real BA work products you can show employers — proving you can do the job, not just talk about it
+                Follow the complete BA workflow from project discovery to delivery — creating real deliverables employers want to see
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Portfolio Items with Images */}
+              {/* Portfolio Items with Images - Reordered to follow BA workflow */}
+              
+              {/* 1. Project Context & Business Cases */}
+              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-pink-500/20 hover:border-pink-500/50">
+                <div className="h-48 overflow-hidden bg-gradient-to-br from-pink-900 to-purple-900">
+                  <img 
+                    src="/images/collaborate1.jpg" 
+                    alt="Business Cases" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
+                  />
+                </div>
+                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <Rocket className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Project Context & Business Cases</h3>
+                  </div>
+                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
+                    Work across 5+ realistic projects. Understand context, identify problems, and articulate business value — skills employers want.
+                  </p>
+                  <div className="pt-4 border-t border-gray-700">
+                    <p className="text-sm font-semibold text-pink-400">✓ Interview Answer: Ready</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Requirements Elicitation - Stakeholder Interviews */}
               <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-blue-500/20 hover:border-blue-500/50">
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-blue-900 to-indigo-900">
                   <img 
                     src="/images/collaborate1.jpg" 
-                    alt="Stakeholder Conversations" 
+                    alt="Requirements Elicitation" 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
                   />
                 </div>
@@ -258,10 +285,10 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
                       <MessageSquare className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-white">Stakeholder Interview Transcripts</h3>
+                    <h3 className="text-xl font-bold text-white">Requirements Elicitation Transcripts</h3>
                   </div>
                   <p className="text-gray-400 mb-4 leading-relaxed text-sm">
-                    30+ practice sessions with AI stakeholders. Interview transcripts showing how you elicit requirements, handle pushback, and navigate ambiguity.
+                    30+ stakeholder interviews showing mastery of elicitation techniques. Demonstrate how you gather requirements, handle conflicting needs, and probe for hidden details.
                   </p>
                   <div className="pt-4 border-t border-gray-700">
                     <p className="text-sm font-semibold text-blue-400">✓ Interview Answer: Ready</p>
@@ -269,6 +296,7 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                 </div>
               </div>
 
+              {/* 3. Process Maps & Flow Diagrams */}
               <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-purple-500/20 hover:border-purple-500/50">
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-purple-900 to-pink-900">
                   <img 
@@ -293,30 +321,7 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                 </div>
               </div>
 
-              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-emerald-500/20 hover:border-emerald-500/50">
-                <div className="h-48 overflow-hidden bg-gradient-to-br from-emerald-900 to-green-900">
-                  <img 
-                    src="/images/scrum1.jpg" 
-                    alt="User Stories" 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
-                  />
-                </div>
-                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
-                      <FileText className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">User Stories & Acceptance Criteria</h3>
-                  </div>
-                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
-                    50+ user stories written across real projects. Stories with proper format, acceptance criteria, and edge cases considered.
-                  </p>
-                  <div className="pt-4 border-t border-gray-700">
-                    <p className="text-sm font-semibold text-emerald-400">✓ Portfolio Piece: Deliverable</p>
-                  </div>
-                </div>
-              </div>
-
+              {/* 4. Requirements Documents */}
               <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-orange-500/20 hover:border-orange-500/50">
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-orange-900 to-red-900">
                   <img 
@@ -341,6 +346,32 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                 </div>
               </div>
 
+              {/* 5. User Stories & Acceptance Criteria */}
+              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-emerald-500/20 hover:border-emerald-500/50">
+                <div className="h-48 overflow-hidden bg-gradient-to-br from-emerald-900 to-green-900">
+                  <img 
+                    src="/images/scrum1.jpg" 
+                    alt="User Stories" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
+                  />
+                </div>
+                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+                      <FileText className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">User Stories & Acceptance Criteria</h3>
+                  </div>
+                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
+                    50+ user stories written across real projects. Stories with proper format, acceptance criteria, and edge cases considered.
+                  </p>
+                  <div className="pt-4 border-t border-gray-700">
+                    <p className="text-sm font-semibold text-emerald-400">✓ Portfolio Piece: Deliverable</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Scrum Ceremony Experience */}
               <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-cyan-500/20 hover:border-cyan-500/50">
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-cyan-900 to-blue-900">
                   <img 
@@ -361,30 +392,6 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                   </p>
                   <div className="pt-4 border-t border-gray-700">
                     <p className="text-sm font-semibold text-cyan-400">✓ Interview Answer: Ready</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-pink-500/20 hover:border-pink-500/50">
-                <div className="h-48 overflow-hidden bg-gradient-to-br from-pink-900 to-purple-900">
-                  <img 
-                    src="/images/collaborate1.jpg" 
-                    alt="Business Cases" 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
-                  />
-                </div>
-                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
-                      <Rocket className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">Project Context & Business Cases</h3>
-                  </div>
-                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
-                    Work across 5+ realistic projects. Understand context, identify problems, and articulate business value — skills employers want.
-                  </p>
-                  <div className="pt-4 border-t border-gray-700">
-                    <p className="text-sm font-semibold text-pink-400">✓ Interview Answer: Ready</p>
                   </div>
                 </div>
               </div>
