@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop } from 'lucide-react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop, Users, Calendar } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import { deviceLockService } from '../../services/deviceLockService';
@@ -264,6 +264,55 @@ const Dashboard: React.FC = () => {
                     Dismiss
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cohort Info Card - Show if user IS in a cohort */}
+      {!cohortLoading && cohortInfo && (
+        <div className="mb-6 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 dark:border-purple-700 p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                  {cohortInfo.name}
+                </h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                  {cohortInfo.description || 'Your learning cohort'}
+                </p>
+                {cohortInfo.upcomingSessions && cohortInfo.upcomingSessions.length > 0 && (
+                  <div className="mb-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <div>
+                        <div className="font-semibold text-gray-900 dark:text-white">
+                          {cohortInfo.upcomingSessions[0].topic || 'Upcoming Session'}
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
+                          {new Date(cohortInfo.upcomingSessions[0].starts_at).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <button
+                  onClick={() => setCurrentView('my-cohort')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
+                >
+                  <span>View Cohort Details</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
