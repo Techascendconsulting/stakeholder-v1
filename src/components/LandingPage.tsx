@@ -118,6 +118,30 @@ const LandingPage: React.FC = () => {
     return <CookiePolicyView onBack={() => setShowCookiePolicy(false)} />
   }
 
+  if (showPricing) {
+    return (
+      <PricingView 
+        onClose={() => setShowPricing(false)} 
+        onStartNow={() => { setShowPricing(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowPricing(false); setShowFeatures(true); }}
+        onShowFAQ={() => { setShowPricing(false); setShowFAQ(true); }}
+        onShowContact={() => { setShowPricing(false); setShowContact(true); }}
+      />
+    )
+  }
+
+  if (showFeatures) {
+    return (
+      <FeaturesView 
+        onClose={() => setShowFeatures(false)} 
+        onStartNow={() => { setShowFeatures(false); setShowAuth(true); }}
+        onShowPricing={() => { setShowFeatures(false); setShowPricing(true); }}
+        onShowFAQ={() => { setShowFeatures(false); setShowFAQ(true); }}
+        onShowContact={() => { setShowFeatures(false); setShowContact(true); }}
+      />
+    )
+  }
+
   const isDark = resolvedTheme === 'dark'
 
   return (
@@ -1145,24 +1169,6 @@ const LandingPage: React.FC = () => {
       </footer>
 
       {/* Modals */}
-      {showPricing && (
-        <PricingView 
-          onClose={() => setShowPricing(false)} 
-          onStartNow={() => { setShowPricing(false); setShowAuth(true); }}
-          onShowFeatures={() => { setShowPricing(false); setShowFeatures(true); }}
-          onShowFAQ={() => { setShowPricing(false); setShowFAQ(true); }}
-          onShowContact={() => { setShowPricing(false); setShowContact(true); }}
-        />
-      )}
-      {showFeatures && (
-        <FeaturesView 
-          onClose={() => setShowFeatures(false)} 
-          onStartNow={() => { setShowFeatures(false); setShowAuth(true); }}
-          onShowPricing={() => { setShowFeatures(false); setShowPricing(true); }}
-          onShowFAQ={() => { setShowFeatures(false); setShowFAQ(true); }}
-          onShowContact={() => { setShowFeatures(false); setShowContact(true); }}
-        />
-      )}
       {showRequestAccess && (
         <RequestAccessModal onClose={() => setShowRequestAccess(false)} />
       )}
