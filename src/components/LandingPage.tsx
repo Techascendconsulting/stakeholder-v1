@@ -219,9 +219,26 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gray-900">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Hero Section - Enhanced with background image */}
+      <section className="relative pt-24 pb-16 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
+            alt="Business team collaboration"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-purple-900/80 to-gray-900/95"></div>
+        </div>
+        
+        {/* Animated Decorative elements */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl z-10 animate-float"></div>
+        <div className="absolute bottom-10 left-10 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl z-10 animate-float-delayed"></div>
+        <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl z-10 animate-float-slow"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl z-10 animate-pulse-slow"></div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left: Text Content */}
             <div className="space-y-6">
@@ -229,27 +246,31 @@ const LandingPage: React.FC = () => {
                 Do the actual work of a Business Analyst
               </h1>
               
-              <p className="text-lg text-gray-300">
+              <p className="text-lg text-gray-300 leading-relaxed">
                 Step into the Business Analyst role inside realistic project environments — practicing stakeholder conversations, documentation, and delivery work with guidance as you go.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                  className="group px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white font-semibold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-0.5 hover:scale-105"
                 >
-                  Start the Work
+                  <span className="flex items-center justify-center gap-2">
+                    Start the Work
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </button>
                 
                 <button
                   onClick={() => setShowRequestAccess(true)}
-                  className="px-8 py-3 rounded-lg font-medium bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 transition-colors"
+                  className="px-8 py-4 rounded-xl font-semibold bg-gray-800/80 hover:bg-gray-700 text-white border-2 border-gray-700 hover:border-purple-500 transition-all backdrop-blur-sm"
                 >
                   See How It Works
                 </button>
               </div>
               
-              <p className="text-sm text-gray-400 pt-2">
+              <p className="text-sm font-medium text-gray-400 pt-2 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
                 Not theory. Not passive learning. Real role performance.
               </p>
             </div>
@@ -262,23 +283,51 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* New Text Section with Curved Background */}
-      <section className="relative py-20 mt-16 overflow-hidden">
-        {/* Curved background with gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-200 rounded-[80px] mx-4 sm:mx-8"></div>
+      {/* Enhanced Text Section with Dynamic Curved Background */}
+      <section className="relative py-24 mt-16 overflow-hidden">
+        {/* Vibrant curved background with gradient and glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 rounded-[80px] mx-4 sm:mx-8 shadow-2xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-purple-100/50 via-transparent to-blue-100/50 rounded-[80px] mx-4 sm:mx-8"></div>
         
-        {/* Geometric shapes */}
-        <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-[60px] opacity-20 rotate-12"></div>
-        <div className="absolute bottom-10 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[40px] opacity-15 -rotate-6"></div>
+        {/* Animated geometric shapes */}
+        <div className="absolute top-10 right-10 w-72 h-72 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-[60px] opacity-15 rotate-12 blur-2xl animate-float"></div>
+        <div className="absolute bottom-10 left-20 w-64 h-64 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-[40px] opacity-15 -rotate-6 blur-2xl animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-10 blur-3xl animate-pulse-slow"></div>
         
-        {/* Content */}
+        {/* Content with enhanced styling */}
         <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight mb-6 text-gray-900">
+          {/* Decorative badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg mb-6 border border-purple-200">
+            <div className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></div>
+            <span className="text-sm font-semibold text-purple-900">Real Work Experience</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight leading-tight mb-8 bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
             BA WorkXP gives you the closest thing to real work experience.
           </h2>
-          <p className="text-xl leading-relaxed text-gray-700 max-w-3xl mx-auto">
+          <p className="text-xl sm:text-2xl leading-relaxed text-gray-800 max-w-3xl mx-auto font-medium">
             You'll interact with stakeholders, run workshops, write user stories, participate in Scrum ceremonies, and support solution delivery — just like a Business Analyst in a real team.
           </p>
+          
+          {/* Feature highlights */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-3xl mx-auto">
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-purple-100 shadow-md hover:shadow-xl transition-shadow">
+              <MessageSquare className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-gray-900">Stakeholder Talks</p>
+            </div>
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-indigo-100 shadow-md hover:shadow-xl transition-shadow">
+              <Users className="w-6 h-6 text-indigo-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-gray-900">Run Workshops</p>
+            </div>
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-blue-100 shadow-md hover:shadow-xl transition-shadow">
+              <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-gray-900">Write Stories</p>
+            </div>
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-purple-100 shadow-md hover:shadow-xl transition-shadow">
+              <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-gray-900">Scrum Work</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -334,25 +383,21 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                    isDark 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
-                      : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
-                  }`}
+                  className="px-8 py-3.5 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all transform hover:-translate-y-0.5"
                 >
                   Start Now
                 </button>
                 
                 <button
                   onClick={() => setShowRequestAccess(true)}
-                  className={`px-8 py-3 font-medium transition-colors flex items-center gap-2 ${
+                  className={`px-8 py-3.5 rounded-xl font-semibold border-2 transition-all flex items-center gap-2 ${
                     isDark 
-                      ? 'text-white hover:text-gray-200' 
-                      : 'text-gray-900 hover:text-gray-700'
+                      ? 'border-purple-500/50 text-white hover:bg-purple-900/20' 
+                      : 'border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-purple-400'
                   }`}
                 >
                   <span>Watch demo</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Play className="w-4 h-4" />
                 </button>
               </div>
               </div>
@@ -374,58 +419,73 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Card 1 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 1 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-purple-500/20 hover:border-purple-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/home4.jpg" 
                   alt="Explore Business Problem" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Explore the Business Problem
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-purple-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Explore the Business Problem
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Step into real project scenarios. Understand context, map processes, uncover pain points, and define what needs to change.
                 </p>
               </div>
             </div>
 
-            {/* Card 2 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 2 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-indigo-500/20 hover:border-indigo-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/collaborate1.jpg" 
                   alt="Work With Stakeholders" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Work With Stakeholders
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-indigo-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-lg">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Work With Stakeholders
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Practice communicating with stakeholders. Ask clarifying questions, resolve ambiguity, capture requirements, and get guided feedback.
                 </p>
               </div>
             </div>
 
-            {/* Card 3 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 3 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-blue-500/20 hover:border-blue-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/scrum1.jpg" 
                   alt="Deliver in a Scrum Team" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Deliver in a Scrum Team
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-blue-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <Rocket className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Deliver in a Scrum Team
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Write user stories and acceptance criteria, take part in refinement and planning, and support developers/testers — with direction as you work.
                 </p>
               </div>
@@ -433,7 +493,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <p className={`text-lg mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            <p className={`text-lg font-semibold mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               You don't just learn about the role.<br />
               You perform the role — with guidance.
             </p>
@@ -441,17 +501,17 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setShowAuth(true)}
-                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isDark ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white font-bold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
               >
                 Start free
               </button>
               
               <button
                 onClick={() => setShowRequestAccess(true)}
-                className={`px-8 py-3 font-medium transition-colors flex items-center justify-center gap-2 ${
+                className={`px-8 py-4 rounded-xl font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
                   isDark 
-                    ? 'text-white hover:text-gray-200' 
-                    : 'text-gray-900 hover:text-gray-700'
+                    ? 'border-purple-500/50 text-white hover:bg-purple-900/20 hover:border-purple-400' 
+                    : 'border-purple-500/30 text-gray-900 hover:bg-purple-50 hover:border-purple-500'
                 }`}
               >
                 <span>Learn more</span>
