@@ -98,7 +98,7 @@ export async function getAllCohorts(filters?: {
     let query = supabase
       .from('cohorts')
       .select('*')
-      .order('start_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (filters?.status) {
       query = query.eq('status', filters.status);
@@ -142,8 +142,7 @@ export async function getCohortById(cohortId: string): Promise<CohortWithDetails
     const { count: studentCount } = await supabase
       .from('cohort_students')
       .select('*', { count: 'exact', head: true })
-      .eq('cohort_id', cohortId)
-      .eq('status', 'active');
+      .eq('cohort_id', cohortId);
 
     // Get sessions
     const { data: sessions } = await supabase
@@ -173,10 +172,7 @@ export async function createCohort(
   try {
     const { data, error } = await supabase
       .from('cohorts')
-      .insert({
-        ...cohortData,
-        created_by: createdBy
-      })
+      .insert(cohortData)
       .select()
       .single();
 
@@ -280,7 +276,7 @@ export async function removeStudentFromCohort(
   try {
     const { error } = await supabase
       .from('cohort_students')
-      .update({ status: 'removed' })
+      .delete()
       .eq('cohort_id', cohortId)
       .eq('user_id', userId);
 
@@ -307,7 +303,6 @@ export async function getCohortStudents(
       .from('cohort_students')
       .select('*')
       .eq('cohort_id', cohortId)
-      .eq('status', 'active')
       .order('joined_at', { ascending: true });
 
     if (error) {
@@ -342,9 +337,8 @@ export async function getCohortSessions(
       .eq('cohort_id', cohortId)
       .order('starts_at', { ascending: true });
 
-    if (!includeCompleted) {
-      query = query.eq('status', 'scheduled');
-    }
+    // Note: cohort_live_sessions doesn't have a status column
+    // If needed in the future, add it to the migration
 
     const { data, error } = await query;
 
@@ -370,10 +364,7 @@ export async function scheduleCohortSession(
   try {
     const { data, error } = await supabase
       .from('cohort_live_sessions')
-      .insert({
-        ...sessionData,
-        created_by: createdBy
-      })
+      .insert(sessionData)
       .select()
       .single();
 
