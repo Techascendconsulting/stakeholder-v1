@@ -30,7 +30,7 @@ interface FAQViewProps {
 import PublicLayout from '../Layout/PublicLayout';
 
 const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, showTabs = false }) => {
-  const [openCategories, setOpenCategories] = useState<string[]>(['getting-started', 'account-security', 'learning']);
+  const [openCategories, setOpenCategories] = useState<string[]>(['getting-started', 'experience-portfolio', 'career']);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -56,163 +56,102 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       questions: [
         {
           id: 'q1',
-          question: 'How do I get started with the platform?',
-          answer: 'We currently operate on an invite-only basis to ensure quality and personalized support for each student. Click "Request Access" on the landing page to submit your application. Once approved and invited, you\'ll receive access credentials and begin with an onboarding tour that introduces you to the platform features.'
+          question: 'What is BA WorkXP?',
+          answer: 'BA WorkXP is a practice platform where you build real Business Analyst work experience by interviewing AI stakeholders, completing projects, and creating professional deliverables. You\'ll practice stakeholder interviews, requirements gathering, process analysis, user stories, and Scrum ceremonies - building a portfolio that proves you can do the job.'
         },
         {
           id: 'q2',
-          question: 'What is the learning path structure?',
-          answer: 'Our proprietary learning system guides you through a structured journey from foundational concepts to real-world application. The platform progressively unlocks content as you demonstrate mastery, ensuring you build skills in the right sequence.'
+          question: 'How do I get started?',
+          answer: 'Click "Start Free" to create your account. You can start immediately with free access to practice projects, stakeholder conversations, and portfolio building. Upgrade to Pro when you\'re ready for unlimited practice and advanced features.'
         },
         {
           id: 'q3',
-          question: 'How long does it take to complete?',
-          answer: 'The Learning Journey typically takes 6-8 weeks at a comfortable pace. Practice and Project phases are self-paced. You can progress faster or slower based on your schedule and commitment level.'
+          question: 'Do I need any prior BA experience?',
+          answer: 'No prior Business Analysis experience is required. Whether you\'re completely new to BA or transitioning from another role, the platform guides you from fundamentals through advanced practice. You can start learning BA basics or jump straight into practice if you\'re already trained.'
         },
         {
           id: 'q4',
-          question: 'Do I need any prior experience?',
-          answer: 'No prior Business Analysis experience is required. Our Learning Journey starts from the fundamentals and progressively builds your skills. Whether you\'re completely new or transitioning from another role, the platform adapts to your learning pace.'
+          question: 'How long does it take to build a portfolio?',
+          answer: 'Most people build an interview-ready portfolio in 4-8 weeks, practicing 5-10 hours per week. The platform is self-paced - you control how quickly you progress. Some complete multiple projects in a few weeks, while others take longer. Your portfolio grows with every conversation and project.'
         }
       ]
     },
     {
-      id: 'account-security',
-      title: 'Account & Security',
-      icon: Shield,
-      color: 'from-red-500 to-pink-600',
-      questions: [
-        {
-          id: 'q5',
-          question: 'Why is account sharing not allowed?',
-          answer: 'Each account is designed for individual use to maintain learning integrity and progress accuracy. Sharing login credentials violates our terms of service and compromises your personalized learning journey. Our security systems detect unauthorized access and will lock accounts to protect your progress.'
-        },
-        {
-          id: 'q6',
-          question: 'What happens if I try to login from multiple devices?',
-          answer: 'Your account is locked to your registered device. If you attempt to login from an unauthorized device, your account will be temporarily locked for security. Contact an administrator to unlock your account if this happens. This protects your progress and ensures compliance with our single-user policy.'
-        },
-        {
-          id: 'q7',
-          question: 'How do I unlock my account if it gets locked?',
-          answer: 'If your account is locked due to device mismatch, use the "Contact Us" page to reach out to our admin team. They can review your request and unlock your account. Provide your email address and explain the situation (e.g., new device, reset device, etc.).'
-        },
-        {
-          id: 'q8',
-          question: 'Can I access from multiple devices?',
-          answer: 'Currently, accounts are bound to a single device for security. If you need to change devices (e.g., new laptop), contact support through the Contact Us page and we can help you migrate your account to the new device.'
-        }
-      ]
-    },
-    {
-      id: 'learning',
-      title: 'Learning & Progress',
-      icon: Book,
-      color: 'from-cyan-500 to-blue-600',
-      questions: [
-        {
-          id: 'q9',
-          question: 'How does the progressive unlock system work?',
-          answer: 'Content unlocks progressively as you master each stage, ensuring you build a solid foundation before moving to advanced activities. This adaptive system keeps you challenged but not overwhelmed, optimizing your learning journey.'
-        },
-        {
-          id: 'q10',
-          question: 'What happens if I fail an assignment?',
-          answer: 'Assignments are learning opportunities, not pass/fail tests. You receive AI feedback on your submissions and can revise and resubmit. The goal is to master the concepts, not to rush through. Take your time and use the feedback to improve.'
-        },
-        {
-          id: 'q11',
-          question: 'Can I skip modules or jump ahead?',
-          answer: 'No, modules must be completed sequentially to ensure proper foundation building. Each module builds on concepts from previous ones. This structured approach ensures you don\'t miss critical fundamentals.'
-        },
-        {
-          id: 'q12',
-          question: 'What is Verity AI Assistant?',
-          answer: 'Verity is your 24/7 AI learning companion available throughout the platform. She can answer questions about Business Analysis concepts, help you navigate, provide guidance, and assist when you\'re stuck. Daily interaction limits encourage focused, intentional learning.'
-        }
-      ]
-    },
-    {
-      id: 'practice',
-      title: 'Practice & Voice Features',
-      icon: Target,
+      id: 'experience-portfolio',
+      title: 'Building Experience',
+      icon: Briefcase,
       color: 'from-emerald-500 to-teal-600',
       questions: [
         {
-          id: 'q13',
-          question: 'What practice modes are available?',
-          answer: 'We offer multiple practice modes designed to progressively build your confidence and skills. Our proprietary system ensures you\'re fully prepared at each stage before advancing to more challenging modes.'
+          id: 'q5',
+          question: 'What work experience will I get?',
+          answer: 'You\'ll gain hands-on experience in: interviewing stakeholders with conflicting needs, documenting requirements and user stories, creating process maps (As-Is and To-Be), writing acceptance criteria, participating in Scrum ceremonies, and managing BA projects. Every activity creates portfolio-ready deliverables you can show employers.'
         },
         {
-          id: 'q14',
-          question: 'How do advanced features unlock?',
-          answer: 'Advanced practice features unlock automatically as you demonstrate competency. Our intelligent system tracks your progress and opens new capabilities when you\'re ready, ensuring optimal learning progression.'
+          id: 'q6',
+          question: 'What deliverables will I create for my portfolio?',
+          answer: 'You\'ll build a professional portfolio including: stakeholder interview transcripts (30+ conversations showing elicitation skills), requirements documents and business cases, user stories with acceptance criteria, process maps and flow diagrams, project deliverables from 5+ realistic scenarios. All downloadable and portfolio-ready.'
         },
         {
-          id: 'q15',
-          question: 'Are there limits on practice sessions?',
-          answer: 'Practice sessions are designed to be comprehensive while encouraging focused learning. The platform balances unlimited practice opportunities with smart pacing to maximize skill retention and prevent burnout.'
+          id: 'q7',
+          question: 'Are the AI stakeholders realistic?',
+          answer: 'Yes! AI stakeholders have unique personalities (skeptical, enthusiastic, technical, detail-oriented), realistic concerns based on their roles, and dynamic responses based on your questions. Many users report feeling genuinely nervous during their first sessions - that\'s how realistic they are. You\'re practicing with stakeholders who push back, have conflicting priorities, and need proper elicitation techniques.'
         },
         {
-          id: 'q16',
-          question: 'Do I get feedback during practice?',
-          answer: 'Yes! Our AI coaching system provides real-time suggestions during conversations and detailed feedback reports after each session. You\'ll see what you did well, areas for improvement, and specific techniques to practice.'
+          id: 'q8',
+          question: 'Can I practice with my own industry scenarios?',
+          answer: 'Absolutely! Beyond our 5+ pre-built scenarios (E-Commerce, Healthcare, Finance, etc.), you can create custom projects with your own business context, objectives, and AI-generated stakeholders. Perfect for practicing scenarios relevant to your target industry or upcoming interviews.'
         }
       ]
     },
     {
-      id: 'projects',
-      title: 'Projects & Deliverables',
-      icon: Briefcase,
+      id: 'career',
+      title: 'Getting Hired',
+      icon: Target,
       color: 'from-orange-500 to-red-600',
       questions: [
         {
-          id: 'q17',
-          question: 'How many projects can I work on?',
-          answer: 'Your subscription tier determines your project limit. Choose from multiple real-world industry scenarios including E-Commerce, Healthcare, Financial Services, Supply Chain, and more. Each project provides hands-on experience with different business contexts.'
+          id: 'q9',
+          question: 'How does this help me get a BA job?',
+          answer: 'Employers hire based on proven experience, not certificates. With BA WorkXP, you\'ll have real work artifacts to show: interview transcripts demonstrating elicitation skills, requirements documents, process maps, user stories - actual deliverables proving you can do the job. This portfolio + your ability to discuss real project experience in interviews is what gets you hired.'
         },
         {
-          id: 'q18',
-          question: 'What deliverables will I create?',
-          answer: 'You\'ll create professional Business Analysis deliverables including: stakeholder interview summaries and notes, requirements documents, user stories with acceptance criteria, process maps and diagrams, MVP feature prioritization, and more. All deliverables are portfolio-ready and demonstrate real-world BA capabilities.'
+          id: 'q10',
+          question: 'Do employers care more about experience or certificates?',
+          answer: 'Experience wins every time. Employers want to see that you\'ve actually done BA work - interviewed stakeholders, handled conflicts, documented requirements, worked in Agile teams. Certificates show you studied theory; a portfolio shows you can execute. BA WorkXP gives you the experience employers are looking for, not just another certificate.'
         },
         {
-          id: 'q19',
-          question: 'Can I customize projects?',
-          answer: 'Yes! In addition to the 5 pre-built scenarios, you can create custom projects with your own business context, objectives, and stakeholders. This is perfect if you want to practice with scenarios similar to your target industry.'
+          id: 'q11',
+          question: 'What salary can I expect as a Business Analyst?',
+          answer: 'In the UK, entry-level BAs typically earn £40-45k. With proven experience and strong interview performance, many professionals get promoted within their first year with salary increases to £45-65k. Mid-level BAs earn £45-65k, and senior BAs £65k-100k+. Your portfolio quality and interview confidence matter most when negotiating offers.'
         },
         {
-          id: 'q20',
-          question: 'Are the AI stakeholders realistic?',
-          answer: 'Absolutely! Our AI stakeholders have diverse personalities (skeptical, enthusiastic, technical, detail-oriented, etc.), realistic concerns based on their roles, and dynamic responses based on your questions. Many students report feeling genuinely nervous during their first sessions - that\'s how realistic they are!'
+          id: 'q12',
+          question: 'Will I be ready for BA interviews?',
+          answer: 'Yes! You\'ll have practiced the exact situations interviewers ask about: "Tell me about a time you handled a difficult stakeholder," "How do you gather requirements?" "Describe a complex project you worked on." You\'ll have 30+ real examples from your practice sessions - concrete stories with context, actions, and results. This is what separates you from candidates who only have theory.'
         }
       ]
     },
     {
-      id: 'certificates',
-      title: 'Certificates & Career',
-      icon: Award,
-      color: 'from-yellow-500 to-orange-600',
+      id: 'pricing',
+      title: 'Pricing & Access',
+      icon: CreditCard,
+      color: 'from-blue-500 to-indigo-600',
       questions: [
         {
-          id: 'q21',
-          question: 'Do I get a certificate?',
-          answer: 'We focus on building real experience and a professional portfolio instead of certificates. While we recommend industry certifications like PSM 1 (Scrum Master) or BCS (Business Analysis), the truth is employers care far more about your practical experience than certificates. If you\'ve genuinely done the work, it will show in interviews - that\'s what gets you hired.'
+          id: 'q13',
+          question: 'How much does it cost?',
+          answer: 'Start completely free with 3 projects and 15 stakeholder conversations. Upgrade to Pro for £149/month for unlimited projects, unlimited conversations, all scenarios, Scrum ceremony practice, and priority support. No long-term contracts - cancel anytime.'
         },
         {
-          id: 'q22',
-          question: 'What certifications do you recommend?',
-          answer: 'For Scrum/Agile: PSM 1 (Professional Scrum Master) from Scrum.org. For Business Analysis: BCS certifications or IIBA CBAP/CCBA. However, real project experience often outweighs certifications. Focus on building demonstrable skills and a strong portfolio first.'
+          id: 'q14',
+          question: 'Is there really free access?',
+          answer: 'Yes! Free access includes 3 complete projects, 15 stakeholder conversations, AI coaching, and the ability to download your work. This is enough to build an initial portfolio. Upgrade to Pro when you want unlimited practice and access to all features.'
         },
         {
-          id: 'q23',
-          question: 'How does this help me get a job?',
-          answer: 'Employers hire based on proven experience, not just theory. By completing our Learning Journey, Practice sessions, and hands-on projects, you\'ll have real artifacts to show: interview summaries, requirements docs, process maps, user stories - actual work product that demonstrates your capabilities. This portfolio speaks louder than certificates.'
-        },
-        {
-          id: 'q24',
-          question: 'What kind of salary can I expect?',
-          answer: 'Business Analyst salaries vary by location, experience, and industry. In the UK, entry-level BAs typically earn £40-45k. With experience and proven performance, many professionals get promoted within their first year with significant salary increases. Mid-level BAs earn £45-65k, and senior BAs £65k-100k+. Your portfolio and interview performance matter most when securing roles.'
+          id: 'q15',
+          question: 'Can I cancel anytime?',
+          answer: 'Absolutely. Pro subscription is month-to-month with no long-term commitment. Cancel anytime and you keep access until the end of your billing period. Your portfolio and completed work remain accessible even after cancelling.'
         }
       ]
     },
@@ -223,80 +162,14 @@ const FAQView: React.FC<FAQViewProps> = ({ onBack, onContactClick, onTabChange, 
       color: 'from-pink-500 to-purple-600',
       questions: [
         {
-          id: 'q25',
-          question: 'How do I contact support?',
-          answer: 'Use the "Contact Us" page to send us a message. We respond within 24 hours. You can also use Verity AI Assistant (available 24/7) for immediate help with platform questions and navigation.'
+          id: 'q16',
+          question: 'How do I get help if I\'m stuck?',
+          answer: 'Use the "Contact Us" page and we respond within 24 hours. For immediate help, Verity AI Assistant is available 24/7 for questions about BA concepts, platform navigation, and guidance. Pro members can also request live mentorship sessions for personalized coaching.'
         },
         {
-          id: 'q26',
-          question: 'Where is your office located?',
-          answer: 'Our office is located at One Silk Street, Ancoats, Manchester M4 6LZ, United Kingdom. You can find us in the Colony co-working space in Manchester\'s vibrant Ancoats neighborhood.'
-        },
-        {
-          id: 'q27',
-          question: 'Do you offer live mentorship?',
-          answer: 'Yes! You can request live mentorship support directly within the platform. Our mentors provide personalized feedback, career coaching, and guidance to complement your learning journey. These sessions offer human expertise when you need additional support beyond the AI-powered features.'
-        },
-        {
-          id: 'q28',
-          question: 'What if I encounter a bug or issue?',
-          answer: 'Use Verity AI Assistant\'s "Report Issue" button (available on most pages) to submit bug reports or technical issues. Our team reviews all reports and responds quickly. You can also use the Contact Us page for urgent matters.'
-        }
-      ]
-    },
-    {
-      id: 'technical',
-      title: 'Technical & Access',
-      icon: Play,
-      color: 'from-indigo-500 to-purple-600',
-      questions: [
-        {
-          id: 'q29',
-          question: 'What browsers are supported?',
-          answer: 'We recommend Chrome, Edge, Safari, or Firefox (latest versions). All features work best on Chrome and Edge. Make sure your browser has necessary permissions enabled (camera, microphone) for the full experience.'
-        },
-        {
-          id: 'q30',
-          question: 'Do I need a microphone for practice sessions?',
-          answer: 'Some practice modes require a working microphone for the best experience. We recommend using quality headphones to optimize audio clarity. Our platform offers multiple interaction methods to accommodate different learning preferences and environments.'
-        },
-        {
-          id: 'q31',
-          question: 'Is my data secure?',
-          answer: 'Yes! We use enterprise-grade security with advanced encryption and access control policies to protect your data. Your progress, submissions, and personal information are secure and only accessible to you and authorized admins. We never share your data with third parties.'
-        },
-        {
-          id: 'q32',
-          question: 'Can I access my work and deliverables?',
-          answer: 'All your work, including meeting summaries, transcripts, requirements documents, and deliverables are accessible anytime within the platform. You have permanent access to review your portfolio of work, track your progress, and reference past projects as you continue your learning journey.'
-        }
-      ]
-    },
-    {
-      id: 'subscription',
-      title: 'Access & Subscription',
-      icon: CreditCard,
-      color: 'from-green-500 to-emerald-600',
-      questions: [
-        {
-          id: 'q33',
-          question: 'How does private access work?',
-          answer: 'Currently, we operate on a private access model where users are invited to join. This ensures quality and allows us to provide personalized support to each student. Request access via the "Get Started" button and we\'ll review your application.'
-        },
-        {
-          id: 'q34',
-          question: 'What subscription tiers are available?',
-          answer: 'We offer multiple subscription tiers designed to match different learning needs and career goals. Your tier determines project access and additional features. All tiers include comprehensive learning content and practice capabilities. Contact us to discuss which tier is right for you.'
-        },
-        {
-          id: 'q35',
-          question: 'Can I upgrade or downgrade my subscription?',
-          answer: 'Yes! Contact support through the Contact Us page to discuss changing your subscription tier. Upgrades take effect immediately. Your progress and completed work are never lost when changing tiers.'
-        },
-        {
-          id: 'q36',
-          question: 'Is there a refund policy?',
-          answer: 'Contact our support team to discuss specific situations. We want every student to succeed and will work with you to ensure you get value from the platform.'
+          id: 'q17',
+          question: 'Where is BA WorkXP located?',
+          answer: 'We\'re based in Manchester, UK at One Silk Street, Ancoats, Manchester M4 6LZ. Our office is in the Colony co-working space in Manchester\'s Ancoats neighborhood. We serve aspiring Business Analysts worldwide through our online platform.'
         }
       ]
     }
