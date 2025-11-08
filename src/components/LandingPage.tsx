@@ -131,17 +131,23 @@ const LandingPage: React.FC = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <button className="text-gray-300 hover:text-white font-medium transition-colors">
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
                 Home
               </button>
               <button 
-                onClick={() => setShowRequestAccess(true)}
+                onClick={() => {
+                  const section = document.querySelector('[data-section="how-it-works"]');
+                  section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Features
               </button>
               <button 
-                onClick={() => setShowRequestAccess(true)}
+                onClick={() => alert('Pricing page coming soon! For now, sign up free to get started.')}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Pricing
@@ -196,19 +202,29 @@ const LandingPage: React.FC = () => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-800 py-4 space-y-4">
               <button 
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => { 
+                  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                  setMobileMenuOpen(false); 
+                }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Home
               </button>
               <button 
-                onClick={() => { setShowRequestAccess(true); setMobileMenuOpen(false); }}
+                onClick={() => { 
+                  setMobileMenuOpen(false);
+                  const section = document.querySelector('[data-section="how-it-works"]');
+                  section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Features
               </button>
               <button 
-                onClick={() => { setShowRequestAccess(true); setMobileMenuOpen(false); }}
+                onClick={() => { 
+                  setMobileMenuOpen(false);
+                  alert('Pricing page coming soon! For now, sign up free to get started.');
+                }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Pricing
@@ -734,7 +750,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* How It Works - Step by Step */}
-      <section className={`py-24 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+      <section data-section="how-it-works" className={`py-24 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 backdrop-blur-sm rounded-full border border-blue-500/30 mb-6">
