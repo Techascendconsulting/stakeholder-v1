@@ -383,59 +383,52 @@ const CoreConceptsView: React.FC = () => {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
       </div>
 
-      {/* Concepts Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      {/* Concepts Grid - Modern Design */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">14 Essential Concepts</h2>
+          <p className="text-gray-600 dark:text-gray-400">Click any concept to dive deeper into the details</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {concepts.map((concept) => (
             <div
               key={concept.id}
-              className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer card-hover h-80 flex flex-col ${
-                hoveredCard === concept.id ? 'scale-105 shadow-2xl' : ''
-              }`}
-              onMouseEnter={() => setHoveredCard(concept.id)}
-              onMouseLeave={() => setHoveredCard(null)}
+              className={`group relative rounded-2xl border-2 p-6 cursor-pointer transition-all ${concept.gradient} hover:shadow-2xl hover:-translate-y-1`}
+              style={{borderColor: 'transparent'}}
               onClick={() => setSelectedConcept(concept)}
             >
-              {/* Card Header with Gradient */}
-              <div className={`h-2 bg-gradient-to-r ${concept.color}`}></div>
-              
-              {/* Card Content */}
-              <div className="p-8 flex flex-col flex-grow">
-                {/* Concept Number */}
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                    Concept {concept.id}
+              {/* Concept Number Badge */}
+              <div className="absolute top-4 right-4">
+                <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                    {concept.id}
                   </span>
-                  <div className={`p-3 rounded-xl ${concept.gradient} text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform duration-300`}>
-                    {concept.icon}
-                  </div>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                  {concept.title}
-                </h3>
-
-                {/* Description - with flex-grow to push footer to bottom */}
-                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 flex-grow">
-                  {concept.description}
-                </p>
-
-                {/* Footer - will always be at bottom */}
-                <div className="flex items-center justify-between mt-auto">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    4 key points
-                  </span>
-                  
-                  <button className={`inline-flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${concept.color} text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 group-hover:translate-x-1`}>
-                    Click to learn
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
                 </div>
               </div>
 
-              {/* Hover Effect Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              {/* Icon - Large & Prominent */}
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${concept.color} flex items-center justify-center shadow-xl mb-5 group-hover:scale-110 transition-transform`}>
+                <div className="text-white">
+                  {concept.icon}
+                </div>
+              </div>
+
+              {/* Title - Bold & Clear */}
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-snug pr-12">
+                {concept.title}
+              </h3>
+
+              {/* Description - Concise */}
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-5 line-clamp-3">
+                {concept.description}
+              </p>
+
+              {/* CTA */}
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r ${concept.color} text-white text-sm font-semibold shadow-md group-hover:shadow-xl group-hover:gap-3 transition-all`}>
+                <span>Click to learn</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
           ))}
         </div>
