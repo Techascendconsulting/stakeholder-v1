@@ -310,218 +310,116 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             
-            {/* Right: Meeting Preview - More Impressive Visual */}
-            <div className="relative flex items-center justify-center">
+            {/* Right: Meeting Preview - With Context */}
+            <div className="relative flex flex-col items-center justify-center">
+              {/* Context Label */}
+              <div className="mb-4 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/20 backdrop-blur-sm rounded-full border border-purple-500/30 mb-2">
+                  <Users className="w-4 h-4 text-purple-300" />
+                  <span className="text-sm font-semibold text-purple-200">Live Practice Session</span>
+                </div>
+                <p className="text-gray-400 text-xs max-w-md mx-auto">
+                  Interview AI stakeholders with real personalities, goals, and concerns
+                </p>
+              </div>
               <MeetingPreview />
             </div>
           </div>
         </div>
       </section>
 
-      {/* The Problem - Light Purple Section with Better Contrast */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070')] opacity-[0.02] bg-cover bg-center"></div>
-        
-        <div className="relative max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/10 backdrop-blur-sm rounded-full border border-purple-600/30 mb-6">
-              <div className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></div>
-              <span className="text-sm font-semibold text-purple-700">The Challenge</span>
-            </div>
-            
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
-              The Interview Questions You Can't Answer Yet
+      {/* The Painful Reality - Emotional Storytelling Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+              You've spent months learning.<br />But you still can't get hired.
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-              You've studied. You know the theory. But when interviewers ask behavioral questions, you don't have real examples to share...
+          </div>
+
+          <div className="prose prose-lg max-w-none">
+            <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              You've watched the videos. Done the courses. Read the books. You understand what a Business Analyst does. You know about requirements gathering, process mapping, stakeholder management.
             </p>
-          </div>
 
-          {/* Interview Questions Grid */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    "Tell me about a time you dealt with a difficult stakeholder..."
-                  </p>
-                  <p className="text-gray-700">
-                    You haven't. You've only read about it. Your mind goes blank.
-                  </p>
-                </div>
-              </div>
+            <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              But you've never actually <span className="font-bold text-gray-900">done</span> the work.
+            </p>
+
+            <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              You apply to jobs. Nothing. Or worse — you get the interview. They ask: <span className="italic">"Tell me about a time you dealt with conflicting stakeholder requirements..."</span>
+            </p>
+
+            <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              Your mind goes blank. You haven't. You've only read about it.
+            </p>
+
+            <div className="bg-red-50 border-l-4 border-red-500 p-6 my-8 rounded-r-xl">
+              <p className="text-xl font-bold text-red-900 mb-2">
+                The Catch-22:
+              </p>
+              <p className="text-lg text-red-800 leading-relaxed">
+                You can't get a BA job without experience. But you can't get experience without a job. Every job posting wants "2+ years experience." Every interview asks for real examples you don't have.
+              </p>
             </div>
 
-            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    "Can you show me examples of requirements you've documented?"
-                  </p>
-                  <p className="text-gray-700">
-                    You don't have any. Just course exercises that don't feel real.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="text-xl text-gray-700 leading-relaxed mb-8">
+              Meanwhile, your certificates sit on your resume, proving you <span className="font-bold">learned</span> — but not that you can <span className="font-bold">do</span>. And employers care about what you can do.
+            </p>
 
-            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Target className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    "Walk me through how you'd analyze a business process..."
-                  </p>
-                  <p className="text-gray-700">
-                    Theory is different from doing. You stumble through your answer.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white backdrop-blur-sm border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 transition-all shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    "How do you handle conflicting requirements from different stakeholders?"
-                  </p>
-                  <p className="text-gray-700">
-                    You've read about it. But you've never actually been in that situation.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* The Insight */}
-          <div className="bg-gradient-to-br from-purple-100 to-indigo-100 border-l-4 border-purple-600 rounded-xl p-8 shadow-xl">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-purple-200 flex items-center justify-center flex-shrink-0">
-                <Award className="w-8 h-8 text-purple-700" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 mb-3">
-                  Certificates prove you learned. Experience proves you can do.
-                </p>
-                <p className="text-lg text-gray-800 leading-relaxed">
-                  Employers want evidence you can handle real stakeholders, navigate ambiguity, and deliver actual work products. They want stories. They want examples. They want confidence. <span className="font-semibold text-purple-700">That's what BA WorkXP gives you.</span>
-                </p>
-              </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900 mb-4">
+                This is the problem BA WorkXP solves.
+              </p>
+              <p className="text-lg text-gray-600 mb-8">
+                We give you the experience before you need it.
+              </p>
+              <button
+                onClick={() => setShowAuth(true)}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+              >
+                Start Practicing Free
+                <ArrowRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The Solution - Transformation Section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800">
-        {/* Vibrant curved background with gradient and glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-blue-900/20 to-purple-900/20"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/10 via-transparent to-emerald-900/10"></div>
-        
-        {/* Animated geometric shapes */}
-        <div className="absolute top-10 right-10 w-72 h-72 bg-gradient-to-br from-emerald-400 to-green-600 rounded-[60px] opacity-15 rotate-12 blur-2xl animate-float"></div>
-        <div className="absolute bottom-10 left-20 w-64 h-64 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-[40px] opacity-15 -rotate-6 blur-2xl animate-float-delayed"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full opacity-10 blur-3xl animate-pulse-slow"></div>
-        
-          {/* Content with enhanced styling */}
-          <div className="relative max-w-6xl mx-auto px-6 text-center">
-            {/* Decorative badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 backdrop-blur-sm rounded-full shadow-lg mb-6 border border-emerald-500/40">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-              <span className="text-sm font-semibold text-emerald-300">The Solution</span>
-            </div>
-            
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-8 text-white">
-              Get the experience before you need it.
-            </h2>
-            <p className="text-xl sm:text-2xl leading-relaxed text-gray-300 max-w-3xl mx-auto font-medium mb-12">
-              BA WorkXP is a practice platform where you perform the actual work of a Business Analyst — so when interviewers ask "Tell me about a time..." you have real answers.
-            </p>
+      {/* The Solution - Short & Punchy with Learn More */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 backdrop-blur-sm rounded-full shadow-lg mb-6 border border-emerald-500/40">
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
+            <span className="text-sm font-semibold text-emerald-700">The Solution</span>
+          </div>
+          
+          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
+            Practice the work. Build the portfolio. Get hired.
+          </h2>
+          
+          <p className="text-xl text-gray-700 leading-relaxed mb-8 max-w-3xl mx-auto">
+            BA WorkXP lets you perform the actual work of a Business Analyst before you need a job. Interview AI stakeholders. Write requirements. Build process maps. Create a portfolio of real deliverables.
+          </p>
 
-            {/* Transformation Grid */}
-            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-              {/* Before */}
-              <div className="bg-gray-800/60 backdrop-blur-sm rounded-2xl p-8 border-2 border-red-500/30 shadow-lg">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 rounded-full mb-4">
-                  <span className="text-sm font-bold text-red-300">Before BA WorkXP</span>
-                </div>
-                <ul className="space-y-4 text-left">
-                  <li className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">No real stakeholder conversations</span>
-                </li>
-                  <li className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">Can't answer behavioral questions</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">No portfolio of actual work</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">Theory without application</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">Nervous and unsure in interviews</span>
-                  </li>
-                </ul>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <button
+              onClick={() => setShowAuth(true)}
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+            >
+              Start Practicing Free
+            </button>
+            <button
+              onClick={() => setShowRequestAccess(true)}
+              className="px-8 py-4 bg-white text-purple-700 font-bold rounded-xl border-2 border-purple-300 hover:bg-purple-50 transition-all"
+            >
+              Learn More →
+            </button>
+          </div>
 
-              {/* After */}
-              <div className="bg-gradient-to-br from-emerald-900/40 to-green-900/40 rounded-2xl p-8 border-2 border-emerald-500/50 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
-                <div className="relative">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500 rounded-full mb-4">
-                    <span className="text-sm font-bold text-white">After BA WorkXP</span>
-                  </div>
-                  <ul className="space-y-4 text-left">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-white font-medium">30+ practice stakeholder sessions</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-white font-medium">Real stories for "Tell me about..."</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-white font-medium">Portfolio of process maps, user stories</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-white font-medium">Hands-on experience you can prove</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-white font-medium">Walk into interviews confident</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-          <button
-            onClick={() => setShowAuth(true)}
-            className="group px-10 py-5 rounded-xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white text-lg font-bold hover:shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
-          >
-            <span className="flex items-center justify-center gap-2">
-              Start Building Your Experience
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
+          <p className="text-sm text-gray-600">
+            When interviewers ask "Tell me about a time..." — you'll have real answers.
+          </p>
         </div>
       </section>
 
@@ -855,190 +753,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Comparison Table Section - Improved Background */}
-      <section className={`py-24 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 backdrop-blur-sm rounded-full border border-yellow-500/30 mb-6">
-              <BarChart3 className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">Why BA WorkXP Is Different</span>
-            </div>
-            
-            <h2 className={`text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              The Smarter Way to Break Into Business Analysis
-            </h2>
-            <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              Compare the cost, time, and outcomes of different paths to becoming a Business Analyst
-            </p>
-          </div>
-
-          {/* Comparison Table */}
-          <div className="overflow-x-auto">
-            <table className={`w-full border-collapse rounded-2xl overflow-hidden ${isDark ? 'bg-gray-800/50' : 'bg-gray-50 border-2 border-gray-200'}`}>
-              <thead>
-                <tr className={`border-b ${isDark ? 'bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-gray-700' : 'bg-gradient-to-r from-purple-100 to-indigo-100 border-gray-300'}`}>
-                  <th className={`text-left p-6 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Feature</th>
-                  <th className={`text-center p-6 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Traditional Courses</th>
-                  <th className={`text-center p-6 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Bootcamps</th>
-                  <th className={`text-center p-6 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Certifications</th>
-                  <th className={`text-center p-6 border-l-2 border-purple-500 ${isDark ? 'bg-gradient-to-br from-purple-600/30 to-indigo-600/30' : 'bg-gradient-to-br from-purple-200 to-indigo-200'}`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-white font-bold">BA WorkXP</span>
-                      <div className="px-2 py-1 bg-emerald-500 rounded-full text-xs font-bold text-white">BEST</div>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                {/* Cost Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>Cost</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>$500 - $2,000</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>$5,000 - $15,000</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>$1,500 - $3,000</td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="text-emerald-400 font-bold">Free to Start</div>
-                    <div className="text-sm text-gray-400 mt-1">Then $29/month</div>
-                  </td>
-                </tr>
-
-                {/* Time Commitment Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>Time Commitment</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>3 - 6 months fixed</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>12 weeks fixed schedule</td>
-                  <td className={`p-6 text-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>2 - 4 months fixed</td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="text-emerald-500 dark:text-emerald-400 font-bold">Learn at your pace</div>
-                    <div className={`text-sm mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>30min/day works</div>
-                  </td>
-                </tr>
-
-                {/* Hands-On Practice Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>Real Stakeholder Practice</td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className="p-6 text-center">
-                    <div className="text-yellow-500 dark:text-yellow-400 text-sm font-medium">Limited</div>
-                  </td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Unlimited</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* AI Coaching Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>AI Coaching & Feedback</td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className="p-6 text-center">
-                    <div className="text-yellow-500 dark:text-yellow-400 text-sm font-medium">Instructor only</div>
-                  </td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Real-time</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Portfolio Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>Portfolio of Work Products</td>
-                  <td className="p-6 text-center">
-                    <div className="text-yellow-500 dark:text-yellow-400 text-sm font-medium">Basic exercises</div>
-                  </td>
-                  <td className="p-6 text-center">
-                    <div className="text-yellow-500 dark:text-yellow-400 text-sm font-medium">1-2 projects</div>
-                  </td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">5+ Projects</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Interview Prep Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>Behavioral Interview Stories</td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className="p-6 text-center">
-                    <div className="text-yellow-500 dark:text-yellow-400 text-sm font-medium">Limited</div>
-                  </td>
-                  <td className="p-6 text-center">
-                    <X className="w-5 h-5 text-red-500 mx-auto" />
-                  </td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Dozens</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* What You Get Row */}
-                <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
-                  <td className={`p-6 font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>What You Get</td>
-                  <td className={`p-6 text-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Certificate + Knowledge</td>
-                  <td className={`p-6 text-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Certificate + 1 Project</td>
-                  <td className={`p-6 text-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Certificate Only</td>
-                  <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                    <div className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">Experience + Portfolio + Confidence</div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Bottom Stats - Fixed Readability */}
-          <div className="grid md:grid-cols-3 gap-6 mt-16">
-            <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 border-2 border-emerald-200 text-center shadow-lg">
-              <div className="text-5xl font-bold text-emerald-600 mb-3">90%</div>
-              <p className="text-gray-900 font-bold text-lg">Less expensive than bootcamps</p>
-            </div>
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border-2 border-blue-200 text-center shadow-lg">
-              <div className="text-5xl font-bold text-blue-600 mb-3">5x</div>
-              <p className="text-gray-900 font-bold text-lg">More hands-on practice than courses</p>
-            </div>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200 text-center shadow-lg">
-              <div className="text-5xl font-bold text-purple-600 mb-3">30+</div>
-              <p className="text-gray-900 font-bold text-lg">Practice sessions to build confidence</p>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="mt-12 text-center">
-            <button
-              onClick={() => setShowAuth(true)}
-              className="group px-10 py-5 rounded-xl bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white text-lg font-bold hover:shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
-            >
-              <span className="flex items-center justify-center gap-2">
-                Start Free — No Credit Card Required
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
-            <p className="text-gray-200 mt-4 text-base font-medium">Cancel anytime. No long-term commitment.</p>
-          </div>
-        </div>
-      </section>
 
       {/* Third Section: Platform Features */}
       <section className={`py-20 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
@@ -1258,86 +972,33 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className={`py-24 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Quick FAQ + CTA Section */}
+      <section className={`py-20 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
         <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Common Questions
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl font-bold mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Ready to break the experience barrier?
             </h2>
-            <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              Everything you need to know before you start
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {/* FAQ 1 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            
+            {/* Most Important FAQ */}
+            <div className={`rounded-2xl p-8 mb-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}`}>
+              <h3 className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Is this really free to start?
               </h3>
               <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Yes. You can start practicing immediately with no credit card required. Access core features and complete your first 3 projects free. When you're ready for unlimited practice and advanced features, upgrade to our paid plan.
+                Yes. Start practicing immediately with no credit card. Access core features free. Upgrade anytime for unlimited practice.
               </p>
             </div>
 
-            {/* FAQ 2 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                How is this different from taking a BA course?
-              </h3>
-              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Courses teach you about Business Analysis. BA WorkXP lets you do Business Analysis. You practice actual stakeholder conversations, create real deliverables, and build a portfolio—not just watch videos or read slides. When interviewers ask "Tell me about a time..." you'll have real answers.
-              </p>
-            </div>
+            <button
+              onClick={() => setShowFAQ(true)}
+              className={`text-sm font-medium ${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} mb-8`}
+            >
+              View All FAQs →
+            </button>
 
-            {/* FAQ 3 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Will employers accept AI-generated practice as "experience"?
-              </h3>
-              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                You're not claiming it's real job experience. You're demonstrating competency. When you show process maps you've created, user stories you've written, and can articulate your approach to stakeholder management, employers see proof you can do the work. That's what gets you past the screening stage.
-              </p>
-            </div>
-
-            {/* FAQ 4 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                How long does it take to feel interview-ready?
-              </h3>
-              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Most users feel confident after 4-6 weeks of consistent practice (30 minutes per day). By then, you'll have conducted 20-30 stakeholder sessions, created multiple deliverables, and have real stories to tell in interviews. Some go faster, some take longer—it's self-paced.
-              </p>
-            </div>
-
-            {/* FAQ 5 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Do I need BA knowledge before starting?
-              </h3>
-              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Basic understanding helps but isn't required. We have a learning section covering fundamentals. However, BA WorkXP is designed for application, not initial learning. If you've never heard of Business Analysis, start with our foundational modules, then move to practice.
-              </p>
-            </div>
-
-            {/* FAQ 6 */}
-            <div className={`rounded-2xl p-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-              <h3 className={`text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                What if I get stuck or need help?
-              </h3>
-              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Every practice session includes real-time AI coaching that nudges you when you're off track. After each session, you get detailed feedback on what you did well and what to improve. Plus, our community forum connects you with other learners and experienced BAs.
-              </p>
-            </div>
-          </div>
-
-          {/* Final CTA */}
-          <div className="mt-16 text-center">
+            {/* Final CTA */}
             <div className={`rounded-2xl p-12 ${isDark ? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/30' : 'bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200'}`}>
-              <h3 className={`text-3xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Ready to break the experience barrier?
-              </h3>
               <p className={`text-xl mb-8 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 Start practicing today. Build your portfolio. Get interview-ready.
               </p>
@@ -1373,8 +1034,8 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Features</button></li>
-                <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pricing</button></li>
+                <li><button onClick={() => setShowRequestAccess(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Features</button></li>
+                <li><button onClick={() => setShowRequestAccess(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pricing</button></li>
                 <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>FAQ</button></li>
               </ul>
             </div>
