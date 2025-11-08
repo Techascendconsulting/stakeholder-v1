@@ -28,17 +28,21 @@ import type {
  */
 export async function getUserCohort(userId: string): Promise<UserCohortInfo | null> {
   try {
+    console.debug('🔍 getUserCohort: Looking up cohort for user:', userId);
+    
     // Get user's active cohort assignment
     const { data: assignment, error: assignmentError } = await supabase
       .from('cohort_students')
       .select('cohort_id')
       .eq('user_id', userId)
-      .eq('status', 'active')
       .single();
 
     if (assignmentError || !assignment) {
+      console.debug('📭 getUserCohort: No cohort assignment found for user');
       return null;
     }
+
+    console.debug('✅ getUserCohort: Found cohort assignment:', assignment.cohort_id);
 
     // Get cohort details
     const { data: cohort, error: cohortError } = await supabase
@@ -48,25 +52,28 @@ export async function getUserCohort(userId: string): Promise<UserCohortInfo | nu
       .single();
 
     if (cohortError || !cohort) {
-      console.error('Error fetching cohort:', cohortError);
+      console.error('❌ getUserCohort: Error fetching cohort:', cohortError);
       return null;
     }
 
-    // Get upcoming sessions for this cohort
+    console.debug('✅ getUserCohort: Found cohort:', cohort.name);
+
+    // Get upcoming sessions for this cohort (starts_at field, not session_date)
     const { data: sessions, error: sessionsError } = await supabase
       .from('cohort_sessions')
       .select('*')
       .eq('cohort_id', cohort.id)
-      .eq('status', 'scheduled')
-      .gte('session_date', new Date().toISOString())
-      .order('session_date', { ascending: true });
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true });
 
     if (sessionsError) {
-      console.error('Error fetching sessions:', sessionsError);
+      console.error('⚠️ getUserCohort: Error fetching sessions:', sessionsError);
     }
 
     const upcomingSessions = sessions || [];
     const nextSession = upcomingSessions[0] || null;
+
+    console.debug(`✅ getUserCohort: Found ${upcomingSessions.length} upcoming sessions`);
 
     return {
       cohort: cohort as Cohort,
@@ -74,7 +81,7 @@ export async function getUserCohort(userId: string): Promise<UserCohortInfo | nu
       upcoming_sessions: upcomingSessions as CohortSession[]
     };
   } catch (error) {
-    console.error('getUserCohort error:', error);
+    console.error('❌ getUserCohort error:', error);
     return null;
   }
 }

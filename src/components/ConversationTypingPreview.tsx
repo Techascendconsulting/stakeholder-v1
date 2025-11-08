@@ -58,7 +58,7 @@ export default function ConversationTypingPreview() {
   );
 
   return (
-    <div className="rounded-2xl border border-black/5 bg-[#E8C4B8] shadow-sm p-6 max-w-xl mx-auto flex flex-col h-[500px]">
+    <div className="rounded-2xl border border-black/5 bg-[#C5CAE9] shadow-sm p-6 max-w-xl mx-auto flex flex-col h-[500px]">
       <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-xs text-gray-700 mb-4 flex-shrink-0">
         <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
         Live Stakeholder Conversation

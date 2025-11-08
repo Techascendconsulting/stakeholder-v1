@@ -255,3 +255,7 @@ Computes rollup completion across all lessons in a module.
 4. **Add UI indicators**: Show progress bars, completion badges, etc.
 5. **Implement resume**: Use `last_position` to let users resume where they left off
 
+
+
+
+

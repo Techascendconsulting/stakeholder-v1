@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getUserCohort } from '../../utils/cohortHelpers';
 import { formatSessionDateTime } from '../../utils/cohortHelpers';
 import type { UserCohortInfo } from '../../types/cohorts';
-import { Calendar, Users, ExternalLink, Clock } from 'lucide-react';
+import { Calendar, Users, ExternalLink } from 'lucide-react';
 
 const MyCohortPage: React.FC = () => {
   const { user } = useAuth();
@@ -72,40 +72,17 @@ const MyCohortPage: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                 <Users className="w-4 h-4" />
-                <span>Active</span>
+                <span className="capitalize">{cohortInfo.cohort.status}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
-                <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Start Date</div>
-                  <div className="font-medium">
-                    {new Date(cohortInfo.cohort.start_date).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {cohortInfo.cohort.end_date && (
-                <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
-                  <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">End Date</div>
-                    <div className="font-medium">
-                      {new Date(cohortInfo.cohort.end_date).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+              <Calendar className="w-4 h-4 inline mr-2" />
+              Created {new Date(cohortInfo.cohort.created_at).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}
             </div>
           </div>
 
@@ -129,19 +106,21 @@ const MyCohortPage: React.FC = () => {
                 <div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Date & Time</div>
                   <div className="font-medium text-gray-900 dark:text-white">
-                    {formatSessionDateTime(cohortInfo.next_session.session_date)}
+                    {formatSessionDateTime(cohortInfo.next_session.starts_at)}
                   </div>
                 </div>
 
-                <a
-                  href={cohortInfo.next_session.meeting_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 px-6 py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition text-white font-medium"
-                >
-                  <span>Join Live Session</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                {cohortInfo.next_session.meeting_link && (
+                  <a
+                    href={cohortInfo.next_session.meeting_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 px-6 py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition text-white font-medium"
+                  >
+                    <span>Join Live Session</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -164,17 +143,20 @@ const MyCohortPage: React.FC = () => {
                         {session.topic || 'Session'}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {formatSessionDateTime(session.session_date)}
+                        {formatSessionDateTime(session.starts_at)}
+                        {session.duration_minutes && ` (${session.duration_minutes} min)`}
                       </div>
                     </div>
-                    <a
-                      href={session.meeting_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-4 px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition text-gray-700 dark:text-gray-200 text-sm font-medium"
-                    >
-                      Join
-                    </a>
+                    {session.meeting_link && (
+                      <a
+                        href={session.meeting_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-4 px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition text-gray-700 dark:text-gray-200 text-sm font-medium"
+                      >
+                        Join
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>

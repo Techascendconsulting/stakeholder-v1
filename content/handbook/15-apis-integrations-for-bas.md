@@ -75,3 +75,4 @@ The BA who masters integrations stops being a translator of requirements only. T
 
 
 
+

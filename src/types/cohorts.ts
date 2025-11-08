@@ -1,12 +1,10 @@
 /**
  * TypeScript interfaces for Cohorts feature
- * Matches the database schema defined in supabase/migrations/20250108000000_create_cohorts.sql
+ * Matches the database schema defined in supabase/migrations/20250108000001_cohorts_complete_setup.sql
  */
 
-export type CohortVisibilityScope = 'public' | 'private' | 'draft';
-export type CohortStatus = 'active' | 'archived' | 'upcoming' | 'completed';
-export type CohortStudentStatus = 'active' | 'inactive' | 'removed';
-export type CohortSessionStatus = 'scheduled' | 'completed' | 'cancelled';
+export type CohortStatus = 'draft' | 'active' | 'archived';
+export type CohortStudentRole = 'student' | 'coach';
 
 /**
  * Cohort - Main cohort/group entity
@@ -14,14 +12,9 @@ export type CohortSessionStatus = 'scheduled' | 'completed' | 'cancelled';
 export interface Cohort {
   id: string;
   name: string;
-  start_date: string; // ISO date string
-  end_date?: string | null; // ISO date string
-  coach_user_id?: string | null;
-  visibility_scope: CohortVisibilityScope;
   description?: string | null;
-  max_capacity?: number | null;
+  coach_user_id?: string | null;
   status: CohortStatus;
-  created_by?: string | null;
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
@@ -30,12 +23,10 @@ export interface Cohort {
  * CohortStudent - Junction table linking students to cohorts
  */
 export interface CohortStudent {
-  id: string;
   cohort_id: string;
   user_id: string;
+  role: CohortStudentRole;
   joined_at: string; // ISO timestamp
-  status: CohortStudentStatus;
-  notes?: string | null;
 }
 
 /**
@@ -44,13 +35,10 @@ export interface CohortStudent {
 export interface CohortSession {
   id: string;
   cohort_id: string;
-  session_date: string; // ISO timestamp
-  session_end_time?: string | null; // ISO timestamp
-  meeting_link: string;
+  starts_at: string; // ISO timestamp
+  duration_minutes?: number | null;
+  meeting_link?: string | null;
   topic?: string | null;
-  description?: string | null;
-  status: CohortSessionStatus;
-  created_by?: string | null;
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
@@ -79,48 +67,36 @@ export interface UserCohortInfo {
  */
 export interface CreateCohortRequest {
   name: string;
-  start_date: string;
-  end_date?: string | null;
-  coach_user_id?: string | null;
-  visibility_scope?: CohortVisibilityScope;
   description?: string | null;
-  max_capacity?: number | null;
+  coach_user_id?: string | null;
   status?: CohortStatus;
 }
 
 export interface UpdateCohortRequest {
   name?: string;
-  start_date?: string;
-  end_date?: string | null;
-  coach_user_id?: string | null;
-  visibility_scope?: CohortVisibilityScope;
   description?: string | null;
-  max_capacity?: number | null;
+  coach_user_id?: string | null;
   status?: CohortStatus;
 }
 
 export interface CreateCohortSessionRequest {
   cohort_id: string;
-  session_date: string;
-  session_end_time?: string | null;
-  meeting_link: string;
+  starts_at: string;
+  duration_minutes?: number | null;
+  meeting_link?: string | null;
   topic?: string | null;
-  description?: string | null;
-  status?: CohortSessionStatus;
 }
 
 export interface UpdateCohortSessionRequest {
-  session_date?: string;
-  session_end_time?: string | null;
-  meeting_link?: string;
+  starts_at?: string;
+  duration_minutes?: number | null;
+  meeting_link?: string | null;
   topic?: string | null;
-  description?: string | null;
-  status?: CohortSessionStatus;
 }
 
 export interface AssignStudentRequest {
   cohort_id: string;
   user_id: string;
-  notes?: string | null;
+  role?: CohortStudentRole;
 }
 

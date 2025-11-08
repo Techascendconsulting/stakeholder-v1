@@ -106,3 +106,4 @@ SELECT 'Ultra simple admin setup complete! All complex functions removed, simple
 
 
 
+
