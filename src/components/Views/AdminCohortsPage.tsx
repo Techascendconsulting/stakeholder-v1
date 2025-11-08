@@ -7,7 +7,7 @@ import {
   updateCohort, 
   deleteCohort,
   getCohortStudents, 
-  assignStudentToCohort, 
+  assignStudentByEmail,
   removeStudentFromCohort,
   getCohortSessions, 
   scheduleCohortSession, 
@@ -39,9 +39,10 @@ const AdminCohortsPage: React.FC = () => {
 
   // Students state
   const [cohortStudents, setCohortStudents] = useState<CohortStudent[]>([]);
-  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
+  const [addingStudent, setAddingStudent] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // Sessions state
   const [sessions, setSessions] = useState<CohortSession[]>([]);
@@ -61,11 +62,17 @@ const AdminCohortsPage: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'students' && selectedCohort) {
       loadCohortStudents();
-      loadAvailableUsers();
     } else if (activeTab === 'sessions' && selectedCohort) {
       loadSessions();
     }
   }, [activeTab, selectedCohort]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   const loadCohorts = async () => {
     setLoading(true);
@@ -79,64 +86,20 @@ const AdminCohortsPage: React.FC = () => {
 
   const loadCohortStudents = async () => {
     if (!selectedCohort) return;
-    const data = await getCohortStudents(selectedCohort.id);
     
-    // Enrich with emails from auth.users
     try {
-      const { data: authUsers } = await supabase.auth.admin.listUsers();
-      if (authUsers) {
-        const enriched = data.map(student => {
-          const authUser = authUsers.users.find(u => u.id === student.user_id);
-          return {
-            ...student,
-            email: authUser?.email || 'No email'
-          };
-        });
-        setCohortStudents(enriched as any);
-        return;
-      }
-    } catch (error) {
-      console.error('Error enriching students with emails:', error);
-    }
-    
-    setCohortStudents(data);
-  };
-
-  const loadAvailableUsers = async () => {
-    try {
-      // Get users with their emails from auth.users
-      const { data: profiles, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('user_id, display_name');
+      const { data, error } = await supabase.rpc('get_cohort_students_with_emails', {
+        p_cohort_id: selectedCohort.id
+      });
       
-      if (profileError) {
-        console.error('Error loading profiles:', profileError);
+      if (error) {
+        console.error('Error loading students:', error);
         return;
       }
-
-      // Get emails from auth.users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
       
-      if (authError) {
-        console.error('Error loading auth users:', authError);
-        // Fall back to profiles without emails
-        setAvailableUsers(profiles || []);
-        return;
-      }
-
-      // Merge profiles with emails
-      const usersWithEmails = (profiles || []).map(profile => {
-        const authUser = authUsers.users.find(u => u.id === profile.user_id);
-        return {
-          user_id: profile.user_id,
-          display_name: profile.display_name || 'Unknown User',
-          email: authUser?.email || 'No email'
-        };
-      }).filter(u => u.email !== 'No email'); // Only show users with emails
-
-      setAvailableUsers(usersWithEmails);
+      setCohortStudents(data || []);
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('Error loading students:', error);
     }
   };
 
@@ -186,19 +149,22 @@ const AdminCohortsPage: React.FC = () => {
     }
   };
 
-  const handleAssignStudent = async (userId: string) => {
-    if (!selectedCohort) return;
+  const handleAssignStudentByEmail = async () => {
+    if (!selectedCohort || !studentEmail.trim()) return;
     
-    const result = await assignStudentToCohort({
-      cohort_id: selectedCohort.id,
-      user_id: userId,
-      role: 'student'
-    });
+    setAddingStudent(true);
     
-    if (result) {
+    const result = await assignStudentByEmail(selectedCohort.id, studentEmail);
+    
+    setAddingStudent(false);
+    
+    if (result.success) {
+      setToastMessage({ type: 'success', text: result.message });
       loadCohortStudents();
       setShowAddStudentModal(false);
-      setSearchTerm('');
+      setStudentEmail('');
+    } else {
+      setToastMessage({ type: 'error', text: result.error || 'Failed to add student' });
     }
   };
 
@@ -274,13 +240,6 @@ const AdminCohortsPage: React.FC = () => {
     setShowCohortModal(true);
   };
 
-  const filteredUsers = availableUsers.filter(u => {
-    const matchesSearch = 
-      u.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const notAlreadyInCohort = !cohortStudents.some(cs => cs.user_id === u.user_id);
-    return matchesSearch && notAlreadyInCohort;
-  });
 
   // Check admin access
   if (adminLoading) {
@@ -697,12 +656,12 @@ const AdminCohortsPage: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Add Student
+                Add Student to Cohort
               </h3>
               <button
                 onClick={() => {
                   setShowAddStudentModal(false);
-                  setSearchTerm('');
+                  setStudentEmail('');
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
@@ -710,38 +669,65 @@ const AdminCohortsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Student Email Address
+                </label>
                 <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                  type="email"
+                  value={studentEmail}
+                  onChange={(e) => setStudentEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAssignStudentByEmail()}
+                  placeholder="student@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                  disabled={addingStudent}
                 />
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  If the user doesn't exist, they'll be created and invited automatically.
+                </p>
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowAddStudentModal(false);
+                    setStudentEmail('');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  disabled={addingStudent}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAssignStudentByEmail}
+                  disabled={!studentEmail.trim() || addingStudent}
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {addingStudent ? 'Adding...' : 'Add Student'}
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="max-h-64 overflow-y-auto space-y-2">
-              {filteredUsers.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  {searchTerm ? 'No users found matching your search' : 'No available users to add'}
-                </p>
-              ) : (
-                filteredUsers.map((u) => (
-                  <button
-                    key={u.user_id}
-                    onClick={() => handleAssignStudent(u.user_id)}
-                    className="w-full text-left px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  >
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {u.display_name || 'Unknown User'}
-                    </div>
-                    <div className="text-sm text-blue-600 dark:text-blue-400">{u.email}</div>
-                  </button>
-                ))
-              )}
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+          <div className={`rounded-lg shadow-lg p-4 max-w-md ${
+            toastMessage.type === 'success' 
+              ? 'bg-green-600 text-white' 
+              : 'bg-red-600 text-white'
+          }`}>
+            <div className="flex items-center space-x-2">
+              <span className="font-medium">{toastMessage.text}</span>
+              <button
+                onClick={() => setToastMessage(null)}
+                className="ml-auto text-white hover:text-gray-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

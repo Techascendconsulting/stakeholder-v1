@@ -42,3 +42,4 @@ SELECT 'Bucket accessible:' as info, COUNT(*) as count FROM storage.objects WHER
 
 
 
+

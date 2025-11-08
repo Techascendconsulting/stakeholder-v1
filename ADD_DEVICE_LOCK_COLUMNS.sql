@@ -35,3 +35,4 @@ COMMENT ON COLUMN users.locked IS 'Whether the account is locked due to device m
 
 
 
+

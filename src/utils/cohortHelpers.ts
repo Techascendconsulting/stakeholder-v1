@@ -267,6 +267,43 @@ export async function assignStudentToCohort(
 }
 
 /**
+ * Assign a student to cohort by email (creates user if doesn't exist)
+ */
+export async function assignStudentByEmail(
+  cohortId: string,
+  email: string
+): Promise<{ success: boolean; message: string; error?: string }> {
+  try {
+    const { data, error } = await supabase.rpc('assign_student_by_email', {
+      p_cohort_id: cohortId,
+      p_email: email.trim().toLowerCase()
+    });
+
+    if (error) {
+      console.error('Error assigning student by email:', error);
+      return {
+        success: false,
+        message: '',
+        error: error.message || 'Failed to assign student'
+      };
+    }
+
+    return {
+      success: data.success,
+      message: data.message || data.error,
+      error: data.success ? undefined : data.error
+    };
+  } catch (error) {
+    console.error('assignStudentByEmail error:', error);
+    return {
+      success: false,
+      message: '',
+      error: 'An unexpected error occurred'
+    };
+  }
+}
+
+/**
  * Remove a student from a cohort
  */
 export async function removeStudentFromCohort(

@@ -108,3 +108,4 @@ GRANT EXECUTE ON FUNCTION log_user_activity(TEXT, TEXT, TEXT, INET, TEXT, TEXT, 
 
 
 
+

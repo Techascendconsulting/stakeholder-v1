@@ -196,3 +196,4 @@ BEGIN
   RAISE NOTICE '✅ Cohorts feature tables created successfully';
 END $$;
 
+

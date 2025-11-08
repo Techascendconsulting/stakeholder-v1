@@ -158,3 +158,4 @@ BEGIN
   RAISE NOTICE '✅ Cohorts clean setup migration applied successfully (using cohort_live_sessions)';
 END $$;
 
+
