@@ -380,19 +380,30 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             
-            {/* Right: Meeting Preview - With Context */}
+            {/* Right: Meeting Preview - With Clear Context */}
             <div className="relative flex flex-col items-center justify-center">
-              {/* Context Label */}
-              <div className="mb-4 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/20 backdrop-blur-sm rounded-full border border-purple-500/30 mb-2">
-                  <Users className="w-4 h-4 text-purple-300" />
-                  <span className="text-sm font-semibold text-purple-200">Live Practice Session</span>
+              {/* Clear Explanation */}
+              <div className="mb-6 text-center space-y-3">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500/20 to-green-500/20 backdrop-blur-sm rounded-full border-2 border-emerald-400/40 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <span className="text-sm font-bold text-emerald-100">YOU Practicing Right Now</span>
                 </div>
-                <p className="text-gray-400 text-xs max-w-md mx-auto">
-                  Interview AI stakeholders with real personalities, goals, and concerns
+                <h3 className="text-2xl font-bold text-white max-w-md mx-auto leading-tight">
+                  This Is You Interviewing a Real Stakeholder
+                </h3>
+                <p className="text-gray-300 text-sm max-w-md mx-auto leading-relaxed">
+                  Practice eliciting requirements from AI stakeholders with real business problems. Build confidence before your first interview.
                 </p>
               </div>
               <MeetingPreview />
+              
+              {/* What You're Building */}
+              <div className="mt-6 flex items-center gap-3 px-6 py-3 bg-purple-600/10 backdrop-blur-sm rounded-xl border border-purple-500/30">
+                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                <p className="text-sm font-medium text-gray-200">
+                  Every conversation becomes portfolio proof
+                </p>
+              </div>
             </div>
           </div>
         </div>
