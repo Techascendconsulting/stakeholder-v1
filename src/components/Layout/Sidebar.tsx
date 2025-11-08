@@ -226,6 +226,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Project', 
       icon: Rocket
     },
+    { 
+      id: 'my-cohort',
+      label: 'My Cohort', 
+      icon: Users
+    },
     // { 
     //   id: 'create-project',
     //   label: 'Create Project', 

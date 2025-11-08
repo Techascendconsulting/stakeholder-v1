@@ -271,7 +271,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'handbook',         // My Resources includes Handbook
       'profile',
       'welcome',
-      'motivation'
+      'motivation',
+      'my-cohort'         // Always accessible to all users
     ];
 
     // Check if this page should be locked for 'new' students

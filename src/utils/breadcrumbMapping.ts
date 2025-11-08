@@ -180,6 +180,12 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
     { label: 'My Profile', view: 'profile' }
   ],
 
+  // Cohort
+  'my-cohort': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'My Cohort', view: 'my-cohort' }
+  ],
+
   // Admin paths
   'admin': [
     { label: 'Dashboard', view: 'dashboard' },
