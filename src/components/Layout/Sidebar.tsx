@@ -167,6 +167,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Admin Panel', 
       icon: Settings
     },
+    { 
+      id: 'admin-cohorts', 
+      label: 'Cohorts', 
+      icon: Users
+    },
     // { 
     //   id: 'community-admin', 
     //   label: 'Community Hub (Admin)', 

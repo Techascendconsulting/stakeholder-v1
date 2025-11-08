@@ -112,7 +112,8 @@ export type AppView =
   | 'contact-us'
   | 'admin-contact-submissions'
   | 'faq'
-  | 'my-cohort';
+  | 'my-cohort'
+  | 'admin-cohorts';
 
 // Re-export specific types for convenience
 export type {

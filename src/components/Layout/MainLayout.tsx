@@ -99,6 +99,7 @@ import CoreLearningView from '../Views/CoreLearningView';
 import CoreLearning2View from '../Views/CoreLearning2View'; // NEW: Overview + Individual Topic Pages
 import LearningPageWrapper from '../LearningPageWrapper';
 import MyCohortPage from '../Views/MyCohortPage';
+import AdminCohortsPage from '../Views/AdminCohortsPage';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import LockMessageToast from '../LockMessageToast';
@@ -435,6 +436,8 @@ const MainLayout: React.FC = () => {
         return <CareerJourneyView />;
       case 'my-cohort':
         return <MyCohortPage />;
+      case 'admin-cohorts':
+        return <AdminCohortsPage />;
       default:
         return <ProjectsView />;
     }
