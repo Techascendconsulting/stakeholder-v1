@@ -475,9 +475,11 @@ const AdminCohortsPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleRemoveStudent(student.user_id)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400"
+                          className="inline-flex items-center gap-1 text-red-600 hover:text-red-900 dark:text-red-400 text-sm"
+                          title="Remove this student from the cohort (does not delete account)"
                         >
-                          <Trash2 className="w-4 h-4 inline" />
+                          <Trash2 className="w-4 h-4" />
+                          <span>Remove from Cohort</span>
                         </button>
                       </td>
                     </tr>
