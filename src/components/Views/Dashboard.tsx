@@ -574,11 +574,11 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Project Journey - Green */}
+          {/* Project Journey - Pink/Rose */}
           <div 
             className={`group rounded-2xl border-2 p-5 transition-all ${
               isPageAccessible('project-flow', userPhase, (userType === 'admin' ? 'existing' : userType)) 
-                ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-700 hover:shadow-xl hover:border-green-400 dark:hover:border-green-500 cursor-pointer' 
+                ? 'bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 border-rose-200 dark:border-rose-700 hover:shadow-xl hover:border-rose-400 dark:hover:border-rose-500 cursor-pointer' 
                 : 'bg-gray-100 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 opacity-70 cursor-not-allowed'
             }`}
             onClick={() => {
@@ -590,7 +590,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
                 isPageAccessible('project-flow', userPhase, (userType === 'admin' ? 'existing' : userType))
-                  ? 'bg-gradient-to-br from-green-600 to-emerald-600 group-hover:scale-110'
+                  ? 'bg-gradient-to-br from-rose-600 to-pink-600 group-hover:scale-110'
                   : 'bg-gray-400 dark:bg-gray-600'
               } transition-transform`}>
                 {isPageAccessible('project-flow', userPhase, (userType === 'admin' ? 'existing' : userType)) ? (
@@ -601,7 +601,7 @@ const Dashboard: React.FC = () => {
               </div>
               <span className={`text-2xl font-bold ${
                 isPageAccessible('project-flow', userPhase, (userType === 'admin' ? 'existing' : userType))
-                  ? 'text-green-600 dark:text-green-400'
+                  ? 'text-rose-600 dark:text-rose-400'
                   : 'text-gray-400 dark:text-gray-500'
               }`}>
                 {isPageAccessible('project-flow', userPhase, (userType === 'admin' ? 'existing' : userType)) ? 'Ready' : '🔒'}
