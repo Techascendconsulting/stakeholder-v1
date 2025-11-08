@@ -106,6 +106,10 @@ const AdminCohortsPage: React.FC = () => {
 
   const handleCreateCohort = async () => {
     if (!user?.id) return;
+    if (!cohortForm.name.trim()) {
+      alert('Please enter a cohort name');
+      return;
+    }
     
     const newCohort = await createCohort(cohortForm, user.id);
     if (newCohort) {
@@ -117,6 +121,10 @@ const AdminCohortsPage: React.FC = () => {
 
   const handleUpdateCohort = async () => {
     if (!selectedCohort) return;
+    if (!cohortForm.name.trim()) {
+      alert('Please enter a cohort name');
+      return;
+    }
     
     const updated = await updateCohort(selectedCohort.id, cohortForm);
     if (updated) {
@@ -164,9 +172,17 @@ const AdminCohortsPage: React.FC = () => {
 
   const handleCreateSession = async () => {
     if (!user?.id || !selectedCohort) return;
+    if (!sessionForm.starts_at) {
+      alert('Please select a date and time for the session');
+      return;
+    }
+    
+    // Convert datetime-local to ISO timestamp
+    const startsAtISO = new Date(sessionForm.starts_at).toISOString();
     
     const newSession = await scheduleCohortSession({
       ...sessionForm,
+      starts_at: startsAtISO,
       cohort_id: selectedCohort.id
     }, user.id);
     
@@ -206,6 +222,7 @@ const AdminCohortsPage: React.FC = () => {
   };
 
   const openEditCohortModal = (cohort: Cohort) => {
+    setSelectedCohort(cohort);
     setCohortForm({
       name: cohort.name,
       description: cohort.description || '',
@@ -305,6 +322,7 @@ const AdminCohortsPage: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">All Cohorts</h2>
             <button
               onClick={() => {
+                setSelectedCohort(null);
                 resetCohortForm();
                 setShowCohortModal(true);
               }}
@@ -474,7 +492,10 @@ const AdminCohortsPage: React.FC = () => {
               Sessions for {selectedCohort.name}
             </h2>
             <button
-              onClick={() => setShowSessionModal(true)}
+              onClick={() => {
+                resetSessionForm();
+                setShowSessionModal(true);
+              }}
               className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition"
             >
               <Plus className="w-4 h-4" />
