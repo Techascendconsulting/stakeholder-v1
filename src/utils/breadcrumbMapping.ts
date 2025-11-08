@@ -195,6 +195,10 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
     { label: 'Dashboard', view: 'dashboard' },
     { label: 'Admin Panel', view: 'admin-panel' }
   ],
+  'admin-cohorts': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'Cohort Manager', view: 'admin-cohorts' }
+  ],
   'admin-contact-submissions': [
     { label: 'Dashboard', view: 'dashboard' },
     { label: 'Admin Panel', view: 'admin-panel' },
