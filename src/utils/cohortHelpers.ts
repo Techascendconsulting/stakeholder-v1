@@ -60,7 +60,7 @@ export async function getUserCohort(userId: string): Promise<UserCohortInfo | nu
 
     // Get upcoming sessions for this cohort (starts_at field, not session_date)
     const { data: sessions, error: sessionsError } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .select('*')
       .eq('cohort_id', cohort.id)
       .gte('starts_at', new Date().toISOString())
@@ -147,10 +147,10 @@ export async function getCohortById(cohortId: string): Promise<CohortWithDetails
 
     // Get sessions
     const { data: sessions } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .select('*')
       .eq('cohort_id', cohortId)
-      .order('session_date', { ascending: true });
+      .order('starts_at', { ascending: true });
 
     return {
       ...cohort,
@@ -337,10 +337,10 @@ export async function getCohortSessions(
 ): Promise<CohortSession[]> {
   try {
     let query = supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .select('*')
       .eq('cohort_id', cohortId)
-      .order('session_date', { ascending: true });
+      .order('starts_at', { ascending: true });
 
     if (!includeCompleted) {
       query = query.eq('status', 'scheduled');
@@ -369,7 +369,7 @@ export async function scheduleCohortSession(
 ): Promise<CohortSession | null> {
   try {
     const { data, error } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .insert({
         ...sessionData,
         created_by: createdBy
@@ -398,7 +398,7 @@ export async function updateCohortSession(
 ): Promise<CohortSession | null> {
   try {
     const { data, error } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .update(changes)
       .eq('id', sessionId)
       .select()
@@ -422,7 +422,7 @@ export async function updateCohortSession(
 export async function deleteCohortSession(sessionId: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .delete()
       .eq('id', sessionId);
 
@@ -446,12 +446,11 @@ export async function getNextCohortSession(
 ): Promise<CohortSession | null> {
   try {
     const { data, error } = await supabase
-      .from('cohort_sessions')
+      .from('cohort_live_sessions')
       .select('*')
       .eq('cohort_id', cohortId)
-      .eq('status', 'scheduled')
-      .gte('session_date', new Date().toISOString())
-      .order('session_date', { ascending: true })
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
       .limit(1)
       .single();
 
