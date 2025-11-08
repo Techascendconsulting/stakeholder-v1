@@ -2,8 +2,8 @@
  * ELICITATION PRACTICE PROGRESS TRACKING
  * 
  * Manages the progressive unlock system for elicitation practice:
- * 1. Chat practice: Unlocks after completing ANY 3 modules (70%+ each)
- * 2. Voice practice: Unlocks after 3 qualifying chat sessions on 3 different days
+ * 1. Chat practice: Unlocks after completing ANY 3 learning modules
+ * 2. Voice practice: Unlocks after 3 qualifying chat sessions (70%+ score) on 3 different days
  * 3. Daily limits: 20 interactions/day for chat-only users
  */
 
@@ -141,14 +141,14 @@ export async function getQualifyingSessions(userId: string): Promise<PracticeSes
 
 /**
  * Check if user has unlocked chat practice
- * (Requires completion of ANY 3 modules with 70%+ each)
+ * (Requires completion of ANY 3 modules)
  */
 export async function checkChatUnlock(userId: string): Promise<boolean> {
   try {
-    // Check if user has completed at least 3 modules with 70%+
+    // Check if user has completed at least 3 modules
     const { data, error } = await supabase
       .from('learning_progress')
-      .select('status, completion_percentage, module_id')
+      .select('status, module_id')
       .eq('user_id', userId)
       .eq('status', 'completed');
 
@@ -162,14 +162,12 @@ export async function checkChatUnlock(userId: string): Promise<boolean> {
       return false;
     }
 
-    // Count modules completed with 70%+
-    const qualifyingModules = data.filter(module => (module.completion_percentage || 0) >= 70);
-    const isUnlocked = qualifyingModules.length >= 3;
+    // Check if 3 or more modules are completed
+    const isUnlocked = data.length >= 3;
     
     console.log('🔍 Chat unlock check:', { 
       completedModules: data.length,
-      qualifyingModules: qualifyingModules.length,
-      moduleIds: qualifyingModules.map(m => m.module_id),
+      moduleIds: data.map(m => m.module_id),
       isUnlocked 
     });
     
