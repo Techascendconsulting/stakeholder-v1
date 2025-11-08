@@ -80,19 +80,61 @@ const AdminCohortsPage: React.FC = () => {
   const loadCohortStudents = async () => {
     if (!selectedCohort) return;
     const data = await getCohortStudents(selectedCohort.id);
+    
+    // Enrich with emails from auth.users
+    try {
+      const { data: authUsers } = await supabase.auth.admin.listUsers();
+      if (authUsers) {
+        const enriched = data.map(student => {
+          const authUser = authUsers.users.find(u => u.id === student.user_id);
+          return {
+            ...student,
+            email: authUser?.email || 'No email'
+          };
+        });
+        setCohortStudents(enriched as any);
+        return;
+      }
+    } catch (error) {
+      console.error('Error enriching students with emails:', error);
+    }
+    
     setCohortStudents(data);
   };
 
   const loadAvailableUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Get users with their emails from auth.users
+      const { data: profiles, error: profileError } = await supabase
         .from('user_profiles')
-        .select('user_id, display_name')
-        .order('display_name');
+        .select('user_id, display_name');
       
-      if (!error && data) {
-        setAvailableUsers(data);
+      if (profileError) {
+        console.error('Error loading profiles:', profileError);
+        return;
       }
+
+      // Get emails from auth.users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.error('Error loading auth users:', authError);
+        // Fall back to profiles without emails
+        setAvailableUsers(profiles || []);
+        return;
+      }
+
+      // Merge profiles with emails
+      const usersWithEmails = (profiles || []).map(profile => {
+        const authUser = authUsers.users.find(u => u.id === profile.user_id);
+        return {
+          user_id: profile.user_id,
+          display_name: profile.display_name || 'Unknown User',
+          email: authUser?.email || 'No email'
+        };
+      }).filter(u => u.email !== 'No email'); // Only show users with emails
+
+      setAvailableUsers(usersWithEmails);
     } catch (error) {
       console.error('Error loading users:', error);
     }
@@ -232,10 +274,13 @@ const AdminCohortsPage: React.FC = () => {
     setShowCohortModal(true);
   };
 
-  const filteredUsers = availableUsers.filter(u => 
-    u.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !cohortStudents.some(cs => cs.user_id === u.user_id)
-  );
+  const filteredUsers = availableUsers.filter(u => {
+    const matchesSearch = 
+      u.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const notAlreadyInCohort = !cohortStudents.some(cs => cs.user_id === u.user_id);
+    return matchesSearch && notAlreadyInCohort;
+  });
 
   // Check admin access
   if (adminLoading) {
@@ -437,7 +482,7 @@ const AdminCohortsPage: React.FC = () => {
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      User ID
+                      Email
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Role
@@ -454,7 +499,7 @@ const AdminCohortsPage: React.FC = () => {
                   {cohortStudents.map((student) => (
                     <tr key={student.user_id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {student.user_id}
+                        {(student as any).email || student.user_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -672,7 +717,7 @@ const AdminCohortsPage: React.FC = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search users..."
+                  placeholder="Search by name or email..."
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -680,18 +725,20 @@ const AdminCohortsPage: React.FC = () => {
 
             <div className="max-h-64 overflow-y-auto space-y-2">
               {filteredUsers.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">No users found</p>
+                <p className="text-sm text-gray-500 text-center py-4">
+                  {searchTerm ? 'No users found matching your search' : 'No available users to add'}
+                </p>
               ) : (
                 filteredUsers.map((u) => (
                   <button
                     key={u.user_id}
                     onClick={() => handleAssignStudent(u.user_id)}
-                    className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    className="w-full text-left px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                   >
                     <div className="font-medium text-gray-900 dark:text-white">
                       {u.display_name || 'Unknown User'}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{u.user_id}</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">{u.email}</div>
                   </button>
                 ))
               )}
