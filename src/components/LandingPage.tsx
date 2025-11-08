@@ -982,10 +982,12 @@ const LandingPage: React.FC = () => {
               <span className="text-sm font-semibold text-emerald-400">Success Stories</span>
             </div>
             
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 text-white">
-              From Stuck to Hired
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6">
+              <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-400 bg-clip-text text-transparent">
+                From Stuck to Hired
+              </span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-white font-medium max-w-3xl mx-auto leading-relaxed">
               Career-changers who broke through the experience barrier with BA WorkXP
             </p>
           </div>
