@@ -479,7 +479,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
-                  } ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${isLocked ? 'opacity-90 cursor-not-allowed' : ''}`}
                   title={
                     isPracticeLocked ? 'Complete Modules 1–3 and assignments to unlock Practice'
                     : isProjectLocked ? 'Complete Practice to unlock Final Project'
@@ -501,7 +501,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                         </div>
                       )}
                       {isLocked && (
-                        <Lock className="w-4 h-4 text-gray-400 ml-auto" />
+                        <Lock className="w-4 h-4 text-purple-300 ml-auto opacity-100" />
                       )}
                     </>
                   )}
