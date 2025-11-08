@@ -8,34 +8,24 @@ export type UserPhase = 'learning' | 'practice' | 'hands-on';
  * Phase 1 (learning): Learning Journey - only Dashboard, Learning Journey, My Resources
  * Phase 2 (practice): After completing 3 learning modules - unlocks Practice
  * Phase 3 (hands-on): After completing all 10 modules - unlocks Projects, Mentor, etc.
+ * 
+ * NOTE: Uses NEW progress system (user_progress table with unit_type='module')
  */
 export async function getUserPhase(userId: string): Promise<UserPhase> {
   try {
-    // Check OLD system (learning_progress table)
-    const { data: oldProgress } = await supabase
+    // Check learning_progress table (this is where markModuleCompleted() writes to)
+    const { data: learningProgress, error } = await supabase
       .from('learning_progress')
       .select('status')
       .eq('user_id', userId);
 
-    const oldCompletedCount = oldProgress?.filter(p => p.status === 'completed').length || 0;
+    if (error) throw error;
 
-    // Check NEW system (user_progress table with unit_type='module')
-    const { data: newProgress } = await supabase
-      .from('user_progress')
-      .select('status, unit_type')
-      .eq('user_id', userId)
-      .eq('unit_type', 'module');
-
-    const newCompletedCount = newProgress?.filter(p => p.status === 'completed').length || 0;
-
-    // Use whichever system has more completed modules
-    const completedModules = Math.max(oldCompletedCount, newCompletedCount);
+    const completedModules = learningProgress?.filter(p => p.status === 'completed').length || 0;
     const practiceUnlockThreshold = 3;  // Practice unlocks after 3 modules
     const handsOnUnlockThreshold = 10;  // Hands-on unlocks after all 10 modules
 
     console.log('📊 User progress phase check:', { 
-      oldSystemCompleted: oldCompletedCount,
-      newSystemCompleted: newCompletedCount,
       completedModules, 
       practiceUnlockThreshold,
       handsOnUnlockThreshold,

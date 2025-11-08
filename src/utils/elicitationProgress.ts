@@ -2,9 +2,11 @@
  * ELICITATION PRACTICE PROGRESS TRACKING
  * 
  * Manages the progressive unlock system for elicitation practice:
- * 1. Chat practice: Unlocks after completing ANY 3 learning modules
+ * 1. Chat practice: Unlocks after completing ANY 3 learning modules (from user_progress table)
  * 2. Voice practice: Unlocks after 3 qualifying chat sessions (70%+ score) on 3 different days
  * 3. Daily limits: 20 interactions/day for chat-only users
+ * 
+ * NOTE: Uses NEW progress system (user_progress table with unit_type='module')
  */
 
 import { supabase } from '../lib/supabase';
@@ -145,33 +147,24 @@ export async function getQualifyingSessions(userId: string): Promise<PracticeSes
  */
 export async function checkChatUnlock(userId: string): Promise<boolean> {
   try {
-    // Check OLD system (learning_progress)
-    const { data: oldData } = await supabase
+    // Check learning_progress table (where markModuleCompleted() writes to)
+    const { data, error } = await supabase
       .from('learning_progress')
       .select('status, module_id')
       .eq('user_id', userId)
       .eq('status', 'completed');
 
-    const oldCompletedCount = oldData?.length || 0;
+    if (error) {
+      console.error('❌ Error fetching learning progress:', error);
+      return false;
+    }
 
-    // Check NEW system (user_progress with unit_type='module')
-    const { data: newData } = await supabase
-      .from('user_progress')
-      .select('status, stable_key, unit_type')
-      .eq('user_id', userId)
-      .eq('unit_type', 'module')
-      .eq('status', 'completed');
-
-    const newCompletedCount = newData?.length || 0;
-
-    // Use whichever system has more completed modules
-    const completedModules = Math.max(oldCompletedCount, newCompletedCount);
+    const completedModules = data?.length || 0;
     const isUnlocked = completedModules >= 3;
     
     console.log('🔍 Chat unlock check:', { 
-      oldSystemCompleted: oldCompletedCount,
-      newSystemCompleted: newCompletedCount,
       completedModules,
+      moduleIds: data?.map(m => m.module_id),
       isUnlocked 
     });
     
