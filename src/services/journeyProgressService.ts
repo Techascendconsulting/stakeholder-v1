@@ -237,9 +237,9 @@ export class JourneyProgressService {
     learningProgress: LearningProgress,
     practiceProgress: PracticeProgress
   ): Promise<NextStepGuidance> {
-    // For new users, prioritize learning if they haven't completed module 1
-    if (userType === 'new' && learningProgress.modulesCompleted === 0) {
-      const hasStarted = learningProgress.inProgressModules > 0;
+    // For users who haven't completed all learning modules
+    if (learningProgress.progressPercentage < 100) {
+      const hasStarted = learningProgress.modulesCompleted > 0 || learningProgress.inProgressModules > 0;
       return {
         title: hasStarted ? 'Continue Your BA Learning Journey' : 'Start Your BA Learning Journey',
         description: hasStarted ? 'Keep building your BA fundamentals' : 'Begin with Core Learning to understand BA fundamentals',
