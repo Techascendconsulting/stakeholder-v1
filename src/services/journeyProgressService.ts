@@ -239,10 +239,11 @@ export class JourneyProgressService {
   ): Promise<NextStepGuidance> {
     // For new users, prioritize learning if they haven't completed module 1
     if (userType === 'new' && learningProgress.modulesCompleted === 0) {
+      const hasStarted = learningProgress.inProgressModules > 0;
       return {
-        title: 'Start Your BA Learning Journey',
-        description: 'Begin with Core Learning to understand BA fundamentals',
-        action: 'Start Learning',
+        title: hasStarted ? 'Continue Your BA Learning Journey' : 'Start Your BA Learning Journey',
+        description: hasStarted ? 'Keep building your BA fundamentals' : 'Begin with Core Learning to understand BA fundamentals',
+        action: hasStarted ? 'Continue Learning' : 'Start Learning',
         actionView: 'learning-flow',
         priority: 'high',
         icon: 'learning'
@@ -251,10 +252,11 @@ export class JourneyProgressService {
 
     // If user has completed learning but no practice, suggest practice scenarios
     if (learningProgress.modulesCompleted > 0 && practiceProgress.meetingsCount === 0) {
+      const hasStartedPractice = practiceProgress.scenariosCompleted > 0;
       return {
-        title: 'Practice What You Learned',
-        description: 'Start with quick practice scenarios before tackling full projects',
-        action: 'Start Practice',
+        title: hasStartedPractice ? 'Continue Practicing' : 'Practice What You Learned',
+        description: hasStartedPractice ? 'Keep practicing with more scenarios' : 'Start with quick practice scenarios before tackling full projects',
+        action: hasStartedPractice ? 'Continue Practice' : 'Start Practice',
         actionView: 'practice-flow',
         priority: 'high',
         icon: 'practice'
