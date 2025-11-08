@@ -146,10 +146,10 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
           {/* Hero */}
           <div className="text-center mb-20">
             <h2 className={`text-4xl sm:text-5xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Everything You Need to Get Interview-Ready
+              Everything You Need to Get Hired
             </h2>
             <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
-              From learning BA fundamentals to practicing with AI stakeholders — build a complete portfolio of real work
+              Interviewers want candidates with experience in complex projects. Build a complete portfolio that proves you've done the work.
             </p>
           </div>
 
