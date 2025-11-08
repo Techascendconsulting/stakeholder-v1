@@ -27,6 +27,7 @@ import {
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
+import PricingView from './Views/PricingView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
@@ -41,6 +42,7 @@ const LandingPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false)
   const [showContact, setShowContact] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
+  const [showPricing, setShowPricing] = useState(false)
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
@@ -152,7 +154,7 @@ const LandingPage: React.FC = () => {
                 Features
               </button>
               <button 
-                onClick={() => alert('Pricing page coming soon! For now, sign up free to get started.')}
+                onClick={() => setShowPricing(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Pricing
@@ -228,7 +230,7 @@ const LandingPage: React.FC = () => {
               <button 
                 onClick={() => { 
                   setMobileMenuOpen(false);
-                  alert('Pricing page coming soon! For now, sign up free to get started.');
+                  setShowPricing(true);
                 }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
@@ -1163,6 +1165,7 @@ const LandingPage: React.FC = () => {
       </footer>
 
       {/* Modals */}
+      {showPricing && <PricingView onClose={() => setShowPricing(false)} onStartNow={() => { setShowPricing(false); setShowAuth(true); }} />}
       {showRequestAccess && (
         <RequestAccessModal onClose={() => setShowRequestAccess(false)} />
       )}

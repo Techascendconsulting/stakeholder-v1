@@ -68,7 +68,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   console.log('🎨 SIDEBAR: Rendering with currentView =', currentView);
   const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1440
+  );
+  const [isCollapsed, setIsCollapsed] = useState(viewportWidth < 1024);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [displayName, setDisplayName] = useState<string>('');
@@ -317,31 +321,68 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     });
   };
 
-  // Debug: log resize and sidebar state to help trace whitespace issues when exiting fullscreen
   useEffect(() => {
     const handleResize = () => {
-      // Minimal logging to avoid noise
-      console.debug('[Sidebar] resize', { width: window.innerWidth, height: window.innerHeight });
+      const width = window.innerWidth;
+      setViewportWidth(width);
+
+      if (width < 1024) {
+        setIsCollapsed(true);
+      }
+      if (width >= 1024 && isCollapsed && !isDrawerOpen) {
+        setIsCollapsed(false);
+      }
+
+      if (width >= 768) {
+        setIsDrawerOpen(false);
+      }
     };
+
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isCollapsed, isDrawerOpen]);
 
-  // Listen for global toggle events from mobile menu button
   useEffect(() => {
-    const handleToggle = () => setIsCollapsed(prev => !prev);
+    const handleToggle = () => {
+      if (window.innerWidth < 768) {
+        setIsDrawerOpen(prev => !prev);
+        setIsCollapsed(false);
+      } else if (window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      } else {
+        setIsCollapsed(prev => !prev);
+      }
+    };
+
     window.addEventListener('toggle-sidebar', handleToggle as EventListener);
     return () => window.removeEventListener('toggle-sidebar', handleToggle as EventListener);
   }, []);
 
 
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
+  const isDesktop = viewportWidth >= 1024;
+
+  const sidebarCollapsed = isTablet || (isDesktop && isCollapsed);
+  const sidebarVisible = isMobile ? isDrawerOpen : true;
+
   console.log('🎨 SIDEBAR RENDER: userType =', userType, 'user?.id =', user?.id);
 
   return (
-    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white 
-      ${isCollapsed ? 'w-0 lg:w-20' : 'w-64 lg:w-64'} h-screen flex flex-col shadow-lg overflow-hidden relative z-40 ${className}
-      fixed lg:static top-0 left-0 transform transition-all duration-300 ease-in-out 
-      ${isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}`} aria-hidden={isCollapsed ? 'true' : 'false'}>
+    <>
+      {/* Mobile Overlay */}
+      {!isCollapsed && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-30 transition-opacity"
+          onClick={() => setIsCollapsed(true)}
+        />
+      )}
+      
+      <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white 
+        ${isCollapsed ? 'w-0 lg:w-20' : 'w-64 lg:w-64'} h-screen flex flex-col shadow-lg overflow-hidden relative z-40 ${className}
+        fixed lg:static top-0 left-0 transform transition-all duration-300 ease-in-out 
+        ${isCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}`} aria-hidden={isCollapsed ? 'true' : 'false'}>
       {/* DEBUG Badge - visible only for admins */}
       {!isCollapsed && isAdmin && (
         <div className="absolute top-2 right-2 z-50 bg-yellow-400 text-black text-xs px-2 py-1 rounded font-bold">
@@ -466,6 +507,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       console.log('🖱️ SIDEBAR: Navigating to:', item.id);
                       setCurrentView(item.id as any);
                       console.debug('[Sidebar] sectionClick', { id: item.id });
+                      
+                      // Auto-close sidebar on mobile after navigation
+                      if (window.innerWidth < 1024) {
+                        setIsCollapsed(true);
+                      }
                     }
                   }}
                   data-tour={
@@ -530,6 +576,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                               }
                               
                               console.debug('[Sidebar] subItemClick', { id: subItem.id });
+                              
+                              // Auto-close sidebar on mobile after navigation
+                              if (window.innerWidth < 1024) {
+                                setIsCollapsed(true);
+                              }
                             }}
                             className={`w-full flex items-center space-x-3 px-2 py-1.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                               isSubActive
@@ -635,5 +686,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
