@@ -53,16 +53,10 @@ const PracticeModuleList: React.FC = () => {
     const isCompleted = moduleProgress?.status === 'completed';
     const isInProgress = moduleProgress?.status === 'in_progress';
     
-    // For new users: Check if previous modules are completed
+    // For new users: Only Module 1 is accessible, modules 2-4 are locked
     if (userType === 'new' && module.order > 1) {
-      const previousModule = practiceModules.find(m => m.order === module.order - 1);
-      if (previousModule) {
-        const prevProgress = progress[previousModule.id];
-        if (prevProgress?.status !== 'completed') {
-          // Module is locked
-          return;
-        }
-      }
+      // Modules 2, 3, 4 are locked - they have their own unlock criteria (not yet implemented)
+      return;
     }
 
     // Initialize progress if first time
@@ -90,20 +84,16 @@ const PracticeModuleList: React.FC = () => {
       return 'not_started';
     }
 
-    // For new users: check if locked
+    // For new users: Progressive unlock with custom criteria
     if (module.order === 1) {
-      return 'not_started'; // First module always unlocked
+      return 'not_started'; // Module 1: Unlocked after reaching practice phase (3 learning modules)
     }
 
-    // Check if previous module is completed
-    const previousModule = practiceModules.find(m => m.order === module.order - 1);
-    if (previousModule) {
-      const prevProgress = progress[previousModule.id];
-      if (prevProgress?.status === 'completed') {
-        return 'not_started'; // Unlocked
-      }
-    }
-
+    // TODO: Modules 2, 3, 4 have their own unlock criteria (not yet implemented)
+    // Module 2: Requirements Specification Practice - unlock criteria TBD
+    // Module 3: MVP Practice - unlock criteria TBD
+    // Module 4: Scrum Practice - unlock criteria TBD
+    // For now, keep all locked for new users
     return 'locked';
   };
 
