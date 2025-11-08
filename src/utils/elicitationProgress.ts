@@ -145,29 +145,33 @@ export async function getQualifyingSessions(userId: string): Promise<PracticeSes
  */
 export async function checkChatUnlock(userId: string): Promise<boolean> {
   try {
-    // Check if user has completed at least 3 modules
-    const { data, error } = await supabase
+    // Check OLD system (learning_progress)
+    const { data: oldData } = await supabase
       .from('learning_progress')
       .select('status, module_id')
       .eq('user_id', userId)
       .eq('status', 'completed');
 
-    if (error) {
-      console.error('❌ Error fetching learning progress:', error);
-      return false;
-    }
+    const oldCompletedCount = oldData?.length || 0;
 
-    if (!data || data.length === 0) {
-      console.log('⚠️ No completed modules found, defaulting to locked');
-      return false;
-    }
+    // Check NEW system (user_progress with unit_type='module')
+    const { data: newData } = await supabase
+      .from('user_progress')
+      .select('status, stable_key, unit_type')
+      .eq('user_id', userId)
+      .eq('unit_type', 'module')
+      .eq('status', 'completed');
 
-    // Check if 3 or more modules are completed
-    const isUnlocked = data.length >= 3;
+    const newCompletedCount = newData?.length || 0;
+
+    // Use whichever system has more completed modules
+    const completedModules = Math.max(oldCompletedCount, newCompletedCount);
+    const isUnlocked = completedModules >= 3;
     
     console.log('🔍 Chat unlock check:', { 
-      completedModules: data.length,
-      moduleIds: data.map(m => m.module_id),
+      oldSystemCompleted: oldCompletedCount,
+      newSystemCompleted: newCompletedCount,
+      completedModules,
       isUnlocked 
     });
     

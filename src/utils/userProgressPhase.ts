@@ -11,19 +11,31 @@ export type UserPhase = 'learning' | 'practice' | 'hands-on';
  */
 export async function getUserPhase(userId: string): Promise<UserPhase> {
   try {
-    // Check Learning Journey completion
-    const { data: learningProgress, error } = await supabase
+    // Check OLD system (learning_progress table)
+    const { data: oldProgress } = await supabase
       .from('learning_progress')
       .select('status')
       .eq('user_id', userId);
 
-    if (error) throw error;
+    const oldCompletedCount = oldProgress?.filter(p => p.status === 'completed').length || 0;
 
-    const completedModules = learningProgress?.filter(p => p.status === 'completed').length || 0;
+    // Check NEW system (user_progress table with unit_type='module')
+    const { data: newProgress } = await supabase
+      .from('user_progress')
+      .select('status, unit_type')
+      .eq('user_id', userId)
+      .eq('unit_type', 'module');
+
+    const newCompletedCount = newProgress?.filter(p => p.status === 'completed').length || 0;
+
+    // Use whichever system has more completed modules
+    const completedModules = Math.max(oldCompletedCount, newCompletedCount);
     const practiceUnlockThreshold = 3;  // Practice unlocks after 3 modules
     const handsOnUnlockThreshold = 10;  // Hands-on unlocks after all 10 modules
 
     console.log('📊 User progress phase check:', { 
+      oldSystemCompleted: oldCompletedCount,
+      newSystemCompleted: newCompletedCount,
       completedModules, 
       practiceUnlockThreshold,
       handsOnUnlockThreshold,
