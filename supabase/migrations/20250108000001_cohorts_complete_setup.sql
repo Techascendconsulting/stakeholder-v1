@@ -80,10 +80,16 @@ create table if not exists public.cohort_sessions (
 do $$
 begin
   if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='cohort_sessions' and column_name='starts_at') then
-    alter table public.cohort_sessions add column starts_at timestamptz not null;
+    alter table public.cohort_sessions add column starts_at timestamptz;
   end if;
   if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='cohort_sessions' and column_name='duration_minutes') then
     alter table public.cohort_sessions add column duration_minutes int default 60;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='cohort_sessions' and column_name='meeting_link') then
+    alter table public.cohort_sessions add column meeting_link text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='cohort_sessions' and column_name='topic') then
+    alter table public.cohort_sessions add column topic text;
   end if;
 end $$;
 
@@ -153,15 +159,16 @@ values ('b6904011-acaf-49e5-ac43-51b77bd32d63','d417f9f5-2e1f-41b3-8273-3111996d
 on conflict do nothing;
 
 -- OPTIONAL: add one upcoming session so UI is not empty
-insert into public.cohort_sessions (cohort_id, starts_at, duration_minutes, meeting_link, topic)
+insert into public.cohort_sessions (id, cohort_id, starts_at, duration_minutes, meeting_link, topic)
 values (
+  'e8f42a1c-7b9d-4e5a-a3c2-9f1d8e6b4c7a',
   'b6904011-acaf-49e5-ac43-51b77bd32d63',
   (now() + interval '3 days') at time zone 'UTC',
   60,
   'https://zoom.us/j/1234567890',
   'Kickoff & Study Plan'
 )
-on conflict do nothing;
+on conflict (id) do nothing;
 
 -- Refresh PostgREST schema cache
 NOTIFY pgrst, 'reload schema';
