@@ -321,32 +321,7 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                 </div>
               </div>
 
-              {/* 4. Requirements Documents */}
-              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-orange-500/20 hover:border-orange-500/50">
-                <div className="h-48 overflow-hidden bg-gradient-to-br from-orange-900 to-red-900">
-                  <img 
-                    src="/images/home4.jpg" 
-                    alt="Requirements Documents" 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
-                  />
-                </div>
-                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
-                      <Target className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">Requirements Documents</h3>
-                  </div>
-                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
-                    Functional and non-functional requirements, business rules, and constraints. Structured documentation employers recognize.
-                  </p>
-                  <div className="pt-4 border-t border-gray-700">
-                    <p className="text-sm font-semibold text-orange-400">✓ Portfolio Piece: Deliverable</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. User Stories & Acceptance Criteria */}
+              {/* 4. User Stories & Acceptance Criteria */}
               <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-emerald-500/20 hover:border-emerald-500/50">
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-emerald-900 to-green-900">
                   <img 
@@ -367,6 +342,31 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
                   </p>
                   <div className="pt-4 border-t border-gray-700">
                     <p className="text-sm font-semibold text-emerald-400">✓ Portfolio Piece: Deliverable</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Requirements Documents */}
+              <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-orange-500/20 hover:border-orange-500/50">
+                <div className="h-48 overflow-hidden bg-gradient-to-br from-orange-900 to-red-900">
+                  <img 
+                    src="/images/home4.jpg" 
+                    alt="Requirements Documents" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-80"
+                  />
+                </div>
+                <div className="p-8 bg-gradient-to-br from-gray-800 to-gray-900">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
+                      <Target className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Requirements Documents</h3>
+                  </div>
+                  <p className="text-gray-400 mb-4 leading-relaxed text-sm">
+                    Functional and non-functional requirements, business rules, and constraints. Structured documentation employers recognize.
+                  </p>
+                  <div className="pt-4 border-t border-gray-700">
+                    <p className="text-sm font-semibold text-orange-400">✓ Portfolio Piece: Deliverable</p>
                   </div>
                 </div>
               </div>

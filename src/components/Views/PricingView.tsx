@@ -204,7 +204,7 @@ const PricingView: React.FC<PricingViewProps> = ({ onClose, onStartNow, onShowFe
                 Unlimited practice & full features
               </p>
               <div className="mb-6">
-                <span className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>£19</span>
+                <span className={`text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>£149</span>
                 <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>/month</span>
               </div>
               <ul className="space-y-4 mb-8">
@@ -283,7 +283,7 @@ const PricingView: React.FC<PricingViewProps> = ({ onClose, onStartNow, onShowFe
                     <td className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>£500 - £2,000</td>
                     <td className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>£5,000 - £15,000</td>
                     <td className={`p-6 text-center border-l-2 border-purple-500 ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`}>
-                      <div className="text-emerald-600 dark:text-emerald-400 font-bold">£19/mo</div>
+                      <div className="text-emerald-600 dark:text-emerald-400 font-bold">£149/mo</div>
                     </td>
                   </tr>
                   <tr className={`transition-colors ${isDark ? 'hover:bg-gray-700/30' : 'hover:bg-purple-50/50'}`}>
