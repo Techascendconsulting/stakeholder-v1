@@ -2,8 +2,8 @@
  * ELICITATION PRACTICE PROGRESS TRACKING
  * 
  * Manages the progressive unlock system for elicitation practice:
- * 1. Chat practice: Unlocks after Module 3 completion (70%+)
- * 2. Voice practice: Unlocks after 3 qualifying sessions on 3 different days
+ * 1. Chat practice: Unlocks after completing ANY 3 modules (70%+ each)
+ * 2. Voice practice: Unlocks after 3 qualifying chat sessions on 3 different days
  * 3. Daily limits: 20 interactions/day for chat-only users
  */
 
@@ -141,25 +141,37 @@ export async function getQualifyingSessions(userId: string): Promise<PracticeSes
 
 /**
  * Check if user has unlocked chat practice
- * (Requires Module 3: Elicitation completion with 70%+)
+ * (Requires completion of ANY 3 modules with 70%+ each)
  */
 export async function checkChatUnlock(userId: string): Promise<boolean> {
   try {
-    // Check if Module 3 (Elicitation) is completed with 70%+
+    // Check if user has completed at least 3 modules with 70%+
     const { data, error } = await supabase
       .from('learning_progress')
-      .select('status, completion_percentage')
+      .select('status, completion_percentage, module_id')
       .eq('user_id', userId)
-      .eq('module_id', 'module-3-elicitation')
-      .single();
+      .eq('status', 'completed');
 
-    if (error || !data) {
-      console.log('⚠️ Module 3 not found, defaulting to locked');
+    if (error) {
+      console.error('❌ Error fetching learning progress:', error);
       return false;
     }
 
-    const isUnlocked = data.status === 'completed' && (data.completion_percentage || 0) >= 70;
-    console.log('🔍 Chat unlock check:', { status: data.status, percentage: data.completion_percentage, isUnlocked });
+    if (!data || data.length === 0) {
+      console.log('⚠️ No completed modules found, defaulting to locked');
+      return false;
+    }
+
+    // Count modules completed with 70%+
+    const qualifyingModules = data.filter(module => (module.completion_percentage || 0) >= 70);
+    const isUnlocked = qualifyingModules.length >= 3;
+    
+    console.log('🔍 Chat unlock check:', { 
+      completedModules: data.length,
+      qualifyingModules: qualifyingModules.length,
+      moduleIds: qualifyingModules.map(m => m.module_id),
+      isUnlocked 
+    });
     
     return isUnlocked;
   } catch (error) {
