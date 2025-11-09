@@ -37,12 +37,13 @@ const BAInActionIndexPage: React.FC = () => {
       </div>
 
       {/* Horizontal Journey Container */}
-      <div className="py-12 px-6">
+      <div className="px-6 py-12">
         <div className="max-w-full">
-          {/* Horizontal Scrollable Container */}
-          <div className="overflow-x-auto pb-8">
-            {/* Centered Content Wrapper */}
-            <div className="flex items-center justify-center min-w-max">
+          <div className="min-h-[calc(100vh-220px)] flex flex-col items-center justify-center">
+            {/* Horizontal Scrollable Container */}
+            <div className="overflow-x-auto pb-8">
+              {/* Centered Content Wrapper */}
+              <div className="flex items-center justify-center min-w-max">
               {BA_IN_ACTION_PAGES.map((page, index) => {
                 const isActive = currentView === page.view;
                 const showArrow = index < BA_IN_ACTION_PAGES.length - 1;
@@ -130,17 +131,18 @@ const BAInActionIndexPage: React.FC = () => {
                   </React.Fragment>
                 );
               })}
+              </div>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="mt-8 flex items-center justify-center gap-3 text-white/90 dark:text-white/80">
+              <span className="text-sm uppercase tracking-[0.2em]">Scroll</span>
+              <div className="relative h-1 w-40 overflow-hidden rounded-full bg-white/30 dark:bg-white/20">
+                <div className="absolute inset-y-0 left-0 w-1/3 animate-[scrollPulse_2.4s_infinite] rounded-full bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff]" />
+              </div>
+              <span className="text-sm uppercase tracking-[0.2em]">Explore</span>
             </div>
           </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="mt-6 flex items-center justify-center gap-3 text-white/90 dark:text-white/80">
-          <span className="text-sm uppercase tracking-[0.2em]">Scroll</span>
-          <div className="relative h-1 w-40 overflow-hidden rounded-full bg-white/30 dark:bg-white/20">
-            <div className="absolute inset-y-0 left-0 w-1/3 animate-[scrollPulse_2.4s_infinite] rounded-full bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff]" />
-          </div>
-          <span className="text-sm uppercase tracking-[0.2em]">Explore</span>
         </div>
       </div>
 
