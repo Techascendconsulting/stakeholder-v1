@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useApp } from "../../contexts/AppContext";
+import { useBAInActionProject } from "../../contexts/BAInActionProjectContext";
+import { PAGE_1_DATA } from "../../ba-in-action/page1-data";
 import type { AppView } from "../../types";
 import { 
   Mail, 
@@ -483,6 +485,8 @@ const WorkingNotes: React.FC<{
 
 export default function BAInActionPage1() {
   const { notes, saveNote } = useNotes();
+  const { selectedProject } = useBAInActionProject();
+  const data = PAGE_1_DATA[selectedProject];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -490,8 +494,14 @@ export default function BAInActionPage1() {
       <div className="bg-white border-b border-slate-300 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
-            <div className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-1">BA In Action</div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">BA In Action</div>
+              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-bold rounded">
+                {selectedProject === 'cif' ? 'CI&F' : 'Voids'}
+              </span>
+            </div>
             <div className="text-xl font-bold text-slate-900">Day 1: Join & Orientation</div>
+            <div className="text-sm text-slate-600 mt-1">{data.initiativeName}</div>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Clock size={16} />
