@@ -76,22 +76,22 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
 );
 
 // --- Email Component ---
-const WelcomeEmail: React.FC = () => (
+const WelcomeEmail: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
   <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
     <div className="border-b border-slate-300 bg-slate-50 px-4 py-2.5">
       <div className="flex items-center gap-2 text-sm text-slate-700">
         <Mail size={16} className="text-indigo-600" />
         <span className="font-semibold">Inbox</span>
         <span className="text-slate-400">›</span>
-        <span className="text-slate-600">Welcome to the Customer Identity & Fraud Programme</span>
+        <span className="text-slate-600">{data.emailSubject}</span>
       </div>
     </div>
     
     <div className="px-4 py-3 border-b border-slate-200 bg-white space-y-2">
       <div className="flex items-start justify-between">
         <div>
-          <div className="font-semibold text-base text-slate-900">Ben Carter</div>
-          <div className="text-sm text-slate-600">ben.carter@company.co.uk</div>
+          <div className="font-semibold text-base text-slate-900">{data.emailFrom}</div>
+          <div className="text-sm text-slate-600">{data.emailFromEmail}</div>
         </div>
         <div className="text-sm text-slate-500">Today, 09:12</div>
       </div>
@@ -99,7 +99,7 @@ const WelcomeEmail: React.FC = () => (
         <span className="font-medium">To:</span> You
       </div>
       <div className="text-sm text-slate-600">
-        <span className="font-medium">Subject:</span> Welcome to the Customer Identity & Fraud Programme
+        <span className="font-medium">Subject:</span> {data.emailSubject}
       </div>
     </div>
 
@@ -107,11 +107,11 @@ const WelcomeEmail: React.FC = () => (
       <p>Hi —</p>
       
       <p>
-        Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900">"Customer Identity Verification & Fraud Reduction"</span> initiative.
+        Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900">"{data.initiativeName}"</span> initiative.
       </p>
       
       <p>
-        I've set up a short intro call for <span className="font-semibold text-slate-900">11:00 this morning</span> (link below). 
+        I've set up a short intro call for <span className="font-semibold text-slate-900">{data.meetingTime} this morning</span> (link below). 
         Before we meet, please skim through the attached one-pager so we can hit the ground running.
       </p>
       
@@ -119,19 +119,19 @@ const WelcomeEmail: React.FC = () => (
         We'll align on the problem, key stakeholders, and what we need from you in the first 48 hours.
       </p>
       
-      <p>Cheers,<br/>Ben</p>
+      <p>Cheers,<br/>{data.emailFrom.split(' ')[0]}</p>
 
       <div className="pt-3 mt-4 border-t border-slate-200">
         <div className="text-sm font-medium text-slate-700 mb-2">Attachments (2)</div>
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
             <Paperclip size={14} />
-            <span>CI&F Programme – One Pager (v3).pdf</span>
+            <span>{data.attachmentName}</span>
             <span className="text-slate-400 text-sm">124 KB</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
             <Link2 size={14} />
-            <span>Teams: #proj-cifraud</span>
+            <span>Teams: {data.teamsChannel}</span>
           </div>
         </div>
       </div>
@@ -153,47 +153,37 @@ const WelcomeEmail: React.FC = () => (
 );
 
 // --- Teams Meeting Component ---
-const TeamsMeeting: React.FC = () => (
+const TeamsMeeting: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
   <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden">
     <div className="bg-gradient-to-r from-[#464775] to-[#5b5d8f] px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2 text-white">
         <Calendar size={16} />
         <span className="font-semibold text-base">Teams Meeting</span>
       </div>
-      <div className="text-sm text-white/90">11:00 – 11:30 (30 min)</div>
+      <div className="text-sm text-white/90">{data.meetingTime} – {data.meetingTime.replace(/\d+/, (m) => String(Number(m) + 0))}:30 (30 min)</div>
     </div>
 
     <div className="p-4 space-y-3">
       <div>
-        <div className="text-base font-semibold text-slate-900">Intro: CI&F Programme</div>
-        <div className="text-sm text-slate-600 mt-1">Today, 11:00 AM</div>
+        <div className="text-base font-semibold text-slate-900">{data.meetingTitle}</div>
+        <div className="text-sm text-slate-600 mt-1">Today, {data.meetingTime} AM</div>
       </div>
 
       <div className="text-sm text-slate-700">
         <div className="font-semibold mb-2">Attendees</div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Users size={14} className="text-slate-400" />
-            <span>Ben Carter (Product Owner)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users size={14} className="text-slate-400" />
-            <span>Marie Dupont (Compliance)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users size={14} className="text-slate-400" />
-            <span>James Walker (Operations)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users size={14} className="text-slate-400" />
-            <span>You (Business Analyst)</span>
-          </div>
+          {data.meetingAttendees.map((attendee, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <Users size={14} className="text-slate-400" />
+              <span>{attendee.name} {attendee.role !== attendee.name && `(${attendee.role})`}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       <div className="pt-3 border-t border-slate-200">
         <div className="text-sm text-slate-700">
-          <span className="font-semibold">Purpose:</span> Get you context on the fraud problem, success metrics, and immediate priorities.
+          <span className="font-semibold">Purpose:</span> {data.meetingPurpose}
         </div>
       </div>
 
@@ -211,16 +201,8 @@ const TeamsMeeting: React.FC = () => (
 );
 
 // --- Checklist Component ---
-const AccessChecklist: React.FC = () => {
+const AccessChecklist: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => {
   const [checked, setChecked] = useState<{[k: string]: boolean}>({});
-  
-  const items = [
-    { id: "vpn", task: "VPN & network access", owner: "IT", status: "Pending" },
-    { id: "jira", task: "Jira & Confluence access", owner: "IT", status: "Pending" },
-    { id: "teams", task: "Join #proj-cifraud channel", owner: "You", status: "Ready" },
-    { id: "drive", task: "Shared drive permissions", owner: "IT", status: "Pending" },
-    { id: "training", task: "Data protection & AML training", owner: "HR", status: "Scheduled" },
-  ];
 
   return (
     <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
@@ -229,7 +211,7 @@ const AccessChecklist: React.FC = () => {
       </div>
       <div className="p-4">
         <div className="space-y-2.5">
-          {items.map(item => (
+          {data.checklistItems.map(item => (
             <div key={item.id} className="flex items-start gap-2 text-sm">
               <button 
                 onClick={() => setChecked(prev => ({...prev, [item.id]: !prev[item.id]}))}
@@ -263,85 +245,80 @@ const AccessChecklist: React.FC = () => {
 };
 
 // --- Project Brief Component ---
-const ProjectBrief: React.FC = () => (
+const ProjectBrief: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
   <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
     <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-      <div className="text-base font-semibold text-slate-900">CI&F Programme – One Pager (extract)</div>
+      <div className="text-base font-semibold text-slate-900">{data.attachmentName} (extract)</div>
       <FileText size={16} className="text-indigo-600" />
     </div>
     <div className="p-4 text-base text-slate-800 space-y-4 leading-relaxed">
       <div>
         <div className="font-semibold text-slate-900 mb-2">The Problem</div>
-        <div>
-          Fraudulent orders and account takeovers have increased <span className="font-semibold text-red-700">17% QoQ</span>. 
-          Current KYC checkpoints are creating friction — <span className="font-semibold text-red-700">9% checkout drop-off</span>. 
-          Leadership wants stronger verification <em>without</em> harming conversion.
-        </div>
+        <div>{data.onePager.problem}</div>
       </div>
 
-      <div>
-        <div className="font-semibold text-slate-900 mb-2">Hypothesis</div>
-        <div>
-          Introduce risk-based verification at high-risk touchpoints (signup, high-value orders, address changes) 
-          while smoothing low-risk flows.
-        </div>
+      <div className="grid grid-cols-3 gap-3 pt-3">
+        {data.onePager.impactStats.map((stat, idx) => (
+          <div key={idx} className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-rose-700">{stat.value}</div>
+            <div className="text-xs text-rose-600 mt-1">{stat.label}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200">
+      <div className="pt-3 border-t border-slate-200">
+        <div className="font-semibold text-slate-900 mb-2">The Goal</div>
+        <div>{data.onePager.goal}</div>
+      </div>
+
+      <div className="pt-3 border-t border-slate-200">
+        <div className="font-semibold text-slate-900 mb-2">Key Constraints</div>
+        <ul className="space-y-1.5 text-sm">
+          {data.onePager.constraints.map((constraint, idx) => (
+            <li key={idx} className="flex items-start gap-2 text-slate-700">
+              <AlertCircle size={14} className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <span>{constraint}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-200">
         <div>
-          <div className="font-semibold text-slate-900 mb-2">Targets</div>
-          <ul className="space-y-1.5 text-sm text-slate-700">
-            <li className="flex items-start gap-2">
-              <Target size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Reduce fraud loss 30% (2 quarters)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Target size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Maintain conversion ≥ 95%</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Target size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Cut manual reviews 40%</span>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-semibold text-slate-900 mb-2">KPIs</div>
-          <ul className="space-y-1.5 text-sm text-slate-700">
-            <li className="flex items-start gap-2">
-              <span className="text-indigo-500 mt-0.5">•</span>
-              <span>Fraud loss £/week</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-indigo-500 mt-0.5">•</span>
-              <span>Manual review rate %</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-indigo-500 mt-0.5">•</span>
-              <span>Checkout drop-off at KYC %</span>
-            </li>
-          </ul>
+          <div className="font-semibold text-slate-900 mb-2">Success Metrics</div>
+          <div className="space-y-2">
+            {data.onePager.successMetrics.map((metric, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-sm">
+                <div className="font-medium text-slate-900">{metric.metric}</div>
+                <div className="text-slate-700">
+                  <span className="text-slate-500">{metric.baseline}</span>
+                  <span className="mx-2 text-emerald-600 font-bold">→</span>
+                  <span className="font-semibold text-emerald-700">{metric.target}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
 
     <LookFor items={[
-      "What's driving this? (17% fraud increase = urgency, leadership attention)",
-      "What's the trade-off? (fraud vs. conversion — you'll hear both sides)",
-      "What does success look like? (targets tell you how they'll measure you)",
-      "What metrics will you track? (KPIs = your ongoing evidence base)"
+      "What's driving this? Look for urgency and leadership attention",
+      "What's the trade-off? Identify competing priorities",
+      "What does success look like? Targets tell you how they'll measure you",
+      "What metrics will you track? KPIs = your ongoing evidence base"
     ]} />
 
     <CoachingHint title="How to read a brief as a BA">
-      Don't just absorb it. Look for <strong>tension</strong> (fraud vs. conversion), 
-      <strong>constraints</strong> (compliance, customer experience), and <strong>assumptions</strong> (e.g., "risk-based checks will work"). 
+      Don't just absorb it. Look for <strong>tension</strong> between competing goals, 
+      <strong>constraints</strong> that limit solutions, and <strong>assumptions</strong> that need validating. 
       Your job isn't to agree or disagree yet — it's to understand what's been decided and what's still open.
     </CoachingHint>
   </div>
 );
 
 // --- Stakeholder Table ---
-const StakeholderTable: React.FC = () => (
+const StakeholderTable: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
   <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
     <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
       <div className="text-base font-semibold text-slate-900">Key Stakeholders</div>
@@ -350,112 +327,73 @@ const StakeholderTable: React.FC = () => (
       <table className="w-full text-sm">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Name</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Role</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Name & Role</th>
             <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Cares About</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Concerned About</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Fears</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">How to Engage</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          <tr className="hover:bg-slate-50">
-            <td className="px-4 py-3 font-semibold text-slate-900">Ben Carter</td>
-            <td className="px-4 py-3 text-slate-700">Product Owner</td>
-            <td className="px-4 py-3 text-slate-700">Time-to-value, clear scope</td>
-            <td className="px-4 py-3 text-slate-700">Scope creep, unclear reqs</td>
-          </tr>
-          <tr className="hover:bg-slate-50">
-            <td className="px-4 py-3 font-semibold text-slate-900">Marie Dupont</td>
-            <td className="px-4 py-3 text-slate-700">Compliance</td>
-            <td className="px-4 py-3 text-slate-700">KYC/AML alignment</td>
-            <td className="px-4 py-3 text-slate-700">Regulatory breach</td>
-          </tr>
-          <tr className="hover:bg-slate-50">
-            <td className="px-4 py-3 font-semibold text-slate-900">James Walker</td>
-            <td className="px-4 py-3 text-slate-700">Operations</td>
-            <td className="px-4 py-3 text-slate-700">Manual workload, SLAs</td>
-            <td className="px-4 py-3 text-slate-700">Queue backlogs</td>
-          </tr>
+          {data.stakeholders.map((sh, idx) => (
+            <tr key={idx} className="hover:bg-slate-50">
+              <td className="px-4 py-3">
+                <div className="font-semibold text-slate-900">{sh.name}</div>
+                <div className="text-xs text-slate-600 mt-0.5">{sh.role}</div>
+              </td>
+              <td className="px-4 py-3 text-slate-700">{sh.care}</td>
+              <td className="px-4 py-3 text-slate-700">{sh.fear}</td>
+              <td className="px-4 py-3 text-slate-700">{sh.cue}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
 
     <LookFor items={[
-      "Who owns delivery? (Ben = Product Owner = your main point of contact)",
-      "Who protects compliance? (Marie = regulatory gatekeeper)",
-      "Who feels the operational pain? (James = will tell you what really happens)",
-      "What are their fears? (concerns column = what keeps them up at night)"
+      "Who owns delivery? Note your main point of contact",
+      "Who has veto power? Identify gatekeepers and constraints",
+      "Who feels operational pain? They'll tell you what really happens",
+      "What are their fears? This drives their questions and pushback"
     ]} />
 
     <CoachingHint title="Why stakeholders matter from day one">
-      Each person has a different lens. Ben wants speed. Marie wants safety. James wants less manual work. 
+      Each person has a different lens and different priorities. 
       <strong>Your questions to each will be different.</strong> A good BA maps this early so they don't waste time asking the wrong person the wrong thing.
     </CoachingHint>
   </div>
 );
 
 // --- Discovery Questions ---
-const DiscoveryStarter: React.FC = () => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
-      <div className="text-base font-semibold text-slate-900">Discovery Questions (select 6–8 to ask today)</div>
-    </div>
-    <div className="p-4">
-      <div className="text-sm text-white mb-4 p-3 bg-gradient-to-r from-purple-600 to-indigo-600 border-2 border-purple-400 rounded-lg shadow-md">
-        <strong className="text-white font-bold">Tip:</strong> Keep each question single-threaded. Go for outcomes, constraints, or definitions — not solutions yet.
+const DiscoveryStarter: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => {
+  const { notes, saveNote } = useNotes();
+  
+  return (
+    <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
+      <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
+        <div className="text-base font-semibold text-slate-900">Your Discovery Prep</div>
+        <div className="text-xs text-slate-600 mt-1">What you need to clarify before Day 2</div>
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <div className="font-semibold text-sm text-slate-900 mb-2.5">Context & Outcomes</div>
-          <div className="space-y-2 text-sm text-slate-700">
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>What changed recently that made this a priority?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>If we do nothing, what happens in 3–6 months?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>What would "this worked" look like to you?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>Who else is affected by this decision?</span>
-            </label>
+      <div className="p-4 space-y-5">
+        {data.tasks.map((task, idx) => (
+          <div key={idx}>
+            <div className="text-sm font-semibold text-slate-900 mb-2">{task.title}</div>
+            <textarea
+              className="w-full min-h-[100px] text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              placeholder={task.placeholder}
+              value={notes[`task_${idx}`] || ''}
+              onChange={(e) => saveNote(`task_${idx}`, e.target.value)}
+            />
           </div>
-        </div>
-        <div>
-          <div className="font-semibold text-sm text-slate-900 mb-2.5">Process & Data</div>
-          <div className="space-y-2 text-sm text-slate-700">
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>Where in the journey do we verify identity today?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>What data drives the review decision? Who owns it?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>Where do exceptions go and how long do they sit?</span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-              <input type="checkbox" className="mt-0.5" />
-              <span>What's the manual review process today?</span>
-            </label>
-          </div>
-        </div>
+        ))}
       </div>
-    </div>
 
-    <CoachingHint title="What makes a good discovery question">
-      A good question <strong>narrows uncertainty</strong>. It's testable (you can verify the answer with data or policy). 
-      It's single-threaded (one thing at a time). And it doesn't bundle a solution inside the question. 
-      You're not asking <em>"Should we use biometric verification?"</em> — you're asking <em>"Where do exceptions go today?"</em>
-    </CoachingHint>
-  </div>
-);
+      <CoachingHint title="Why BAs prepare questions first">
+        You don&apos;t walk into meetings unprepared. <strong>Stakeholders respect BAs who come with structure.</strong> 
+        These questions show you&apos;ve read the brief, understood the context, and you&apos;re focused on reducing uncertainty — not just taking notes.
+      </CoachingHint>
+    </div>
+  );
+};
 
 // --- Working Notes ---
 const WorkingNotes: React.FC<{
@@ -529,9 +467,9 @@ export default function BAInActionPage1() {
           {/* Left: main content */}
           <div className="lg:col-span-2 space-y-6">
             
-            <WelcomeEmail />
+            <WelcomeEmail data={data} />
             
-            <ProjectBrief />
+            <ProjectBrief data={data} />
             
             <WorkingNotes
               label="Your notes: What you've spotted so far"
@@ -541,9 +479,9 @@ export default function BAInActionPage1() {
               placeholder="Assumptions, unknowns, early signals of risk or constraint..."
             />
 
-            <StakeholderTable />
+            <StakeholderTable data={data} />
 
-            <DiscoveryStarter />
+            <DiscoveryStarter data={data} />
 
             <WorkingNotes
               label="Questions for the 11:00 call"
@@ -558,9 +496,9 @@ export default function BAInActionPage1() {
           {/* Right: sidebar context */}
           <div className="space-y-6">
             
-            <TeamsMeeting />
+            <TeamsMeeting data={data} />
             
-            <AccessChecklist />
+            <AccessChecklist data={data} />
 
             {/* Guidance card */}
             <div className="bg-gradient-to-br from-rose-600 to-pink-600 border-2 border-rose-400 rounded-lg p-4 shadow-lg">
