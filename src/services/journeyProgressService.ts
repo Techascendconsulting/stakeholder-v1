@@ -140,7 +140,36 @@ export class JourneyProgressService {
       // Check localStorage for completed modules
       const completedModulesStr = localStorage.getItem(`completedModules_${userId}`) || localStorage.getItem('completedModules');
       const completedModules = completedModulesStr ? JSON.parse(completedModulesStr) : [];
-      
+
+      // Load detailed progress (lessons/pages) if available
+      let inProgressModules = 0;
+      let completedFromProgress = 0;
+      try {
+        const progressStateStr = localStorage.getItem('learning_flow_progress');
+        if (progressStateStr) {
+          const progressState = JSON.parse(progressStateStr);
+          const matchesUser = !progressState?.userId || progressState.userId === userId;
+          if (matchesUser && progressState?.modules) {
+            const moduleStates = Object.values(progressState.modules) as Array<any>;
+            moduleStates.forEach((module: any) => {
+              const lessonsCompleted = Array.isArray(module?.completedLessons) ? module.completedLessons.length : 0;
+              const status = module?.status;
+              const assignmentDone = Boolean(module?.assignmentCompleted);
+
+              if (status === 'completed' || assignmentDone) {
+                completedFromProgress += 1;
+              }
+
+              if (status !== 'completed' && (lessonsCompleted > 0 || status === 'in_progress')) {
+                inProgressModules += 1;
+              }
+            });
+          }
+        }
+      } catch (progressError) {
+        console.warn('⚠️ Unable to parse learning flow progress:', progressError);
+      }
+
       const TOTAL_MODULES = 11; // As per your curriculum
       const MODULE_TITLES = [
         'Core Learning',
@@ -156,14 +185,15 @@ export class JourneyProgressService {
         'Agile & Scrum'
       ];
 
-      const completedCount = Array.isArray(completedModules) ? completedModules.length : 0;
+      const completedCountFromStorage = Array.isArray(completedModules) ? completedModules.length : 0;
+      const completedCount = Math.max(completedCountFromStorage, completedFromProgress);
       const currentModuleIndex = completedCount < TOTAL_MODULES ? completedCount : TOTAL_MODULES - 1;
 
       return {
         modulesCompleted: completedCount,
         totalModules: TOTAL_MODULES,
         progressPercentage: Math.round((completedCount / TOTAL_MODULES) * 100),
-        inProgressModules: 0, // TODO: track in-progress
+        inProgressModules,
         currentModuleTitle: completedCount < TOTAL_MODULES ? MODULE_TITLES[currentModuleIndex] : null,
         nextModuleTitle: completedCount < TOTAL_MODULES - 1 ? MODULE_TITLES[currentModuleIndex + 1] : null
       };
