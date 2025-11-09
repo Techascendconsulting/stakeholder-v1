@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-understanding-context';
+const VIEW_ID: AppView = 'ba_in_action_understand_problem';
 
 const UnderstandingContext: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);

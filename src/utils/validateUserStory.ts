@@ -17,7 +17,7 @@ export function isUserStoryStructureValid(text: string) {
 export async function checkUserStoryGPT(userStory: string) {
   try {
     const result = await apiValidateUserStory({ userStory });
-    
+
     if (!result.success) {
       console.warn('User story validation unavailable:', result.error);
       return null;

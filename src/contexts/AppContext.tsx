@@ -290,7 +290,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'welcome',
       'motivation',
       'my-cohort',        // Always accessible to all users
-      'ba-in-action-index'
+      'ba-in-action-index',
+      'ba_in_action_join_orientation'
     ];
 
     // Check if this page should be locked for 'new' students

@@ -1125,8 +1125,7 @@ const LandingPage: React.FC = () => {
                   Start Practicing Free
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </span>
-              </button>
-              <p className={`text-sm mt-4 font-medium ${isDark ? 'text-gray-200' : 'text-gray-600'}`}>
+              </button>              <p className={`text-sm mt-4 font-medium ${isDark ? 'text-gray-200' : 'text-gray-600'}`}>
                 No credit card required • Cancel anytime • Join 2,500+ aspiring BAs
               </p>
             </div>
@@ -1202,4 +1201,5 @@ const LandingPage: React.FC = () => {
 }
 
 export default LandingPage
+
 

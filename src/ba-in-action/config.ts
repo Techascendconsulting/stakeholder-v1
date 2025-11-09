@@ -6,72 +6,78 @@ export const BA_IN_ACTION_INDEX_VIEW: AppView = 'ba-in-action-index';
 export interface BAInActionPageDefinition {
   title: string;
   slug: string;
+  route: string;
   view: AppView;
   description?: string;
 }
 
-export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = [
+const rawPages: Array<Omit<BAInActionPageDefinition, 'route'>> = [
+  {
+    title: 'Join & Orientation (Day 1)',
+    slug: 'join-orientation',
+    view: 'ba_in_action_join_orientation',
+    description: 'Get welcomed, understand expectations, and set up your BA WorkXP workspace.',
+  },
   {
     title: 'Understand the Business Problem',
-    slug: 'understanding-context',
-    view: 'ba-in-action-understanding-context',
+    slug: 'understand-problem',
+    view: 'ba_in_action_understand_problem',
     description: 'Clarify what the business is trying to achieve and why this work matters now.',
   },
   {
     title: 'Who’s Involved & Why It Matters',
-    slug: 'stakeholder-landscape',
-    view: 'ba-in-action-stakeholder-landscape',
+    slug: 'whos-involved',
+    view: 'ba_in_action_whos_involved',
     description: 'Identify the people who are affected, responsible, or influential in the outcome.',
   },
   {
     title: 'Stakeholder Communication',
     slug: 'stakeholder-communication',
-    view: 'ba-in-action-stakeholder-communication',
+    view: 'ba_in_action_stakeholder_communication',
     description: 'Learn how a BA approaches outreach, tone, and relationship-building.',
   },
   {
-    title: 'Discovery / Elicitation',
-    slug: 'discovery-elicitation',
-    view: 'ba-in-action-discovery-elicitation',
-    description: 'Gather information to understand how things work today and what’s causing friction.',
+    title: 'As-Is → Gap → To-Be',
+    slug: 'as-is-to-be',
+    view: 'ba_in_action_as_is_to_be',
+    description: 'Break down the current workflow and chart the future state with clear gaps identified.',
   },
   {
-    title: 'As-Is & Analysis',
-    slug: 'analysis-spotting-issues',
-    view: 'ba-in-action-analysis-spotting-issues',
-    description: 'Break down the current workflow to locate pain points, delays, and risks.',
+    title: 'Requirements & Documentation',
+    slug: 'requirements-documentation',
+    view: 'ba_in_action_requirements',
+    description: 'Capture requirements, documentation, and traceability so delivery teams have clarity.',
   },
   {
-    title: 'To-Be & Solution Direction',
-    slug: 'to-be-and-solution-shaping',
-    view: 'ba-in-action-to-be-and-solution-shaping',
-    description: 'Shape a clearer future state that solves the business problem effectively.',
+    title: 'Agile Delivery',
+    slug: 'agile-delivery',
+    view: 'ba_in_action_agile_delivery',
+    description: 'Work with developers and QA to turn requirements into working solutions.',
   },
   {
-    title: 'Working with Developers & QA',
-    slug: 'working-with-developers',
-    view: 'ba-in-action-working-with-developers',
-    description: 'Translate needs into delivery — clarifications, stories, acceptance criteria.',
-  },
-  {
-    title: 'UAT & Validation',
-    slug: 'uat-validation',
-    view: 'ba-in-action-uat-validation',
-    description: 'Support the business in confirming the solution works as intended.',
+    title: 'Handover & Value Tracking',
+    slug: 'handover-value',
+    view: 'ba_in_action_handover_value',
+    description: 'Support UAT, launch handover, and measure the value delivered after go-live.',
   },
   {
     title: 'Continuous Improvement',
     slug: 'continuous-improvement',
-    view: 'ba-in-action-continuous-improvement',
-    description: 'Reflect, measure outcomes, and define the next adjustments.',
+    view: 'ba_in_action_improvement',
+    description: 'Run retrospectives, capture lessons learned, and prioritize improvements for future iterations.',
   },
 ] as const;
+
+export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = rawPages.map((page) => ({
+  ...page,
+  route: `${BA_IN_ACTION_BASE_PATH}/${page.slug}`,
+}));
 
 export const BA_IN_ACTION_VIEW_IDS = BA_IN_ACTION_PAGES.map((page) => page.view);
 
 export const baInActionPathToView = BA_IN_ACTION_PAGES.reduce<Record<string, AppView>>(
   (acc, page) => {
-    acc[`${BA_IN_ACTION_BASE_PATH}/${page.slug}`] = page.view;
+    acc[page.route] = page.view;
     return acc;
   },
   {
@@ -81,7 +87,7 @@ export const baInActionPathToView = BA_IN_ACTION_PAGES.reduce<Record<string, App
 
 export const baInActionViewToPath = BA_IN_ACTION_PAGES.reduce<Partial<Record<AppView, string>>>(
   (acc, page) => {
-    acc[page.view] = `${BA_IN_ACTION_BASE_PATH}/${page.slug}`;
+    acc[page.view] = page.route;
     return acc;
   },
   {
