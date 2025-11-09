@@ -137,13 +137,41 @@ export class JourneyProgressService {
    */
   static async getLearningProgress(userId: string): Promise<LearningProgress> {
     try {
-      // Check localStorage for completed modules
+      const MODULE_DEFINITIONS = [
+        { id: 'module-1-core-learning', title: 'Core Learning' },
+        { id: 'module-2-project-initiation', title: 'Project Initiation' },
+        { id: 'module-3-stakeholder-mapping', title: 'Stakeholder Mapping' },
+        { id: 'module-4-elicitation', title: 'Elicitation' },
+        { id: 'module-5-process-mapper', title: 'Process Mapping' },
+        { id: 'module-6-requirements-engineering', title: 'Requirements Engineering' },
+        { id: 'module-7-solution-options', title: 'Solution Options' },
+        { id: 'module-8-documentation', title: 'Documentation' },
+        { id: 'module-9-design', title: 'Design' },
+        { id: 'module-10-mvp', title: 'MVP Builder' },
+        { id: 'module-11-agile-scrum', title: 'Agile & Scrum' }
+      ] as const;
+
+      const TOTAL_MODULES = MODULE_DEFINITIONS.length;
+      const moduleIndexMap = MODULE_DEFINITIONS.reduce<Record<string, number>>((acc, module, index) => {
+        acc[module.id] = index;
+        return acc;
+      }, {});
+
+      const completedModuleIds = new Set<string>();
+      const inProgressModuleIds = new Set<string>();
+
+      // 1) Legacy localStorage completed modules (string array of module IDs)
       const completedModulesStr = localStorage.getItem(`completedModules_${userId}`) || localStorage.getItem('completedModules');
       const completedModules = completedModulesStr ? JSON.parse(completedModulesStr) : [];
+      if (Array.isArray(completedModules)) {
+        completedModules.forEach((moduleId: unknown) => {
+          if (typeof moduleId === 'string') {
+            completedModuleIds.add(moduleId);
+          }
+        });
+      }
 
-      // Load detailed progress (lessons/pages) if available
-      let inProgressModules = 0;
-      let completedFromProgress = 0;
+      // 2) Local Learning Flow progress (tracks lesson-level completion)
       try {
         const progressStateStr = localStorage.getItem('learning_flow_progress');
         if (progressStateStr) {
@@ -152,16 +180,21 @@ export class JourneyProgressService {
           if (matchesUser && progressState?.modules) {
             const moduleStates = Object.values(progressState.modules) as Array<any>;
             moduleStates.forEach((module: any) => {
+              const moduleId = typeof module?.moduleId === 'string' ? module.moduleId : undefined;
+              if (!moduleId) return;
+
               const lessonsCompleted = Array.isArray(module?.completedLessons) ? module.completedLessons.length : 0;
               const status = module?.status;
               const assignmentDone = Boolean(module?.assignmentCompleted);
 
               if (status === 'completed' || assignmentDone) {
-                completedFromProgress += 1;
+                completedModuleIds.add(moduleId);
+                inProgressModuleIds.delete(moduleId);
+                return;
               }
 
-              if (status !== 'completed' && (lessonsCompleted > 0 || status === 'in_progress')) {
-                inProgressModules += 1;
+              if (lessonsCompleted > 0 || status === 'in_progress') {
+                inProgressModuleIds.add(moduleId);
               }
             });
           }
@@ -170,32 +203,65 @@ export class JourneyProgressService {
         console.warn('⚠️ Unable to parse learning flow progress:', progressError);
       }
 
-      const TOTAL_MODULES = 11; // As per your curriculum
-      const MODULE_TITLES = [
-        'Core Learning',
-        'Project Initiation',
-        'Stakeholder Mapping',
-        'Elicitation',
-        'Process Mapping',
-        'Requirements Engineering',
-        'Solution Options',
-        'Documentation',
-        'Design',
-        'MVP Builder',
-        'Agile & Scrum'
-      ];
+      // 3) Supabase authoritative progress (learning_progress table)
+      try {
+        const { data: learningRows, error: learningError } = await supabase
+          .from('learning_progress')
+          .select('module_id, status, completed_lessons, assignment_completed')
+          .eq('user_id', userId);
 
-      const completedCountFromStorage = Array.isArray(completedModules) ? completedModules.length : 0;
-      const completedCount = Math.max(completedCountFromStorage, completedFromProgress);
+        if (learningError) {
+          const errorCode = (learningError as any)?.code;
+          if (errorCode === '42P01' || learningError.message?.includes('404')) {
+            console.warn('⚠️ learning_progress table not found - skipping Supabase sync (non-blocking)');
+          } else {
+            console.error('❌ Error fetching learning progress from Supabase:', learningError);
+          }
+        } else if (Array.isArray(learningRows)) {
+          learningRows.forEach((row) => {
+            const moduleId = typeof row?.module_id === 'string' ? row.module_id : undefined;
+            if (!moduleId) return;
+
+            const status = row?.status;
+            const lessonsCompleted = Array.isArray(row?.completed_lessons) ? row.completed_lessons.length : 0;
+            const assignmentDone = Boolean(row?.assignment_completed);
+
+            if (status === 'completed' || assignmentDone) {
+              completedModuleIds.add(moduleId);
+              inProgressModuleIds.delete(moduleId);
+              return;
+            }
+
+            if (status === 'in_progress' || lessonsCompleted > 0) {
+              if (!completedModuleIds.has(moduleId)) {
+                inProgressModuleIds.add(moduleId);
+              }
+            }
+          });
+        }
+      } catch (supabaseError) {
+        console.error('❌ Unexpected error syncing learning progress from Supabase:', supabaseError);
+      }
+
+      // Final counts derived from combined data sources
+      const recognizedCompletedIds = Array.from(completedModuleIds).filter((id) => moduleIndexMap[id] !== undefined);
+      const recognizedInProgressIds = Array.from(inProgressModuleIds).filter((id) => moduleIndexMap[id] !== undefined && !completedModuleIds.has(id));
+
+      const completedCount = Math.min(TOTAL_MODULES, recognizedCompletedIds.length || completedModuleIds.size);
+      const inProgressCount = Math.min(
+        TOTAL_MODULES - completedCount,
+        Math.max(0, recognizedInProgressIds.length || inProgressModuleIds.size)
+      );
+
       const currentModuleIndex = completedCount < TOTAL_MODULES ? completedCount : TOTAL_MODULES - 1;
 
       return {
         modulesCompleted: completedCount,
         totalModules: TOTAL_MODULES,
         progressPercentage: Math.round((completedCount / TOTAL_MODULES) * 100),
-        inProgressModules,
-        currentModuleTitle: completedCount < TOTAL_MODULES ? MODULE_TITLES[currentModuleIndex] : null,
-        nextModuleTitle: completedCount < TOTAL_MODULES - 1 ? MODULE_TITLES[currentModuleIndex + 1] : null
+        inProgressModules: inProgressCount,
+        currentModuleTitle: completedCount < TOTAL_MODULES ? MODULE_DEFINITIONS[currentModuleIndex]?.title || null : null,
+        nextModuleTitle: completedCount < TOTAL_MODULES - 1 ? MODULE_DEFINITIONS[currentModuleIndex + 1]?.title || null : null
       };
     } catch (error) {
       console.error('Error fetching learning progress:', error);
