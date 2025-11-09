@@ -192,6 +192,15 @@ export function getPageTitle(view: string): string {
     'training-practice': 'Training Practice',
     'meeting': 'Stakeholder Meeting',
     'voice-only-meeting': 'Voice Meeting',
+    'ba-in-action-understanding-context': 'BA In Action • Understand the Business Problem',
+    'ba-in-action-stakeholder-landscape': 'BA In Action • Stakeholder Landscape',
+    'ba-in-action-stakeholder-communication': 'BA In Action • Stakeholder Communication',
+    'ba-in-action-discovery-elicitation': 'BA In Action • Discovery / Elicitation',
+    'ba-in-action-analysis-spotting-issues': 'BA In Action • As-Is & Analysis',
+    'ba-in-action-to-be-and-solution-shaping': 'BA In Action • To-Be & Solution Direction',
+    'ba-in-action-working-with-developers': 'BA In Action • Working with Developers & QA',
+    'ba-in-action-uat-validation': 'BA In Action • UAT & Validation',
+    'ba-in-action-continuous-improvement': 'BA In Action • Continuous Improvement',
   };
 
   return titleMap[view] || view.charAt(0).toUpperCase() + view.slice(1).replace(/-/g, ' ');
