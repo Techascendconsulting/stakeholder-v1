@@ -9,9 +9,6 @@
       "destination": "/api/$1"
     }
   ],
-  "env": {
-    "OPENAI_API_KEY": "@openai-api-key"
-  },
   "functions": {
     "api/**/*.js": {
       "maxDuration": 30
