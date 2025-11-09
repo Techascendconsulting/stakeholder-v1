@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-working-with-developers';
+const VIEW_ID: AppView = 'ba_in_action_agile_delivery';
 
 const WorkingWithDevelopers: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
@@ -18,7 +18,7 @@ const WorkingWithDevelopers: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="Working with Developers & QA" />
+      <PageTitle title="Agile Delivery" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

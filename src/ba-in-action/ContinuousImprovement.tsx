@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-continuous-improvement';
+const VIEW_ID: AppView = 'ba-in-action-improvement';
 
 const ContinuousImprovement: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);

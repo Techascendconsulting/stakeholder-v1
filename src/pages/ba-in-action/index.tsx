@@ -1,8 +1,18 @@
 import React from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
-import { BA_IN_ACTION_PAGES } from '../../ba-in-action/config';
 import { ArrowLeft, ArrowRight, Play } from 'lucide-react';
+
+const journey: Array<{ id: number; label: string; view: AppView }> = [
+  { id: 1, label: 'Join & Orientation (Day 1)', view: 'ba_in_action_join_orientation' },
+  { id: 2, label: 'Understand the Business Problem', view: 'ba_in_action_understand_problem' },
+  { id: 3, label: "Who's Involved & Why It Matters", view: 'ba_in_action_whos_involved' },
+  { id: 4, label: 'Stakeholder Communication', view: 'ba_in_action_stakeholder_communication' },
+  { id: 5, label: 'As-Is → Gap → To-Be', view: 'ba_in_action_as_is_to_be' },
+  { id: 6, label: 'Requirements & Documentation', view: 'ba_in_action_requirements' },
+  { id: 7, label: 'Agile Delivery', view: 'ba_in_action_agile_delivery' },
+  { id: 8, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
+];
 
 const BAInActionIndexPage: React.FC = () => {
   const { setCurrentView, currentView } = useApp();
@@ -44,17 +54,18 @@ const BAInActionIndexPage: React.FC = () => {
             <div className="w-full overflow-x-auto pb-8">
               {/* Centered Content Wrapper */}
               <div className="flex items-center justify-center min-w-max">
-              {BA_IN_ACTION_PAGES.map((page, index) => {
-                const isActive = currentView === page.view;
-                const showArrow = index < BA_IN_ACTION_PAGES.length - 1;
+              {journey.map((step, index) => {
+                const view = step.view;
+                const isActive = currentView === view;
+                const showArrow = index < journey.length - 1;
 
                 return (
-                  <React.Fragment key={page.view}>
+                  <React.Fragment key={step.id}>
                     {/* Step Card */}
                     <div className="flex flex-col items-center">
                       {/* Circular Node */}
                       <button
-                        onClick={() => handleNavigate(page.view)}
+                        onClick={() => handleNavigate(view)}
                         className={`
                           w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
                           transition-all duration-300 transform hover:scale-110 mb-4
@@ -63,12 +74,12 @@ const BAInActionIndexPage: React.FC = () => {
                             : 'bg-white dark:bg-gray-800 text-[#ff09aa] dark:text-[#ff73d3] shadow-lg border-4 border-[#ff09aa] hover:border-[#d238ff] cursor-pointer'}
                         `}
                       >
-                        {index + 1}
+                        {step.id}
                       </button>
 
                       {/* Card - Fixed Height */}
                       <div
-                        onClick={() => handleNavigate(page.view)}
+                        onClick={() => handleNavigate(view)}
                         className={`
                           w-80 h-72 rounded-2xl shadow-xl p-6 border-[1.5px] transition-all duration-300 cursor-pointer flex flex-col
                           ${isActive 
@@ -90,7 +101,7 @@ const BAInActionIndexPage: React.FC = () => {
 
                         {/* Title */}
                         <h3 className={`text-lg font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-                          {page.title}
+                          {step.label}
                         </h3>
 
                         {/* Description */}
@@ -103,7 +114,7 @@ const BAInActionIndexPage: React.FC = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleNavigate(page.view);
+                              handleNavigate(view);
                             }}
                             className={`
                               flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm

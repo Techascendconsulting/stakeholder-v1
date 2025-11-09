@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-uat-validation';
+const VIEW_ID: AppView = 'ba_in_action_handover_value';
 
 const UATValidation: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
@@ -18,7 +18,7 @@ const UATValidation: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="UAT & Validation" />
+      <PageTitle title="Handover & Value Tracking" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

@@ -88,15 +88,15 @@ import LearnLandingView from '../Views/LearnLandingView';
 // import AdminCommunityHub from '../Views/Community/AdminCommunityHub'; // Archived for MVP
 import ProjectLandingView from '../Views/ProjectLandingView';
 import BAInActionIndexPage from '../../pages/ba-in-action';
+import BAInActionPage1 from '../../pages/ba-in-action/join-orientation';
+import UnderstandProblemPage from '../../pages/ba-in-action/understand-problem';
 import StakeholderLandscape from '../../pages/ba-in-action/StakeholderLandscape';
 import UnderstandingContext from '../../ba-in-action/UnderstandingContext';
 import StakeholderCommunication from '../../ba-in-action/StakeholderCommunication';
-import DiscoveryElicitation from '../../ba-in-action/DiscoveryElicitation';
 import AnalysisSpottingIssues from '../../ba-in-action/AnalysisSpottingIssues';
 import ToBeAndSolutionShaping from '../../ba-in-action/ToBeAndSolutionShaping';
 import WorkingWithDevelopers from '../../ba-in-action/WorkingWithDevelopers';
 import UATValidation from '../../ba-in-action/UATValidation';
-import ContinuousImprovement from '../../ba-in-action/ContinuousImprovement';
 import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
@@ -363,24 +363,22 @@ const MainLayout: React.FC = () => {
         return <AnalysisView />;
       case 'ba-in-action-index':
         return <BAInActionIndexPage />;
-      case 'ba-in-action-understanding-context':
-        return <UnderstandingContext />;
-      case 'ba-in-action-stakeholder-landscape':
+      case 'ba_in_action_join_orientation':
+        return <BAInActionPage1 />;
+      case 'ba_in_action_understand_problem':
+        return <UnderstandProblemPage />;
+      case 'ba_in_action_whos_involved':
         return <StakeholderLandscape />;
-      case 'ba-in-action-stakeholder-communication':
+      case 'ba_in_action_stakeholder_communication':
         return <StakeholderCommunication />;
-      case 'ba-in-action-discovery-elicitation':
-        return <DiscoveryElicitation />;
-      case 'ba-in-action-analysis-spotting-issues':
+      case 'ba_in_action_as_is_to_be':
         return <AnalysisSpottingIssues />;
-      case 'ba-in-action-to-be-and-solution-shaping':
+      case 'ba_in_action_requirements':
         return <ToBeAndSolutionShaping />;
-      case 'ba-in-action-working-with-developers':
+      case 'ba_in_action_agile_delivery':
         return <WorkingWithDevelopers />;
-      case 'ba-in-action-uat-validation':
+      case 'ba_in_action_handover_value':
         return <UATValidation />;
-      case 'ba-in-action-continuous-improvement':
-        return <ContinuousImprovement />;
       case 'custom-project':
         return <CustomProjectView />;
       case 'custom-stakeholders':

@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-to-be-and-solution-shaping';
+const VIEW_ID: AppView = 'ba_in_action_requirements';
 
 const ToBeAndSolutionShaping: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
@@ -18,7 +18,7 @@ const ToBeAndSolutionShaping: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="To-Be & Solution Direction" />
+      <PageTitle title="Requirements & Documentation" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

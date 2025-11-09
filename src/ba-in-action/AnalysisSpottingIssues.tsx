@@ -9,7 +9,7 @@ import {
 } from './common';
 import { baInActionViewToPath, getBaInActionNavigation } from './config';
 
-const VIEW_ID: AppView = 'ba-in-action-analysis-spotting-issues';
+const VIEW_ID: AppView = 'ba_in_action_as_is_to_be';
 
 const AnalysisSpottingIssues: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
@@ -18,7 +18,7 @@ const AnalysisSpottingIssues: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="As-Is & Analysis" />
+      <PageTitle title="As-Is → Gap → To-Be" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />
