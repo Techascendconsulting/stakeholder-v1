@@ -1,7 +1,6 @@
 import React from 'react';
 import type { AppView } from '../../types';
 import PageContainer from '../../components/Layout/PageContainer';
-import { Card } from '../../components/ui/card';
 import { useApp } from '../../contexts/AppContext';
 import { BA_IN_ACTION_PAGES } from '../../ba-in-action/config';
 
@@ -13,75 +12,67 @@ const BAInActionIndexPage: React.FC = () => {
   };
 
   return (
-    <PageContainer className="py-10 space-y-10">
-      <header className="space-y-3">
-        <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-300">
-          BA In Action
+    <PageContainer className="py-12 space-y-12">
+      <header className="space-y-4">
+        <span className="inline-flex items-center rounded-full bg-indigo-100/80 dark:bg-indigo-900/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-200">
+          BA In Action Journey
         </span>
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            See How Business Analysts Move from Insight to Impact
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Shadow a Business Analyst in a Real Project Workflow
           </h1>
-          <p className="max-w-2xl text-base text-gray-600 dark:text-gray-300">
-            Walk through real project scenarios in sequence. Each step shows what you observe,
-            how you respond, and how to translate discovery into delivery.
+          <p className="max-w-2xl text-base text-slate-600 dark:text-slate-300">
+            Follow the real flow of how a BA understands the problem, engages stakeholders, uncovers insights, shapes solutions, and supports delivery.
           </p>
         </div>
       </header>
 
-      <div className="-mx-4 sm:-mx-6 md:-mx-8">
-        <div className="overflow-x-auto pb-6">
-          <div className="flex gap-4 px-4 sm:px-6 md:px-8">
+      <section className="-mx-4 sm:-mx-6 md:-mx-8">
+        <div className="overflow-x-auto pb-8">
+          <div className="flex items-center gap-6 px-4 sm:px-6 md:px-8">
             {BA_IN_ACTION_PAGES.map((page, index) => {
               const view = page.view;
               const isActive = currentView === view;
+              const isLast = index === BA_IN_ACTION_PAGES.length - 1;
 
               return (
-                <button
-                  key={page.view}
-                  type="button"
-                  onClick={() => handleNavigate(view)}
-                  className="group relative min-w-[260px] text-left focus:outline-none"
-                >
-                  <Card
-                    className={`h-full rounded-2xl border border-indigo-100 bg-white/70 px-6 py-6 shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg dark:border-indigo-900/40 dark:bg-slate-900/60 ${
+                <div className="flex items-center gap-6" key={page.view}>
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate(view)}
+                    aria-label={page.title}
+                    className={`group relative flex min-w-[220px] items-center gap-3 rounded-2xl border px-5 py-4 text-left shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-white dark:border-slate-800 dark:bg-slate-900/70 dark:text-white dark:focus:ring-offset-slate-950 ${
                       isActive
-                        ? 'ring-2 ring-offset-2 ring-indigo-400 dark:ring-offset-slate-950'
-                        : 'hover:ring-1 hover:ring-indigo-200 dark:hover:ring-indigo-500/40'
+                        ? 'border-indigo-300 bg-gradient-to-r from-indigo-50 to-blue-50 dark:border-indigo-500/60 dark:from-indigo-900/30 dark:to-blue-900/20'
+                        : 'border-transparent bg-white hover:border-indigo-200 hover:shadow-md dark:hover:border-indigo-500/40'
                     }`}
                   >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-sm font-semibold text-white shadow-md">
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-xs font-semibold text-white shadow-sm">
                       {index + 1}
                     </span>
-                    <h2 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
-                      {page.title}
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                      Explore how a BA tackles this stage in a live project setting.
-                    </p>
-                    <span className="mt-4 inline-flex items-center text-sm font-medium text-indigo-600 transition-colors group-hover:text-blue-500 dark:text-indigo-300 dark:group-hover:text-blue-300">
-                      Open scenario
-                      <svg
-                        className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3 10a.75.75 0 0 1 .75-.75h9.638l-3.194-3.195a.75.75 0 1 1 1.06-1.06l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 1 1-1.06-1.06l3.194-3.195H3.75A.75.75 0 0 1 3 10Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {page.title}
+                      </span>
+                      {page.description && (
+                        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-4 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-lg transition-all duration-150 group-hover:block group-hover:opacity-100 group-focus-visible:block group-focus-visible:opacity-100 dark:bg-slate-800/95">
+                          {page.description}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {!isLast && (
+                    <span className="inline-flex text-xl sm:text-2xl font-medium text-transparent bg-gradient-to-r from-indigo-500 to-blue-500 bg-clip-text">
+                      →
                     </span>
-                  </Card>
-                </button>
+                  )}
+                </div>
               );
             })}
           </div>
         </div>
-      </div>
+      </section>
     </PageContainer>
   );
 };

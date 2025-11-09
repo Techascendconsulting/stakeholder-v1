@@ -7,6 +7,7 @@ export interface BAInActionPageDefinition {
   title: string;
   slug: string;
   view: AppView;
+  description?: string;
 }
 
 export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = [
@@ -14,46 +15,55 @@ export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = [
     title: 'Understand the Business Problem',
     slug: 'understanding-context',
     view: 'ba-in-action-understanding-context',
+    description: 'Frame the core problem the business is trying to solve.',
   },
   {
     title: 'Who’s Involved & Why It Matters',
     slug: 'stakeholder-landscape',
     view: 'ba-in-action-stakeholder-landscape',
+    description: 'Map stakeholders and understand their motivations.',
   },
   {
     title: 'Stakeholder Communication',
     slug: 'stakeholder-communication',
     view: 'ba-in-action-stakeholder-communication',
+    description: 'Plan how you’ll keep every stakeholder aligned.',
   },
   {
     title: 'Discovery / Elicitation',
     slug: 'discovery-elicitation',
     view: 'ba-in-action-discovery-elicitation',
+    description: 'Elicit requirements and uncover hidden constraints.',
   },
   {
     title: 'As-Is & Analysis',
     slug: 'analysis-spotting-issues',
     view: 'ba-in-action-analysis-spotting-issues',
+    description: 'Analyse current processes to surface gaps and risks.',
   },
   {
     title: 'To-Be & Solution Direction',
     slug: 'to-be-and-solution-shaping',
     view: 'ba-in-action-to-be-and-solution-shaping',
+    description: 'Shape the target state and articulate solution direction.',
   },
   {
     title: 'Working with Developers & QA',
     slug: 'working-with-developers',
     view: 'ba-in-action-working-with-developers',
+    description: 'Collaborate with delivery teams to build the right thing.',
   },
   {
     title: 'UAT & Validation',
     slug: 'uat-validation',
     view: 'ba-in-action-uat-validation',
+    description: 'Validate that the solution meets acceptance criteria.',
   },
   {
     title: 'Continuous Improvement',
     slug: 'continuous-improvement',
     view: 'ba-in-action-continuous-improvement',
+    description: 'Monitor outcomes and drive iterative improvements.',
   },
 ] as const;
 
