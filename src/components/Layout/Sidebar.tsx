@@ -200,11 +200,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Welcome', 
       icon: Home
     }] : []),
-    {
-      id: 'how-to-navigate',
-      label: 'How to Navigate', 
-      icon: HelpCircle
-    },
     { 
       id: 'dashboard', 
       label: 'My Dashboard', 
@@ -220,6 +215,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Learning', 
       icon: GraduationCap
     },
+    {
+      id: 'ba-in-action-index',
+      label: 'BA In Action',
+      icon: PlayCircle
+    },
     { 
       id: 'practice-flow', 
       label: 'My Practice', 
@@ -234,11 +234,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'project-journey',
       label: 'My Project', 
       icon: Rocket
-    },
-    {
-      id: 'ba-in-action-index',
-      label: 'BA In Action',
-      icon: PlayCircle
     },
     { 
       id: 'my-cohort',
@@ -502,16 +497,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       return;
                     }
                     
-                    // Special handling for "How to Navigate" - trigger tour
-                    if (item.id === 'how-to-navigate') {
-                      console.log('🎯 Sidebar: Triggering onboarding tour from main menu');
-                      setCurrentView('dashboard'); // Go to dashboard first
-                      setTimeout(() => {
-                        window.dispatchEvent(new Event('start-onboarding-tour'));
-                      }, 100); // Small delay to ensure dashboard renders
-                      return;
-                    }
-                    
                     if (hasSubItems && item.isCollapsible) {
                       toggleSection(item.id);
                     } else {
@@ -577,14 +562,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                             onClick={() => {
                               console.log('🖱️ SIDEBAR SUB-ITEM CLICK:', subItem.id);
                               
-                              // Special handling for "How to Navigate" - trigger tour instead of navigation
-                              if (subItem.id === 'how-to-navigate') {
-                                console.log('🎯 Sidebar: Triggering onboarding tour');
-                                setCurrentView('dashboard'); // Go to dashboard first
-                                window.dispatchEvent(new Event('start-onboarding-tour'));
-                              } else {
-                                setCurrentView(subItem.id as any);
-                              }
+                              setCurrentView(subItem.id as any);
                               
                               console.debug('[Sidebar] subItemClick', { id: subItem.id });
                               

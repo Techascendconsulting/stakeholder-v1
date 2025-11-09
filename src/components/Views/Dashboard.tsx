@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop, Users, Calendar, Clock } from 'lucide-react';
+import { ArrowRight, Map, Brain, Target, Rocket, RefreshCw, ChevronRight, Lock, RotateCcw, Shield, KeyRound, Laptop, Users, Calendar, Clock, HelpCircle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import { deviceLockService } from '../../services/deviceLockService';
@@ -196,6 +196,13 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const launchNavigationTour = () => {
+    setCurrentView('dashboard');
+    setTimeout(() => {
+      window.dispatchEvent(new Event('start-onboarding-tour'));
+    }, 120);
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
@@ -221,6 +228,32 @@ const Dashboard: React.FC = () => {
         <p className="text-gray-600 dark:text-gray-400">
           Here's your stakeholder interview progress and recent activity
         </p>
+      </div>
+
+      {/* Guided Tour CTA */}
+      <div className="mb-6 rounded-xl border border-pink-200 bg-gradient-to-r from-[#ffeff9] via-white to-[#fbe9ff] dark:from-[#501538] dark:via-[#2d1027] dark:to-[#3c1550] p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#ff09aa] to-[#d238ff] text-white flex items-center justify-center shadow-md">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                New here? Start the guided walkthrough.
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 max-w-xl">
+                See where everything lives, how to move between Learning, BA In Action, Practice, and why each area matters for your experience.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={launchNavigationTour}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>Launch Tour</span>
+          </button>
+        </div>
       </div>
 
       {/* Next Step Strip */}
