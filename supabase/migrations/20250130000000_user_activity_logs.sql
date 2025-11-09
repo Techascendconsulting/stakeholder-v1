@@ -174,3 +174,5 @@ COMMENT ON FUNCTION log_user_activity(UUID, TEXT, TEXT, INET, TEXT, TEXT, BOOLEA
 
 
 
+
+

@@ -111,7 +111,9 @@ export type AppView =
   | 'admin-panel'
   | 'contact-us'
   | 'admin-contact-submissions'
-  | 'faq';
+  | 'faq'
+  | 'my-cohort'
+  | 'admin-cohorts';
 
 // Re-export specific types for convenience
 export type {

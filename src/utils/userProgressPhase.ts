@@ -8,10 +8,12 @@ export type UserPhase = 'learning' | 'practice' | 'hands-on';
  * Phase 1 (learning): Learning Journey - only Dashboard, Learning Journey, My Resources
  * Phase 2 (practice): After completing 3 learning modules - unlocks Practice
  * Phase 3 (hands-on): After completing all 10 modules - unlocks Projects, Mentor, etc.
+ * 
+ * NOTE: Uses NEW progress system (user_progress table with unit_type='module')
  */
 export async function getUserPhase(userId: string): Promise<UserPhase> {
   try {
-    // Check Learning Journey completion
+    // Check learning_progress table (this is where markModuleCompleted() writes to)
     const { data: learningProgress, error } = await supabase
       .from('learning_progress')
       .select('status')

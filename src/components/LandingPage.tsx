@@ -20,11 +20,15 @@ import {
   TrendingUp,
   MessageSquare,
   BarChart3,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 import ContactUsView from './Views/ContactUsView'
 import FAQView from './Views/FAQView'
+import PricingView from './Views/PricingView'
+import FeaturesView from './Views/FeaturesView'
 import RequestAccessModal from './RequestAccessModal'
 import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
@@ -39,11 +43,16 @@ const LandingPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false)
   const [showContact, setShowContact] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
+  const [showPricing, setShowPricing] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
   const [showRequestAccess, setShowRequestAccess] = useState(false)
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
   const [showTermsOfService, setShowTermsOfService] = useState(false)
   const [showCookiePolicy, setShowCookiePolicy] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showFullExperience, setShowFullExperience] = useState(false)
+  const [showWhatYouBuild, setShowWhatYouBuild] = useState(false)
+  const [showPlatformFeatures, setShowPlatformFeatures] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -84,17 +93,27 @@ const LandingPage: React.FC = () => {
   }
 
   if (showContact) {
-    return <ContactUsView 
-      onBack={() => setShowContact(false)} 
-      onFAQClick={() => {
-        setShowContact(false);
-        setShowFAQ(true);
-      }}
-    />
+    return (
+      <ContactUsView 
+        onClose={() => setShowContact(false)}
+        onStartNow={() => { setShowContact(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowContact(false); setShowFeatures(true); }}
+        onShowPricing={() => { setShowContact(false); setShowPricing(true); }}
+        onShowFAQ={() => { setShowContact(false); setShowFAQ(true); }}
+      />
+    )
   }
 
   if (showFAQ) {
-    return <FAQView onBack={() => setShowFAQ(false)} />
+    return (
+      <FAQView 
+        onClose={() => setShowFAQ(false)}
+        onStartNow={() => { setShowFAQ(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowFAQ(false); setShowFeatures(true); }}
+        onShowPricing={() => { setShowFAQ(false); setShowPricing(true); }}
+        onShowContact={() => { setShowFAQ(false); setShowContact(true); }}
+      />
+    )
   }
 
   if (showPrivacyPolicy) {
@@ -107,6 +126,30 @@ const LandingPage: React.FC = () => {
 
   if (showCookiePolicy) {
     return <CookiePolicyView onBack={() => setShowCookiePolicy(false)} />
+  }
+
+  if (showPricing) {
+    return (
+      <PricingView 
+        onClose={() => setShowPricing(false)} 
+        onStartNow={() => { setShowPricing(false); setShowAuth(true); }}
+        onShowFeatures={() => { setShowPricing(false); setShowFeatures(true); }}
+        onShowFAQ={() => { setShowPricing(false); setShowFAQ(true); }}
+        onShowContact={() => { setShowPricing(false); setShowContact(true); }}
+      />
+    )
+  }
+
+  if (showFeatures) {
+    return (
+      <FeaturesView 
+        onClose={() => setShowFeatures(false)} 
+        onStartNow={() => { setShowFeatures(false); setShowAuth(true); }}
+        onShowPricing={() => { setShowFeatures(false); setShowPricing(true); }}
+        onShowFAQ={() => { setShowFeatures(false); setShowFAQ(true); }}
+        onShowContact={() => { setShowFeatures(false); setShowContact(true); }}
+      />
+    )
   }
 
   const isDark = resolvedTheme === 'dark'
@@ -131,8 +174,23 @@ const LandingPage: React.FC = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <button className="text-gray-300 hover:text-white font-medium transition-colors">
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
                 Home
+              </button>
+              <button 
+                onClick={() => setShowFeatures(true)}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => setShowPricing(true)}
+                className="text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
               </button>
               <button 
                 onClick={() => setShowFAQ(true)}
@@ -144,7 +202,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => setShowContact(true)}
                 className="text-gray-300 hover:text-white font-medium transition-colors"
               >
-                Contact Us
+                Contact
               </button>
             </nav>
 
@@ -184,9 +242,31 @@ const LandingPage: React.FC = () => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-800 py-4 space-y-4">
               <button 
+                onClick={() => { 
+                  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                  setMobileMenuOpen(false); 
+                }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
                 Home
+              </button>
+              <button 
+                onClick={() => { 
+                  setMobileMenuOpen(false);
+                  setShowFeatures(true);
+                }}
+                className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => { 
+                  setMobileMenuOpen(false);
+                  setShowPricing(true);
+                }}
+                className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
+              >
+                Pricing
               </button>
               <button 
                 onClick={() => { setShowFAQ(true); setMobileMenuOpen(false); }}
@@ -198,9 +278,9 @@ const LandingPage: React.FC = () => {
                 onClick={() => { setShowContact(true); setMobileMenuOpen(false); }}
                 className="block w-full text-left text-gray-300 hover:text-white font-medium transition-colors"
               >
-                Contact Us
+                Contact
               </button>
-              <div className="pt-4 space-y-2">
+              <div className="pt-4 border-t border-gray-700 space-y-2">
                 <button
                   onClick={() => { setShowAuth(true); setMobileMenuOpen(false); }}
                   className="w-full px-4 py-2 text-white hover:text-gray-200 font-medium transition-colors text-left"
@@ -219,213 +299,654 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gray-900">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+      {/* Hero Section - Problem-Focused */}
+      <section className="relative pt-24 pb-16 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
+            alt="Business team collaboration"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-purple-900/80 to-gray-900/95"></div>
+        </div>
+        
+        {/* Animated Decorative elements */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl z-10 animate-float"></div>
+        <div className="absolute bottom-10 left-10 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl z-10 animate-float-delayed"></div>
+        <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl z-10 animate-float-slow"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl z-10 animate-pulse-slow"></div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[600px]">
             {/* Left: Text Content */}
             <div className="space-y-6">
-              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight text-white">
-                Do the actual work of a Business Analyst
+              {/* Problem Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 backdrop-blur-sm rounded-full border border-red-500/30">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                <span className="text-sm font-semibold text-red-300">The Career-Changer's Problem</span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-white">
+                You can't get a BA job without experience.
+                <span className="block text-purple-400 mt-2">But you can't get experience without a job.</span>
               </h1>
               
-              <p className="text-lg text-gray-300">
-                Step into the Business Analyst role inside realistic project environments — practicing stakeholder conversations, documentation, and delivery work with guidance as you go.
+              <p className="text-xl text-gray-300 leading-relaxed">
+                Break the catch-22. Practice the actual work of a Business Analyst — stakeholder interviews, requirements documentation, process analysis, Scrum ceremonies — and build a portfolio that proves you can do the job.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                  className="group px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white font-semibold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-0.5 hover:scale-105"
                 >
-                  Start the Work
+                  <span className="flex items-center justify-center gap-2">
+                    Start Practicing Free
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </button>
                 
                 <button
                   onClick={() => setShowRequestAccess(true)}
-                  className="px-8 py-3 rounded-lg font-medium bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 transition-colors"
+                  className="px-8 py-4 rounded-xl font-semibold bg-gray-800/80 hover:bg-gray-700 text-white border-2 border-gray-700 hover:border-purple-500 transition-all backdrop-blur-sm"
                 >
                   See How It Works
                 </button>
               </div>
               
-              <p className="text-sm text-gray-400 pt-2">
-                Not theory. Not passive learning. Real role performance.
+              <div className="flex items-start gap-3 pt-2">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm font-medium text-gray-300">
+                  No credit card required. Start building your BA portfolio today.
+                </p>
+              </div>
+
+              {/* Social Proof Stats - Mini version in Hero */}
+              <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-gray-700/50 mt-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">S</div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">J</div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">A</div>
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    <span className="font-bold text-white">2,500+</span> aspiring BAs practicing
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    <span className="font-bold text-white">4.8/5</span> rating
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right: Meeting Preview - With Clear Context */}
+            <div className="relative flex flex-col items-center justify-center">
+              {/* Clear Explanation */}
+              <div className="mb-6 text-center space-y-3">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500/20 to-green-500/20 backdrop-blur-sm rounded-full border-2 border-emerald-400/40 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <span className="text-sm font-bold text-emerald-100">YOU Practicing Right Now</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white max-w-md mx-auto leading-tight">
+                  This Is You Interviewing Real Stakeholders
+                </h3>
+                <p className="text-gray-300 text-sm max-w-md mx-auto leading-relaxed">
+                  Practice eliciting requirements from multiple AI stakeholders with real business problems.<br />Build confidence before your first interview.
+                </p>
+              </div>
+              <MeetingPreview />
+              
+              {/* What You're Building */}
+              <div className="mt-6 flex items-center gap-3 px-6 py-3 bg-purple-600/10 backdrop-blur-sm rounded-xl border border-purple-500/30">
+                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                <p className="text-sm font-medium text-gray-200">
+                  Every conversation becomes portfolio proof
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Solution - Breaking the Catch-22 */}
+      <section className="py-20 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+              You can't get experience without a job?<br />
+              <span className="text-emerald-600">Actually, you can.</span>
+            </h2>
+          </div>
+
+          <div className="prose prose-lg max-w-none">
+            <p className="text-xl text-gray-700 leading-relaxed mb-8">
+              Here's what everyone misses: BA work doesn't require an employer's permission. You just need organizations, stakeholders, and projects.
+            </p>
+
+            {/* Virtual Organizations Visual */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {/* Card 1: Join Organizations */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Join Virtual Companies</h3>
+                <p className="text-sm text-gray-600 text-center">Get employed virtually at realistic organizations with real business challenges</p>
+              </div>
+
+              {/* Card 2: Real Stakeholders */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Meet Your Stakeholders</h3>
+                <p className="text-sm text-gray-600 text-center">Interview department heads, product managers, and end users with unique needs</p>
+              </div>
+
+              {/* Card 3: Complex Projects */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-emerald-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-center mb-2">Solve Complex Projects</h3>
+                <p className="text-sm text-gray-600 text-center">Work on enterprise-level projects with AI guidance every step of the way</p>
+              </div>
+            </div>
+
+            <div className="bg-emerald-100 border-l-4 border-emerald-600 p-6 my-8 rounded-r-xl">
+              <p className="text-xl font-bold text-emerald-900 mb-3">
+                This IS work experience.
+              </p>
+              <p className="text-lg text-emerald-800 leading-relaxed">
+                You're doing the actual BA job — same tasks, same deliverables, same problems to solve. The only difference? You're doing it from home, on your schedule, while keeping your current job.
               </p>
             </div>
-            
-            {/* Right: Chat Preview */}
-            <div className="relative">
-              <ConversationTypingPreview />
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* New Text Section with Curved Background */}
-      <section className="relative py-20 mt-16 overflow-hidden">
-        {/* Curved background with gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-200 rounded-[80px] mx-4 sm:mx-8"></div>
-        
-        {/* Geometric shapes */}
-        <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-[60px] opacity-20 rotate-12"></div>
-        <div className="absolute bottom-10 right-20 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-[40px] opacity-15 -rotate-6"></div>
-        
-        {/* Content */}
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight mb-6 text-gray-900">
-            BA WorkXP gives you the closest thing to real work experience.
-          </h2>
-          <p className="text-xl leading-relaxed text-gray-700 max-w-3xl mx-auto">
-            You'll interact with stakeholders, run workshops, write user stories, participate in Scrum ceremonies, and support solution delivery — just like a Business Analyst in a real team.
-          </p>
-        </div>
-      </section>
+            {/* Expandable Content */}
+            {showFullExperience && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                <p className="text-lg text-gray-700 text-center font-medium">
+                  You do the same BA work as any employed BA:
+                </p>
 
-      {/* Second Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2">
-            {/* Left: Meeting Preview with Lavender Background */}
-            <div className={`py-12 px-6 flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-[#C5CAE9]'} rounded-3xl`}>
-              <MeetingPreview />
-            </div>
-            
-            {/* Right: Text Content with White Background */}
-            <div className={`py-12 px-6 flex items-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="space-y-6">
-              <div>
-                <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Platform
-                </p>
-                <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Be the Business Analyst — inside a real project environment, with guidance every step of the way.
-                </h2>
-                <p className={`text-lg font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  You learn the role by performing it:
-                </p>
-                <ul className={`space-y-2 text-base ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Interacting with stakeholders</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Clarifying requirements</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Exploring business problems</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Participating in Scrum ceremonies</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                    <span>Creating real deliverables</span>
-                  </li>
-                </ul>
-                <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  And you're guided and corrected as you go — so you know you're doing it right.
+                <div className="grid md:grid-cols-2 gap-4 text-base">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Interview stakeholders in virtual meetings</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Gather and document requirements</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Create process maps and workflows</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Write user stories with acceptance criteria</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Manage scope and handle changes</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
+                    <span className="text-gray-700">Get AI coaching when you're stuck</span>
+                  </div>
+                </div>
+
+                <p className="text-xl text-gray-700 leading-relaxed">
+                  When interviewers ask "Tell me about your experience..." you'll have real answers. Because you have real experience.
                 </p>
               </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            )}
+
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setShowFullExperience(!showFullExperience)}
+                className="inline-flex items-center gap-2 px-6 py-3 text-emerald-700 font-semibold hover:text-emerald-800 transition-all mb-6"
+              >
+                {showFullExperience ? (
+                  <>
+                    Show Less
+                    <ChevronUp className="w-5 h-5" />
+                  </>
+                ) : (
+                  <>
+                    Learn More About The Experience
+                    <ChevronDown className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+
+              <div>
                 <button
                   onClick={() => setShowAuth(true)}
-                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                    isDark 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
-                      : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
-                  }`}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
                 >
-                  Start Now
+                  Start Building Experience Now
+                  <ArrowRight className="w-5 h-5" />
                 </button>
-                
-                <button
-                  onClick={() => setShowRequestAccess(true)}
-                  className={`px-8 py-3 font-medium transition-colors flex items-center gap-2 ${
-                    isDark 
-                      ? 'text-white hover:text-gray-200' 
-                      : 'text-gray-900 hover:text-gray-700'
-                  }`}
-                >
-                  <span>Watch demo</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+                <p className="text-sm text-gray-600 mt-4">
+                  No job required. No permission needed. Just start doing the work.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+
+      {/* What You'll Build - Portfolio Outcomes */}
+      <section className={`py-24 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-full border border-blue-500/30 mb-6">
+              <Briefcase className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-semibold text-blue-400">Your BA Portfolio</span>
+            </div>
+            
+            <h2 className={`text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              What You'll Build Inside BA WorkXP
+            </h2>
+            <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              A portfolio of real BA work products you can show employers — proving you can do the job, not just talk about it.
+            </p>
+          </div>
+
+          {/* Show 3 items initially, 6 when expanded */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Portfolio Item 1 */}
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-blue-500/50 transition-all hover:shadow-2xl hover:shadow-blue-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Interview Transcripts</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                30+ AI stakeholder sessions with real examples
+              </p>
+            </div>
+
+            {/* Portfolio Item 2 */}
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all hover:shadow-2xl hover:shadow-purple-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Process Maps</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                As-Is and To-Be workflows with visual documentation
+              </p>
+            </div>
+
+            {/* Portfolio Item 3 */}
+            <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-emerald-500/50 transition-all hover:shadow-2xl hover:shadow-emerald-500/20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">User Stories</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                50+ stories with proper acceptance criteria
+              </p>
+            </div>
+
+            {/* Expandable items */}
+            {showWhatYouBuild && (
+              <>
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-orange-500/50 transition-all hover:shadow-2xl hover:shadow-orange-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Requirements Docs</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Functional & non-functional requirements
+                  </p>
+                </div>
+
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-cyan-500/50 transition-all hover:shadow-2xl hover:shadow-cyan-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Scrum Ceremonies</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Sprint Planning, Refinement & Retrospectives
+                  </p>
+                </div>
+
+                <div className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-pink-500/50 transition-all hover:shadow-2xl hover:shadow-pink-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Rocket className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Business Cases</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    5+ projects with context and business value
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* View All Button */}
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setShowWhatYouBuild(!showWhatYouBuild)}
+              className="inline-flex items-center gap-2 px-6 py-3 text-purple-400 font-semibold hover:text-purple-300 transition-all"
+            >
+              {showWhatYouBuild ? (
+                <>
+                  Show Less
+                  <ChevronUp className="w-5 h-5" />
+                </>
+              ) : (
+                <>
+                  See All Deliverables
+                  <ChevronDown className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl p-12 border border-purple-500/20 backdrop-blur-sm">
+              <h3 className={`text-3xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                This isn't a course. It's a portfolio builder.
+              </h3>
+              <p className={`text-xl mb-8 max-w-2xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                When you finish, you'll have actual work products to show — and real stories to tell in interviews.
+              </p>
+              <button
+                onClick={() => setShowAuth(true)}
+                className="group px-10 py-5 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white text-lg font-bold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  Start Building Your Portfolio
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Preview with Features */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-2xl border border-gray-700">
+            {/* Left: Conversation Preview with Enhanced Gradient Background */}
+            <div className="relative py-16 px-8 flex items-center justify-center bg-gradient-to-br from-gray-800 via-purple-900/30 to-gray-900">
+              {/* Decorative elements */}
+              <div className="absolute top-10 right-10 w-32 h-32 bg-purple-400/20 rounded-full blur-3xl animate-pulse-slow"></div>
+              <div className="absolute bottom-10 left-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-2xl animate-float-slow"></div>
+              
+              {/* Badge */}
+              <div className="absolute top-6 left-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-purple-200">
+                  <MessageSquare className="w-3 h-3 text-purple-600" />
+                  <span className="text-xs font-bold text-purple-900">Practice Conversations</span>
+                </div>
+              </div>
+              
+              <div className="relative z-10">
+                <ConversationTypingPreview />
+              </div>
+            </div>
+            
+            {/* Right: Text Content with Enhanced Styling */}
+            <div className="py-16 px-8 lg:px-12 flex items-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="space-y-6 w-full">
+                {/* Platform Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-full border border-purple-700">
+                  <Briefcase className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-bold text-purple-100">How It Works</span>
+                </div>
+                
+                {/* Heading */}
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight bg-gradient-to-r from-white via-purple-200 to-indigo-200 bg-clip-text text-transparent">
+                  Practice inside realistic project environments — with AI coaching every step of the way
+                </h2>
+                
+                {/* Enhanced List with Checkmarks */}
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-200">AI Stakeholders That Feel Real</p>
+                      <p className="text-sm text-gray-400">They push back. They're vague. They have conflicting priorities. Just like real stakeholders.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-200">Real-Time AI Coaching</p>
+                      <p className="text-sm text-gray-400">Get nudges when you ask closed questions, miss key areas, or jump to solutions too early.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-200">Structured 4-Stage Training Path</p>
+                      <p className="text-sm text-gray-400">Problem Exploration → As-Is Analysis → To-Be Design → Solution Design. Master each stage.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-200">Voice-Enabled Practice Sessions</p>
+                      <p className="text-sm text-gray-400">Talk to stakeholders naturally. Practice the actual conversations, not just typing.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 group">
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-200">Detailed Performance Feedback</p>
+                      <p className="text-sm text-gray-400">Coverage analysis, question quality assessment, and specific improvement scripts after every session.</p>
+                    </div>
+                  </li>
+                </ul>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="group px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      Try It Free
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowRequestAccess(true)}
+                    className="px-8 py-4 rounded-xl font-semibold border-2 border-purple-500/50 text-white hover:bg-purple-900/30 hover:border-purple-400 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Watch demo</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - Minimal Teaser */}
+      <section className={`py-16 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Simple. Effective. Practical.
+            </h2>
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Three steps to interview-ready
+            </p>
+          </div>
+
+          {/* 3 Icon Steps */}
+          <div className="grid grid-cols-3 gap-6 mb-10">
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'} flex items-center justify-center`}>
+                <Target className={`w-8 h-8 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+              </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Choose Project
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                Pick realistic scenario
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-blue-900/50' : 'bg-blue-100'} flex items-center justify-center`}>
+                <MessageSquare className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
+              </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Do the Work
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                Interview stakeholders
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'} flex items-center justify-center`}>
+                <Award className={`w-8 h-8 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              </div>
+              <h3 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Get Hired
+              </h3>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+                With real portfolio
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+              <button
+                onClick={() => setShowAuth(true)}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold rounded-xl hover:shadow-xl transition-all"
+              >
+                Start Free
+              </button>
+              <button
+                onClick={() => setShowFeatures(true)}
+                className={`px-8 py-3 font-semibold rounded-xl border-2 transition-all ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              >
+                See How It Works →
+              </button>
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+              New to BA? Start with fundamentals. Already trained? Jump to projects.
+            </p>
+          </div>
+        </div>
+      </section>
+
 
       {/* Third Section: Platform Features */}
       <section className={`py-20 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              What You'll Do Inside the Platform
+              Real Projects. Real Skills. Real Confidence.
             </h2>
             <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              Real project experience through guided role performance.
+              Everything you need to become interview-ready
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Card 1 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 1 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-purple-500/20 hover:border-purple-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/home4.jpg" 
                   alt="Explore Business Problem" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Explore the Business Problem
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-purple-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Explore the Business Problem
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Step into real project scenarios. Understand context, map processes, uncover pain points, and define what needs to change.
                 </p>
               </div>
             </div>
 
-            {/* Card 2 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 2 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-indigo-500/20 hover:border-indigo-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/collaborate1.jpg" 
                   alt="Work With Stakeholders" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Work With Stakeholders
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-indigo-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-lg">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Work With Stakeholders
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Practice communicating with stakeholders. Ask clarifying questions, resolve ambiguity, capture requirements, and get guided feedback.
                 </p>
               </div>
             </div>
 
-            {/* Card 3 */}
-            <div className="rounded-xl overflow-hidden shadow-lg">
+            {/* Card 3 - Enhanced */}
+            <div className="group rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-blue-500/20 hover:border-blue-500/50">
               <div className="h-48 overflow-hidden">
                 <img 
                   src="/images/scrum1.jpg" 
                   alt="Deliver in a Scrum Team" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="p-6 bg-gray-900">
-                <h3 className="text-xl font-bold mb-3 text-white">
-                  Deliver in a Scrum Team
-                </h3>
-                <p className="text-sm text-gray-300">
+              <div className="p-6 bg-gradient-to-br from-gray-900 to-blue-900/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <Rocket className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    Deliver in a Scrum Team
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Write user stories and acceptance criteria, take part in refinement and planning, and support developers/testers — with direction as you work.
                 </p>
               </div>
@@ -433,7 +954,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <p className={`text-lg mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            <p className={`text-lg font-semibold mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               You don't just learn about the role.<br />
               You perform the role — with guidance.
             </p>
@@ -441,22 +962,173 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setShowAuth(true)}
-                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isDark ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white font-bold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
               >
                 Start free
               </button>
               
               <button
-                onClick={() => setShowRequestAccess(true)}
-                className={`px-8 py-3 font-medium transition-colors flex items-center justify-center gap-2 ${
+                onClick={() => setShowFeatures(true)}
+                className={`px-8 py-4 rounded-xl font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
                   isDark 
-                    ? 'text-white hover:text-gray-200' 
-                    : 'text-gray-900 hover:text-gray-700'
+                    ? 'border-purple-500/50 text-white hover:bg-purple-900/20 hover:border-purple-400' 
+                    : 'border-purple-500/30 text-gray-900 hover:bg-purple-50 hover:border-purple-500'
                 }`}
               >
-                <span>Learn more</span>
+                <span>See All Features</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof & Success Stories */}
+      <section className="py-24 bg-gradient-to-br from-gray-900 via-indigo-900/20 to-gray-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 backdrop-blur-sm rounded-full border border-emerald-500/30 mb-6">
+              <Award className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-semibold text-emerald-400">Success Stories</span>
+            </div>
+            
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6">
+              <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-400 bg-clip-text text-transparent">
+                From Stuck to Hired
+              </span>
+            </h2>
+            <p className="text-xl text-white font-medium max-w-3xl mx-auto leading-relaxed">
+              Career-changers who broke through the experience barrier with BA WorkXP
+            </p>
+          </div>
+
+          {/* Testimonials Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {/* Testimonial 1 */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-emerald-500/50 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-xl">
+                  S
+                </div>
+                <div>
+                  <p className="text-white font-bold">Sarah M.</p>
+                  <p className="text-sm text-gray-400">From Marketing to BA</p>
+                </div>
+              </div>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                "After 6 months of failed applications, I practiced 30+ stakeholder sessions on BA WorkXP. In my next interview, I confidently answered every behavioral question with real examples. Landed my first BA role 2 weeks later."
+              </p>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <span className="text-sm font-semibold text-emerald-400">Now a Junior BA at Tech Startup</span>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-blue-500/50 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl">
+                  J
+                </div>
+                <div>
+                  <p className="text-white font-bold">James K.</p>
+                  <p className="text-sm text-gray-400">Career Switcher</p>
+                </div>
+              </div>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                "I had a CBAP certification but no experience. Employers didn't care about the cert. BA WorkXP gave me a portfolio of actual deliverables. That's what finally got me past the screening calls."
+              </p>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+                <span className="text-sm font-semibold text-blue-400">Now a BA at Financial Services</span>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 hover:border-purple-500/50 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xl">
+                  A
+                </div>
+                <div>
+                  <p className="text-white font-bold">Aisha P.</p>
+                  <p className="text-sm text-gray-400">From QA to BA</p>
+                </div>
+              </div>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                "The AI coaching was incredible. It caught when I asked closed questions, when I jumped to solutions too early. I improved my technique before the real interviews. Made all the difference."
+              </p>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-purple-400" />
+                <span className="text-sm font-semibold text-purple-400">Now a Business Analyst at E-commerce</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="grid md:grid-cols-4 gap-6">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+              <div className="text-4xl font-bold text-emerald-400 mb-2">2,500+</div>
+              <p className="text-white text-sm font-semibold">Practice Sessions Completed</p>
+            </div>
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+              <div className="text-4xl font-bold text-blue-400 mb-2">89%</div>
+              <p className="text-white text-sm font-semibold">Feel Interview-Ready</p>
+            </div>
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+              <div className="text-4xl font-bold text-purple-400 mb-2">4.8/5</div>
+              <p className="text-white text-sm font-semibold">Average User Rating</p>
+            </div>
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 text-center">
+              <div className="text-4xl font-bold text-pink-400 mb-2">50+</div>
+              <p className="text-white text-sm font-semibold">Work Products Per User</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick FAQ + CTA Section */}
+      <section className={`py-20 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl font-bold mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Ready to break the experience barrier?
+            </h2>
+            
+            {/* Most Important FAQ */}
+            <div className={`rounded-2xl p-8 mb-8 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}`}>
+              <h3 className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Is this really free to start?
+              </h3>
+              <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                Yes. Start practicing immediately with no credit card. Access core features free. Upgrade anytime for unlimited practice.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowFAQ(true)}
+              className={`text-sm font-medium ${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} mb-8`}
+            >
+              View All FAQs →
+            </button>
+
+            {/* Final CTA */}
+            <div className={`rounded-2xl p-12 ${isDark ? 'bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/30' : 'bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200'}`}>
+              <p className={`text-xl mb-8 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                Start practicing today. Build your portfolio. Get interview-ready.
+              </p>
+              <button
+                onClick={() => setShowAuth(true)}
+                className="group px-12 py-5 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 text-white text-lg font-bold hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-1 hover:scale-105"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  Start Practicing Free
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+              <p className={`text-sm mt-4 font-medium ${isDark ? 'text-gray-200' : 'text-gray-600'}`}>
+                No credit card required • Cancel anytime • Join 2,500+ aspiring BAs
+              </p>
             </div>
           </div>
         </div>
@@ -477,8 +1149,8 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Features</button></li>
-                <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pricing</button></li>
+                <li><button onClick={() => setShowRequestAccess(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Features</button></li>
+                <li><button onClick={() => setShowRequestAccess(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pricing</button></li>
                 <li><button onClick={() => setShowFAQ(true)} className={`text-sm hover:text-purple-600 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>FAQ</button></li>
               </ul>
             </div>

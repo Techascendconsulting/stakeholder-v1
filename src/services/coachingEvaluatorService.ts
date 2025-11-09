@@ -1,4 +1,5 @@
-import OpenAI from 'openai';
+// Coaching Evaluator Service using secure backend API
+// SECURITY: No OpenAI API key in frontend
 
 interface EvaluationScores {
   intent_match: number;
@@ -29,31 +30,10 @@ interface EvaluationContext {
 
 class CoachingEvaluatorService {
   private static instance: CoachingEvaluatorService;
-  private openai: OpenAI | null;
   private aiCallCount = 0;
-  private maxAiCallsPerSession = 20; // Increased for more detailed evaluation
+  private maxAiCallsPerSession = 20;
   private lastAiCallTime = 0;
-  private minTimeBetweenAiCalls = 3000; // 3 seconds between calls
-
-  constructor() {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-    if (!hasValidApiKey) {
-      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Coaching evaluator features will be disabled');
-      this.openai = null;
-    } else {
-      try {
-        this.openai = new OpenAI({
-          apiKey: apiKey.trim(),
-          dangerouslyAllowBrowser: true
-          // Removed baseURL - call OpenAI directly (backend server not required)
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for coaching evaluator:', error);
-        this.openai = null;
-      }
-    }
-  }
+  private minTimeBetweenAiCalls = 3000;
 
   static getInstance(): CoachingEvaluatorService {
     if (!CoachingEvaluatorService.instance) {
@@ -62,253 +42,115 @@ class CoachingEvaluatorService {
     return CoachingEvaluatorService.instance;
   }
 
+  private canUseAI(): boolean {
+    const now = Date.now();
+    const timeSinceLastCall = now - this.lastAiCallTime;
+    
+    if (this.aiCallCount >= this.maxAiCallsPerSession) {
+      console.warn(`⚠️ COACHING EVALUATOR: AI call limit reached (${this.maxAiCallsPerSession})`);
+      return false;
+    }
+    
+    if (timeSinceLastCall < this.minTimeBetweenAiCalls) {
+      console.warn(`⚠️ COACHING EVALUATOR: Rate limit - wait ${Math.ceil((this.minTimeBetweenAiCalls - timeSinceLastCall) / 1000)}s`);
+      return false;
+    }
+    
+    return true;
+  }
+
   async evaluateMessage(context: EvaluationContext): Promise<EvaluationResult> {
-    console.log(`🔍 COACHING EVALUATOR: Starting evaluation for "${context.learner_message}" in ${context.state} phase`);
-    console.log(`🔍 COACHING EVALUATOR: Context details:`, {
-      state: context.state,
-      suggested_question: context.suggested_question.substring(0, 50) + '...',
-      state_goal: context.state_goal,
-      stakeholders: context.context.stakeholders,
-      project: context.context.project
-    });
+    console.log(`🔍 COACHING EVALUATOR: Starting evaluation for "${context.learner_message}"`);
 
     if (!this.canUseAI()) {
-      console.log(`⚠️ COACHING EVALUATOR: AI not available, using fallback evaluation`);
-      const fallbackResult = this.fallbackEvaluation(context);
-      console.log(`🔄 COACHING EVALUATOR: Fallback result:`, {
-        verdict: fallbackResult.verdict,
-        reasons: fallbackResult.reasons,
-        fixes: fallbackResult.fixes
-      });
-      return fallbackResult;
+      return this.fallbackEvaluation(context);
     }
 
     try {
       this.aiCallCount++;
       this.lastAiCallTime = Date.now();
-      console.log(`🤖 COACHING EVALUATOR: Making AI call #${this.aiCallCount}`);
 
-      const systemPrompt = `You are a Business Analyst coaching evaluator. 
-Your job is to evaluate the learner's latest message against the expected coaching question for the current stage.
-
-Rules:
-- Do NOT require exact wording. Accept paraphrases and semantic equivalents.
-- Always return JSON only.
-
-Evaluation Flow:
-Step 1: Check if learner's message is nonsense or out-of-scope (sports, weather, politics, entertainment, personal chit-chat).
-    - If yes → verdict = "OOS" (Out of Scope)
-    - reasons[] = "Message unrelated to BA discussion"
-    - fixes[] = "Stay focused on Business Analysis and the current stage"
-    - suggested_rewrite = expected_question
-
-Step 2: For warm-up stage, check if it's a casual greeting (hi, hey, hello, etc.).
-    - If yes → verdict = "AMBER"
-    - reasons[] = "This is a casual greeting that could be more professional"
-    - fixes[] = "Use a formal greeting with purpose statement"
-    - suggested_rewrite = formal greeting with purpose
-
-Step 3: Check if learner's message is BA-related but not aligned to this stage (e.g., general BA theory while stage is Problem Exploration).
-    - If yes → verdict = "MISALIGNED"
-    - reasons[] = "Valid BA question, but not aligned to the current stage"
-    - fixes[] = "Redirect focus to stakeholder problem exploration"
-    - suggested_rewrite = expected_question
-
-Step 3: If learner's message is BA-related and aligned, score it (0–5 scale):
-    1. intent_match → is it semantically the same type of question? (accept paraphrases and variations)
-    2. quality → is it open-ended, non-leading, one clear ask?
-    3. professionalism → is it polite, professional, contextual?
-    4. state_alignment → does it fit this stage's goal (Problem Exploration = uncovering pain points)?
-- Verdicts:
-    - "GOOD" if all 4 ≥ 4
-    - "AMBER" if intent ≥ 3 but any other < 4
-    - "RED" if intent ≤ 2 (treat as "AMBER" in verdict for UI)
-
-Always return:
-- scores{} (0–5, empty if OOS or MISALIGNED)
-- verdict (GOOD, AMBER, OOS, MISALIGNED)
-- reasons[]
-- fixes[]
-- suggested_rewrite (clearer phrasing of expected question)`;
-
-      const userPrompt = JSON.stringify({
-        stage: context.state,
-        expected_question: context.suggested_question,
-        state_goal: context.state_goal,
-        learner_message: context.learner_message,
-        context: {
-          stakeholder: context.context.stakeholders[0] || 'stakeholder',
-          project: context.context.project || 'unknown'
-        }
+      const response = await fetch('/api/coaching/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userMessage: context.learner_message,
+          coachingType: 'questioning',
+          context: `State: ${context.state}. Goal: ${context.state_goal}. Expected: ${context.suggested_question}. Project: ${context.context.project}`
+        })
       });
 
-      console.log(`📤 COACHING EVALUATOR: Sending to OpenAI:`, {
-        model: 'gpt-3.5-turbo',
-        max_tokens: 300,
-        temperature: 0.1,
-        userPromptLength: userPrompt.length
-      });
-
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 300,
-        temperature: 0.1
-      });
-
-      const aiResponse = response.choices[0]?.message?.content?.trim();
-      console.log(`📥 COACHING EVALUATOR: Raw AI response:`, aiResponse);
-      
-      if (!aiResponse) {
-        throw new Error('Empty AI response');
+      if (!response.ok) {
+        throw new Error('Failed to evaluate message');
       }
 
-      const evaluation = JSON.parse(aiResponse);
-      console.log(`🤖 COACHING EVALUATOR: Parsed evaluation:`, {
-        verdict: evaluation.verdict,
-        scores: evaluation.scores,
-        reasonsCount: evaluation.reasons?.length || 0,
-        fixesCount: evaluation.fixes?.length || 0,
-        hasRewrite: !!evaluation.suggested_rewrite
-      });
-
-      return evaluation;
-
+      const data = await response.json();
+      
+      // Parse feedback and determine verdict
+      return this.parseEvaluationFeedback(data.feedback, context);
     } catch (error) {
-      console.error('❌ COACHING EVALUATOR: AI evaluation failed:', error);
-      console.log(`🔄 COACHING EVALUATOR: Falling back to hardcoded evaluation`);
-      const fallbackResult = this.fallbackEvaluation(context);
-      console.log(`🔄 COACHING EVALUATOR: Fallback result:`, {
-        verdict: fallbackResult.verdict,
-        reasons: fallbackResult.reasons,
-        fixes: fallbackResult.fixes
-      });
-      return fallbackResult;
+      console.error('❌ Error in coaching evaluation:', error);
+      return this.fallbackEvaluation(context);
     }
   }
 
-  private fallbackEvaluation(context: EvaluationContext): EvaluationResult {
-    const message = context.learner_message.toLowerCase();
+  private parseEvaluationFeedback(feedback: string, context: EvaluationContext): EvaluationResult {
+    const lowerFeedback = feedback.toLowerCase();
     
-    // Check for out-of-scope content
-    const outOfScopeKeywords = [
-      'football', 'soccer', 'basketball', 'sports', 'game', 'team', 'score',
-      'weather', 'rain', 'sunny', 'temperature', 'forecast',
-      'politics', 'election', 'vote', 'president', 'government',
-      'movie', 'film', 'music', 'song', 'entertainment', 'tv', 'show',
-      'food', 'restaurant', 'cooking', 'recipe',
-      'personal', 'family', 'friend', 'hobby', 'vacation', 'weekend'
-    ];
+    // Determine verdict
+    let verdict: 'GOOD' | 'AMBER' | 'RED' | 'OOS' | 'MISALIGNED' = 'GOOD';
     
-    const isOutOfScope = outOfScopeKeywords.some(keyword => message.includes(keyword));
-    if (isOutOfScope) {
-      return {
-        scores: {
-          intent_match: 0,
-          question_quality: 0,
-          professionalism: 0,
-          state_alignment: 0
-        },
-        verdict: 'OOS',
-        reasons: ['Message unrelated to BA discussion'],
-        fixes: ['Stay focused on Business Analysis and the current stage'],
-        suggested_rewrite: context.suggested_question
-      };
-    }
-    
-    // Check for BA-related but misaligned questions
-    const baTheoryKeywords = [
-      'what is a ba', 'who is a ba', 'business analyst', 'ba role', 'ba definition',
-      'requirements', 'stakeholder', 'process', 'methodology', 'framework',
-      'agile', 'waterfall', 'scrum', 'kanban', 'jira', 'confluence'
-    ];
-    
-    const isBaTheory = baTheoryKeywords.some(keyword => message.includes(keyword));
-    if (isBaTheory && context.state === 'problem_exploration') {
-      return {
-        scores: {
-          intent_match: 0,
-          question_quality: 0,
-          professionalism: 0,
-          state_alignment: 0
-        },
-        verdict: 'MISALIGNED',
-        reasons: ['Valid BA question, but not aligned to the current stage'],
-        fixes: ['Redirect focus to stakeholder problem exploration'],
-        suggested_rewrite: context.suggested_question
-      };
-    }
-    
-    // Check for casual greetings (for warm-up stage)
-    if (context.state === 'warm_up') {
-      const casualGreetings = ['hi', 'hey', 'hello', 'yo', 'what\'s up'];
-      const isCasualGreeting = casualGreetings.some(greeting => message.includes(greeting));
-      
-      if (isCasualGreeting) {
-        return {
-          scores: {
-            intent_match: 2,
-            question_quality: 1,
-            professionalism: 2,
-            state_alignment: 3
-          },
-          verdict: 'AMBER',
-          reasons: ['This is a casual greeting that could be more professional'],
-          fixes: ['Use a formal greeting with purpose statement'],
-          suggested_rewrite: `Hello ${context.context.stakeholders[0]?.split(' ')[0] || 'there'}, thanks for taking the time to meet today. I'm the business analyst on this project, and I'd like to understand your current challenges.`
-        };
-      }
+    if (lowerFeedback.includes('out of scope') || lowerFeedback.includes('off-topic')) {
+      verdict = 'OOS';
+    } else if (lowerFeedback.includes('not aligned') || lowerFeedback.includes('misaligned')) {
+      verdict = 'MISALIGNED';
+    } else if (lowerFeedback.includes('poor') || lowerFeedback.includes('unclear') || lowerFeedback.includes('inappropriate')) {
+      verdict = 'RED';
+    } else if (lowerFeedback.includes('could improve') || lowerFeedback.includes('consider')) {
+      verdict = 'AMBER';
     }
 
-    // Default fallback for BA-related questions
     return {
       scores: {
-        intent_match: 3,
-        question_quality: 3,
-        professionalism: 3,
-        state_alignment: 3
+        intent_match: verdict === 'GOOD' ? 90 : verdict === 'AMBER' ? 70 : 40,
+        question_quality: verdict === 'GOOD' ? 85 : verdict === 'AMBER' ? 65 : 35,
+        professionalism: verdict === 'OOS' ? 20 : 75,
+        state_alignment: verdict === 'MISALIGNED' ? 30 : 80
       },
-      verdict: 'AMBER',
-      reasons: ['Message could be improved'],
-      fixes: ['Consider the suggested question format'],
+      verdict,
+      reasons: [feedback],
+      fixes: verdict !== 'GOOD' ? ['Consider using the suggested question format'] : [],
+      suggested_rewrite: verdict !== 'GOOD' ? context.suggested_question : context.learner_message
+    };
+  }
+
+  private fallbackEvaluation(context: EvaluationContext): EvaluationResult {
+    const learnerLower = context.learner_message.toLowerCase();
+    const suggestedLower = context.suggested_question.toLowerCase();
+
+    // Simple keyword matching
+    const hasKeywords = suggestedLower.split(' ').some(word => 
+      word.length > 4 && learnerLower.includes(word)
+    );
+
+    return {
+      scores: {
+        intent_match: hasKeywords ? 70 : 50,
+        question_quality: 65,
+        professionalism: 70,
+        state_alignment: hasKeywords ? 75 : 55
+      },
+      verdict: hasKeywords ? 'AMBER' : 'RED',
+      reasons: ['AI evaluation unavailable - using basic validation'],
+      fixes: hasKeywords ? [] : ['Try to align your question with the suggested format'],
       suggested_rewrite: context.suggested_question
     };
   }
 
-  private canUseAI(): boolean {
-    const now = Date.now();
-    
-    if (this.aiCallCount >= this.maxAiCallsPerSession) {
-      console.log(`⚠️ COACHING EVALUATOR: AI call limit reached (${this.aiCallCount}/${this.maxAiCallsPerSession})`);
-      return false;
-    }
-
-    if (now - this.lastAiCallTime < this.minTimeBetweenAiCalls) {
-      console.log(`⏱️ COACHING EVALUATOR: Too soon for another AI call`);
-      return false;
-    }
-
-    return true;
-  }
-
-  // Reset counters for new session
   resetSession(): void {
     this.aiCallCount = 0;
     this.lastAiCallTime = 0;
-    console.log('🔄 COACHING EVALUATOR: Session reset');
-  }
-
-  // Get current usage stats
-  getUsageStats(): { aiCallsUsed: number; maxAiCalls: number; remainingCalls: number } {
-    return {
-      aiCallsUsed: this.aiCallCount,
-      maxAiCalls: this.maxAiCallsPerSession,
-      remainingCalls: this.maxAiCallsPerSession - this.aiCallCount
-    };
   }
 }
 
-export default CoachingEvaluatorService;
+export const coachingEvaluatorService = CoachingEvaluatorService.getInstance();

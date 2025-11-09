@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MessageSquare, CheckCircle, AlertTriangle, Copy, Lightbulb } from 'lucide-react';
-import GreetingCoachingService from '../services/greetingCoachingService';
-import ProblemExplorationService from '../services/problemExplorationService';
-import StakeholderResponseAnalysisService from '../services/stakeholderResponseAnalysisService';
+import { greetingCoachingService } from '../services/greetingCoachingService';
+import { problemExplorationService } from '../services/problemExplorationService';
+import { stakeholderResponseAnalysisService } from '../services/stakeholderResponseAnalysisService';
 import AsIsProcessService from '../services/asIsProcessService';
 
 // Types
@@ -109,7 +109,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
   useEffect(() => {
     const loadWarmUpGuidance = async () => {
       try {
-        const guidance = await GreetingCoachingService.getInstance().getWarmUpGuidance();
+        const guidance = await greetingCoachingService.getWarmUpGuidance();
         setWarmUpGuidance(guidance);
       } catch (error) {
         console.error('Failed to load warm-up guidance:', error);
@@ -142,7 +142,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
             break;
           case 'problem_exploration':
             if (!problemExplorationGuidance) {
-              const guidance = await ProblemExplorationService.getInstance().getProblemExplorationGuidance();
+              const guidance = await problemExplorationService.getProblemExplorationGuidance();
               setProblemExplorationGuidance(guidance);
             }
             break;
@@ -301,7 +301,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
     setIsEvaluating(true);
 
     try {
-      const evaluation = await GreetingCoachingService.getInstance().evaluateGreeting(message);
+      const evaluation = await greetingCoachingService.evaluateGreeting(message);
       
       if (evaluation.verdict === 'GOOD') {
         setCoachingFeedback({
@@ -325,7 +325,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
             // Load problem exploration guidance only for problem_exploration stage
             if (stage === 'problem_exploration') {
               try {
-                const guidance = await ProblemExplorationService.getInstance().getProblemExplorationGuidance();
+                const guidance = await problemExplorationService.getProblemExplorationGuidance();
                 setProblemExplorationGuidance(guidance);
               } catch (error) {
                 console.error('Failed to load problem exploration guidance:', error);
@@ -377,7 +377,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
     setIsEvaluating(true);
 
     try {
-      const evaluation = await ProblemExplorationService.getInstance().evaluateProblemExplorationQuestion(message);
+      const evaluation = await problemExplorationService.evaluateProblemExploration(message);
       
       if (evaluation.verdict === 'GOOD') {
         setProblemExplorationFeedback({
@@ -582,7 +582,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
     setIsEvaluating(true);
 
     try {
-      const analysis = await StakeholderResponseAnalysisService.getInstance().analyzeStakeholderResponse(response);
+      const analysis = await stakeholderResponseAnalysisService.analyzeStakeholderResponse(response);
       setStakeholderAnalysis(analysis);
       setShowStakeholderAnalysis(true);
       console.log('✅ Stakeholder analysis completed:', analysis);
@@ -616,7 +616,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
         setShowNextPhase(true);
         // Load problem exploration guidance immediately
         try {
-          const guidance = await ProblemExplorationService.getInstance().getProblemExplorationGuidance();
+          const guidance = await problemExplorationService.getProblemExplorationGuidance();
           setProblemExplorationGuidance(guidance);
         } catch (error) {
           console.error('Failed to load problem exploration guidance:', error);

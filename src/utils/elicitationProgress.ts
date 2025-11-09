@@ -2,9 +2,11 @@
  * ELICITATION PRACTICE PROGRESS TRACKING
  * 
  * Manages the progressive unlock system for elicitation practice:
- * 1. Chat practice: Unlocks after Module 3 completion (70%+)
- * 2. Voice practice: Unlocks after 3 qualifying sessions on 3 different days
+ * 1. Chat practice: Unlocks after completing ANY 3 learning modules (from user_progress table)
+ * 2. Voice practice: Unlocks after 3 qualifying chat sessions (70%+ score) on 3 different days
  * 3. Daily limits: 20 interactions/day for chat-only users
+ * 
+ * NOTE: Uses NEW progress system (user_progress table with unit_type='module')
  */
 
 import { supabase } from '../lib/supabase';
@@ -141,25 +143,30 @@ export async function getQualifyingSessions(userId: string): Promise<PracticeSes
 
 /**
  * Check if user has unlocked chat practice
- * (Requires Module 3: Elicitation completion with 70%+)
+ * (Requires completion of ANY 3 modules)
  */
 export async function checkChatUnlock(userId: string): Promise<boolean> {
   try {
-    // Check if Module 3 (Elicitation) is completed with 70%+
+    // Check learning_progress table (where markModuleCompleted() writes to)
     const { data, error } = await supabase
       .from('learning_progress')
-      .select('status, completion_percentage')
+      .select('status, module_id')
       .eq('user_id', userId)
-      .eq('module_id', 'module-3-elicitation')
-      .single();
+      .eq('status', 'completed');
 
-    if (error || !data) {
-      console.log('⚠️ Module 3 not found, defaulting to locked');
+    if (error) {
+      console.error('❌ Error fetching learning progress:', error);
       return false;
     }
 
-    const isUnlocked = data.status === 'completed' && (data.completion_percentage || 0) >= 70;
-    console.log('🔍 Chat unlock check:', { status: data.status, percentage: data.completion_percentage, isUnlocked });
+    const completedModules = data?.length || 0;
+    const isUnlocked = completedModules >= 3;
+    
+    console.log('🔍 Chat unlock check:', { 
+      completedModules,
+      moduleIds: data?.map(m => m.module_id),
+      isUnlocked 
+    });
     
     return isUnlocked;
   } catch (error) {
@@ -342,6 +349,8 @@ export function getVoiceUnlockProgressMessage(status: VoiceUnlockStatus): string
     ? `Need: ${parts.join(' and ')} (70%+ score)`
     : '🎉 Complete one more session to unlock voice!';
 }
+
+
 
 
 

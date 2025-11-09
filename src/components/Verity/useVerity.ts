@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import VerityService from '../../services/verityService';
+import { VerityService } from '../../services/verityService';
 import EmailService from '../../services/emailService';
 
 interface Message {
@@ -263,6 +263,8 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
 }
 
 export default useVerity;
+
+
 
 
 

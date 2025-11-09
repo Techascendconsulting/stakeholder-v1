@@ -486,16 +486,20 @@ d) Design user interfaces
                         disabled={!accessible}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                           isSelected
-                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold'
+                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold border-l-4 border-purple-600'
                             : completed
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 hover:bg-green-100/70 dark:hover:bg-green-900/30'
+                            ? 'bg-purple-50/50 dark:bg-purple-900/10 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'
                             : accessible
                             ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                            : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                            : 'text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60'
                         }`}
                       >
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm ${
-                          completed ? 'bg-green-700 dark:bg-green-900' : isSelected ? color.icon : 'bg-gray-200 dark:bg-gray-700'
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                          completed 
+                            ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md' 
+                            : isSelected 
+                            ? color.icon + ' shadow-md'
+                            : 'bg-gray-200 dark:bg-gray-700'
                         }`}>
                           {completed ? (
                             <CheckCircle className="w-4 h-4 text-white" />
@@ -505,12 +509,11 @@ d) Design user interfaces
                             <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
                           )}
                         </div>
-                        <span className="flex-1 text-left truncate">
+                        <span className="flex-1 text-left truncate font-medium">
                           {topic.title}
-                          {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
                         </span>
                         {completed && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-800 text-white dark:bg-green-950 dark:text-green-100 border border-green-900 dark:border-green-900">Done</span>
+                          <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                         )}
                       </button>
                     );
@@ -757,7 +760,7 @@ d) Design user interfaces
                 disabled={!accessible}
                 className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   completed
-                    ? 'bg-green-800 dark:bg-green-950 border-green-900 dark:border-green-950'
+                    ? 'bg-gradient-to-br from-purple-600 to-indigo-700 dark:from-purple-700 dark:to-indigo-800 border-purple-500 dark:border-purple-600 shadow-lg shadow-purple-500/30'
                     : accessible
                     ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-60 cursor-not-allowed'
@@ -766,7 +769,7 @@ d) Design user interfaces
                 <div className="flex items-start justify-between mb-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
                     completed 
-                      ? 'bg-green-700 dark:bg-green-900' 
+                      ? 'bg-white/20 backdrop-blur-sm' 
                       : accessible 
                       ? color.icon 
                       : 'bg-gray-300 dark:bg-gray-700'
@@ -779,19 +782,19 @@ d) Design user interfaces
                       <Icon className="w-6 h-6 text-white" />
                     )}
                   </div>
-                  <span className={`text-xs font-semibold ${completed ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
+                  <span className={`text-xs font-semibold ${completed ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'}`}>Topic {idx + 1}</span>
                 </div>
                 <h3 className={`font-bold mb-2 transition-colors ${completed ? 'text-white' : 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'}`}>
                   {topic.title}
                   {moduleFromStableKey(topic.id) ? ` (Module ${moduleFromStableKey(topic.id)})` : ''}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <div className={`flex items-center gap-2 text-xs ${completed ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                  <div className={`flex items-center gap-2 text-xs ${completed ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                     <Clock className="w-3 h-3" />
                     <span>{topic.duration || '10 min'}</span>
                   </div>
                   {completed && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-900 text-white dark:bg-green-900 border border-green-950 dark:border-green-950">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white backdrop-blur-sm">
                       <CheckCircle className="w-3 h-3" /> Completed
                     </span>
                   )}

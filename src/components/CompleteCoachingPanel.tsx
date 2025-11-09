@@ -9,7 +9,7 @@ import {
   TrendingUp,
   CheckSquare
 } from 'lucide-react';
-import CoachingEvaluatorService from '../services/coachingEvaluatorService';
+import { coachingEvaluatorService } from '../services/coachingEvaluatorService';
 import { 
   getCurrentQuestion, 
   getTotalQuestions,
@@ -57,7 +57,7 @@ const CompleteCoachingPanel: React.FC<CompleteCoachingPanelProps> = ({
   const [currentQuestionId, setCurrentQuestionId] = useState<string>('');
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
-  const evaluator = CoachingEvaluatorService.getInstance();
+  const evaluator = coachingEvaluatorService;
 
   // Get current question
   const currentQuestion = getCurrentQuestion(projectName, currentQuestionIndex);

@@ -79,3 +79,11 @@ GRANT EXECUTE ON FUNCTION public.register_user_device(uuid, text) TO authenticat
 
 
 
+
+
+
+
+
+
+
+

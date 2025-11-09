@@ -5,7 +5,7 @@ import {
   Copy,
   Send
 } from 'lucide-react';
-import CoachingEvaluatorService from '../services/coachingEvaluatorService';
+import { coachingEvaluatorService } from '../services/coachingEvaluatorService';
 import { getCurrentQuestion, getProjectQuestions } from '../data/problemExplorationQuestions';
 
 interface ProblemExplorationPanelProps {
@@ -45,7 +45,7 @@ const ProblemExplorationPanel: React.FC<ProblemExplorationPanelProps> = ({
   const [inputLocked, setInputLocked] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const evaluator = CoachingEvaluatorService.getInstance();
+  const evaluator = coachingEvaluatorService;
 
   // Get current question
   const currentQuestion = getCurrentQuestion(projectId, currentQuestionType, currentQuestionIndex);

@@ -60,3 +60,5 @@ CREATE POLICY "Admins can update email notifications" ON public.email_notificati
 
 
 
+
+

@@ -75,3 +75,11 @@ export async function getModuleCompletion(userId: string, moduleStableKey: strin
   return { percent: Math.round(avg), completed };
 }
 
+
+
+
+
+
+
+
+

@@ -171,3 +171,5 @@ COMMENT ON FUNCTION get_daily_quote_stats IS 'Returns statistics about daily quo
 
 
 
+
+

@@ -190,3 +190,5 @@ COMMENT ON COLUMN public.user_profiles.blocked_at IS 'Timestamp when the account
 
 
 
+
+

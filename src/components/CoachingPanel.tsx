@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 import { CoachingSession, getCurrentState, canTransitionToNext, generateSummary } from '../services/coachingStateReducer';
 import { coachingStateMachine } from '../data/coachingStates';
-import CoachingAnalysisService from '../services/coachingAnalysisService';
-import CoachingEvaluatorService from '../services/coachingEvaluatorService';
+import { coachingAnalysisService } from '../services/coachingAnalysisService';
+import { coachingEvaluatorService } from '../services/coachingEvaluatorService';
 
 interface CoachingPanelProps {
   session: CoachingSession;
@@ -65,8 +65,8 @@ const CoachingPanel: React.FC<CoachingPanelProps> = ({
   const currentState = getCurrentState(session);
   if (!currentState) return null;
 
-  // Initialize coaching analysis service
-  const coachingAnalysis = CoachingAnalysisService.getInstance();
+  // Use coaching analysis service (already a singleton instance)
+  const coachingAnalysis = coachingAnalysisService;
 
   // Analyze the last user question for dynamic coaching and auto-progression
   useEffect(() => {
@@ -207,7 +207,7 @@ const CoachingPanel: React.FC<CoachingPanelProps> = ({
       return;
     }
 
-    const evaluator = CoachingEvaluatorService.getInstance();
+    const evaluator = coachingEvaluatorService;
     
     // Get current question to evaluate against
     const currentQuestion = currentQuestionIndex === 0 
