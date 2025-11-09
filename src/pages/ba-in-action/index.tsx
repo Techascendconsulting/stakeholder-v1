@@ -1,7 +1,10 @@
 import React from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
-import { ArrowLeft, ArrowRight, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Play, RefreshCw } from 'lucide-react';
+import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
+import { ProjectSelection } from '../../ba-in-action/ProjectSelection';
+import { PROJECTS } from '../../ba-in-action/projectData';
 
 const journey: Array<{ id: number; label: string; view: AppView }> = [
   { id: 1, label: 'Join & Orientation (Day 1)', view: 'ba_in_action_join_orientation' },
@@ -17,10 +20,28 @@ const journey: Array<{ id: number; label: string; view: AppView }> = [
 
 const BAInActionIndexPage: React.FC = () => {
   const { setCurrentView, currentView } = useApp();
+  const { selectedProject, setSelectedProject, hasSelectedProject } = useBAInActionProject();
 
   const handleNavigate = (view: AppView) => {
     void setCurrentView(view);
   };
+
+  const handleProjectSelect = (projectId: 'cif' | 'voids') => {
+    setSelectedProject(projectId);
+  };
+
+  const handleChangeProject = () => {
+    // Clear selection to show project picker again
+    localStorage.removeItem('ba_in_action_selected_project');
+    window.location.reload();
+  };
+
+  // Show project selection if not selected yet
+  if (!hasSelectedProject) {
+    return <ProjectSelection onSelect={handleProjectSelect} />;
+  }
+
+  const project = PROJECTS[selectedProject];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#ff09aa] via-[#ff56c9] to-[#c94bff] dark:from-[#7a0057] dark:via-[#6b008a] dark:to-[#4b0082]">
@@ -36,13 +57,27 @@ const BAInActionIndexPage: React.FC = () => {
             <span className="text-sm font-medium">Back to Dashboard</span>
           </button>
           
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Shadow a Business Analyst in a Real Project Workflow
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Follow the real flow of how a BA understands the problem, engages stakeholders, uncovers insights, shapes solutions, and supports delivery.
-            </p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Shadow a Business Analyst in a Real Project Workflow
+                </h1>
+                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-bold rounded-full">
+                  {project.shortName}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {project.description}
+              </p>
+            </div>
+            <button
+              onClick={handleChangeProject}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition-colors text-sm font-semibold ml-4"
+            >
+              <RefreshCw size={16} />
+              Switch Project
+            </button>
           </div>
         </div>
       </div>

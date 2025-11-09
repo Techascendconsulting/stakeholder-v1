@@ -13,6 +13,7 @@ import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
 import GlobalWatermark from './components/GlobalWatermark'
 import { useBlockCopyPaste } from './hooks/useBlockCopyPaste'
+import { BAInActionProjectProvider } from './contexts/BAInActionProjectContext'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
@@ -151,14 +152,16 @@ function App() {
             <AdminProvider>
               <VoiceProvider>
                 <AppProvider>
-                  <OnboardingProvider>
-                    <MeetingSetupProvider>
-                      <StakeholderBotProvider>
-                        <AppContent />
-                        <GlobalWatermark />
-                      </StakeholderBotProvider>
-                    </MeetingSetupProvider>
-                  </OnboardingProvider>
+                  <BAInActionProjectProvider>
+                    <OnboardingProvider>
+                      <MeetingSetupProvider>
+                        <StakeholderBotProvider>
+                          <AppContent />
+                          <GlobalWatermark />
+                        </StakeholderBotProvider>
+                      </MeetingSetupProvider>
+                    </OnboardingProvider>
+                  </BAInActionProjectProvider>
                 </AppProvider>
               </VoiceProvider>
             </AdminProvider>

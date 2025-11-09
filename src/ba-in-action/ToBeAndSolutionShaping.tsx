@@ -19,6 +19,7 @@ import {
   ChevronUp,
   FileText,
   AlertTriangle,
+  Users,
 } from 'lucide-react';
 
 const VIEW_ID: AppView = 'ba_in_action_requirements';

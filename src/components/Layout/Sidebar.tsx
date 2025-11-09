@@ -28,6 +28,7 @@ import {
   HelpCircle,
   Briefcase,
   Lock,
+  RefreshCw,
   // Sparkles // Archived with AI Process Mapper
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -39,6 +40,8 @@ import SidebarAudioPlayer from './SidebarAudioPlayer';
 import { supabase } from '../../lib/supabase';
 import { useUserJourney } from '../../hooks/useUserJourney';
 import { BA_IN_ACTION_PAGES } from '../../ba-in-action/config';
+import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
+import { PROJECTS } from '../../ba-in-action/projectData';
 
 interface SidebarProps {
   className?: string;
@@ -596,6 +599,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               </li>
             );
           })}
+          
+          {/* Change BA In Action Project Button */}
+          <li className="mt-2">
+            <button
+              onClick={() => {
+                localStorage.removeItem('ba_in_action_selected_project');
+                setCurrentView('ba-in-action-index' as any);
+              }}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'space-x-3 px-2 py-1.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium text-purple-100 hover:bg-white/10 hover:text-white border border-purple-300/30 hover:border-purple-300/50`}
+              title={isCollapsed ? 'Change BA Project' : undefined}
+            >
+              <RefreshCw size={isCollapsed ? 20 : 16} className="text-purple-200" />
+              {!isCollapsed && (
+                <span className="truncate">Change BA Project</span>
+              )}
+            </button>
+          </li>
         </ul>
       </nav>
 
