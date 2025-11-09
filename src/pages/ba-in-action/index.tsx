@@ -41,7 +41,7 @@ const BAInActionIndexPage: React.FC = () => {
         <div className="max-w-full">
           <div className="min-h-[calc(100vh-220px)] flex flex-col items-center justify-center">
             {/* Horizontal Scrollable Container */}
-            <div className="overflow-x-auto pb-8">
+            <div className="w-full overflow-x-auto pb-8">
               {/* Centered Content Wrapper */}
               <div className="flex items-center justify-center min-w-max">
               {BA_IN_ACTION_PAGES.map((page, index) => {
