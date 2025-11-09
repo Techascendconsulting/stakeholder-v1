@@ -185,31 +185,28 @@ class SingleAgentSystem {
       
       console.log(`📚 Including ${historyMessages.length} messages from conversation history`);
       
-      if (!this.openai) {
-        throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY to enable AI features.');
-      }
-      
-      const response = await this.openai.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
+      // Call backend API instead of OpenAI directly
+      const apiResponse = await fetch('/api/stakeholder/generate-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stakeholderProfile: {
+            name: stakeholderContext.name,
+            role: stakeholderContext.role,
+            personality: stakeholderContext.personality
           },
-          ...historyMessages,  // Include conversation history for memory and context
-          {
-            role: 'user',
-            content: userMessage
-          }
-        ],
-        max_tokens: 150, // Short, natural responses
-        temperature: 0.7, // Balanced creativity
-        presence_penalty: 0.2, // Encourage diverse responses
-        frequency_penalty: 0.2, // Reduce repetition
-        stream: false, // Keep non-streaming for now (streaming requires callback pattern)
+          conversationHistory: historyMessages,
+          userQuestion: userMessage,
+          context: systemPrompt
+        })
       });
 
-      const generatedResponse = response.choices[0]?.message?.content;
+      if (!apiResponse.ok) {
+        throw new Error('Failed to generate response from API');
+      }
+
+      const apiData = await apiResponse.json();
+      const generatedResponse = apiData.response;
       
       console.log(`🤖 AI Generated Response: "${generatedResponse}"`);
       
@@ -273,28 +270,33 @@ Current time: ${timestamp}`;
     const projectContext = `Project: Unable to determine specific project context
 Please provide more details about the project you're working on.`;
 
-    if (!this.openai) {
-      return "I'm having trouble connecting right now. Please configure the OpenAI API key to enable AI features.";
-    }
-
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a team member in a business analysis project. Be conversational and natural. If you don't understand the question, ask for clarification about the specific project context. Do not use asterisks (*) or special formatting in your responses.`
-          },
-          {
-            role: 'user',
-            content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.5,
+      const apiResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a team member in a business analysis project. Be conversational and natural. If you don't understand the question, ask for clarification about the specific project context. Do not use asterisks (*) or special formatting in your responses.`
+            },
+            {
+              role: 'user',
+              content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
+            }
+          ],
+          model: 'gpt-3.5-turbo',
+          max_tokens: 200,
+          temperature: 0.5
+        })
       });
 
-      const errorResponse = response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
+      if (!apiResponse.ok) {
+        throw new Error('API call failed');
+      }
+
+      const data = await apiResponse.json();
+      const errorResponse = data.message || "I'm having trouble processing that right now.";
       console.log(`🆘 ERROR RESPONSE: "${errorResponse}"`);
       return errorResponse;
     } catch (error) {
