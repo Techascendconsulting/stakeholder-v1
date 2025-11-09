@@ -334,6 +334,127 @@ const AnalysisSpottingIssues: React.FC = () => {
         </div>
       </Section>
 
+      <Section title="4) BA Observation Notes: Shadowing James (Ops) for 2 Hours">
+        <p className="text-base text-slate-800 mb-4 leading-relaxed">
+          This is what the BA observes when shadowing James Walker (Ops Manager) for 2 hours. Watch what the BA writes down.
+        </p>
+
+        {/* Observation Notes Document */}
+        <div className="bg-white border-2 border-slate-300 rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3">
+            <div className="text-white font-bold">BA Observation Notes</div>
+            <div className="text-white/80 text-xs mt-1">Date: Week 1, Day 4 | Observer: You (BA) | Shadowing: James Walker (Ops)</div>
+          </div>
+
+          <div className="p-5 space-y-4 text-sm">
+            <div className="border-b border-slate-200 pb-3">
+              <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Context</div>
+              <p className="text-slate-800">Shadowing James during peak period (10am-12pm). Observing manual review queue process for identity verification cases flagged as &quot;mid-risk&quot; (score 31-84).</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-purple-700">10:05 AM</span>
+                  <span className="text-xs text-slate-600">Case #4521 arrives in queue</span>
+                </div>
+                <p className="text-slate-800 leading-relaxed">James opens case. System shows: Name, DOB, email. <strong className="text-red-700">Missing:</strong> IP address, device fingerprint, previous fraud flags. James switches to <strong>separate admin panel</strong> to manually look up these fields.</p>
+                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                  <strong>BA NOTE:</strong> Data fragmentation. Ops has to context-switch to 2 systems for one decision.
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-purple-700">10:12 AM</span>
+                  <span className="text-xs text-slate-600">James checks fraud flag history</span>
+                </div>
+                <p className="text-slate-800 leading-relaxed">James finds 2 previous fraud flags for this email domain. <strong>But there&apos;s no clear guidance on what to do with this information.</strong> James: &quot;I usually block if there are 2+ flags, but sometimes Compliance overrules me.&quot;</p>
+                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                  <strong>BA NOTE:</strong> Decision criteria not codified. Ops using tribal knowledge. Risk of inconsistency.
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-purple-700">10:18 AM</span>
+                  <span className="text-xs text-slate-600">James makes decision: Block</span>
+                </div>
+                <p className="text-slate-800 leading-relaxed">James clicks &quot;Block&quot; button. System updates status. <strong className="text-red-700">No audit log visible.</strong> James doesn&apos;t know if his decision was logged with evidence. &quot;I assume it&apos;s in the background somewhere?&quot;</p>
+                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                  <strong>BA NOTE:</strong> Compliance gap. Ops can&apos;t verify audit trail. Marie won&apos;t accept this.
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-purple-700">10:22 AM</span>
+                  <span className="text-xs text-slate-600">Case #4522 arrives</span>
+                </div>
+                <p className="text-slate-800 leading-relaxed">Same process. James switches systems again. Queue is aging — 14 cases now waiting. James: &quot;This gets overwhelming around lunchtime when volume spikes. We breach SLA almost every day.&quot;</p>
+                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                  <strong>BA NOTE:</strong> Process doesn&apos;t scale. SLA breaches are systemic, not Ops&apos; fault.
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-purple-700">11:45 AM</span>
+                  <span className="text-xs text-slate-600">Compliance asks for evidence on blocked case</span>
+                </div>
+                <p className="text-slate-800 leading-relaxed">Marie (Compliance) Slacks James: &quot;Why did we block case #4521?&quot; James has to manually reconstruct decision from memory + check multiple systems. Takes 15 minutes to respond.</p>
+                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                  <strong>BA NOTE:</strong> No decision log accessible to Ops. Rework + friction with Compliance.
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-3 mt-4">
+              <div className="text-xs uppercase tracking-wide text-emerald-600 font-semibold mb-2">Summary of Pain Points Observed</div>
+              <ul className="list-disc ml-5 space-y-1 text-slate-800">
+                <li>Ops switches between 2 systems for every case (fragmentation)</li>
+                <li>No clear decision guidance (tribal knowledge risk)</li>
+                <li>Audit trail not visible to Ops (Compliance friction)</li>
+                <li>Process doesn&apos;t scale (SLA breaches daily)</li>
+                <li>No decision log for retrospective queries (rework)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 border-2 border-blue-400 shadow-md">
+          <div className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+            <Lightbulb size={14} />
+            What to look for when shadowing
+          </div>
+          <ul className="space-y-1 text-sm text-white/95">
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA notes timestamps and exact sequences (not summaries)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA captures direct quotes (&quot;I usually just...&quot;)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA observes workarounds and system-switching</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA writes insights immediately (amber boxes)</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
+          <div className="flex items-center gap-2 font-semibold">
+            <Sparkles size={16} />
+            Pro tip: Always ask &quot;Can I shadow you?&quot; instead of &quot;Can you explain your process?&quot; Watching reveals truth that talking hides.
+          </div>
+        </div>
+      </Section>
+
       <Section title="5) Identify the Gaps (Mismatch Between Design & Reality)">
         <p className="text-base text-slate-800 mb-4 leading-relaxed">
           Gaps exist where original design assumptions diverged from current reality. Document why, not just what.

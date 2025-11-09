@@ -358,7 +358,153 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         </div>
       </Section>
 
-      <Section title="8) How to Present Requirements in Meetings">
+      <Section title="8) BA Documents in Confluence & Gets Dev Feedback">
+        <p className="text-base text-slate-800 mb-4 leading-relaxed">
+          This is what the BA creates in Confluence after defining requirements. Watch how the BA shares it with the dev team and incorporates their feedback.
+        </p>
+
+        {/* Confluence Page Mockup */}
+        <div className="bg-white border-2 border-slate-300 rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white">
+              <FileText size={16} />
+              <span className="font-semibold text-sm">Confluence</span>
+              <span className="text-white/60">›</span>
+              <span className="text-white/90 text-sm">CI&F Programme</span>
+              <span className="text-white/60">›</span>
+              <span className="text-white/90 text-sm">Requirements</span>
+            </div>
+            <span className="text-white/80 text-xs">Last edited: Today, 3:42 PM by You (BA)</span>
+          </div>
+
+          <div className="p-6 space-y-4 text-sm">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">US-142: Risk-Based Identity Verification</h2>
+              <div className="flex items-center gap-3 text-xs text-slate-600">
+                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">Sprint 3</span>
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded font-semibold">Draft</span>
+                <span>Author: You (BA)</span>
+                <span>|</span>
+                <span>Reviewed by: Alicia Chen (Dev Lead)</span>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Intent</h3>
+              <p className="text-slate-800 leading-relaxed bg-slate-50 p-3 rounded border border-slate-200">
+                Reduce fraudulent account creation while keeping customer sign-up smooth for legitimate users.
+              </p>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Functional Truths</h3>
+              <ul className="list-disc ml-5 space-y-1 text-slate-800 bg-slate-50 p-3 rounded border border-slate-200">
+                <li>Not all users share the same risk level</li>
+                <li>Identity signals come from multiple sources (IP, email domain, device fingerprint, address history)</li>
+                <li>Manual review capacity is finite (Ops can handle ~200 cases/day)</li>
+                <li>Audit proof required for regulatory compliance (FCA rules)</li>
+              </ul>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Decision States</h3>
+              <div className="space-y-2 bg-slate-50 p-3 rounded border border-slate-200">
+                <p><strong className="text-slate-900">Approve automatically:</strong> Risk score ≥ 85. Customer proceeds immediately.</p>
+                <p><strong className="text-slate-900">Block automatically:</strong> Risk score ≤ 30. Account creation fails with generic message.</p>
+                <p><strong className="text-slate-900">Manual review:</strong> Risk score 31–84. Case routed to Ops queue with evidence summary.</p>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Acceptance Criteria</h3>
+              <div className="space-y-3">
+                <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
+                  <p className="font-semibold text-green-900 mb-1">AC01: Auto-Approve High Confidence</p>
+                  <p className="text-sm text-green-800"><strong>Given</strong> risk score ≥ 85, <strong>When</strong> user completes signup, <strong>Then</strong> account approved automatically, no manual review triggered, decision logged with timestamp and score</p>
+                </div>
+                <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded">
+                  <p className="font-semibold text-red-900 mb-1">AC02: Auto-Block High Risk</p>
+                  <p className="text-sm text-red-800"><strong>Given</strong> risk score ≤ 30, <strong>When</strong> user completes signup, <strong>Then</strong> account creation fails, generic error shown, case flagged for fraud audit, decision logged</p>
+                </div>
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
+                  <p className="font-semibold text-amber-900 mb-1">AC03: Manual Review Queue</p>
+                  <p className="text-sm text-amber-800"><strong>Given</strong> risk score 31–84, <strong>When</strong> user completes signup, <strong>Then</strong> case routes to Ops queue with evidence summary, user sees &quot;verification in progress&quot;, SLA timer starts (24h)</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4 bg-blue-50 rounded p-3">
+              <div className="flex items-start gap-2">
+                <Users size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-blue-900 mb-2">Comments (3)</h4>
+                  
+                  {/* Comment 1 - Dev Feedback */}
+                  <div className="bg-white border border-blue-200 rounded p-3 mb-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-slate-900 text-xs">Alicia Chen (Dev Lead)</span>
+                      <span className="text-xs text-slate-500">Yesterday, 4:15 PM</span>
+                    </div>
+                    <p className="text-xs text-slate-800">Quick question on AC03: You mention &quot;evidence summary&quot; — can you specify exactly which fields? We need to know what to pull from the risk engine API.</p>
+                  </div>
+
+                  {/* Comment 2 - BA Response */}
+                  <div className="bg-white border border-blue-200 rounded p-3 mb-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-purple-700 text-xs">You (BA)</span>
+                      <span className="text-xs text-slate-500">Yesterday, 4:45 PM</span>
+                    </div>
+                    <p className="text-xs text-slate-800">Good catch, Alicia. Evidence summary should include: IP address, email domain, device fingerprint, previous fraud flags. I&apos;ve updated AC03 above to make this explicit. Does that work?</p>
+                  </div>
+
+                  {/* Comment 3 - Dev Confirmation */}
+                  <div className="bg-white border border-blue-200 rounded p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-slate-900 text-xs">Alicia Chen (Dev Lead)</span>
+                      <span className="text-xs text-slate-500">Yesterday, 5:02 PM</span>
+                    </div>
+                    <p className="text-xs text-slate-800">Perfect. That&apos;s what I needed. We can pull all of those from the risk engine. Marking this as ready for sprint.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 border-2 border-blue-400 shadow-md">
+          <div className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+            <Lightbulb size={14} />
+            What to look for
+          </div>
+          <ul className="space-y-1 text-sm text-white/95">
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA documents requirements in shared tool (not Word doc on desktop)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>Dev asks clarifying question (AC was slightly ambiguous)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>BA updates document immediately (doesn&apos;t wait for next meeting)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-cyan-200 mt-0.5 font-bold">→</span>
+              <span>Dev confirms it&apos;s now clear (collaboration, not handoff)</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
+          <div className="flex items-center gap-2 font-semibold">
+            <Sparkles size={16} />
+            Pro tip: Great BAs don&apos;t write requirements in isolation. They share drafts early, invite feedback in Confluence comments, and iterate before sprint planning.
+          </div>
+        </div>
+      </Section>
+
+      <Section title="10) How to Present Requirements in Meetings">
         <p className="text-sm text-slate-700">
           Never read documents aloud. Never defend everything. Never overload.
         </p>
@@ -368,7 +514,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         <p className="mt-3 text-sm text-slate-700">You control the room by controlling sequence, not volume.</p>
       </Section>
 
-      <Section title="9) Your Task Today">
+      <Section title="11) Your Task Today">
         <p className="text-sm text-slate-700">
           Fill these in thoughtfully — like someone who understands both business reality and engineering constraints.
         </p>
@@ -397,7 +543,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         </div>
       </Section>
 
-      <Section title="10) Slack / Teams Update (Copy & Adapt)">
+      <Section title="12) Slack / Teams Update (Copy & Adapt)">
         <p className="text-base text-slate-800 mb-3 leading-relaxed">
           After finalizing requirements, post an update. This shows structured thinking and stakeholder management.
         </p>
