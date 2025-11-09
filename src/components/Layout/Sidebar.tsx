@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   FolderOpen,
-  BookOpen,
   Settings,
   LogOut,
   ChevronLeft,
@@ -231,21 +230,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     //   label: 'My Hands-On Project', 
     //   icon: FolderOpen
     // }, // Removed as requested
-    { 
+    {
       id: 'project-journey',
       label: 'My Project', 
       icon: Rocket
     },
     {
-      id: 'ba-in-action',
+      id: 'ba-in-action-index',
       label: 'BA In Action',
-      icon: PlayCircle,
-      isCollapsible: true,
-      subItems: BA_IN_ACTION_PAGES.map((page) => ({
-        id: page.view,
-        label: page.title,
-        icon: BookOpen,
-      }))
+      icon: PlayCircle
     },
     { 
       id: 'my-cohort',

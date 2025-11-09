@@ -87,6 +87,8 @@ import LearnLandingView from '../Views/LearnLandingView';
 // import CommunityHub from '../Views/Community/CommunityHub'; // Archived for MVP
 // import AdminCommunityHub from '../Views/Community/AdminCommunityHub'; // Archived for MVP
 import ProjectLandingView from '../Views/ProjectLandingView';
+import BAInActionIndexPage from '../../pages/ba-in-action';
+import StakeholderLandscape from '../../pages/ba-in-action/StakeholderLandscape';
 import UnderstandingContext from '../../ba-in-action/UnderstandingContext';
 import StakeholderCommunication from '../../ba-in-action/StakeholderCommunication';
 import DiscoveryElicitation from '../../ba-in-action/DiscoveryElicitation';
@@ -359,8 +361,12 @@ const MainLayout: React.FC = () => {
       //   return <NavigationGuideView />;
       case 'analysis':
         return <AnalysisView />;
+      case 'ba-in-action-index':
+        return <BAInActionIndexPage />;
       case 'ba-in-action-understanding-context':
         return <UnderstandingContext />;
+      case 'ba-in-action-stakeholder-landscape':
+        return <StakeholderLandscape />;
       case 'ba-in-action-stakeholder-communication':
         return <StakeholderCommunication />;
       case 'ba-in-action-discovery-elicitation':

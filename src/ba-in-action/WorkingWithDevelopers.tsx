@@ -18,7 +18,7 @@ const WorkingWithDevelopers: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="Working with Developers" />
+      <PageTitle title="Working with Developers & QA" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

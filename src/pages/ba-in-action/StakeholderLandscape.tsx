@@ -1,24 +1,24 @@
 import React from 'react';
-import type { AppView } from '../types';
+import type { AppView } from '../../types';
 import {
   PageShell,
   PageTitle,
   Section,
   Placeholder,
   NavigationButtons,
-} from './common';
-import { baInActionViewToPath, getBaInActionNavigation } from './config';
+} from '../../ba-in-action/common';
+import { baInActionViewToPath, getBaInActionNavigation } from '../../ba-in-action/config';
 
-const VIEW_ID: AppView = 'ba-in-action-discovery-elicitation';
+const VIEW_ID: AppView = 'ba-in-action-stakeholder-landscape';
 
-const DiscoveryElicitation: React.FC = () => {
+const StakeholderLandscape: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
 
   return (
     <PageShell>
-      <PageTitle title="Discovery / Elicitation" />
+      <PageTitle title="Who’s Involved & Why It Matters" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />
@@ -41,5 +41,5 @@ const DiscoveryElicitation: React.FC = () => {
   );
 };
 
-export default DiscoveryElicitation;
+export default StakeholderLandscape;
 

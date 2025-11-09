@@ -18,7 +18,7 @@ const ToBeAndSolutionShaping: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="To-Be & Solution Shaping" />
+      <PageTitle title="To-Be & Solution Direction" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

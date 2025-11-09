@@ -253,6 +253,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'learning-flow',
         'practice-flow',
         'project-flow',
+        'ba-in-action-index',
         ...BA_IN_ACTION_VIEW_IDS
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
@@ -288,7 +289,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'profile',
       'welcome',
       'motivation',
-      'my-cohort'         // Always accessible to all users
+      'my-cohort',        // Always accessible to all users
+      'ba-in-action-index'
     ];
 
     // Check if this page should be locked for 'new' students

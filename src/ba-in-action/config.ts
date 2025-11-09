@@ -1,6 +1,7 @@
 import type { AppView } from '../types';
 
 export const BA_IN_ACTION_BASE_PATH = '/ba-in-action';
+export const BA_IN_ACTION_INDEX_VIEW: AppView = 'ba-in-action-index';
 
 export interface BAInActionPageDefinition {
   title: string;
@@ -10,9 +11,14 @@ export interface BAInActionPageDefinition {
 
 export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = [
   {
-    title: 'Understanding Context',
+    title: 'Understand the Business Problem',
     slug: 'understanding-context',
     view: 'ba-in-action-understanding-context',
+  },
+  {
+    title: 'Who’s Involved & Why It Matters',
+    slug: 'stakeholder-landscape',
+    view: 'ba-in-action-stakeholder-landscape',
   },
   {
     title: 'Stakeholder Communication',
@@ -20,22 +26,22 @@ export const BA_IN_ACTION_PAGES: BAInActionPageDefinition[] = [
     view: 'ba-in-action-stakeholder-communication',
   },
   {
-    title: 'Discovery & Elicitation',
+    title: 'Discovery / Elicitation',
     slug: 'discovery-elicitation',
     view: 'ba-in-action-discovery-elicitation',
   },
   {
-    title: 'Analysis & Spotting Issues',
+    title: 'As-Is & Analysis',
     slug: 'analysis-spotting-issues',
     view: 'ba-in-action-analysis-spotting-issues',
   },
   {
-    title: 'To-Be & Solution Shaping',
+    title: 'To-Be & Solution Direction',
     slug: 'to-be-and-solution-shaping',
     view: 'ba-in-action-to-be-and-solution-shaping',
   },
   {
-    title: 'Working with Developers',
+    title: 'Working with Developers & QA',
     slug: 'working-with-developers',
     view: 'ba-in-action-working-with-developers',
   },
@@ -58,7 +64,9 @@ export const baInActionPathToView = BA_IN_ACTION_PAGES.reduce<Record<string, App
     acc[`${BA_IN_ACTION_BASE_PATH}/${page.slug}`] = page.view;
     return acc;
   },
-  {}
+  {
+    [BA_IN_ACTION_BASE_PATH]: BA_IN_ACTION_INDEX_VIEW,
+  }
 );
 
 export const baInActionViewToPath = BA_IN_ACTION_PAGES.reduce<Partial<Record<AppView, string>>>(
@@ -66,7 +74,9 @@ export const baInActionViewToPath = BA_IN_ACTION_PAGES.reduce<Partial<Record<App
     acc[page.view] = `${BA_IN_ACTION_BASE_PATH}/${page.slug}`;
     return acc;
   },
-  {}
+  {
+    [BA_IN_ACTION_INDEX_VIEW]: BA_IN_ACTION_BASE_PATH,
+  }
 );
 
 export function getBaInActionNavigation(view: AppView) {

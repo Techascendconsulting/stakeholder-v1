@@ -18,7 +18,7 @@ const UnderstandingContext: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="Understanding Context" />
+      <PageTitle title="Understand the Business Problem" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />

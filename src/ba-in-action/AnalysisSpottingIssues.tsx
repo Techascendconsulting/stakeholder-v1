@@ -18,7 +18,7 @@ const AnalysisSpottingIssues: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="Analysis & Spotting Issues" />
+      <PageTitle title="As-Is & Analysis" />
 
       <Section title="Real Scenario">
         <Placeholder text="Example scenario will go here." />
