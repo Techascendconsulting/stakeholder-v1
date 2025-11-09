@@ -470,8 +470,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             const isExpanded = expandedSections.has(item.id);
             const hasSubItems = item.subItems && item.subItems.length > 0;
 
+            // Check user type at entry point
+            const isExistingUser = userType === 'existing';
+
             // Check if this item is locked
-            const isPracticeLocked = item.id === 'practice-flow' && !practiceUnlocked;
+            // Existing users: Practice is never locked (full access)
+            // New users: Practice locked until they meet unlock criteria
+            const isPracticeLocked = item.id === 'practice-flow' && !practiceUnlocked && !isExistingUser;
             const isProjectLocked = item.id === 'project-journey' && !projectUnlocked;
             const isLocked = isPracticeLocked || isProjectLocked;
 
@@ -482,6 +487,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
                     
                     // Early return for locked items with alerts
+                    // Only show lock message for new users
                     if (isPracticeLocked) {
                       alert('Your Practice Journey unlocks after completing Modules 1–3 and submitting assignments.');
                       return;

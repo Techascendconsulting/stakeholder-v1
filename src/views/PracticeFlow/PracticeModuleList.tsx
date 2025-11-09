@@ -69,6 +69,25 @@ const PracticeModuleList: React.FC = () => {
   };
 
   const getModuleStatus = (module: typeof practiceModules[0]) => {
+    // Check user type at entry point
+    const isExistingUser = userType === 'existing';
+    
+    // Existing users: Full access to all practice modules immediately
+    if (isExistingUser) {
+      const moduleProgress = progress[module.id];
+      
+      if (moduleProgress?.status === 'completed') {
+        return 'completed';
+      }
+      
+      if (moduleProgress?.status === 'in_progress') {
+        return 'in_progress';
+      }
+      
+      return 'not_started'; // All modules unlocked for existing users
+    }
+
+    // New users: Progressive unlock rules apply
     const moduleProgress = progress[module.id];
     
     if (moduleProgress?.status === 'completed') {
@@ -77,11 +96,6 @@ const PracticeModuleList: React.FC = () => {
     
     if (moduleProgress?.status === 'in_progress') {
       return 'in_progress';
-    }
-
-    // For existing users: all unlocked
-    if (userType === 'existing') {
-      return 'not_started';
     }
 
     // For new users: Progressive unlock with custom criteria
