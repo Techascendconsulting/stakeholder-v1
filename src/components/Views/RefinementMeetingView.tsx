@@ -1142,8 +1142,8 @@ ${cleanAcceptanceCriteria}`;
       console.error('❌ Error transcribing audio:', error);
       // Show user-friendly error
       setUserInput(''); // Clear input on error
-      if (error instanceof Error && error.message?.includes('VITE_OPENAI_API_KEY')) {
-        console.error('💡 Hint: Add VITE_OPENAI_API_KEY to .env file for voice transcription');
+      if (error instanceof Error) {
+        console.error('💡 Transcription error:', error.message);
       }
     } finally {
       setIsTranscribing(false);

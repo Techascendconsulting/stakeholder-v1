@@ -115,7 +115,7 @@ export interface ApiResponse<T> {
 
 // Environment variables type
 export interface EnvironmentConfig {
-  VITE_OPENAI_API_KEY: string
+  // VITE_OPENAI_API_KEY removed - now using secure backend API
   VITE_SUPABASE_URL: string
   VITE_SUPABASE_ANON_KEY: string
   VITE_ELEVENLABS_API_KEY: string

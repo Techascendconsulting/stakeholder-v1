@@ -2290,26 +2290,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     try {
       setIsTranscribing(true);
       
-      // Check if OpenAI is configured
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey || apiKey === 'your-openai-api-key-here') {
-        // Test mode - simulate transcription
-        console.log('🧪 Test mode: Simulating transcription');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
-        
-        const testTranscription = "Hello, this is a test message from the voice recorder.";
-        setDynamicFeedback('🧪 Test mode: Simulated transcription');
-        
-        // Send the test message
-        setInputMessage(testTranscription);
-        await handleSendMessageWithText(testTranscription);
-        
-        // Clear feedback after message is fully processed
-        setDynamicFeedback(null);
-        return;
-      }
-      
-              const transcription = await transcribeWithDeepgram(audioBlob);
+      const transcription = await transcribeWithDeepgram(audioBlob);
       
       if (transcription && transcription.trim()) {
         console.log('🚀 Auto-sending transcribed message:', transcription);
@@ -3729,11 +3710,10 @@ Please review the raw transcript for detailed conversation content.`;
       const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is thinking...`, currentMessages.length);
       setMessages(prev => [...prev, thinkingMessage]);
       
-      // Start streaming response generation
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Use backend API for response generation
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -3756,88 +3736,20 @@ Guidelines:
             }
           ],
           max_tokens: 100,
-          temperature: 0.7,
-          stream: true
+          temperature: 0.7
         })
       });
 
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body reader available');
-      }
+      const apiData = await response.json();
+      const accumulatedText = apiData.message || '';
 
-      let accumulatedText = '';
-      let currentSentence = '';
-      let hasStartedSpeaking = false;
-      let sentenceCount = 0;
-
-      // Process the stream
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') break;
-
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content || '';
-              
-              if (content) {
-                accumulatedText += content;
-                currentSentence += content;
-
-                // Check if we have a complete sentence
-                const sentenceEnd = /[.!?]\s/.test(currentSentence);
-                const isFirstSentence = sentenceCount === 0;
-                
-                if (sentenceEnd || (isFirstSentence && currentSentence.length > 20)) {
-                  // We have a complete sentence, start speaking immediately
-                  if (!hasStartedSpeaking) {
-                    console.log(`🎤 STREAMING: Starting to speak first sentence for ${stakeholder.name}`);
-                    hasStartedSpeaking = true;
-                    
-                    // Replace thinking message with first sentence
-                    const firstSentence = currentSentence.trim();
-                    const responseMessage = createResponseMessage(stakeholder, firstSentence, currentMessages.length);
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === thinkingMessage.id ? responseMessage : msg
-                    ));
-                    addToBackgroundTranscript(responseMessage);
-                    
-                    // Generate and play audio for first sentence
-                    if (globalAudioEnabled) {
-                      const audioBlob = await synthesizeToBlob(firstSentence, { stakeholderName: stakeholder.name });
-                      if (audioBlob) {
-                        await playForStakeholder(stakeholder, audioBlob);
-                        console.log(`✅ STREAMING: ${stakeholder.name} finished first sentence`);
-                      }
-                    }
-                  }
-                  
-                  sentenceCount++;
-                  currentSentence = '';
-                }
-              }
-            } catch (e) {
-              console.warn('Error parsing streaming response:', e);
-            }
-          }
-        }
-      }
-
-      // If we haven't started speaking yet (very short response), speak the full response
-      if (!hasStartedSpeaking && accumulatedText.trim()) {
-        console.log(`🎤 STREAMING: Speaking full response for ${stakeholder.name} (short response)`);
+      // Non-streaming: use full response immediately
+      if (accumulatedText.trim()) {
+        console.log(`🎤 Speaking full response for ${stakeholder.name}`);
         
         const responseMessage = createResponseMessage(stakeholder, accumulatedText.trim(), currentMessages.length);
         setMessages(prev => prev.map(msg => 
@@ -3849,19 +3761,10 @@ Guidelines:
           const audioBlob = await synthesizeToBlob(accumulatedText.trim(), { stakeholderName: stakeholder.name });
           if (audioBlob) {
             await playForStakeholder(stakeholder, audioBlob);
-            console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
+            console.log(`✅ ${stakeholder.name} finished speaking`);
           }
         }
-      } else if (hasStartedSpeaking && accumulatedText.trim() !== currentSentence.trim()) {
-        // Update with full response if it's different from what we spoke
-        const responseMessage = createResponseMessage(stakeholder, accumulatedText.trim(), currentMessages.length);
-        setMessages(prev => prev.map(msg => 
-          msg.id === thinkingMessage.id ? responseMessage : msg
-        ));
-        console.log(`✅ STREAMING: ${stakeholder.name} response completed`);
       }
-
-      reader.releaseLock();
       
     } catch (error) {
       console.error(`❌ STREAMING: Error for ${stakeholder.name}:`, error);

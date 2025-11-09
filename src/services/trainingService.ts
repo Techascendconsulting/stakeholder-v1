@@ -528,27 +528,21 @@ Respond in JSON format:
 `;
 
     try {
-      // FALLBACK 4: Check if OpenAI API key is available
-      const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      console.log('🔑 OpenAI API Key check:', openaiApiKey ? 'Found' : 'Missing');
-      if (!openaiApiKey || openaiApiKey.trim() === '') {
-        console.warn('❌ OpenAI API key not found or empty, falling back to basic analysis');
-        return this.basicAnalysis(userMessages, stakeholderMessages, requiredAreas);
-      }
+      // Use secure backend API
+      console.log('🌐 Making API call...');
 
-      // FALLBACK 5: Add timeout to prevent hanging
+      // FALLBACK: Add timeout to prevent hanging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
       try {
-        console.log('🌐 Making OpenAI API call...');
-        // Make OpenAI API call
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        // Make secure backend API call
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openaiApiKey}`
+            'Content-Type': 'application/json'
           },
+          signal: controller.signal,
           body: JSON.stringify({
             model: 'gpt-4o-mini',
             messages: [
@@ -563,26 +557,27 @@ Respond in JSON format:
             ],
             temperature: 0.1, // Low temperature for consistent scoring
             max_tokens: 2000
-          }),
-          signal: controller.signal
+          })
         });
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          throw new Error(`OpenAI API error: ${response.status} - ${response.statusText}`);
+          throw new Error(`API error: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json();
-        const aiResponse = data.choices[0]?.message?.content;
+        const aiResponse = data.message;
         
-        // Log cost information
-        const tokensUsed = data.usage?.total_tokens || 0;
-        const estimatedCost = (tokensUsed / 1000) * 0.00015; // GPT-4o-mini pricing
-        console.log(`💰 AI Analysis Cost: ~$${estimatedCost.toFixed(4)} (${tokensUsed} tokens)`);
+        // Log usage information
+        if (data.usage) {
+          const tokensUsed = data.usage.total_tokens || 0;
+          const estimatedCost = (tokensUsed / 1000) * 0.00015; // GPT-4o-mini pricing
+          console.log(`💰 AI Analysis Cost: ~$${estimatedCost.toFixed(4)} (${tokensUsed} tokens)`);
+        }
         
         if (!aiResponse) {
-          throw new Error('No response content from OpenAI');
+          throw new Error('No response content from API');
         }
 
         // FALLBACK 6: Parse JSON with multiple attempts

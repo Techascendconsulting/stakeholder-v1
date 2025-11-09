@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+// KB uses backend API for semantic search
 
 interface KBEntry {
   id: string;
@@ -211,66 +211,16 @@ class KnowledgeBase {
         expanded: entry.expanded
       }));
 
-      // Use OpenAI to find the most relevant entries
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-      
-      if (!hasValidApiKey) {
-        console.warn('⚠️ VITE_OPENAI_API_KEY not set - KB search features will use fallback');
-        // Return first N entries as fallback
-        return entries.slice(0, limit).map(entry => ({
-          question: entry.question,
-          answer: entry.answer,
-          short: entry.short,
-          expanded: entry.expanded
-        }));
-      }
-
-      // Double-check trimmed key is valid before creating client
-      const trimmedKey = apiKey.trim();
-      if (!trimmedKey || trimmedKey.length === 0) {
-        console.warn('⚠️ VITE_OPENAI_API_KEY is empty after trim - KB search features will use fallback');
-        return entries.slice(0, limit).map(entry => ({
-          question: entry.question,
-          answer: entry.answer,
-          short: entry.short,
-          expanded: entry.expanded
-        }));
-      }
-
-      let openai: OpenAI | null = null;
+      // Use backend API for semantic search
       try {
-        openai = new OpenAI({
-          apiKey: trimmedKey,
-          dangerouslyAllowBrowser: true,
-          baseURL: 'http://localhost:3001/api/openai-proxy'
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for KB search:', error);
-        // Return fallback instead of throwing
-        return entries.slice(0, limit).map(entry => ({
-          question: entry.question,
-          answer: entry.answer,
-          short: entry.short,
-          expanded: entry.expanded
-        }));
-      }
-
-      if (!openai) {
-        return entries.slice(0, limit).map(entry => ({
-          question: entry.question,
-          answer: entry.answer,
-          short: entry.short,
-          expanded: entry.expanded
-        }));
-      }
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a knowledge base search assistant. Given a user query and a list of knowledge base entries, find the most relevant entries.
+        const apiResponse = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: `You are a knowledge base search assistant. Given a user query and a list of knowledge base entries, find the most relevant entries.
 
 Available KB entries:
 ${allEntries.map(entry => `
@@ -284,36 +234,50 @@ User query: "${query}"
 
 Return ONLY a JSON array of the most relevant entry IDs, ordered by relevance. Maximum ${maxResults} entries.
 Format: ["KB-001", "KB-002", "KB-003"]`
-          }
-        ],
-        max_tokens: 100,
-        temperature: 0.1
-      });
+              }
+            ],
+            model: 'gpt-3.5-turbo',
+            max_tokens: 100,
+            temperature: 0.1
+          })
+        });
 
-      const aiResponse = response.choices[0]?.message?.content;
-      if (!aiResponse) return [];
-
-      // Parse AI response to get relevant entry IDs
-      const relevantIds = JSON.parse(aiResponse);
-      console.log(`🤖 AI identified relevant entries: ${relevantIds.join(', ')}`);
-
-      // Return the actual KB entries
-      const results: SearchResult[] = [];
-      for (const id of relevantIds) {
-        const entry = this.entries.find(e => e.id === id);
-        if (entry) {
-          results.push({
-            entry,
-            score: 3.0, // High score for AI-selected entries
-            matchedQuestion: 'AI-powered match'
-          });
+        if (!apiResponse.ok) {
+          throw new Error('API request failed');
         }
+
+        const apiData = await apiResponse.json();
+        const aiResponse = apiData.message;
+        if (!aiResponse) {
+          throw new Error('No response from API');
+        }
+
+        // Parse AI response to get relevant entry IDs
+        const relevantIds = JSON.parse(aiResponse);
+        console.log(`🤖 AI identified relevant entries: ${relevantIds.join(', ')}`);
+
+        // Return the actual KB entries
+        const results: SearchResult[] = [];
+        for (const id of relevantIds) {
+          const entry = this.entries.find(e => e.id === id);
+          if (entry) {
+            results.push({
+              entry,
+              score: 3.0, // High score for AI-selected entries
+              matchedQuestion: 'AI-powered match'
+            });
+          }
+        }
+
+        return results.slice(0, maxResults);
+
+      } catch (error) {
+        console.error('❌ AI-powered search failed:', error);
+        // Fallback to keyword search
+        return [];
       }
-
-      return results.slice(0, maxResults);
-
     } catch (error) {
-      console.error('❌ AI-powered search failed:', error);
+      console.error('❌ Search failed:', error);
       return [];
     }
   }

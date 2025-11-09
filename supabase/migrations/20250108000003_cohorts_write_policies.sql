@@ -124,3 +124,4 @@ BEGIN
   RAISE NOTICE '✅ Cohort write policies added successfully - admins can now manage students and sessions';
 END $$;
 
+

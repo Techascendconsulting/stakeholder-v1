@@ -142,3 +142,4 @@ GRANT EXECUTE ON FUNCTION complete_career_journey_phase TO authenticated;
 
 
 
+

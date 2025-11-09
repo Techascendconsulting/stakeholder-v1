@@ -30,3 +30,4 @@ Business Analysis is ultimately about value — not documents, not jargon, but s
 
 
 
+

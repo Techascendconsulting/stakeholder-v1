@@ -123,3 +123,4 @@ BEGIN
   RAISE NOTICE '✅ assign_student_by_email RPC function created';
 END $$;
 
+

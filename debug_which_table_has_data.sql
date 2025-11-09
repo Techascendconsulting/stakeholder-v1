@@ -40,3 +40,4 @@ LEFT JOIN user_progress up ON au.id = up.user_id
 WHERE au.email = 'USER_EMAIL_HERE'
 GROUP BY au.email;
 
+

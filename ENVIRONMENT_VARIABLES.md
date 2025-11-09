@@ -73,3 +73,4 @@ OPENAI_API_KEY=sk-...
 - [ ] All AI features use `/api/*` endpoints
 - [ ] `.env` file is in `.gitignore`
 
+

@@ -1,27 +1,5 @@
-import OpenAI from 'openai';
+// Agile Refinement Service uses secure backend API
 import { Message } from '../types';
-
-// Only create OpenAI client if API key is available
-const createOpenAIClient = () => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-  if (!hasValidApiKey) {
-    console.warn('⚠️ VITE_OPENAI_API_KEY not set - Agile refinement features will be disabled');
-    return null;
-  }
-  try {
-    return new OpenAI({
-      apiKey: apiKey.trim(),
-      dangerouslyAllowBrowser: true
-      // Removed baseURL - call OpenAI directly (backend server not required)
-    });
-  } catch (error) {
-    console.error('❌ Failed to initialize OpenAI client for agile refinement:', error);
-    return null;
-  }
-};
-
-const openai = createOpenAIClient();
 
 export interface AgileTeamMemberContext {
   id: string;
@@ -198,29 +176,33 @@ ${rolePrompt}
 
 Be sharp, collaborative, and focused on refining the story for sprint delivery.`;
 
-      if (!openai) {
+      try {
+        const apiResponse = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'system', content: prompt }],
+            model: 'gpt-4',
+            max_tokens: 150,
+            temperature: 0.8
+          })
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error('API request failed');
+        }
+
+        const apiData = await apiResponse.json();
+        const content = apiData.message?.trim() || this.getFallbackResponse(member.role);
+
+        // Update conversation state
+        this.updateMemberState(member.name, content);
+        
+        return content;
+      } catch (error) {
+        console.error('❌ API error, using fallback:', error);
         return this.getFallbackResponse(member.role);
       }
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: prompt
-          }
-        ],
-        max_tokens: 150,
-        temperature: 0.8
-      });
-
-      const content = response.choices[0]?.message?.content?.trim() || 
-        this.getFallbackResponse(member.role);
-
-      // Update conversation state
-      this.updateMemberState(member.name, content);
-      
-      return content;
     } catch (error) {
       console.error('Error generating team member response:', error);
       return this.getFallbackResponse(member.role);
@@ -359,35 +341,45 @@ Generate a summary with:
 
 Keep it professional and actionable.`;
 
-      if (!openai) {
+      try {
+        const apiResponse = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: summaryPrompt }],
+            model: 'gpt-4',
+            max_tokens: 800,
+            temperature: 0.3
+          })
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error('API request failed');
+        }
+
+        const apiData = await apiResponse.json();
+        progressCallback?.(100);
+
+        return {
+          summary: apiData.message || 'Summary generation failed',
+          stories: stories.length,
+          participants: this.getTeamMembers().length + 1, // +1 for BA
+          duration: Math.round(messages.length * 1.5), // Estimate
+          keyDecisions: [],
+          actionItems: [],
+          nextSteps: []
+        };
+      } catch (error) {
+        console.error('❌ API error generating summary:', error);
         progressCallback?.(100);
         return {
-          summary: 'AI summary generation unavailable. OpenAI API key is not configured.',
+          summary: 'AI summary generation unavailable. Please review the conversation manually.',
           stories: stories.length,
           participants: this.getTeamMembers().length + 1,
           duration: Math.round(messages.length * 1.5),
           keyDecisions: [],
         };
       }
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: summaryPrompt }],
-        max_tokens: 800,
-        temperature: 0.3
-      });
-
-      progressCallback?.(100);
-
-      return {
-        summary: response.choices[0]?.message?.content || 'Summary generation failed',
-        stories: stories.length,
-        participants: this.getTeamMembers().length + 1, // +1 for BA
-        duration: Math.round(messages.length * 1.5), // Estimate
-        keyDecisions: [],
-        actionItems: [],
-        nextSteps: []
-      };
     } catch (error) {
       console.error('Error generating refinement summary:', error);
       return {

@@ -337,10 +337,9 @@ export default function VoiceMeetingV2() {
         ? `\n\n🚨 MANDATORY: The user specifically mentioned "${mentionedStakeholder.name}" so this person MUST respond. Set "speaker" to "${mentionedStakeholder.name}".`
         : '';
 
-      const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      const openaiResponse = await fetch("/api/chat", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -383,8 +382,8 @@ Rules:
 
       if (!openaiResponse.ok) {
         const errorText = await openaiResponse.text();
-        console.error('❌ OpenAI API Error:', openaiResponse.status, errorText);
-        throw new Error(`OpenAI error: ${openaiResponse.status}`);
+        console.error('❌ API Error:', openaiResponse.status, errorText);
+        throw new Error(`API error: ${openaiResponse.status}`);
       }
 
       const data = await openaiResponse.json();
@@ -392,12 +391,12 @@ Rules:
       // Fallback if model breaks JSON schema
       let payload = {};
       try {
-        payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+        payload = JSON.parse(data.message || "{}");
       } catch (err) {
         console.warn('⚠️ Non-JSON reply detected, using fallback');
         payload = { 
           speaker: participantNames[0], 
-          reply: data.choices?.[0]?.message?.content || "Let's continue." 
+          reply: data.message || "Let's continue." 
         };
       }
 

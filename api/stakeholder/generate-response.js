@@ -66,3 +66,4 @@ Respond naturally as this character would, staying in role. Be realistic - somet
   }
 }
 
+

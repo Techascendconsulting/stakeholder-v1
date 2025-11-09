@@ -583,7 +583,7 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
         console.error('AI validation error:', error);
         // Fallback to basic validation
         const newFeedbacks = [...feedbacks];
-        newFeedbacks[stepIndex] = '⚠️ AI validation unavailable. Check console for details or ensure VITE_OPENAI_API_KEY is set.';
+        newFeedbacks[stepIndex] = '⚠️ AI validation temporarily unavailable. Please try again later.';
         setFeedbacks(newFeedbacks);
       } finally {
         setAiValidationLoading(false);
@@ -650,7 +650,7 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
         console.error('AI validation error:', error);
         // Fallback to basic validation
         const newFeedbacks = [...feedbacks];
-        newFeedbacks[stepIndex] = '⚠️ AI validation unavailable. Check console for details or ensure VITE_OPENAI_API_KEY is set.';
+        newFeedbacks[stepIndex] = '⚠️ AI validation temporarily unavailable. Please try again later.';
         setFeedbacks(newFeedbacks);
       } finally {
         setAiValidationLoading(false);

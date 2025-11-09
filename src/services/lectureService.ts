@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+// Lecture Service uses secure backend API
 import { comprehensiveKnowledgeBase, type KnowledgeItem } from './comprehensiveKnowledgeBase';
 
 // Knowledge Base Structure - imported from comprehensiveKnowledgeBase
@@ -30,30 +30,13 @@ interface LectureContext {
 
 class LectureService {
   private static instance: LectureService;
-  private openai: OpenAI | null;
   private lectureContexts: Map<string, LectureContext> = new Map();
 
   // Comprehensive Knowledge Base - Imported from separate file
   private knowledgeBase: KnowledgeItem[] = comprehensiveKnowledgeBase;
 
   private constructor() {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-    if (!hasValidApiKey) {
-      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Lecture service features will be disabled');
-      this.openai = null;
-    } else {
-      try {
-        this.openai = new OpenAI({
-          apiKey: apiKey.trim(),
-          dangerouslyAllowBrowser: true
-          // Removed baseURL - call OpenAI directly (backend server not required)
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for lecture service:', error);
-        this.openai = null;
-      }
-    }
+    // Backend API is always available, no client initialization needed
   }
 
   public static getInstance(): LectureService {
@@ -97,17 +80,7 @@ class LectureService {
       };
     }
 
-    // Fallback to AI generation with strict topic focus
-    if (!this.openai) {
-      return {
-        content: `Here's information about ${topic}. What questions do you have? (AI features disabled - OpenAI API key not configured)`,
-        phase: 'teach',
-        topic: topic,
-        moduleId: moduleId,
-        questionsRemaining: context.maxQuestions - context.questionsAsked
-      };
-    }
-
+    // Use backend API for content generation
     const systemPrompt = `You are providing information about the specific topic: "${topic}". 
 
 CRITICAL: You must ONLY cover "${topic}" and nothing else. Do not cover other BA topics.
@@ -119,17 +92,28 @@ If the topic is "Requirements Elicitation Techniques (BABOK)", cover ONLY elicit
 
 Stay focused on the exact topic. Do not deviate to other subjects.`;
     
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Provide comprehensive information about ${topic} with examples, then ask a question about ${topic}.` }
-      ],
-      max_tokens: 400,
-      temperature: 0.3
-    });
+    try {
+      const apiResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Provide comprehensive information about ${topic} with examples, then ask a question about ${topic}.` }
+          ],
+          model: 'gpt-3.5-turbo',
+          max_tokens: 400,
+          temperature: 0.3
+        })
+      });
 
-    const aiResponse = response.choices[0]?.message?.content || `Here's information about ${topic}.`;
+      if (!apiResponse.ok) throw new Error('API failed');
+      const apiData = await apiResponse.json();
+      var aiResponse = apiData.message || `Here's information about ${topic}.`;
+    } catch (error) {
+      console.error('❌ Lecture API error:', error);
+      var aiResponse = `Here's information about ${topic}. (AI unavailable)`;
+    }
     
     context.conversationHistory.push({ role: 'ai', content: aiResponse });
     
@@ -158,29 +142,30 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
     
     this.lectureContexts.set(moduleId, context);
 
-    if (!this.openai) {
-      return {
-        content: `Let's practice ${topic}. (AI features disabled - OpenAI API key not configured)`,
-        phase: 'practice',
-        topic: topic,
-        moduleId: moduleId,
-        questionsRemaining: context.maxQuestions - context.questionsAsked
-      };
-    }
-
     const systemPrompt = this.buildPracticePrompt(module, topic, context);
     
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Let's practice ${topic}. Give me a practical scenario or exercise related to this topic, then ask me to solve it or explain my approach.` }
-      ],
-      max_tokens: 300,
-      temperature: 0.7
-    });
+    try {
+      const apiResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Let's practice ${topic}. Give me a practical scenario or exercise related to this topic, then ask me to solve it or explain my approach.` }
+          ],
+          model: 'gpt-3.5-turbo',
+          max_tokens: 300,
+          temperature: 0.7
+        })
+      });
 
-    const aiResponse = response.choices[0]?.message?.content || 'Let\'s start practicing!';
+      if (!apiResponse.ok) throw new Error('API failed');
+      const apiData = await apiResponse.json();
+      var aiResponse = apiData.message || 'Let\'s start practicing!';
+    } catch (error) {
+      console.error('❌ Practice API error:', error);
+      var aiResponse = `Let's practice ${topic}. (AI unavailable)`;
+    }
     
     context.conversationHistory.push({ role: 'ai', content: aiResponse });
     
@@ -215,22 +200,32 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
       aiResponse = knowledgeBaseResponse;
     } else {
       // Use AI for complex questions or after knowledge base limit
-      if (!this.openai) {
-        aiResponse = 'I understand. Let\'s continue learning. (AI features disabled - OpenAI API key not configured)';
-      } else {
+      try {
         const systemPrompt = this.buildSystemPrompt(module, topic, context);
         
-        const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...context.conversationHistory.map(msg => ({ role: msg.role, content: msg.content }))
-        ],
-        max_tokens: 300,
-        temperature: 0.7
-      });
+        const apiResponse = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...context.conversationHistory.map(msg => ({ role: msg.role, content: msg.content }))
+            ],
+            model: 'gpt-3.5-turbo',
+            max_tokens: 300,
+            temperature: 0.7
+          })
+        });
 
-        aiResponse = response.choices[0]?.message?.content || 'I understand. Let\'s continue learning.';
+        if (!apiResponse.ok) {
+          throw new Error('API failed');
+        }
+
+        const apiData = await apiResponse.json();
+        aiResponse = apiData.message || 'I understand. Let\'s continue learning.';
+      } catch (error) {
+        console.error('❌ Conversation API error:', error);
+        aiResponse = 'I understand. Let\'s continue learning. (AI temporarily unavailable)';
       }
     }
 
@@ -267,24 +262,34 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
     
     Be constructive, specific, and encouraging. Focus on BA best practices and real-world application.`;
 
-    if (!this.openai) {
-      return this.parseAssignmentAnalysis('AI grading unavailable - OpenAI API key not configured', assignmentType);
+    try {
+      const apiResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: assignmentText }
+          ],
+          model: 'gpt-3.5-turbo',
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error('API failed');
+      }
+
+      const apiData = await apiResponse.json();
+      const analysisText = apiData.message || '';
+      
+      // Parse the AI response into structured format
+      return this.parseAssignmentAnalysis(analysisText, assignmentType);
+    } catch (error) {
+      console.error('❌ Assignment analysis API error:', error);
+      return this.parseAssignmentAnalysis('AI grading temporarily unavailable', assignmentType);
     }
-
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: assignmentText }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    });
-
-    const analysisText = response.choices[0]?.message?.content || '';
-    
-    // Parse the AI response into structured format
-    return this.parseAssignmentAnalysis(analysisText, assignmentType);
   }
 
   // Get knowledge base content for a specific topic

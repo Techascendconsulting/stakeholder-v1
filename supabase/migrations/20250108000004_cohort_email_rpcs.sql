@@ -61,3 +61,4 @@ BEGIN
   RAISE NOTICE '✅ Email RPC functions created - student search will now work';
 END $$;
 
+

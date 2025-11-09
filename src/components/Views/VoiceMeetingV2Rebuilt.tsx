@@ -380,10 +380,9 @@ ${selectedProject.constraints && selectedProject.constraints.length > 0 ? `- Con
 ${recentContext}
 `.trim();
 
-      const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      const openaiResponse = await fetch("/api/chat", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -414,13 +413,13 @@ Output JSON ONLY: {"speaker":"<exact name>","reply":"<natural response>"}${manda
       });
 
       if (!openaiResponse.ok) {
-        throw new Error(`OpenAI error: ${openaiResponse.status}`);
+        throw new Error(`API error: ${openaiResponse.status}`);
       }
 
       const data = await openaiResponse.json();
       let payload = {};
       try {
-        payload = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+        payload = JSON.parse(data.message || "{}");
       } catch {
         payload = { 
           speaker: participantNames[0], 

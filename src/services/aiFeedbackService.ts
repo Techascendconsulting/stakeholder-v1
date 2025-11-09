@@ -67,26 +67,20 @@ Return JSON only:
 
 Provide expert-level coaching that reflects deep industry experience and enterprise complexity.`;
 
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Use secure backend API instead of direct OpenAI call
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: AI_FEEDBACK_CONFIG.model,
         messages: [
           {
             role: 'user',
             content: prompt,
           },
         ],
-        response_format: { type: 'json_object' },
+        model: AI_FEEDBACK_CONFIG.model,
         temperature: AI_FEEDBACK_CONFIG.temperature,
         max_tokens: AI_FEEDBACK_CONFIG.maxTokens,
       }),
@@ -94,12 +88,12 @@ Provide expert-level coaching that reflects deep industry experience and enterpr
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('API error:', errorText);
       throw new Error('AI feedback unavailable');
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const content = data.message;
 
     if (!content) {
       throw new Error('No response from AI');
