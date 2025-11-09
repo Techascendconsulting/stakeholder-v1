@@ -39,6 +39,7 @@ import { UserAvatar } from '../Common/UserAvatar';
 import SidebarAudioPlayer from './SidebarAudioPlayer';
 import { supabase } from '../../lib/supabase';
 import { useUserJourney } from '../../hooks/useUserJourney';
+import { BA_IN_ACTION_PAGES } from '../../ba-in-action/config';
 
 interface SidebarProps {
   className?: string;
@@ -234,6 +235,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'project-journey',
       label: 'My Project', 
       icon: Rocket
+    },
+    {
+      id: 'ba-in-action',
+      label: 'BA In Action',
+      icon: PlayCircle,
+      isCollapsible: true,
+      subItems: BA_IN_ACTION_PAGES.map((page) => ({
+        id: page.view,
+        label: page.title,
+        icon: BookOpen,
+      }))
     },
     { 
       id: 'my-cohort',

@@ -10,6 +10,12 @@ import { getUserPhase, isPageAccessible } from '../utils/userProgressPhase'
 import { ElicitationAccess, getElicitationAccess } from '../utils/elicitationProgress'
 import { saveResumeState, loadResumeState, isReturnableRoute, getPageTitle } from '../services/resumeStore'
 import type { PageType } from '../types/resume'
+import {
+  BA_IN_ACTION_BASE_PATH,
+  BA_IN_ACTION_VIEW_IDS,
+  baInActionPathToView,
+  baInActionViewToPath,
+} from '../ba-in-action/config'
 
 interface AppContextType {
   // Hydration state
@@ -118,6 +124,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('🔍 INIT: AppContext initializing currentView...')
     
     try {
+      if (typeof window !== 'undefined') {
+        const initialPath = window.location.pathname
+        const mappedView = baInActionPathToView[initialPath]
+        if (mappedView) {
+          console.log('🔍 INIT: Initial path matched BA In Action route:', initialPath)
+          return mappedView
+        }
+      }
+
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
       
@@ -237,7 +252,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'career-journey',
         'learning-flow',
         'practice-flow',
-        'project-flow'
+        'project-flow',
+        ...BA_IN_ACTION_VIEW_IDS
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
@@ -442,6 +458,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       localStorage.setItem('currentView', view)
       console.log('💾 NAVIGATE: Saved view to localStorage:', view)
+
+      const baInActionPath = baInActionViewToPath[view]
+      if (typeof window !== 'undefined') {
+        if (baInActionPath) {
+          if (window.location.pathname !== baInActionPath) {
+            window.history.pushState({ view }, '', baInActionPath)
+          }
+        } else if (window.location.pathname.startsWith(`${BA_IN_ACTION_BASE_PATH}/`)) {
+          window.history.pushState({ view }, '', '/')
+        }
+      }
       
       // Route capture: Save resume state for "Continue where you left off" feature
       if (user?.id) {
@@ -453,7 +480,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           'core-learning', 'project-initiation', 'requirements-engineering', 
           'solution-options', 'documentation', 'design-hub', 'mvp-hub',
           'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials',
-          'agile-scrum', 'scrum-learning', 'learning-hub', 'core-concepts'
+          'agile-scrum', 'scrum-learning', 'learning-hub', 'core-concepts',
+          ...BA_IN_ACTION_VIEW_IDS
         ];
         
         // Practice pages
@@ -593,6 +621,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handlePopState = (event: PopStateEvent) => {
+      const path = window.location.pathname
+      const stateView = event.state?.view as AppView | undefined
+      const mappedView = stateView || baInActionPathToView[path]
+
+      if (mappedView && mappedView !== currentView) {
+        setCurrentViewState(mappedView)
+        localStorage.setItem('currentView', mappedView)
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [currentView])
+
   const setSelectedStakeholders = (stakeholders: Stakeholder[]) => {
     console.log('👥 STAKEHOLDERS: setSelectedStakeholders called with:', stakeholders.length, 'stakeholders')
     setSelectedStakeholdersState(stakeholders)
@@ -657,7 +703,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           let pageType: PageType = 'dashboard';
           const learningPages = ['core-learning', 'project-initiation', 'requirements-engineering', 
             'solution-options', 'documentation', 'design-hub', 'mvp-hub',
-            'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials'];
+            'stakeholder-mapping', 'elicitation', 'process-mapper', 'scrum-essentials',
+            ...BA_IN_ACTION_VIEW_IDS];
           const practicePages = ['training-practice', 'practice', 'meeting', 'voice-only-meeting'];
           const projectPages = ['projects', 'project', 'custom-project', 'create-project'];
           

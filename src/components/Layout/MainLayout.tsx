@@ -87,6 +87,14 @@ import LearnLandingView from '../Views/LearnLandingView';
 // import CommunityHub from '../Views/Community/CommunityHub'; // Archived for MVP
 // import AdminCommunityHub from '../Views/Community/AdminCommunityHub'; // Archived for MVP
 import ProjectLandingView from '../Views/ProjectLandingView';
+import UnderstandingContext from '../../ba-in-action/UnderstandingContext';
+import StakeholderCommunication from '../../ba-in-action/StakeholderCommunication';
+import DiscoveryElicitation from '../../ba-in-action/DiscoveryElicitation';
+import AnalysisSpottingIssues from '../../ba-in-action/AnalysisSpottingIssues';
+import ToBeAndSolutionShaping from '../../ba-in-action/ToBeAndSolutionShaping';
+import WorkingWithDevelopers from '../../ba-in-action/WorkingWithDevelopers';
+import UATValidation from '../../ba-in-action/UATValidation';
+import ContinuousImprovement from '../../ba-in-action/ContinuousImprovement';
 import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
@@ -351,6 +359,22 @@ const MainLayout: React.FC = () => {
       //   return <NavigationGuideView />;
       case 'analysis':
         return <AnalysisView />;
+      case 'ba-in-action-understanding-context':
+        return <UnderstandingContext />;
+      case 'ba-in-action-stakeholder-communication':
+        return <StakeholderCommunication />;
+      case 'ba-in-action-discovery-elicitation':
+        return <DiscoveryElicitation />;
+      case 'ba-in-action-analysis-spotting-issues':
+        return <AnalysisSpottingIssues />;
+      case 'ba-in-action-to-be-and-solution-shaping':
+        return <ToBeAndSolutionShaping />;
+      case 'ba-in-action-working-with-developers':
+        return <WorkingWithDevelopers />;
+      case 'ba-in-action-uat-validation':
+        return <UATValidation />;
+      case 'ba-in-action-continuous-improvement':
+        return <ContinuousImprovement />;
       case 'custom-project':
         return <CustomProjectView />;
       case 'custom-stakeholders':
