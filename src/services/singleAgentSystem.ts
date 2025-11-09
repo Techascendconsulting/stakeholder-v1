@@ -1,4 +1,5 @@
-import OpenAI from 'openai';
+// Single Agent System using secure backend API
+// SECURITY: No OpenAI API key in frontend
 import { kb } from '../lib/kb';
 
 interface StakeholderContext {
@@ -20,46 +21,13 @@ interface ProjectContext {
 }
 
 class SingleAgentSystem {
-  private openai: OpenAI | null;
   private isInitialized = false;
   private lastError: string | null = null;
   private retryCount = 0;
   private maxRetries = 3;
 
   constructor() {
-    // Initialize with null - will create client lazily when needed
-    this.openai = null;
-    
-    // Try to initialize client, but don't throw if it fails
-    try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-      if (!hasValidApiKey) {
-        console.warn('⚠️ VITE_OPENAI_API_KEY not set - Single agent system features will be disabled');
-        this.openai = null;
-        return; // Early return to prevent any further execution
-      }
-      
-      // Double-check before creating client
-      const trimmedKey = apiKey.trim();
-      if (!trimmedKey || trimmedKey.length === 0) {
-        console.warn('⚠️ VITE_OPENAI_API_KEY is empty after trim - Single agent system features will be disabled');
-        this.openai = null;
-        return;
-      }
-      
-      // Only create client if we have a valid key
-      this.openai = new OpenAI({
-        apiKey: trimmedKey,
-        dangerouslyAllowBrowser: true,
-        timeout: 30000 // 30 second timeout
-        // Removed baseURL - call OpenAI directly (backend server not required)
-      });
-    } catch (error) {
-      // Silently fail - don't throw errors during construction
-      console.error('❌ Failed to initialize OpenAI client for single agent system:', error);
-      this.openai = null;
-    }
+    // No OpenAI client needed - using backend API
   }
 
   async initialize(): Promise<boolean> {

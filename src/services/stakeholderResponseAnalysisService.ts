@@ -1,4 +1,5 @@
-import OpenAI from 'openai';
+// Stakeholder Response Analysis Service using secure backend API
+// SECURITY: No OpenAI API key in frontend
 
 interface StakeholderResponseAnalysis {
   insights: string[];
@@ -11,27 +12,6 @@ interface StakeholderResponseAnalysis {
 
 class StakeholderResponseAnalysisService {
   private static instance: StakeholderResponseAnalysisService;
-  private openai: OpenAI | null;
-
-  constructor() {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-    if (!hasValidApiKey) {
-      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Stakeholder response analysis features will be disabled');
-      this.openai = null;
-    } else {
-      try {
-        this.openai = new OpenAI({
-          apiKey: apiKey.trim(),
-          dangerouslyAllowBrowser: true
-          // Removed baseURL - call OpenAI directly (backend server not required)
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for stakeholder response analysis:', error);
-        this.openai = null;
-      }
-    }
-  }
 
   static getInstance(): StakeholderResponseAnalysisService {
     if (!StakeholderResponseAnalysisService.instance) {
@@ -43,96 +23,90 @@ class StakeholderResponseAnalysisService {
   async analyzeStakeholderResponse(response: string, context?: string): Promise<StakeholderResponseAnalysis> {
     console.log('🎯 STAKEHOLDER ANALYSIS: Analyzing response:', response);
 
-    const systemPrompt = `You are a Business Analyst analyzing stakeholder responses to extract insights and generate the next question.
-
-    Analyze the stakeholder's response and provide:
-    1. Key insights about their situation
-    2. Pain points they mentioned
-    3. Potential blockers or challenges
-    4. The next question to ask based on their response
-    5. Reasoning for the next question
-    6. BA technique being used
-
-    Focus on:
-    - Understanding their current situation
-    - Identifying root causes
-    - Finding opportunities for improvement
-    - Building on their specific context
-
-    Return JSON only with this structure:
-    {
-      "insights": ["insight1", "insight2"],
-      "painPoints": ["pain1", "pain2"],
-      "blockers": ["blocker1", "blocker2"],
-      "nextQuestion": "The next question to ask",
-      "reasoning": "Why this question is important based on their response",
-      "technique": "BA technique being used"
-    }`;
-
-    const userPrompt = `Analyze this stakeholder response: "${response}"
-    ${context ? `Context: ${context}` : ''}`;
-
-    if (!this.openai) {
-      console.warn('⚠️ OpenAI not configured, using fallback analysis');
-      // Return fallback immediately
-      return {
-        insights: ["Stakeholder provided valuable context about their situation"],
-        painPoints: ["Need to identify specific pain points from their response"],
-        blockers: ["Need to understand potential blockers"],
-        nextQuestion: "Can you tell me more about the specific challenges you're facing?",
-        reasoning: "This question will help us dive deeper into their specific situation",
-        technique: "Probing"
-      };
-    }
-
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 500,
-        temperature: 0.3
+      const apiResponse = await fetch('/api/coaching/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userMessage: response,
+          coachingType: 'general',
+          context: context || 'Stakeholder response analysis'
+        })
       });
 
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No response from OpenAI');
+      if (!apiResponse.ok) {
+        throw new Error('Analysis failed');
       }
 
-      const analysis = JSON.parse(content);
-      console.log('✅ STAKEHOLDER ANALYSIS: Analysis completed');
-      return analysis;
-
+      const data = await apiResponse.json();
+      
+      // Parse the feedback to extract structured information
+      return this.parseFeedbackToAnalysis(data.feedback, response);
     } catch (error) {
-      console.error('❌ STAKEHOLDER ANALYSIS: Analysis failed:', error);
-
-      // Fallback analysis
-      return {
-        insights: ["Stakeholder provided valuable context about their situation"],
-        painPoints: ["Need to identify specific pain points from their response"],
-        blockers: ["Need to understand potential blockers"],
-        nextQuestion: "Can you tell me more about the specific challenges you're facing?",
-        reasoning: "This question will help us dive deeper into their specific situation",
-        technique: "Probing"
-      };
+      console.error('❌ Error analyzing stakeholder response:', error);
+      return this.getFallbackAnalysis(response);
     }
+  }
+
+  private parseFeedbackToAnalysis(feedback: string, response: string): StakeholderResponseAnalysis {
+    // Extract insights from the response
+    const insights = this.extractInsights(response);
+    const painPoints = this.extractPainPoints(response);
+    const blockers = this.extractBlockers(response);
+
+    return {
+      insights,
+      painPoints,
+      blockers,
+      nextQuestion: 'Can you tell me more about the specific challenges you mentioned?',
+      reasoning: feedback,
+      technique: 'Probing and active listening'
+    };
+  }
+
+  private extractInsights(text: string): string[] {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    return sentences.slice(0, 3).map(s => s.trim());
+  }
+
+  private extractPainPoints(text: string): string[] {
+    const painKeywords = ['problem', 'issue', 'challenge', 'difficult', 'frustrating', 'slow'];
+    const lowerText = text.toLowerCase();
+    const painPoints: string[] = [];
+    
+    painKeywords.forEach(keyword => {
+      if (lowerText.includes(keyword)) {
+        painPoints.push(`Identified pain point related to ${keyword}`);
+      }
+    });
+
+    return painPoints.length > 0 ? painPoints : ['Further exploration needed'];
+  }
+
+  private extractBlockers(text: string): string[] {
+    const blockerKeywords = ['can\'t', 'cannot', 'unable', 'blocked', 'stuck', 'limited'];
+    const lowerText = text.toLowerCase();
+    const blockers: string[] = [];
+    
+    blockerKeywords.forEach(keyword => {
+      if (lowerText.includes(keyword)) {
+        blockers.push(`Potential blocker identified`);
+      }
+    });
+
+    return blockers;
+  }
+
+  private getFallbackAnalysis(response: string): StakeholderResponseAnalysis {
+    return {
+      insights: ['Stakeholder provided valuable context'],
+      painPoints: ['Further exploration needed'],
+      blockers: [],
+      nextQuestion: 'Can you tell me more about that?',
+      reasoning: 'Building rapport and gathering more context',
+      technique: 'Open-ended questioning'
+    };
   }
 }
 
-export default StakeholderResponseAnalysisService;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export const stakeholderResponseAnalysisService = StakeholderResponseAnalysisService.getInstance();

@@ -1,4 +1,6 @@
-import OpenAI from 'openai';
+// Dynamic Question Generator using secure backend API
+// SECURITY: No OpenAI API key in frontend
+
 interface ResponseAnalysis {
   keyPoints: string[];
   painPoints: string[];
@@ -32,27 +34,6 @@ interface QuestionContext {
 
 class DynamicQuestionGenerator {
   private static instance: DynamicQuestionGenerator;
-  private openai: OpenAI | null;
-
-  constructor() {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const hasValidApiKey = apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0;
-    if (!hasValidApiKey) {
-      console.warn('⚠️ VITE_OPENAI_API_KEY not set - Dynamic question generator features will be disabled');
-      this.openai = null;
-    } else {
-      try {
-        this.openai = new OpenAI({
-          apiKey: apiKey.trim(),
-          dangerouslyAllowBrowser: true
-          // Removed baseURL - call OpenAI directly (backend server not required)
-        });
-      } catch (error) {
-        console.error('❌ Failed to initialize OpenAI client for dynamic question generator:', error);
-        this.openai = null;
-      }
-    }
-  }
 
   static getInstance(): DynamicQuestionGenerator {
     if (!DynamicQuestionGenerator.instance) {
@@ -64,138 +45,63 @@ class DynamicQuestionGenerator {
   async generateFollowUpQuestion(context: QuestionContext): Promise<DynamicQuestion> {
     console.log('🎯 DYNAMIC QUESTION GENERATOR: Generating follow-up question', context.questionCount, 'of', context.totalQuestions);
 
-    const systemPrompt = `You are a Business Analyst expert generating contextual follow-up questions based on stakeholder responses.
-
-Your job is to create a natural, professional follow-up question that:
-1. Builds on what the stakeholder just said
-2. Explores the most important pain points or opportunities
-3. Uses appropriate BA techniques
-4. Feels conversational, not robotic
-5. Moves the conversation forward meaningfully
-
-Consider:
-- What they mentioned that needs deeper exploration
-- Which pain points are most impactful
-- What opportunities could be pursued
-- How to maintain rapport while digging deeper
-
-Return JSON only with this structure:
-{
-  "question": "The actual follow-up question",
-  "reasoning": "Why this question is important and what we're trying to learn",
-  "technique": "The BA technique being demonstrated",
-  "expectedInsights": ["insight1", "insight2"],
-  "followUpAreas": ["area1", "area2"]
-}`;
-
-    const userPrompt = JSON.stringify({
-      stakeholder: {
-        name: context.stakeholderName,
-        role: context.stakeholderRole
-      },
-      project: context.projectContext,
-      conversation_history: context.conversationHistory.slice(-3),
-      analysis: context.responseAnalysis,
-      question_number: context.questionCount,
-      total_questions: context.totalQuestions
-    });
-
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 400,
-        temperature: 0.4
+      const response = await fetch('/api/stakeholder/generate-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stakeholderProfile: {
+            name: context.stakeholderName,
+            role: context.stakeholderRole,
+          },
+          conversationHistory: context.conversationHistory.map(msg => ({
+            role: msg.speaker === 'BA' ? 'user' : 'assistant',
+            content: msg.content
+          })),
+          userQuestion: 'Generate a follow-up question based on the conversation',
+          context: `${context.projectContext}. Pain points: ${context.responseAnalysis.painPoints.join(', ')}`
+        })
       });
 
-      const question = JSON.parse(response.choices[0]?.message?.content || '{}');
-      console.log('🎯 DYNAMIC QUESTION GENERATOR: Generated question:', question);
-      
-      return question;
-    } catch (error) {
-      console.error('❌ DYNAMIC QUESTION GENERATOR: Question generation failed:', error);
-      return this.fallbackQuestion(context);
-    }
-  }
-
-  private fallbackQuestion(context: QuestionContext): DynamicQuestion {
-    const analysis = context.responseAnalysis;
-    
-    // Generate a simple follow-up based on pain points
-    let question = "Can you tell me more about that?";
-    let reasoning = "Explore the mentioned issues further";
-    let technique = "Open-ended probing";
-    
-    if (analysis.painPoints.length > 0) {
-      const painPoint = analysis.painPoints[0];
-      question = `Can you give me a specific example of when ${painPoint.toLowerCase()} caused problems?`;
-      reasoning = `Get concrete examples to understand the impact of ${painPoint}`;
-      technique = "Example gathering";
-    } else if (analysis.keyPoints.length > 0) {
-      const keyPoint = analysis.keyPoints[0];
-      question = `How does ${keyPoint.toLowerCase()} typically work in your process?`;
-      reasoning = `Understand the current process around ${keyPoint}`;
-      technique = "Process mapping";
-    }
-
-    return {
-      question,
-      reasoning,
-      technique,
-      expectedInsights: analysis.keyPoints,
-      followUpAreas: analysis.followUpAreas
-    };
-  }
-
-  // Generate initial trigger question
-  generateInitialQuestion(projectContext: string, stakeholderRole: string): DynamicQuestion {
-    const questions = [
-      {
-        question: "What problems are we trying to solve?",
-        reasoning: "Get straight to the point - what are we here to solve?",
-        technique: "Problem identification",
-        expectedInsights: ["Main problems", "Scope of issues", "Priority areas"],
-        followUpAreas: ["Specific problems", "Impact assessment", "Root causes"]
-      },
-      {
-        question: "What problems are we trying to solve?",
-        reasoning: "Get straight to the point - what are we here to solve?",
-        technique: "Problem identification",
-        expectedInsights: ["Main problems", "Scope of issues", "Priority areas"],
-        followUpAreas: ["Specific problems", "Impact assessment", "Root causes"]
-      },
-      {
-        question: "What problems are we trying to solve?",
-        reasoning: "Get straight to the point - what are we here to solve?",
-        technique: "Problem identification",
-        expectedInsights: ["Main problems", "Scope of issues", "Priority areas"],
-        followUpAreas: ["Specific problems", "Impact assessment", "Root causes"]
+      if (!response.ok) {
+        throw new Error('Failed to generate question');
       }
-    ];
 
-    // Select based on stakeholder role
-    if (stakeholderRole.toLowerCase().includes('manager') || stakeholderRole.toLowerCase().includes('lead')) {
-      return questions[0]; // Focus on challenges
-    } else if (stakeholderRole.toLowerCase().includes('user') || stakeholderRole.toLowerCase().includes('agent')) {
-      return questions[1]; // Focus on daily workflow
-    } else {
-      return questions[2]; // Focus on system frustrations
+      const data = await response.json();
+
+      return {
+        question: data.response || this.getFallbackQuestion(context),
+        reasoning: 'Generated based on conversation context',
+        technique: context.responseAnalysis.suggestedTechnique || 'Open-ended questioning',
+        expectedInsights: context.responseAnalysis.followUpAreas || [],
+        followUpAreas: context.responseAnalysis.followUpAreas || []
+      };
+    } catch (error) {
+      console.error('❌ Error generating follow-up question:', error);
+      return this.getFallbackQuestionObject(context);
     }
   }
 
-  // Generate wrap-up question
-  generateWrapUpQuestion(conversationHistory: Array<{ speaker: string; content: string; timestamp: string }>): DynamicQuestion {
+  private getFallbackQuestion(context: QuestionContext): string {
+    const questions = [
+      `${context.stakeholderName}, can you tell me more about the main challenges you're facing?`,
+      'What would success look like from your perspective?',
+      'How does this impact your day-to-day operations?',
+      'What are the biggest pain points in the current process?',
+      'Can you walk me through a typical scenario where this becomes an issue?'
+    ];
+    return questions[context.questionCount % questions.length];
+  }
+
+  private getFallbackQuestionObject(context: QuestionContext): DynamicQuestion {
     return {
-      question: "Thank you for sharing all of that. Let me quickly summarize what I've heard: [summary]. Is there anything I've missed that you feel is important to highlight?",
-      reasoning: "Show active listening, confirm understanding, and give them a chance to add anything missed",
-      technique: "Summary and validation",
-      expectedInsights: ["Confirmation of understanding", "Additional insights", "Priority clarification"],
-      followUpAreas: ["Final clarifications", "Next steps", "Priority ranking"]
+      question: this.getFallbackQuestion(context),
+      reasoning: 'Fallback question - service unavailable',
+      technique: 'Open-ended questioning',
+      expectedInsights: ['Understanding stakeholder needs'],
+      followUpAreas: ['Pain points', 'Desired outcomes']
     };
   }
 }
 
-export default DynamicQuestionGenerator;
+export const dynamicQuestionGenerator = DynamicQuestionGenerator.getInstance();
