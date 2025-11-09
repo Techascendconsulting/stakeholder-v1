@@ -12,7 +12,7 @@ const BAInActionIndexPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-300 to-purple-400 dark:from-purple-900 dark:via-purple-800 dark:to-pink-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#ff09aa] via-[#ff56c9] to-[#c94bff] dark:from-[#7a0057] dark:via-[#6b008a] dark:to-[#4b0082]">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -40,7 +40,7 @@ const BAInActionIndexPage: React.FC = () => {
       <div className="py-12 px-6">
         <div className="max-w-full">
           {/* Horizontal Scrollable Container */}
-          <div className="overflow-x-auto pb-8 scrollbar-hide">
+          <div className="overflow-x-auto pb-8">
             {/* Centered Content Wrapper */}
             <div className="flex items-center justify-center min-w-max">
               {BA_IN_ACTION_PAGES.map((page, index) => {
@@ -58,8 +58,8 @@ const BAInActionIndexPage: React.FC = () => {
                           w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
                           transition-all duration-300 transform hover:scale-110 mb-4
                           ${isActive 
-                            ? 'bg-gradient-to-br from-pink-500 to-purple-500 text-white shadow-lg shadow-pink-500/50 ring-4 ring-pink-300 dark:ring-pink-600' 
-                            : 'bg-white dark:bg-gray-800 text-pink-600 dark:text-pink-400 shadow-lg border-4 border-pink-500 hover:border-purple-500 cursor-pointer'}
+                            ? 'bg-gradient-to-br from-[#ff09aa] to-[#d238ff] text-white shadow-lg shadow-[#ff09aa]/50 ring-4 ring-[#ff73d3] dark:ring-[#ff73d3]' 
+                            : 'bg-white dark:bg-gray-800 text-[#ff09aa] dark:text-[#ff73d3] shadow-lg border-4 border-[#ff09aa] hover:border-[#d238ff] cursor-pointer'}
                         `}
                       >
                         {index + 1}
@@ -69,10 +69,10 @@ const BAInActionIndexPage: React.FC = () => {
                       <div
                         onClick={() => handleNavigate(page.view)}
                         className={`
-                          w-80 h-72 rounded-2xl shadow-xl p-6 border-2 transition-all duration-300 cursor-pointer flex flex-col
+                          w-80 h-72 rounded-2xl shadow-xl p-6 border-[1.5px] transition-all duration-300 cursor-pointer flex flex-col
                           ${isActive 
-                            ? 'bg-gradient-to-br from-pink-500 to-purple-500 dark:bg-gradient-to-br dark:from-pink-600 dark:to-purple-600 border-pink-600 text-white scale-105' 
-                            : 'bg-white dark:bg-gray-800 border-pink-500 hover:shadow-2xl hover:scale-105'}
+                            ? 'bg-gradient-to-br from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] border-transparent text-white scale-105 shadow-[0_18px_45px_-12px_rgba(255,9,170,0.55)]' 
+                            : 'bg-white/95 dark:bg-gray-800 border-[#ff09aa]/80 hover:shadow-2xl hover:scale-105'}
                         `}
                       >
                         {/* Status Badge */}
@@ -80,8 +80,8 @@ const BAInActionIndexPage: React.FC = () => {
                           <span className={`
                             px-3 py-1 rounded-full text-xs font-semibold
                             ${isActive 
-                              ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-200' 
-                              : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400'}
+                              ? 'bg-white/20 text-white' 
+                              : 'bg-[#ffebf7] text-[#d60081] dark:bg-[#5b0050] dark:text-[#ff8cd9]'}
                           `}>
                             Step {index + 1}
                           </span>
@@ -93,7 +93,7 @@ const BAInActionIndexPage: React.FC = () => {
                         </h3>
 
                         {/* Description */}
-                        <p className={`text-sm mb-4 flex-grow ${isActive ? 'text-pink-100' : 'text-gray-600 dark:text-gray-400'}`}>
+                        <p className={`text-sm mb-4 flex-grow ${isActive ? 'text-white/80' : 'text-gray-600 dark:text-gray-300'}`}>
                           See how a BA handles this critical stage
                         </p>
 
@@ -108,8 +108,8 @@ const BAInActionIndexPage: React.FC = () => {
                               flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
                               transition-all duration-200
                               ${isActive 
-                                ? 'bg-white text-pink-600 hover:bg-pink-50' 
-                                : 'bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700'}
+                                ? 'bg-white text-[#ff09aa] hover:bg-[#ffe6f5]' 
+                                : 'bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] text-white hover:from-[#ff21b1] hover:to-[#b52fff]'}
                             `}
                           >
                             <Play className="w-4 h-4" />
@@ -122,7 +122,9 @@ const BAInActionIndexPage: React.FC = () => {
                     {/* Arrow - Positioned at Card Middle */}
                     {showArrow && (
                       <div className="flex items-center mx-6 self-center" style={{ marginTop: '80px' }}>
-                        <ArrowRight className="w-8 h-8 text-pink-400 dark:text-pink-500" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-white/80 to-white/30 text-[#ff09aa] shadow-lg shadow-[#ff09aa]/40 dark:from-white/15 dark:to-white/5">
+                          <ArrowRight className="w-6 h-6" />
+                        </div>
                       </div>
                     )}
                   </React.Fragment>
@@ -131,16 +133,29 @@ const BAInActionIndexPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <div className="mt-6 flex items-center justify-center gap-3 text-white/90 dark:text-white/80">
+          <span className="text-sm uppercase tracking-[0.2em]">Scroll</span>
+          <div className="relative h-1 w-40 overflow-hidden rounded-full bg-white/30 dark:bg-white/20">
+            <div className="absolute inset-y-0 left-0 w-1/3 animate-[scrollPulse_2.4s_infinite] rounded-full bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff]" />
+          </div>
+          <span className="text-sm uppercase tracking-[0.2em]">Explore</span>
+        </div>
       </div>
 
-      {/* Custom scrollbar styles */}
+      {/* Custom animations */}
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        @keyframes scrollPulse {
+          0% {
+            transform: translateX(-100%);
+          }
+          50% {
+            transform: translateX(150%);
+          }
+          100% {
+            transform: translateX(150%);
+          }
         }
       `}</style>
     </div>
