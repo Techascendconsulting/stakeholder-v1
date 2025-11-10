@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import type { AppView } from '../../types';
+import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
+import { PAGE_1_DATA } from '../../ba-in-action/page1-data';
 import {
   PageShell,
   PageTitle,
@@ -27,44 +29,6 @@ import {
 const VIEW_ID: AppView = 'ba_in_action_whos_involved';
 
 const HERO_IMAGE = '/images/collaborate1.jpg';
-
-const PEOPLE = [
-  {
-    name: 'Ben Carter',
-    role: 'Product Owner',
-    care: 'Deliver value quickly, keep roadmap credible, hit quarterly outcomes.',
-    fear: 'Scope creep, analysis paralysis, unclear framing.',
-    cue: 'Be structured. Be concise. Bring clarity, not chaos.',
-  },
-  {
-    name: 'Marie Dupont',
-    role: 'Compliance Lead',
-    care: 'Regulatory safety, audit trails, zero breach exposure.',
-    fear: 'Controls weakened in the name of “speed” or “conversion.”',
-    cue: 'Speak in control points, traceability, evidence. No talk of shortcuts.',
-  },
-  {
-    name: 'James Walker',
-    role: 'Operations Manager',
-    care: 'Queue time, workload balance, SLA performance.',
-    fear: 'More manual work dumped on Ops without tooling or support.',
-    cue: 'Show the future state removes friction. Co-design with Ops.',
-  },
-  {
-    name: 'Alicia Chen',
-    role: 'Senior Software Engineer',
-    care: 'Feasible changes, predictable delivery, clear specs.',
-    fear: 'Vague problem statements, requirement churn.',
-    cue: 'Bring decisions and rationale. Explain the “why”.',
-  },
-  {
-    name: 'Finance Business Partner',
-    role: 'Finance Partner',
-    care: 'Cost control, measurable savings, ROI narrative.',
-    fear: 'Three months of effort with no movement in £.',
-    cue: 'Anchor fraud reduction in pounds. Directional maths beats adjectives.',
-  },
-];
 
 const PRESSURE_SIGNALS = [
   { name: 'Product Owner', signal: 'Needs visible momentum for board updates — even if operational mess underneath.' },
@@ -214,6 +178,8 @@ const EXAMPLE_NARRATIVE = [
 ];
 
 const StakeholderLandscape: React.FC = () => {
+  const { selectedProject } = useBAInActionProject();
+  const data = PAGE_1_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -292,7 +258,7 @@ const StakeholderLandscape: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {PEOPLE.map((person) => (
+              {data.stakeholders.map((person) => (
                 <tr key={person.name} className="hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-4 font-semibold text-slate-900">{person.name}</td>
                   <td className="px-5 py-4 text-slate-700">{person.role}</td>

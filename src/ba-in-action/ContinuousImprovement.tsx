@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { AppView } from '../types';
+import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
+import { PAGE_1_DATA } from './page1-data';
 import {
   PageShell,
   PageTitle,
@@ -80,6 +82,8 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
 );
 
 const ContinuousImprovement: React.FC = () => {
+  const { selectedProject } = useBAInActionProject();
+  const projectData = PAGE_1_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -90,7 +94,12 @@ const ContinuousImprovement: React.FC = () => {
     <PageShell>
       <div className="space-y-2 mb-6">
         <p className="uppercase tracking-wider text-xs font-semibold text-purple-500">BA In Action</p>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Continuous Improvement: Post-Launch Learning</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Continuous Improvement: Post-Launch Learning</h1>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedProject === 'cif' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
+            {projectData.initiativeName}
+          </span>
+        </div>
       </div>
 
       <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">

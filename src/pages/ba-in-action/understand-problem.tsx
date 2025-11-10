@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useApp } from "../../contexts/AppContext";
+import { useBAInActionProject } from "../../contexts/BAInActionProjectContext";
+import { PAGE_2_DATA } from "../../ba-in-action/page2-data";
 import type { AppView } from "../../types";
 import { 
   Clock,
@@ -30,9 +32,9 @@ import {
  * Turn scattered meeting notes into a clear, defensible problem statement
  */
 
-function useNotes() {
+function useNotes(initialNotes: string = "") {
   const [notes, setNotes] = useState<{[k: string]: string}>({
-    meeting_notes: `• Fraud increased mainly during promotional periods.\n• Ops backlog is causing SLA breaches.\n• Compliance wants stronger audit trails.\n• PO is worried about conversion dropping if checks get too aggressive.`,
+    meeting_notes: initialNotes,
     problem_statement: "",
     engagement_plan: "",
   });
@@ -200,13 +202,13 @@ const ScopeItem: React.FC<{label: string; checked?: boolean}> = ({ label, checke
 };
 
 // Hero visual component (illustrated meeting scene)
-const MeetingSceneVisual: React.FC = () => (
+const MeetingSceneVisual: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }) => (
   <div className="mb-6 rounded-2xl border border-slate-300 shadow-xl overflow-hidden bg-white">
     {/* Teams-style top bar */}
     <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-slate-800 to-slate-900 text-white text-sm">
       <div className="flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-        <span className="font-semibold">CI&F Intro Call</span>
+        <span className="font-semibold">{data.meetingTitle}</span>
         <span className="text-white/60">• 11:00 – 11:30</span>
       </div>
       <div className="flex items-center gap-3 text-xs text-white/70">
@@ -221,30 +223,19 @@ const MeetingSceneVisual: React.FC = () => (
       <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 h-64 flex items-center justify-center">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=60')] bg-cover bg-center opacity-15" />
         <div className="relative z-10 w-5/6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
-          <div className="text-xl font-semibold text-white mb-2">Business Identity & Fraud Reduction</div>
+          <div className="text-xl font-semibold text-white mb-2">{data.meetingTitle}</div>
           <div className="text-sm text-white/80 leading-relaxed">
-            Promo periods drove fraud up <strong className="text-rose-200">+17%</strong>. Manual review queue breaching <strong className="text-amber-200">24h SLA</strong>.
-            Compliance flagged <strong className="text-indigo-200">account change flow</strong>. Need balance: security, speed, conversion.
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/80">
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20">Board deadline: 4 weeks</span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20">Promo campaigns driving spike</span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20">Audit exposure: account changes</span>
+            {data.meetingContext}
           </div>
         </div>
 
         {/* Participant bubbles */}
         <div className="absolute bottom-4 left-6 flex items-center gap-3">
-          {[
-            { name: 'Ben (PO)', color: 'from-blue-500 to-blue-700', speaking: true, quote: 'Board needs movement on fraud + conversion.' },
-            { name: 'Marie (Compliance)', color: 'from-purple-500 to-purple-700', quote: 'Audit hit us on account changes. We must tighten controls.' },
-            { name: 'James (Ops)', color: 'from-orange-500 to-orange-700', quote: 'Manual queue is at 60% SLA. Customers are frustrated.' },
-            { name: 'You (BA)', color: 'from-green-500 to-green-700', active: true, quote: 'Clarify drivers, baselines, then craft problem statement.' },
-          ].map((person) => (
+          {data.attendees.map((person) => (
             <div key={person.name} className="relative">
               <div
                 className={`w-12 h-12 rounded-full bg-gradient-to-br ${person.color} border-4 ${
-                  person.active ? 'border-green-300 shadow-[0_0_30px_-10px_rgba(34,197,94,0.9)]' : 'border-white/40'
+                  person.name.includes('You') ? 'border-green-300 shadow-[0_0_30px_-10px_rgba(34,197,94,0.9)]' : 'border-white/40'
                 } flex items-center justify-center text-white`}
               >
                 <UserCircle2 size={20} />
@@ -267,32 +258,23 @@ const MeetingSceneVisual: React.FC = () => (
           <span className="text-xs text-slate-500">Live captions on</span>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-xs text-slate-700">
-          <div className="flex items-start gap-2">
-            <div className="mt-0.5 w-2 h-2 rounded-full bg-blue-500" />
-            <div>
-              <div className="font-semibold text-slate-900">Ben Carter • Product Owner</div>
-              <div className="text-slate-600">“Need fraud losses down, but conversion must stay ≥95%.”</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="mt-0.5 w-2 h-2 rounded-full bg-purple-500" />
-            <div>
-              <div className="font-semibold text-slate-900">Marie Dupont • Compliance</div>
-              <div className="text-slate-600">“Audit flagged missing verification trail. No compromises there.”</div>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="mt-0.5 w-2 h-2 rounded-full bg-orange-500" />
-            <div>
-              <div className="font-semibold text-slate-900">James Walker • Ops</div>
-              <div className="text-slate-600">“Manual reviews breaching 24h SLA. We need automation support.”</div>
-            </div>
-          </div>
+          {data.stakeholderQuotes.map((stakeholder, idx) => {
+            const colors = ['bg-blue-500', 'bg-purple-500', 'bg-orange-500'];
+            return (
+              <div key={idx} className="flex items-start gap-2">
+                <div className={`mt-0.5 w-2 h-2 rounded-full ${colors[idx] || 'bg-slate-500'}`} />
+                <div>
+                  <div className="font-semibold text-slate-900">{stakeholder.name} • {stakeholder.role}</div>
+                  <div className="text-slate-600">"{stakeholder.quote}"</div>
+                </div>
+              </div>
+            );
+          })}
           <div className="flex items-start gap-2">
             <div className="mt-0.5 w-2 h-2 rounded-full bg-green-500" />
             <div>
               <div className="font-semibold text-slate-900">You • Business Analyst</div>
-              <div className="text-slate-600">“Clarifying baselines and guardrails before we shape recommendations.”</div>
+              <div className="text-slate-600">"Clarifying baselines and guardrails before shaping recommendations."</div>
             </div>
           </div>
         </div>
@@ -369,29 +351,8 @@ const AnalysisSceneVisual: React.FC = () => (
 );
 
 // Meeting transcript component
-const MeetingTranscript: React.FC = () => {
+const MeetingTranscript: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
-  
-  const transcript = [
-    { speaker: "Ben (PO)", avatar: "bg-blue-600", quote: "We've got a board meeting next month. They want to see fraud numbers down and conversion stable. Right now we're hemorrhaging money on chargebacks." },
-    { speaker: "Marie (Compliance)", avatar: "bg-purple-600", quote: "Just to be clear — we can't weaken identity checks. The audit from last quarter flagged our account change flow. If we don't address it, we're exposed." },
-    { speaker: "James (Ops)", avatar: "bg-orange-600", quote: "My team is drowning. Manual reviews are sitting for 2, sometimes 3 days. Customers are calling in angry. We need automation, not more checks." },
-    { speaker: "Ben (PO)", avatar: "bg-blue-600", quote: "So we need stronger checks... but faster reviews... and we can't hurt conversion. Got it. That's the brief." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "Can I clarify — when you say fraud is up 17%, is that across all channels or specific to promo periods?" },
-    { speaker: "Ben (PO)", avatar: "bg-blue-600", quote: "Good question. Finance flagged it spiking during Black Friday and our spring sale. I'll get you the breakdown." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "And Marie, when you mention the account change flow — what specifically did the audit flag?" },
-    { speaker: "Marie (Compliance)", avatar: "bg-purple-600", quote: "No audit trail on who approved changes. If someone updates their payment method or shipping address, we have no log of verification. That's a red flag." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "James, what's your current SLA for manual reviews, and what percentage are you hitting?" },
-    { speaker: "James (Ops)", avatar: "bg-orange-600", quote: "SLA is 24 hours. We're hitting maybe 60% on time. The rest age out to 48 or 72 hours. It's bad." },
-    { speaker: "Ben (PO)", avatar: "bg-blue-600", quote: "Finance also mentioned we're spending £125k a week on write-offs. That's double last quarter." },
-    { speaker: "Marie (Compliance)", avatar: "bg-purple-600", quote: "And remember — regulators expect a fully traceable journey every time a customer updates personal details. We're currently failing that." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "Understood. For the KYC drop-off, what was the baseline before we tightened checks last quarter?" },
-    { speaker: "Ben (PO)", avatar: "bg-blue-600", quote: "Baseline was around 3%. Since the change it's sitting near 9%. Marketing is shouting." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "James, can you share 5 sample cases that aged past 48 hours? I want to examine the bottlenecks." },
-    { speaker: "James (Ops)", avatar: "bg-orange-600", quote: "Yep, I'll pull screenshots from the queue and send them with timestamps. Lot of them are address changes waiting on compliance." },
-    { speaker: "Marie (Compliance)", avatar: "bg-purple-600", quote: "If address changes are the culprit, we can consider tiered checks — but we need proof points." },
-    { speaker: "You (BA)", avatar: "bg-green-600", quote: "Perfect. I'll summarise the problem framing and the data we still need so we can agree the targets tomorrow." },
-  ];
 
   return (
     <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden">
@@ -417,7 +378,7 @@ const MeetingTranscript: React.FC = () => {
         </p>
         
         <div className={`space-y-4 ${!expanded ? 'max-h-[400px] overflow-hidden relative' : ''}`}>
-          {transcript.map((item, idx) => (
+          {data.transcript.map((item, idx) => (
             <div key={idx} className="flex items-start gap-3">
               <div className={`flex items-center justify-center w-10 h-10 rounded-full ${item.avatar} text-white text-xs font-bold flex-shrink-0`}>
                 <UserCircle2 size={20} />
@@ -581,7 +542,9 @@ const ExpertComparison: React.FC<{ open: boolean; onToggle: () => void }> = ({ o
 
 // Main component
 export default function UnderstandProblemPage() {
-  const { notes, saveNote } = useNotes();
+  const { selectedProject } = useBAInActionProject();
+  const data = PAGE_2_DATA[selectedProject];
+  const { notes, saveNote } = useNotes(data.initialMeetingNotes);
   const [showExpert, setShowExpert] = useState(false);
   const expertRef = useRef<HTMLDivElement | null>(null);
 
@@ -598,10 +561,16 @@ export default function UnderstandProblemPage() {
       <div className="bg-white border-b border-slate-300 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
-            <div className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-1">
-              BA In Action
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                BA In Action
+              </div>
+              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-bold rounded">
+                {selectedProject === 'cif' ? 'CI&F' : 'Voids'}
+              </span>
             </div>
             <div className="text-xl font-bold text-slate-900">Day 2: Understand the Problem</div>
+            <div className="text-sm text-slate-600 mt-1">{data.meetingTitle}</div>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Clock size={16} />
@@ -625,11 +594,11 @@ export default function UnderstandProblemPage() {
         </div>
 
         {/* Visual: Meeting Scene */}
-        <MeetingSceneVisual />
+        <MeetingSceneVisual data={data} />
 
         {/* Meeting Transcript - Full Width */}
         <div className="mb-6">
-          <MeetingTranscript />
+          <MeetingTranscript data={data} />
         </div>
         
         {/* Visual: Analysis Work Scene */}

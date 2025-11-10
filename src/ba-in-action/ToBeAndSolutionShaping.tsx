@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
+import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
+import { PAGE_1_DATA } from './page1-data';
 import {
   PageShell,
   PageTitle,
@@ -75,6 +77,8 @@ const AGILE_CONTEXT = {
 };
 
 const ToBeAndSolutionShaping: React.FC = () => {
+  const { selectedProject } = useBAInActionProject();
+  const projectData = PAGE_1_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -131,7 +135,12 @@ So that we reduce fraud while minimising manual workload and customer friction.`
 
   return (
     <PageShell>
-      <PageTitle title="Requirements & Documentation (The Right Way)" />
+      <div className="flex items-center gap-3 mb-4">
+        <PageTitle title="Requirements & Documentation (The Right Way)" />
+        <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedProject === 'cif' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
+          {projectData.initiativeName}
+        </span>
+      </div>
 
       <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">
         <Clock size={16} className="text-indigo-600" />
