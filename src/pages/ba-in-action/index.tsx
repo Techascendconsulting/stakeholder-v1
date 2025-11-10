@@ -42,6 +42,10 @@ const BAInActionIndexPage: React.FC = () => {
   }
 
   const project = PROJECTS[selectedProject];
+  const bannerGradient =
+    selectedProject === 'cif'
+      ? 'from-purple-700 via-purple-600 to-rose-500'
+      : 'from-sky-700 via-blue-600 to-cyan-500';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#ff09aa] via-[#ff56c9] to-[#c94bff] dark:from-[#7a0057] dark:via-[#6b008a] dark:to-[#4b0082]">
@@ -67,9 +71,6 @@ const BAInActionIndexPage: React.FC = () => {
                   {project.shortName}
                 </span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {project.description}
-              </p>
             </div>
             <button
               onClick={handleChangeProject}
@@ -78,6 +79,26 @@ const BAInActionIndexPage: React.FC = () => {
               <RefreshCw size={16} />
               Switch Project
             </button>
+          </div>
+
+          {/* Selected project callout */}
+          <div
+            className={`mt-4 rounded-xl px-5 py-4 text-white shadow-lg border border-white/30 bg-gradient-to-r ${bannerGradient}`}
+          >
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/90">
+              You have selected
+            </span>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <p className="text-xl font-extrabold leading-snug">
+                {project.name}
+              </p>
+              <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                {project.difficulty} Project
+              </span>
+            </div>
+            <p className="mt-3 text-sm font-medium text-white/95 max-w-3xl">
+              {project.description}
+            </p>
           </div>
         </div>
       </div>
