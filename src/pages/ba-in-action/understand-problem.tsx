@@ -3,6 +3,8 @@ import { useApp } from "../../contexts/AppContext";
 import { useBAInActionProject } from "../../contexts/BAInActionProjectContext";
 import { PAGE_2_DATA } from "../../ba-in-action/page2-data";
 import type { AppView } from "../../types";
+import { NavigationButtons } from "../../ba-in-action/common";
+import { getBaInActionNavigation, baInActionViewToPath } from "../../ba-in-action/config";
 import { 
   Clock,
   AlertCircle,
@@ -548,6 +550,15 @@ export default function UnderstandProblemPage() {
   const [showExpert, setShowExpert] = useState(false);
   const expertRef = useRef<HTMLDivElement | null>(null);
 
+  // Navigation setup
+  const VIEW_ID: AppView = 'ba_in_action_understand_problem';
+  const { previous, next } = getBaInActionNavigation(VIEW_ID);
+  const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
+  const nextLink = next ? baInActionViewToPath[next.view] : undefined;
+
+  // Debug logging
+  console.log('🔍 UnderstandProblemPage navigation:', { VIEW_ID, previous, next, backLink, nextLink });
+
   const handleOpenExpert = () => {
     setShowExpert(true);
     requestAnimationFrame(() => {
@@ -1078,6 +1089,11 @@ export default function UnderstandProblemPage() {
             open={showExpert}
             onToggle={() => setShowExpert((prev) => !prev)}
           />
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="mt-8 w-full">
+          <NavigationButtons backLink={backLink} nextLink={nextLink} />
         </div>
 
       </div>

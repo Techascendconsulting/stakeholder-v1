@@ -3,6 +3,8 @@ import { useApp } from "../../contexts/AppContext";
 import { useBAInActionProject } from "../../contexts/BAInActionProjectContext";
 import { PAGE_1_DATA } from "../../ba-in-action/page1-data";
 import type { AppView } from "../../types";
+import { NavigationButtons } from "../../ba-in-action/common";
+import { baInActionViewToPath, getBaInActionNavigation } from "../../ba-in-action/config";
 import { 
   Mail, 
   Calendar,
@@ -425,6 +427,10 @@ export default function BAInActionPage1() {
   const { notes, saveNote } = useNotes();
   const { selectedProject } = useBAInActionProject();
   const data = PAGE_1_DATA[selectedProject];
+  const VIEW_ID: AppView = 'ba_in_action_join_orientation';
+  const { previous, next } = getBaInActionNavigation(VIEW_ID);
+  const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
+  const nextLink = next ? baInActionViewToPath[next.view] : undefined;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -513,6 +519,8 @@ export default function BAInActionPage1() {
           </div>
 
         </div>
+
+        <NavigationButtons backLink={backLink} nextLink={nextLink} />
 
       </div>
     </div>

@@ -48,6 +48,9 @@ interface NavigationButtonsProps {
 export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ backLink, nextLink }) => {
   const { setCurrentView } = useApp();
 
+  // Debug logging
+  console.log('🔍 NavigationButtons render:', { backLink, nextLink, hasBackLink: !!backLink, hasNextLink: !!nextLink });
+
   const handleNavigation = (path?: string) => {
     if (!path) return;
     const targetView = baInActionPathToView[path];
@@ -58,25 +61,62 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ backLink, 
     }
   };
 
+  // Don't render if no links at all
+  if (!backLink && !nextLink) {
+    console.warn('⚠️ NavigationButtons: No links provided, returning null');
+    return null;
+  }
+
+  console.log('✅ NavigationButtons: Rendering buttons', { backLink, nextLink });
+
+  // Force render test - always show something if we have at least one link
+  const hasAnyLink = backLink || nextLink;
+  console.log('🔍 NavigationButtons: hasAnyLink =', hasAnyLink);
+
+  if (!hasAnyLink) {
+    console.warn('⚠️ NavigationButtons: No links at all, returning null');
+    return null;
+  }
+
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 mb-20">
-      <Button
-        variant="outline"
-        className="w-full sm:w-auto"
-        disabled={!backLink}
-        onClick={() => handleNavigation(backLink)}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Previous
-      </Button>
-      <Button
-        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white"
-        disabled={!nextLink}
-        onClick={() => handleNavigation(nextLink)}
-      >
-        Next
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
+    <div 
+      className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8 pb-8 mb-20 w-full relative z-50" 
+      style={{ 
+        minHeight: '80px',
+        backgroundColor: 'transparent',
+        position: 'relative'
+      }}
+      data-testid="navigation-buttons"
+    >
+      {backLink ? (
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto min-w-[120px] border-2 border-gray-300"
+          onClick={() => {
+            console.log('🖱️ Previous button clicked, navigating to:', backLink);
+            handleNavigation(backLink);
+          }}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Previous
+        </Button>
+      ) : (
+        <div className="text-sm text-gray-400">No previous page</div>
+      )}
+      {nextLink ? (
+        <Button
+          className="w-full sm:w-auto min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white border-2 border-purple-700 shadow-lg"
+          onClick={() => {
+            console.log('🖱️ Next button clicked, navigating to:', nextLink);
+            handleNavigation(nextLink);
+          }}
+        >
+          Next
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      ) : (
+        <div className="text-sm text-gray-400">No next page</div>
+      )}
     </div>
   );
 };

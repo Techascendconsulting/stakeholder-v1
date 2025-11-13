@@ -15,6 +15,9 @@ const UnderstandingContext: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
+  
+  // Debug logging
+  console.log('UnderstandingContext navigation:', { VIEW_ID, previous, next, backLink, nextLink });
 
   return (
     <PageShell>
@@ -36,7 +39,9 @@ const UnderstandingContext: React.FC = () => {
         <Placeholder text="Short exercise question will go here." />
       </Section>
 
-      <NavigationButtons backLink={backLink} nextLink={nextLink} />
+      <div className="w-full">
+        <NavigationButtons backLink={backLink} nextLink={nextLink} />
+      </div>
     </PageShell>
   );
 };
