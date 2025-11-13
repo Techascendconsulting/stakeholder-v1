@@ -136,25 +136,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
       
-      // Check onboarding status to determine if welcome page should be accessible
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted')
-      const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
-      
-      // For existing users who don't have onboarding flags, assume they've completed onboarding
-      if (!onboardingCompleted && !isOnboardingInProgress) {
-        console.log('🔍 INIT: No onboarding flags found, assuming user has completed onboarding')
-        localStorage.setItem('onboardingCompleted', 'true')
-      }
-      
-      // If user has completed onboarding and is trying to access welcome page, redirect to dashboard
-      if (savedView === 'welcome' && localStorage.getItem('onboardingCompleted') === 'true') {
-        console.log('🔍 INIT: User has completed onboarding, preventing access to welcome page')
-        return 'dashboard'
-      }
-      
-      // SAFETY CHECK: If no saved view exists (first time after onboarding), default to dashboard
+      // SAFETY CHECK: If no saved view exists, default to dashboard (will be overridden by user login check)
       if (!savedView) {
-        console.log('🔍 INIT: No saved view found, defaulting to dashboard')
+        console.log('🔍 INIT: No saved view found, defaulting to dashboard (will check onboarding on login)')
         return 'dashboard'
       }
       
@@ -800,16 +784,47 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       
       // Check if user needs onboarding (only for non-admin users)
       if (!adminLoading && !isAdmin) {
-        // Check if user has completed onboarding
-        let onboardingCompleted = localStorage.getItem('onboardingCompleted')
-        const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
-        
-        // For existing users who don't have onboarding flags, assume they've completed onboarding
-        if (!onboardingCompleted && !isOnboardingInProgress) {
-          console.log('🎯 ONBOARDING: No onboarding flags found, assuming user has completed onboarding')
-          localStorage.setItem('onboardingCompleted', 'true')
-          onboardingCompleted = 'true'
+        // Check onboarding status from database first (source of truth)
+        const checkOnboardingStatus = async () => {
+          try {
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('has_completed_onboarding')
+              .eq('user_id', user.id)
+              .single()
+            
+            const hasCompletedOnboarding = profileData?.has_completed_onboarding === true
+            
+            // If user hasn't completed onboarding in database, show welcome page
+            if (!hasCompletedOnboarding) {
+              console.log('🎯 ONBOARDING: User has not completed onboarding, redirecting to get-started')
+              localStorage.removeItem('onboardingCompleted')
+              localStorage.removeItem('onboardingInProgress')
+              if (currentView !== 'get-started') {
+                setCurrentViewState('get-started')
+                localStorage.setItem('currentView', 'get-started')
+              }
+            } else {
+              // User has completed onboarding - sync localStorage
+              console.log('🎯 ONBOARDING: User has completed onboarding in database')
+              localStorage.setItem('onboardingCompleted', 'true')
+              localStorage.removeItem('onboardingInProgress')
+            }
+          } catch (error) {
+            console.error('Error checking onboarding status:', error)
+            // On error, check localStorage as fallback
+            const onboardingCompleted = localStorage.getItem('onboardingCompleted')
+            if (!onboardingCompleted) {
+              console.log('🎯 ONBOARDING: Error checking DB, showing welcome page as fallback')
+              if (currentView !== 'get-started') {
+                setCurrentViewState('get-started')
+                localStorage.setItem('currentView', 'get-started')
+              }
+            }
+          }
         }
+        
+        checkOnboardingStatus()
         
         console.log('🎯 ONBOARDING: Raw localStorage values:', {
           onboardingCompleted: localStorage.getItem('onboardingCompleted'),
