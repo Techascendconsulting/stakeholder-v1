@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
 import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from './page1-data';
+import { PAGE_8_DATA } from './page8-data';
 import {
   PageShell,
   PageTitle,
@@ -85,6 +86,7 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
 const UATValidation: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const projectData = PAGE_1_DATA[selectedProject];
+  const page8Data = PAGE_8_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -105,7 +107,7 @@ const UATValidation: React.FC = () => {
 
       <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">
         <Clock size={16} className="text-indigo-600" />
-        <span className="font-medium">Sprint 12 complete. US-142 is deployed. Now you coordinate UAT, validate outcomes, and hand over to BAU.</span>
+        <span className="font-medium">{page8Data.sprint} complete. {page8Data.ticketId} is deployed. Now you coordinate UAT, validate outcomes, and hand over to BAU.</span>
       </div>
 
       {/* Hero Section */}
@@ -147,9 +149,9 @@ const UATValidation: React.FC = () => {
               <Target size={16} />
               UAT Context for This Project
             </div>
-            <p className="mb-2"><strong>What&apos;s being tested:</strong> US-142 (Risk-Based Verification) deployed to staging</p>
-            <p className="mb-2"><strong>Who tests:</strong> Marie (Compliance), James (Ops), Ben (PO)</p>
-            <p><strong>Success criteria:</strong> AC met, no critical bugs, KPIs moving in right direction</p>
+            <p className="mb-2"><strong>What&apos;s being tested:</strong> {page8Data.uatContext.whatBeingTested}</p>
+            <p className="mb-2"><strong>Who tests:</strong> {page8Data.uatContext.whoTests}</p>
+            <p><strong>Success criteria:</strong> {page8Data.uatContext.successCriteria}</p>
           </div>
         </div>
       </Section>
@@ -169,79 +171,36 @@ const UATValidation: React.FC = () => {
           
           <div className="p-6 space-y-4">
             <p className="text-base text-slate-800 leading-relaxed">
-              The BA creates test scenarios BEFORE UAT starts. These link back to acceptance criteria from US-142.
+              The BA creates test scenarios BEFORE UAT starts. These link back to acceptance criteria from {page8Data.ticketId}.
             </p>
 
             {/* Test Scenario Document */}
             <div className="border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-lg">
               <div className="bg-slate-700 px-4 py-3 border-b border-slate-600">
-                <div className="text-white font-bold">UAT Test Scenarios - US-142</div>
-                <div className="text-white/70 text-xs mt-1">CI&F Programme | Prepared by: BA | Date: Sprint 12 End</div>
+                <div className="text-white font-bold">UAT Test Scenarios - {page8Data.ticketId}</div>
+                <div className="text-white/70 text-xs mt-1">{projectData.initiativeName} | Prepared by: BA | Date: {page8Data.sprint} End</div>
               </div>
 
               <div className="p-5 space-y-4">
-                {/* Scenario 1 */}
-                <div className="border border-green-300 rounded-lg p-4 bg-green-50/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold rounded">SCENARIO 1</span>
-                    <span className="font-semibold text-slate-900">High Confidence Auto-Approve (AC01)</span>
+                {page8Data.testScenarios.map((scenario, index) => (
+                  <div key={index} className={`border ${scenario.borderColor} rounded-lg p-4 ${scenario.bgColor}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-2 py-1 ${scenario.color} text-white text-xs font-bold rounded`}>{scenario.id}</span>
+                      <span className="font-semibold text-slate-900">{scenario.title}</span>
+                    </div>
+                    <div className="text-sm space-y-2 text-slate-800">
+                      <p><strong>Test Data:</strong> {scenario.testData}</p>
+                      <p><strong>Expected {selectedProject === 'cif' ? 'Risk Score' : 'Status'}:</strong> {scenario.expectedScore}</p>
+                      <p><strong>Steps:</strong></p>
+                      <ol className="list-decimal ml-5 space-y-1">
+                        {scenario.steps.map((step, stepIndex) => (
+                          <li key={stepIndex}>{step}</li>
+                        ))}
+                      </ol>
+                      <p><strong>Pass Criteria:</strong> {scenario.passCriteria}</p>
+                    </div>
                   </div>
-                  <div className="text-sm space-y-2 text-slate-800">
-                    <p><strong>Test Data:</strong> Test account &quot;test_user_high_trust@example.com&quot; with clean history, verified device</p>
-                    <p><strong>Expected Risk Score:</strong> ≥ 85</p>
-                    <p><strong>Steps:</strong></p>
-                    <ol className="list-decimal ml-5 space-y-1">
-                      <li>User completes sign-up form in staging</li>
-                      <li>System calculates risk score</li>
-                      <li>Verify account approved automatically (no manual review)</li>
-                      <li>Check audit log shows: timestamp, decision (&quot;approved&quot;), score (≥85)</li>
-                    </ol>
-                    <p><strong>Pass Criteria:</strong> Account approved within 2 seconds, no Ops queue entry, audit log complete</p>
-                  </div>
-                </div>
-
-                {/* Scenario 2 */}
-                <div className="border border-red-300 rounded-lg p-4 bg-red-50/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">SCENARIO 2</span>
-                    <span className="font-semibold text-slate-900">High Risk Auto-Block (AC02)</span>
-                  </div>
-                  <div className="text-sm space-y-2 text-slate-800">
-                    <p><strong>Test Data:</strong> Test account &quot;test_user_fraud_risk@example.com&quot; with suspicious IP, previous fraud flags</p>
-                    <p><strong>Expected Risk Score:</strong> ≤ 30</p>
-                    <p><strong>Steps:</strong></p>
-                    <ol className="list-decimal ml-5 space-y-1">
-                      <li>User completes sign-up form</li>
-                      <li>System calculates risk score</li>
-                      <li>Verify account creation fails</li>
-                      <li>Verify generic error message (NOT revealing fraud logic)</li>
-                      <li>Check fraud audit log flags this case</li>
-                    </ol>
-                    <p><strong>Pass Criteria:</strong> Account blocked, error: &quot;Unable to complete registration. Please contact support.&quot;, flagged in audit</p>
-                  </div>
-                </div>
-
-                {/* Scenario 3 */}
-                <div className="border border-amber-300 rounded-lg p-4 bg-amber-50/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 bg-amber-600 text-white text-xs font-bold rounded">SCENARIO 3</span>
-                    <span className="font-semibold text-slate-900">Manual Review Queue (AC03)</span>
-                  </div>
-                  <div className="text-sm space-y-2 text-slate-800">
-                    <p><strong>Test Data:</strong> Test account &quot;test_user_mid_risk@example.com&quot; with mixed signals</p>
-                    <p><strong>Expected Risk Score:</strong> 31-84</p>
-                    <p><strong>Steps:</strong></p>
-                    <ol className="list-decimal ml-5 space-y-1">
-                      <li>User completes sign-up form</li>
-                      <li>System calculates risk score</li>
-                      <li>Verify case appears in Ops review queue</li>
-                      <li>Check evidence summary shows: IP, email domain, device fingerprint, fraud flags</li>
-                      <li>Verify user sees &quot;Verification in progress&quot; message</li>
-                      <li>Verify 24h SLA timer started</li>
-                    </ol>
-                    <p><strong>Pass Criteria:</strong> Ops queue entry created, evidence fields populated, SLA active, user notified</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -300,7 +259,7 @@ const UATValidation: React.FC = () => {
           
           <div className="p-6 space-y-4">
             <p className="text-base text-slate-800 leading-relaxed">
-              Marie (Compliance) tested Scenario 3 and found an issue. She emails the team.
+              {page8Data.uatFeedback.stakeholderName} tested Scenario 3 and found an issue. {selectedProject === 'cif' ? 'She' : 'He'} emails the team.
             </p>
 
             {/* Email */}
@@ -310,48 +269,48 @@ const UATValidation: React.FC = () => {
                   <Mail size={16} className="text-indigo-600" />
                   <span className="font-semibold">Inbox</span>
                   <span className="text-slate-400">›</span>
-                  <span className="text-slate-600">UAT Feedback - US-142 Scenario 3</span>
+                  <span className="text-slate-600">UAT Feedback - {page8Data.ticketId} Scenario 3</span>
                 </div>
               </div>
               
               <div className="px-4 py-3 border-b border-slate-200 bg-white space-y-2">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="font-semibold text-base text-slate-900">Marie Dupont (Compliance)</div>
-                    <div className="text-sm text-slate-600">marie.dupont@company.co.uk</div>
+                    <div className="font-semibold text-base text-slate-900">{page8Data.uatFeedback.stakeholderName}</div>
+                    <div className="text-sm text-slate-600">{page8Data.uatFeedback.stakeholderEmail}</div>
                   </div>
                   <div className="text-sm text-slate-500">Today, 16:22</div>
                 </div>
                 <div className="text-sm text-slate-600">
-                  <span className="font-medium">To:</span> You (BA), Dev Team, Ben Carter (PO)
+                  <span className="font-medium">To:</span> You (BA), Dev Team, {selectedProject === 'cif' ? 'Ben Carter (PO)' : 'Sarah Thompson (PO)'}
                 </div>
                 <div className="text-sm text-slate-600">
-                  <span className="font-medium">Subject:</span> UAT Feedback - US-142 Scenario 3 Issue
+                  <span className="font-medium">Subject:</span> {page8Data.uatFeedback.subject}
                 </div>
               </div>
 
               <div className="px-4 py-4 text-base text-slate-800 leading-relaxed space-y-3">
                 <p>Hi team,</p>
                 <p>
-                  I tested Scenario 3 (Manual Review Queue) using the test account provided. The case did route to the Ops queue as expected, but I noticed the <strong className="text-red-700">evidence summary is missing the &quot;previous fraud flags&quot; field</strong>.
+                  I tested Scenario 3 ({page8Data.testScenarios[2].title}) using the test {selectedProject === 'cif' ? 'account' : 'property'} provided. The case did route to the {selectedProject === 'cif' ? 'Ops queue' : 'Repairs queue'} as expected, but I noticed the <strong className="text-red-700">{page8Data.uatFeedback.issueDescription}</strong>.
                 </p>
                 <p>
-                  For regulatory compliance, we need to show <strong>all risk signals</strong> that contributed to the decision. Without fraud flags visible, Ops can&apos;t make fully informed decisions, and we may not pass audit.
+                  {page8Data.uatFeedback.whyItMatters}
                 </p>
                 <p>
                   Can this be fixed before we move to production?
                 </p>
                 <p className="pt-2">
                   Best,<br />
-                  Marie
+                  {page8Data.uatFeedback.stakeholderName.split('(')[0].trim()}
                 </p>
               </div>
             </div>
 
             <LookFor items={[
               "Stakeholder describes what they tested (Scenario 3)",
-              "Issue is specific (missing fraud flags field)",
-              "Stakeholder explains WHY it matters (regulatory compliance)",
+              `Issue is specific (${page8Data.uatFeedback.issueDescription})`,
+              `Stakeholder explains WHY it matters (${selectedProject === 'cif' ? 'regulatory compliance' : 'SLA targets'})`,
               "BA now needs to log this as a bug and coordinate fix"
             ]} />
 
@@ -359,10 +318,10 @@ const UATValidation: React.FC = () => {
             <div className="mt-4 p-4 bg-slate-50 border-2 border-slate-300 rounded-lg">
               <div className="text-sm font-semibold text-slate-900 mb-2">What the BA Does Next:</div>
               <ol className="list-decimal ml-5 space-y-2 text-sm text-slate-700">
-                <li><strong>Acknowledge the issue immediately:</strong> Reply to Marie confirming you&apos;ve logged it</li>
+                <li><strong>Acknowledge the issue immediately:</strong> Reply to {page8Data.uatFeedback.stakeholderName.split('(')[0].trim()} confirming you&apos;ve logged it</li>
                 <li><strong>Log in issue tracker:</strong> Create bug ticket with severity: High (blocks production)</li>
                 <li><strong>Notify dev team:</strong> Slack message with link to bug ticket</li>
-                <li><strong>Track to resolution:</strong> Monitor fix, coordinate re-test with Marie</li>
+                <li><strong>Track to resolution:</strong> Monitor fix, coordinate re-test with {page8Data.uatFeedback.stakeholderName.split('(')[0].trim()}</li>
                 <li><strong>Update stakeholders:</strong> Confirm when fixed and re-validated</li>
               </ol>
             </div>
@@ -415,7 +374,7 @@ const UATValidation: React.FC = () => {
           
           <div className="p-6 space-y-4">
             <p className="text-base text-slate-800 leading-relaxed">
-              3 weeks after US-142 deployed. BA compares metrics to baseline (from Day 1 project brief).
+              3 weeks after {page8Data.ticketId} deployed. BA compares metrics to baseline (from Day 1 project brief).
             </p>
 
             {/* Metrics Table */}
@@ -430,24 +389,14 @@ const UATValidation: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-green-50/50 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-slate-900">Fraud Loss £/week</td>
-                    <td className="px-5 py-4 text-slate-700">£48,000/week</td>
-                    <td className="px-5 py-4 text-green-700 font-bold">£33,400/week</td>
-                    <td className="px-5 py-4 text-slate-700">↓ 30% — Target met (30% reduction)</td>
-                  </tr>
-                  <tr className="hover:bg-green-50/50 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-slate-900">Manual Review Rate %</td>
-                    <td className="px-5 py-4 text-slate-700">12%</td>
-                    <td className="px-5 py-4 text-green-700 font-bold">7%</td>
-                    <td className="px-5 py-4 text-slate-700">↓ 42% — Ops workload reduced significantly</td>
-                  </tr>
-                  <tr className="hover:bg-green-50/50 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-slate-900">Checkout Drop-off %</td>
-                    <td className="px-5 py-4 text-slate-700">9%</td>
-                    <td className="px-5 py-4 text-green-700 font-bold">6%</td>
-                    <td className="px-5 py-4 text-slate-700">↓ 33% — Conversion protected (target: ≥95% baseline)</td>
-                  </tr>
+                  {page8Data.metrics.map((metric, index) => (
+                    <tr key={index} className="hover:bg-green-50/50 transition-colors">
+                      <td className="px-5 py-4 font-semibold text-slate-900">{metric.kpi}</td>
+                      <td className="px-5 py-4 text-slate-700">{metric.baseline}</td>
+                      <td className="px-5 py-4 text-green-700 font-bold">{metric.current}</td>
+                      <td className="px-5 py-4 text-slate-700">{metric.interpretation}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -508,14 +457,14 @@ const UATValidation: React.FC = () => {
                 <CheckCircle2 size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="font-semibold text-slate-900">Decision Log</div>
-                  <p className="text-sm text-slate-700 mt-1">Key decisions made (why thresholds are 85/30, why 24h SLA, etc.)</p>
+                  <p className="text-sm text-slate-700 mt-1">Key decisions made (why {page8Data.handover.thresholds}, why {page8Data.handover.sla} SLA, etc.)</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="font-semibold text-slate-900">Operational Runbook</div>
-                  <p className="text-sm text-slate-700 mt-1">How Ops handles manual review queue, what to do if SLA breaches, escalation paths</p>
+                  <p className="text-sm text-slate-700 mt-1">How {selectedProject === 'cif' ? 'Ops handles manual review queue' : 'Repairs handles work order queue'}, what to do if SLA breaches, escalation paths</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -536,7 +485,7 @@ const UATValidation: React.FC = () => {
                 <CheckCircle2 size={20} className="text-green-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="font-semibold text-slate-900">Stakeholder Contacts</div>
-                  <p className="text-sm text-slate-700 mt-1">Who owns what (Marie for Compliance questions, James for Ops support)</p>
+                  <p className="text-sm text-slate-700 mt-1">Who owns what ({selectedProject === 'cif' ? 'Marie for Compliance questions, James for Ops support' : 'Tom for Repairs questions, Sarah for Housing support'})</p>
                 </div>
               </div>
             </div>
@@ -559,7 +508,7 @@ const UATValidation: React.FC = () => {
                 Your Task: Write Handover Notes
               </div>
               <p className="text-sm text-amber-900 mb-3">
-                Write the &quot;Key Decisions&quot; section for your handover document. Explain: Why are thresholds 85/30? Why 24h SLA?
+                Write the &quot;Key Decisions&quot; section for your handover document. Explain: {page8Data.handover.decisionLogQuestion}
               </p>
               <textarea
                 className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-white border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -569,7 +518,7 @@ const UATValidation: React.FC = () => {
                 onChange={(e) => saveNote('handover_notes', e.target.value)}
               />
               <p className="text-xs text-slate-600 mt-2">
-                Hint: Reference Compliance requirements (Day 3), business case (Day 1), and requirements (Day 5).
+                Hint: {page8Data.handover.hint}
               </p>
             </div>
           </div>
@@ -585,11 +534,9 @@ const UATValidation: React.FC = () => {
           </p>
           <div className="rounded-lg border-2 border-slate-300 bg-white p-5 text-sm text-slate-800 shadow-sm">
             <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 border border-slate-200">
-              <p>UAT complete for US-142. All scenarios passed after fraud flags fix.</p>
-              <p>Metrics validated: Fraud ↓30%, manual reviews ↓42%, conversion protected.</p>
-              <p>Handover pack delivered to BAU team (runbook, decision log, KPI dashboard).</p>
-              <p>Handover session scheduled for Thursday 2pm.</p>
-              <p>US-142 officially closed. Project objectives met.</p>
+              {page8Data.slackUpdate.map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
             </div>
           </div>
           <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">

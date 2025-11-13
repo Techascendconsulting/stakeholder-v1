@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
 import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from './page1-data';
+import { PAGE_5_DATA } from './page5-data';
 import {
   PageShell,
   PageTitle,
@@ -73,72 +74,11 @@ const AGILE_CONTEXT = {
   ceremonies: 'Present findings in Sprint Planning or Refinement. Use it to prioritize backlog based on pain points.',
 };
 
-const SIGNALS = [
-  {
-    signal: 'Workarounds',
-    example: 'Ops exports CSV and filters “suspected fraud” manually.',
-    meaning: 'The system is not solving the problem under load.',
-  },
-  {
-    signal: 'Slack pings of “can someone check this?”',
-    example: 'No defined path when exceptions arrive at pace.',
-    meaning: 'Process is fragile; ownership unclear in reality.',
-  },
-  {
-    signal: 'Multiple spreadsheets tracking the same metric',
-    example: 'Finance, Ops, and PO each track separate fraud views.',
-    meaning: 'Coordination gap, not a tooling gap. Decision latency.',
-  },
-  {
-    signal: '“We just do it like that”',
-    example: 'Legacy rule exists but no one remembers why.',
-    meaning: 'Constraint may be artificial; challenge it with evidence.',
-  },
-];
-
-const GAPS = [
-  {
-    gap: 'Verification thresholds are static',
-    reason: 'System assumed stable behaviour; fraud patterns evolved.',
-    impact: 'Spike in false results and Ops backlog.',
-  },
-  {
-    gap: 'No feedback loop from manual decisions',
-    reason: 'Model architecture not built for adaptive learning.',
-    impact: 'Fraud patterns repeat; Ops re-fights same battles.',
-  },
-  {
-    gap: 'Ops workflow unsupported by tooling',
-    reason: 'Process evolved, UI did not. Reviews live in spreadsheets.',
-    impact: 'Ops time wasted → SLA breach → customer frustration.',
-  },
-];
-
-const TO_BE_POINTS = [
-  'Risk-based verification with adaptive scoring.',
-  'Fewer reviews; faster decisions with confidence.',
-  'Feedback loop where outcomes retrain the model.',
-  'Ops supported with clear prompts and workload visibility.',
-  'Conversion protected while fraud is reduced.',
-];
-
-const NARRATIVE_NOW = [
-  'Identity checks are static. Fraud behaviour shifts faster than control logic.',
-  'Model does not learn from outcomes. Manual effort is a dead-end.',
-  'Ops is overwhelmed — 40% of reviews breach the 24h SLA.',
-  'Customer experience suffers: drop-offs, escalations, reputational noise.',
-];
-
-const NARRATIVE_FUTURE = [
-  'Risk tiered dynamically; high-risk gets scrutiny, low-risk flows.',
-  'System learns from outcomes — every decision feeds back.',
-  'Ops sees what matters, not everything; workload fits capacity.',
-  'Fraud reduction and conversion protection coexist.',
-];
 
 const AnalysisSpottingIssues: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const projectData = PAGE_1_DATA[selectedProject];
+  const page5Data = PAGE_5_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -293,7 +233,7 @@ const AnalysisSpottingIssues: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {SIGNALS.map((row) => (
+              {page5Data.signals.map((row) => (
                 <tr key={row.signal} className="hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-4 font-semibold text-slate-900">{row.signal}</td>
                   <td className="px-5 py-4 text-slate-700">{row.example}</td>
@@ -331,101 +271,57 @@ const AnalysisSpottingIssues: React.FC = () => {
           No diagrams yet. Capture the sequence and the pain.
         </p>
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-700 space-y-2">
-          <p>Customer signs up → system triggers verification check → if match score &lt; threshold → manual review queue → Ops decision → account approved or rejected → decision outcome not fed back into scoring model.</p>
+          <p>{page5Data.asIsDraft}</p>
         </div>
         <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
           Observed pain:
           <ul className="mt-2 list-disc list-inside space-y-1 text-emerald-800">
-            <li>Review queue aging &gt; 48h (SLA breach).</li>
-            <li>False positives → customer drop-off + support escalations.</li>
-            <li>No feedback loop → model does not learn → fraud patterns repeat.</li>
+            {page5Data.observedPain.map((pain, index) => (
+              <li key={index}>{pain}</li>
+            ))}
           </ul>
         </div>
       </Section>
 
-      <Section title="4) BA Observation Notes: Shadowing James (Ops) for 2 Hours">
+      <Section title={`4) BA Observation Notes: Shadowing ${selectedProject === 'cif' ? 'James (Ops)' : 'Tom (Repairs)'} for 2 Hours`}>
         <p className="text-base text-slate-800 mb-4 leading-relaxed">
-          This is what the BA observes when shadowing James Walker (Ops Manager) for 2 hours. Watch what the BA writes down.
+          This is what the BA observes when shadowing for 2 hours. Watch what the BA writes down.
         </p>
 
         {/* Observation Notes Document */}
         <div className="bg-white border-2 border-slate-300 rounded-lg shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3">
             <div className="text-white font-bold">BA Observation Notes</div>
-            <div className="text-white/80 text-xs mt-1">Date: Week 1, Day 4 | Observer: You (BA) | Shadowing: James Walker (Ops)</div>
+            <div className="text-white/80 text-xs mt-1">Date: Week 1, Day 4 | Observer: You (BA) | Shadowing: {selectedProject === 'cif' ? 'James Walker (Ops)' : 'Tom Richards (Repairs)'}</div>
           </div>
 
           <div className="p-5 space-y-4 text-sm">
             <div className="border-b border-slate-200 pb-3">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Context</div>
-              <p className="text-slate-800">Shadowing James during peak period (10am-12pm). Observing manual review queue process for identity verification cases flagged as &quot;mid-risk&quot; (score 31-84).</p>
+              <p className="text-slate-800">{page5Data.observationNotes.context}</p>
             </div>
 
             <div className="space-y-3">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-purple-700">10:05 AM</span>
-                  <span className="text-xs text-slate-600">Case #4521 arrives in queue</span>
+              {page5Data.observationNotes.notes.map((note, index) => (
+                <div key={index} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold text-purple-700">{note.time}</span>
+                    <span className="text-xs text-slate-600">{note.event}</span>
+                  </div>
+                  <p className="text-slate-800 leading-relaxed">{note.observation}</p>
+                  <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
+                    <strong>BA NOTE:</strong> {note.baNote}
+                  </div>
                 </div>
-                <p className="text-slate-800 leading-relaxed">James opens case. System shows: Name, DOB, email. <strong className="text-red-700">Missing:</strong> IP address, device fingerprint, previous fraud flags. James switches to <strong>separate admin panel</strong> to manually look up these fields.</p>
-                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
-                  <strong>BA NOTE:</strong> Data fragmentation. Ops has to context-switch to 2 systems for one decision.
-                </div>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-purple-700">10:12 AM</span>
-                  <span className="text-xs text-slate-600">James checks fraud flag history</span>
-                </div>
-                <p className="text-slate-800 leading-relaxed">James finds 2 previous fraud flags for this email domain. <strong>But there&apos;s no clear guidance on what to do with this information.</strong> James: &quot;I usually block if there are 2+ flags, but sometimes Compliance overrules me.&quot;</p>
-                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
-                  <strong>BA NOTE:</strong> Decision criteria not codified. Ops using tribal knowledge. Risk of inconsistency.
-                </div>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-purple-700">10:18 AM</span>
-                  <span className="text-xs text-slate-600">James makes decision: Block</span>
-                </div>
-                <p className="text-slate-800 leading-relaxed">James clicks &quot;Block&quot; button. System updates status. <strong className="text-red-700">No audit log visible.</strong> James doesn&apos;t know if his decision was logged with evidence. &quot;I assume it&apos;s in the background somewhere?&quot;</p>
-                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
-                  <strong>BA NOTE:</strong> Compliance gap. Ops can&apos;t verify audit trail. Marie won&apos;t accept this.
-                </div>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-purple-700">10:22 AM</span>
-                  <span className="text-xs text-slate-600">Case #4522 arrives</span>
-                </div>
-                <p className="text-slate-800 leading-relaxed">Same process. James switches systems again. Queue is aging — 14 cases now waiting. James: &quot;This gets overwhelming around lunchtime when volume spikes. We breach SLA almost every day.&quot;</p>
-                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
-                  <strong>BA NOTE:</strong> Process doesn&apos;t scale. SLA breaches are systemic, not Ops&apos; fault.
-                </div>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-purple-700">11:45 AM</span>
-                  <span className="text-xs text-slate-600">Compliance asks for evidence on blocked case</span>
-                </div>
-                <p className="text-slate-800 leading-relaxed">Marie (Compliance) Slacks James: &quot;Why did we block case #4521?&quot; James has to manually reconstruct decision from memory + check multiple systems. Takes 15 minutes to respond.</p>
-                <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded text-xs text-amber-900">
-                  <strong>BA NOTE:</strong> No decision log accessible to Ops. Rework + friction with Compliance.
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="border-t border-slate-200 pt-3 mt-4">
               <div className="text-xs uppercase tracking-wide text-emerald-600 font-semibold mb-2">Summary of Pain Points Observed</div>
               <ul className="list-disc ml-5 space-y-1 text-slate-800">
-                <li>Ops switches between 2 systems for every case (fragmentation)</li>
-                <li>No clear decision guidance (tribal knowledge risk)</li>
-                <li>Audit trail not visible to Ops (Compliance friction)</li>
-                <li>Process doesn&apos;t scale (SLA breaches daily)</li>
-                <li>No decision log for retrospective queries (rework)</li>
+                {page5Data.observationNotes.summary.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -478,7 +374,7 @@ const AnalysisSpottingIssues: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {GAPS.map((item) => (
+              {page5Data.gaps.map((item) => (
                 <tr key={item.gap} className="hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-4 font-semibold text-slate-900">{item.gap}</td>
                   <td className="px-5 py-4 text-slate-700">{item.reason}</td>
@@ -502,8 +398,8 @@ const AnalysisSpottingIssues: React.FC = () => {
         </p>
         <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
-            {TO_BE_POINTS.map((point) => (
-              <li key={point}>{point}</li>
+            {page5Data.toBePoints.map((point, index) => (
+              <li key={index}>{point}</li>
             ))}
           </ul>
         </div>
@@ -517,16 +413,16 @@ const AnalysisSpottingIssues: React.FC = () => {
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-rose-500 font-semibold">Now (As-Is)</div>
             <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-slate-700">
-              {NARRATIVE_NOW.map((item) => (
-                <li key={item}>{item}</li>
+              {page5Data.narrativeNow.map((item, index) => (
+                <li key={index}>{item}</li>
               ))}
             </ul>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-emerald-500 font-semibold">Future (To-Be)</div>
             <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-slate-700">
-              {NARRATIVE_FUTURE.map((item) => (
-                <li key={item}>{item}</li>
+              {page5Data.narrativeFuture.map((item, index) => (
+                <li key={index}>{item}</li>
               ))}
             </ul>
           </div>
@@ -549,7 +445,7 @@ const AnalysisSpottingIssues: React.FC = () => {
         <textarea
           className="mt-4 w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
           rows={8}
-          placeholder="Capture your As-Is narrative, gap explanation, why it matters, and the direction of the To-Be..."
+          placeholder={page5Data.taskPlaceholder}
           value={narrative}
           onChange={(event) => setNarrative(event.target.value)}
         />
@@ -571,12 +467,9 @@ const AnalysisSpottingIssues: React.FC = () => {
         </p>
         <div className="rounded-lg border-2 border-slate-300 bg-white p-5 text-sm text-slate-800 shadow-sm">
           <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 border border-slate-200">
-            <p>Completed first pass of the As-Is and identified key gaps:</p>
-            <p>• Static verification thresholds not aligned with current fraud behaviour.</p>
-            <p>• Manual review loop has no model feedback path.</p>
-            <p>• Ops workload increases as volume scales.</p>
-            <p>Drafting To-Be direction focused on risk-tiering + feedback loop + Ops clarity.</p>
-            <p>Will validate with Ops + Compliance tomorrow.</p>
+            {page5Data.slackUpdate.map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
           </div>
         </div>
         <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">
@@ -594,10 +487,10 @@ const AnalysisSpottingIssues: React.FC = () => {
             <h3 className="text-lg font-semibold">Example Narrative — As-Is → Gap → To-Be</h3>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-            <p><strong>Real As-Is:</strong> “Fraud detection runs on static thresholds; manual reviews happen in spreadsheets; Ops escalates via Slack; conversion drops when manual queue spikes.”</p>
-            <p><strong>Gap between intention and reality:</strong> “Design assumed consistent behaviour, but fraud patterns evolved. Controls stayed rigid, Ops invented workarounds, feedback never retrained the model.”</p>
-            <p><strong>Why it matters:</strong> “Without adaptive learning, we pay twice — fraud loss and lost customers. Ops morale erodes; compliance risk grows.”</p>
-            <p><strong>To-Be direction:</strong> “Risk-tiering that adapts, embedded feedback loops, Ops interface that guides decisions, conversion guardrails built into scoring.”</p>
+            <p><strong>Real As-Is:</strong> {page5Data.exampleNarrative.asIs}</p>
+            <p><strong>Gap between intention and reality:</strong> {page5Data.exampleNarrative.gap}</p>
+            <p><strong>Why it matters:</strong> {page5Data.exampleNarrative.whyMatters}</p>
+            <p><strong>To-Be direction:</strong> {page5Data.exampleNarrative.toBe}</p>
           </div>
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
             This is what you say when someone asks, “What are you seeing so far?” Clarity without slides.

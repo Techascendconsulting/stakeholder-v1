@@ -506,8 +506,7 @@ const Dashboard: React.FC = () => {
             <div 
               className="group bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-700 p-5 hover:shadow-xl hover:border-purple-400 dark:hover:border-purple-500 transition-all cursor-pointer"
               onClick={() => setCurrentView('career-journey')}
-            >
-              <div className="flex items-center justify-between mb-4">
+            >              <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <Map className="w-6 h-6 text-white" />
                 </div>
@@ -661,3 +660,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

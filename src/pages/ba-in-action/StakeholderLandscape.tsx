@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { AppView } from '../../types';
 import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from '../../ba-in-action/page1-data';
+import { PAGE_3_DATA } from '../../ba-in-action/page3-data';
 import {
   PageShell,
   PageTitle,
@@ -30,156 +31,16 @@ const VIEW_ID: AppView = 'ba_in_action_whos_involved';
 
 const HERO_IMAGE = '/images/collaborate1.jpg';
 
-const PRESSURE_SIGNALS = [
-  { name: 'Product Owner', signal: 'Needs visible momentum for board updates — even if operational mess underneath.' },
-  { name: 'Compliance', signal: 'Protects licence to operate. Audit exposure = personal accountability.' },
-  { name: 'Operations', signal: 'Living the queue pain daily. Stress rarely seen by leadership.' },
-  { name: 'Engineering', signal: 'Roadmap already full. They need trade-offs, not surprises.' },
-  { name: 'Finance', signal: 'Must justify spend to leadership. Needs conversion of effort → £ saved.' },
-];
-
-const INFLUENCE_MAP = [
-  {
-    quadrant: 'High Influence • High Interest',
-    tagline: 'They drive the outcome',
-    examples: 'Product Owner, Compliance Lead',
-    approach: 'Facilitate decisions. Align on wording. Bring trade-offs.',
-  },
-  {
-    quadrant: 'High Influence • Low Interest',
-    tagline: 'They sign off but aren’t in the weeds',
-    examples: 'Head of Risk, CFO, CTO',
-    approach: 'Short updates. Use metrics. Never waste their time.',
-  },
-  {
-    quadrant: 'Low Influence • High Interest',
-    tagline: 'They feel the pain daily',
-    examples: 'Ops Supervisors, Fraud Analysts',
-    approach: 'Listen deeply. They surface hidden blockers.',
-  },
-  {
-    quadrant: 'Low Influence • Low Interest',
-    tagline: 'Keep them informed only',
-    examples: 'Customer Support, Marketing',
-    approach: 'Plain-language updates. Pull them in only when relevant.',
-  },
-];
-
-const SCRIPTS = [
-  {
-    label: 'Product Owner',
-    quote:
-      '“I want to confirm how we’re defining success before we go deeper. Here are the working targets and guardrails — tell me what’s off.”',
-  },
-  {
-    label: 'Compliance',
-    quote:
-      '“To stay audit-safe, I need to know which control points are non-negotiable. Walk me through the ones we can’t compromise.”',
-  },
-  {
-    label: 'Operations',
-    quote: '“Show me a real case. Don’t tidy it. I need to see exactly where it slows down.”',
-  },
-  {
-    label: 'Engineering',
-    quote:
-      '“Before solutioning, can you walk me through where risk checks fire in code today and which events trigger review?”',
-  },
-  {
-    label: 'Finance',
-    quote:
-      '“If manual reviews dropped 40%, what’s the time or cost benefit? Directional numbers help me frame value.”',
-  },
-];
-
 const HUMAN_REALITY = [
-  'They don’t want to waste time.',
-  'They don’t want to be embarrassed in front of leadership.',
-  'They don’t want to absorb extra blame when things go wrong.',
-];
-
-const COMMUNICATION_TOOLS = [
-  {
-    tool: 'Microsoft Teams / Slack',
-    icon: <MessageCircleMore size={18} />,
-    when: 'Day-to-day updates, quick alignment, async decisions',
-    how: 'Use threads. Tag specific people. Keep it structured but conversational.',
-    example: '"Quick alignment: Marie, can you confirm if address-change verification requires manual approval, or just high-risk flags?"',
-  },
-  {
-    tool: 'Email',
-    icon: <Mail size={18} />,
-    when: 'Formal updates, decision logs, external stakeholders, approvals',
-    how: 'Clear subject line (action/decision). Bullet points. Attachments linked, not embedded.',
-    example: 'Subject: "CI&F – Scope Baseline Confirmation Required by Friday 5pm"',
-  },
-  {
-    tool: 'Video Calls (Teams/Zoom)',
-    icon: <Video size={18} />,
-    when: 'Complex alignment, contentious topics, kickoffs, workshops',
-    how: 'Lead with agenda. Summarize decisions at close. Assign actions with owners.',
-    example: 'Open: "Our goal today is to align on verification touchpoints and confirm non-negotiables."',
-  },
-  {
-    tool: 'In-Person / Walk-Ups',
-    icon: <Phone size={18} />,
-    when: 'Sensitive topics, relationship building, urgent blockers',
-    how: 'Human first. Listen more. No laptop. Build trust before asking for commitments.',
-    example: '"Can I grab 10 minutes? I want to understand your concern about compliance flow before documenting it."',
-  },
-];
-
-const POWER_INTEREST_GRID = [
-  {
-    quadrant: 'High Power, High Interest',
-    label: 'Key Players',
-    color: 'bg-rose-600',
-    textColor: 'text-white',
-    stakeholders: ['Ben (Product Owner)', 'Marie (Compliance Lead)'],
-    approach: 'Engage closely. Weekly 1:1s. They shape direction.',
-    interviewTip: '"I prioritized weekly alignment with the Product Owner and Compliance Lead as they held decision rights and audit accountability."',
-  },
-  {
-    quadrant: 'High Power, Low Interest',
-    label: 'Keep Satisfied',
-    color: 'bg-amber-600',
-    textColor: 'text-white',
-    stakeholders: ['CFO', 'CTO', 'Head of Risk'],
-    approach: 'Milestone updates only. Use metrics. Never waste their time.',
-    interviewTip: '"I kept senior leadership informed at key milestones with concise, metric-driven summaries."',
-  },
-  {
-    quadrant: 'Low Power, High Interest',
-    label: 'Keep Informed',
-    color: 'bg-sky-600',
-    textColor: 'text-white',
-    stakeholders: ['James (Operations)', 'Fraud Analysts', 'CS Lead'],
-    approach: 'Regular async updates. They provide ground truth and surface hidden blockers.',
-    interviewTip: '"Operations had low decision power but high interest — they felt the pain daily and surfaced critical edge cases."',
-  },
-  {
-    quadrant: 'Low Power, Low Interest',
-    label: 'Monitor',
-    color: 'bg-slate-400',
-    textColor: 'text-white',
-    stakeholders: ['IT Support', 'Marketing', 'External Auditor'],
-    approach: 'Inform only when relevant. No regular cadence.',
-    interviewTip: '"I monitored low-power, low-interest stakeholders and informed them only when their input was needed."',
-  },
-];
-
-const EXAMPLE_NARRATIVE = [
-  'Urgency: Ben and Finance need fraud losses down in £ before the board review. They set the tempo.',
-  'Pain: Ops is breaching the 24h SLA 40% of the time. If we ignore their load, they will quietly stall the change.',
-  "Risk: Marie owns audit exposure. If we don't prove traceability on account changes, she will veto the rollout.",
-  'Priority: Decisions sit with Ben + Compliance, but Alicia (Engineering) influences sequencing via feasibility.',
-  'Quiet block: Ops could resist if "automation" means more manual checks. Protect them by co-designing improvements.',
-  'Protection: Finance needs directional ROI before approving time. Translate every option into £ impact.',
+  `They don't want to waste time.`,
+  `They don't want to be embarrassed in front of leadership.`,
+  `They don't want to absorb extra blame when things go wrong.`,
 ];
 
 const StakeholderLandscape: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const data = PAGE_1_DATA[selectedProject];
+  const page3Data = PAGE_3_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -188,6 +49,23 @@ const StakeholderLandscape: React.FC = () => {
   const [stakeholderMap, setStakeholderMap] = useState('');
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
+
+  // Map communication tool icons
+  const communicationToolsWithIcons = page3Data.communicationTools.map((tool) => {
+    let icon: React.ReactNode;
+    if (tool.tool.includes('Teams') || tool.tool.includes('Slack') || tool.tool.includes('Channel')) {
+      icon = <MessageCircleMore size={18} />;
+    } else if (tool.tool === 'Email') {
+      icon = <Mail size={18} />;
+    } else if (tool.tool.includes('Video') || tool.tool.includes('Calls')) {
+      icon = <Video size={18} />;
+    } else if (tool.tool.includes('Walkthroughs') || tool.tool.includes('Phone') || tool.tool.includes('In-Person')) {
+      icon = <Phone size={18} />;
+    } else {
+      icon = <MessageCircle size={18} />;
+    }
+    return { ...tool, icon };
+  });
 
   const handleOpenExample = () => {
     setShowExample(true);
@@ -287,7 +165,7 @@ const StakeholderLandscape: React.FC = () => {
           This grid tells you <strong>who to engage, how often, and with what depth.</strong> In interviews, you can say: &quot;I used a Power-Interest Grid to prioritize stakeholder engagement.&quot;
         </p>
         <div className="grid grid-cols-2 gap-4 mb-4">
-          {POWER_INTEREST_GRID.map((item) => (
+          {page3Data.powerInterestGrid.map((item) => (
             <div
               key={item.label}
               className="rounded-2xl border border-slate-300 overflow-hidden shadow-sm"
@@ -324,7 +202,7 @@ const StakeholderLandscape: React.FC = () => {
           BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
         </p>
         <div className="space-y-4">
-          {COMMUNICATION_TOOLS.map((channel) => (
+          {communicationToolsWithIcons.map((channel) => (
             <div key={channel.tool} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600">
@@ -357,7 +235,7 @@ const StakeholderLandscape: React.FC = () => {
       <Section title="4) Stakeholder Intent & Pressure Signals">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">Look for what is unsaid. Pressure explains behaviour.</p>
         <div className="grid gap-4 md:grid-cols-2">
-          {PRESSURE_SIGNALS.map((signal) => (
+          {page3Data.pressureSignals.map((signal) => (
             <div key={signal.name} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="text-base font-semibold text-slate-900 mb-2">{signal.name}</div>
               <p className="text-sm text-slate-700 leading-relaxed">{signal.signal}</p>
@@ -377,7 +255,7 @@ const StakeholderLandscape: React.FC = () => {
           No &quot;BA school&quot; tone. Actual sentences you&apos;ll say. Copy these, adapt them, use them in interviews.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
-          {SCRIPTS.map((script) => (
+          {page3Data.scripts.map((script) => (
             <div key={script.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2 text-base font-semibold text-slate-900 mb-2">
                 <Quote size={16} className="text-indigo-600" />
@@ -419,7 +297,7 @@ const StakeholderLandscape: React.FC = () => {
       </Section>
 
       {/* Task 1: Stakeholder Mapping */}
-      <Section title="6) Your Task: Map the CI&F Stakeholders Using the Power-Interest Grid">
+      <Section title={`6) Your Task: ${page3Data.taskTitle}`}>
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           For each stakeholder, write:
         </p>
@@ -433,7 +311,7 @@ const StakeholderLandscape: React.FC = () => {
         <textarea
           className="w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
           rows={10}
-          placeholder="Example:&#10;Ben Carter (Product Owner) → High Power, High Interest → Weekly 1:1s via Teams → Prefers structured agendas with clear outcomes → Risk: scope creep under quarterly pressure.&#10;&#10;Marie Dupont (Compliance) → High Power, High Interest → ..."
+          placeholder={page3Data.taskPlaceholder}
           value={stakeholderMap}
           onChange={(e) => setStakeholderMap(e.target.value)}
         />
@@ -483,10 +361,9 @@ const StakeholderLandscape: React.FC = () => {
         </p>
         <div className="rounded-lg border-2 border-slate-300 bg-white p-5 text-sm text-slate-800 shadow-sm">
           <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 border border-slate-200">
-            <p>Working map of key people drafted.</p>
-            <p>Validating pressure points with Ops + Compliance tomorrow.</p>
-            <p>Aligning on decision owner + guardrails before defining the first slice.</p>
-            <p>Will publish narrative summary once validated.</p>
+            {page3Data.slackUpdate.map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
           </div>
         </div>
         <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">
@@ -504,7 +381,7 @@ const StakeholderLandscape: React.FC = () => {
             Use this to sense-check your own narrative. Notice how it blends urgency, risk, influence, and protection.
           </p>
           <div className="mt-4 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
-            {EXAMPLE_NARRATIVE.map((line, index) => (
+            {page3Data.exampleNarrative.map((line, index) => (
               <p key={index} className="leading-relaxed">
                 {line}
               </p>

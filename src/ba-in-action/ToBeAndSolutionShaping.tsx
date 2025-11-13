@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
 import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from './page1-data';
+import { PAGE_6_DATA } from './page6-data';
 import {
   PageShell,
   PageTitle,
@@ -79,6 +80,7 @@ const AGILE_CONTEXT = {
 const ToBeAndSolutionShaping: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const projectData = PAGE_1_DATA[selectedProject];
+  const page6Data = PAGE_6_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -90,41 +92,6 @@ const ToBeAndSolutionShaping: React.FC = () => {
   const toggleScript = (section: string) => {
     setExpandedScript(expandedScript === section ? null : section);
   };
-
-  const intentExample =
-    'We want to reduce fraudulent account creation while keeping customer sign-up smooth for legitimate users.';
-
-  const functionalTruths = [
-    'Not all users share the same risk level.',
-    'Identity signals come from multiple sources.',
-    'Manual review queues grow when the model is unsure.',
-    'Ops capacity is finite.',
-  ];
-
-  const requirements = [
-    'The system must evaluate identity risk at account creation, high-value checkout, and change of delivery address.',
-    'The system must output one of three decision states: approve automatically, block automatically, send to manual review.',
-    'Decision logic must be explainable for audit purposes.',
-    'Manual review decisions must feed back into the scoring model within 24 hours.',
-  ];
-
-  const acceptanceCriteria = [
-    'AC01: When risk score ≥ threshold_A, account is approved with no manual step.',
-    'AC02: When risk score ≤ threshold_C, account is blocked and flagged for audit.',
-    'AC03: When threshold_C < risk score < threshold_A, case routes to manual review queue.',
-    'AC04: Manual review outcome updates the risk model within 24 hours.',
-    'AC05: All decisions are logged with timestamp, decision reason, and source signals.',
-  ];
-
-  const traceability = [
-    { outcome: 'Reduce fraud', requirement: 'AC02, AC04', measure: 'Fraud loss £/week' },
-    { outcome: 'Reduce manual workload', requirement: 'AC03, AC04', measure: 'Review queue size/aging' },
-    { outcome: 'Protect conversion', requirement: 'AC01', measure: 'Checkout success %' },
-  ];
-
-  const userStory = `As a Risk Engine
-I want to classify identity verification outcomes into approve / block / review
-So that we reduce fraud while minimising manual workload and customer friction.`;
 
   const openExample = () => {
     setShowExample(true);
@@ -285,7 +252,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
           Always begin with the Intent Statement — the single, calm explanation of what we’re trying to achieve.
         </p>
         <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-800">
-          {intentExample}
+          {page6Data.intentExample}
         </div>
         <p className="mt-3 text-sm text-slate-700">
           This is the anchor. People will drift; intent pulls them back.
@@ -296,8 +263,8 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         <p className="text-sm text-slate-700">Identify the functional truths that must be respected. They prevent naive solutions.</p>
         <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
-            {functionalTruths.map((truth) => (
-              <li key={truth}>{truth}</li>
+            {page6Data.functionalTruths.map((truth, index) => (
+              <li key={index}>{truth}</li>
             ))}
           </ul>
         </div>
@@ -308,8 +275,8 @@ So that we reduce fraud while minimising manual workload and customer friction.`
 
       <Section title="4) Express the Requirements (Calm. Precise. Unemotional.)">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-700 space-y-3">
-          {requirements.map((req, index) => (
-            <p key={req}>
+          {page6Data.requirements.map((req, index) => (
+            <p key={index}>
               <span className="font-semibold text-slate-900">{index + 1}.</span> {req}
             </p>
           ))}
@@ -318,7 +285,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
 
       <Section title="5) Write the User Story (Only After the Above)">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-800 whitespace-pre-line font-medium">
-          {userStory}
+          {page6Data.userStory}
         </div>
         <p className="mt-3 text-sm text-slate-700">
           User stories are just containers. Thinking happens before this.
@@ -327,8 +294,8 @@ So that we reduce fraud while minimising manual workload and customer friction.`
 
       <Section title="6) Acceptance Criteria — Structured, Verifiable, Complete">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-700 space-y-2">
-          {acceptanceCriteria.map((ac) => (
-            <p key={ac}>{ac}</p>
+          {page6Data.acceptanceCriteria.map((ac, index) => (
+            <p key={index}>{ac}</p>
           ))}
         </div>
         <p className="mt-3 text-sm text-slate-700">
@@ -350,7 +317,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {traceability.map((row) => (
+              {page6Data.traceability.map((row) => (
                 <tr key={row.outcome} className="hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-4 font-semibold text-slate-900">{row.outcome}</td>
                   <td className="px-5 py-4 text-slate-700">{row.requirement}</td>
@@ -380,7 +347,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
               <FileText size={16} />
               <span className="font-semibold text-sm">Confluence</span>
               <span className="text-white/60">›</span>
-              <span className="text-white/90 text-sm">CI&F Programme</span>
+              <span className="text-white/90 text-sm">{projectData.initiativeName}</span>
               <span className="text-white/60">›</span>
               <span className="text-white/90 text-sm">Requirements</span>
             </div>
@@ -389,57 +356,65 @@ So that we reduce fraud while minimising manual workload and customer friction.`
 
           <div className="p-6 space-y-4 text-sm">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">US-142: Risk-Based Identity Verification</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">{page6Data.confluencePage.title}</h2>
               <div className="flex items-center gap-3 text-xs text-slate-600">
-                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">Sprint 3</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-semibold">{page6Data.confluencePage.sprint}</span>
                 <span className="px-2 py-1 bg-green-100 text-green-700 rounded font-semibold">Draft</span>
                 <span>Author: You (BA)</span>
                 <span>|</span>
-                <span>Reviewed by: Alicia Chen (Dev Lead)</span>
+                <span>Reviewed by: {selectedProject === 'cif' ? 'Alicia Chen (Dev Lead)' : 'Tom Richards (Repairs Lead)'}</span>
               </div>
             </div>
 
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Intent</h3>
               <p className="text-slate-800 leading-relaxed bg-slate-50 p-3 rounded border border-slate-200">
-                Reduce fraudulent account creation while keeping customer sign-up smooth for legitimate users.
+                {page6Data.confluencePage.intent}
               </p>
             </div>
 
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Functional Truths</h3>
               <ul className="list-disc ml-5 space-y-1 text-slate-800 bg-slate-50 p-3 rounded border border-slate-200">
-                <li>Not all users share the same risk level</li>
-                <li>Identity signals come from multiple sources (IP, email domain, device fingerprint, address history)</li>
-                <li>Manual review capacity is finite (Ops can handle ~200 cases/day)</li>
-                <li>Audit proof required for regulatory compliance (FCA rules)</li>
+                {page6Data.confluencePage.functionalTruths.map((truth, index) => (
+                  <li key={index}>{truth}</li>
+                ))}
               </ul>
             </div>
 
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Decision States</h3>
               <div className="space-y-2 bg-slate-50 p-3 rounded border border-slate-200">
-                <p><strong className="text-slate-900">Approve automatically:</strong> Risk score ≥ 85. Customer proceeds immediately.</p>
-                <p><strong className="text-slate-900">Block automatically:</strong> Risk score ≤ 30. Account creation fails with generic message.</p>
-                <p><strong className="text-slate-900">Manual review:</strong> Risk score 31–84. Case routed to Ops queue with evidence summary.</p>
+                {page6Data.confluencePage.decisionStates.map((state, index) => (
+                  <p key={index}><strong className="text-slate-900">{state.state}:</strong> {state.description}</p>
+                ))}
               </div>
             </div>
 
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Acceptance Criteria</h3>
               <div className="space-y-3">
-                <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
-                  <p className="font-semibold text-green-900 mb-1">AC01: Auto-Approve High Confidence</p>
-                  <p className="text-sm text-green-800"><strong>Given</strong> risk score ≥ 85, <strong>When</strong> user completes signup, <strong>Then</strong> account approved automatically, no manual review triggered, decision logged with timestamp and score</p>
-                </div>
-                <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded">
-                  <p className="font-semibold text-red-900 mb-1">AC02: Auto-Block High Risk</p>
-                  <p className="text-sm text-red-800"><strong>Given</strong> risk score ≤ 30, <strong>When</strong> user completes signup, <strong>Then</strong> account creation fails, generic error shown, case flagged for fraud audit, decision logged</p>
-                </div>
-                <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
-                  <p className="font-semibold text-amber-900 mb-1">AC03: Manual Review Queue</p>
-                  <p className="text-sm text-amber-800"><strong>Given</strong> risk score 31–84, <strong>When</strong> user completes signup, <strong>Then</strong> case routes to Ops queue with evidence summary, user sees &quot;verification in progress&quot;, SLA timer starts (24h)</p>
-                </div>
+                {page6Data.confluencePage.acceptanceCriteria.map((ac, index) => {
+                  const colors = [
+                    { bg: 'bg-green-50', border: 'border-green-500', text: 'text-green-900', textSm: 'text-green-800' },
+                    { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-900', textSm: 'text-red-800' },
+                    { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-900', textSm: 'text-amber-800' },
+                  ];
+                  const color = colors[index % colors.length];
+                  return (
+                    <div key={index} className={`${color.bg} border-l-4 ${color.border} p-3 rounded`}>
+                      <p className={`font-semibold ${color.text} mb-2`}>{ac.id}: {ac.title}</p>
+                      <ul className={`space-y-1 text-sm ${color.textSm}`}>
+                        {ac.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className="flex items-start gap-2">
+                            <span className={`${color.textSm} mt-0.5`}>•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -449,32 +424,15 @@ So that we reduce fraud while minimising manual workload and customer friction.`
                 <div className="flex-1">
                   <h4 className="text-sm font-semibold text-blue-900 mb-2">Comments (3)</h4>
                   
-                  {/* Comment 1 - Dev Feedback */}
-                  <div className="bg-white border border-blue-200 rounded p-3 mb-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-slate-900 text-xs">Alicia Chen (Dev Lead)</span>
-                      <span className="text-xs text-slate-500">Yesterday, 4:15 PM</span>
+                  {page6Data.confluencePage.comments.map((comment, index) => (
+                    <div key={index} className={`bg-white border border-blue-200 rounded p-3 ${index < page6Data.confluencePage.comments.length - 1 ? 'mb-2' : ''}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-semibold text-xs ${comment.author.includes('You') ? 'text-purple-700' : 'text-slate-900'}`}>{comment.author}</span>
+                        <span className="text-xs text-slate-500">{comment.time}</span>
+                      </div>
+                      <p className="text-xs text-slate-800">{comment.content}</p>
                     </div>
-                    <p className="text-xs text-slate-800">Quick question on AC03: You mention &quot;evidence summary&quot; — can you specify exactly which fields? We need to know what to pull from the risk engine API.</p>
-                  </div>
-
-                  {/* Comment 2 - BA Response */}
-                  <div className="bg-white border border-blue-200 rounded p-3 mb-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-purple-700 text-xs">You (BA)</span>
-                      <span className="text-xs text-slate-500">Yesterday, 4:45 PM</span>
-                    </div>
-                    <p className="text-xs text-slate-800">Good catch, Alicia. Evidence summary should include: IP address, email domain, device fingerprint, previous fraud flags. I&apos;ve updated AC03 above to make this explicit. Does that work?</p>
-                  </div>
-
-                  {/* Comment 3 - Dev Confirmation */}
-                  <div className="bg-white border border-blue-200 rounded p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-slate-900 text-xs">Alicia Chen (Dev Lead)</span>
-                      <span className="text-xs text-slate-500">Yesterday, 5:02 PM</span>
-                    </div>
-                    <p className="text-xs text-slate-800">Perfect. That&apos;s what I needed. We can pull all of those from the risk engine. Marking this as ready for sprint.</p>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -537,7 +495,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         <textarea
           className="mt-4 w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
           rows={8}
-          placeholder="Draft your intent, truths, decision states, and acceptance criteria here..."
+          placeholder={page6Data.taskPlaceholder}
           value={requirementsDraft}
           onChange={(event) => setRequirementsDraft(event.target.value)}
         />
@@ -559,10 +517,9 @@ So that we reduce fraud while minimising manual workload and customer friction.`
         </p>
         <div className="rounded-lg border-2 border-slate-300 bg-white p-5 text-sm text-slate-800 shadow-sm">
           <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 border border-slate-200">
-            <p>Drafted requirements and acceptance criteria for identity verification logic.</p>
-            <p>Defined decision states (approve / block / review) and linked them to fraud reduction + conversion protection targets.</p>
-            <p>Prepared traceability matrix for stakeholder review.</p>
-            <p>Will walk PO + Compliance through the decision boundaries before detailing screen flows.</p>
+            {page6Data.slackUpdate.map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
           </div>
         </div>
         <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">
@@ -584,7 +541,7 @@ So that we reduce fraud while minimising manual workload and customer friction.`
             {/* Step 1: Intent */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Step 1: Frame the Intent</div>
-              <p className="font-medium text-slate-900">&quot;We want to reduce fraudulent account creation while keeping customer sign-up smooth for legitimate users.&quot;</p>
+              <p className="font-medium text-slate-900">{page6Data.exampleContent.intent}</p>
               <p className="mt-2 text-xs text-slate-600 italic">This is the anchor. When stakeholders drift into wishlist mode, you point back to this.</p>
             </div>
 
@@ -592,21 +549,20 @@ So that we reduce fraud while minimising manual workload and customer friction.`
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Step 2: Identify Functional Truths (What Must Be Respected)</div>
               <ul className="space-y-1 text-slate-800">
-                <li>• Not all users share the same risk level</li>
-                <li>• Identity signals come from multiple sources (IP, email domain, device fingerprint, address history)</li>
-                <li>• Manual review capacity is finite (Ops can handle ~200 cases/day)</li>
-                <li>• Audit proof required for regulatory compliance (FCA rules)</li>
+                {page6Data.exampleContent.functionalTruths.map((truth, index) => (
+                  <li key={index}>• {truth}</li>
+                ))}
               </ul>
-              <p className="mt-2 text-xs text-slate-600 italic">These prevent naive solutions like &quot;verify everyone manually.&quot;</p>
+              <p className="mt-2 text-xs text-slate-600 italic">These prevent naive solutions like &quot;{selectedProject === 'cif' ? 'verify everyone manually' : 'inspect every property manually'}.&quot;</p>
             </div>
 
             {/* Step 3: Decision States */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Step 3: Define Decision States</div>
               <div className="space-y-2 text-slate-800">
-                <p><strong>Approve automatically:</strong> Risk score ≥ 85. Customer proceeds immediately.</p>
-                <p><strong>Block automatically:</strong> Risk score ≤ 30. Account creation fails with generic message (fraud prevention).</p>
-                <p><strong>Manual review:</strong> Risk score 31–84. Case routed to Ops queue with evidence summary.</p>
+                {page6Data.exampleContent.decisionStates.map((state, index) => (
+                  <p key={index}><strong>{state.state}:</strong> {state.description}</p>
+                ))}
               </div>
               <p className="mt-2 text-xs text-slate-600 italic">Clear boundaries remove ambiguity. Engineering knows exactly what to build.</p>
             </div>
@@ -615,10 +571,10 @@ So that we reduce fraud while minimising manual workload and customer friction.`
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Step 4: Write the User Story (Container for AC)</div>
               <div className="bg-white p-3 rounded border border-slate-200 font-mono text-xs">
-                <p className="font-semibold">US-142: Risk-Based Identity Verification</p>
-                <p className="mt-2">As a Risk Engine</p>
-                <p>I want to classify identity verification outcomes into approve / block / review</p>
-                <p>So that we reduce fraud while minimizing manual workload and customer friction.</p>
+                <p className="font-semibold">{page6Data.exampleContent.userStory.id}: {page6Data.exampleContent.userStory.title}</p>
+                <p className="mt-2">{page6Data.exampleContent.userStory.as}</p>
+                <p>{page6Data.exampleContent.userStory.want}</p>
+                <p>{page6Data.exampleContent.userStory.so}</p>
               </div>
               <p className="mt-2 text-xs text-slate-600 italic">Story provides context. Real work happens in acceptance criteria.</p>
             </div>
@@ -627,36 +583,19 @@ So that we reduce fraud while minimising manual workload and customer friction.`
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs uppercase tracking-wide text-purple-600 font-semibold mb-2">Step 5: Write Testable Acceptance Criteria</div>
               <div className="space-y-2 text-sm">
-                <div className="bg-white p-3 rounded border border-slate-200">
-                  <p className="font-semibold text-slate-900">AC01: Auto-Approve High Confidence</p>
-                  <p className="text-slate-700 mt-1"><strong>Given</strong> a user completes sign-up form</p>
-                  <p className="text-slate-700"><strong>When</strong> risk score is ≥ 85</p>
-                  <p className="text-slate-700"><strong>Then</strong> account is approved automatically, no manual review triggered, decision logged with timestamp and score</p>
-                </div>
-                <div className="bg-white p-3 rounded border border-slate-200">
-                  <p className="font-semibold text-slate-900">AC02: Auto-Block High Risk</p>
-                  <p className="text-slate-700 mt-1"><strong>Given</strong> a user completes sign-up form</p>
-                  <p className="text-slate-700"><strong>When</strong> risk score is ≤ 30</p>
-                  <p className="text-slate-700"><strong>Then</strong> account creation fails, generic error shown (no fraud signal revealed), case flagged for fraud audit, decision logged</p>
-                </div>
-                <div className="bg-white p-3 rounded border border-slate-200">
-                  <p className="font-semibold text-slate-900">AC03: Manual Review Queue</p>
-                  <p className="text-slate-700 mt-1"><strong>Given</strong> a user completes sign-up form</p>
-                  <p className="text-slate-700"><strong>When</strong> risk score is between 31–84</p>
-                  <p className="text-slate-700"><strong>Then</strong> case routes to Ops manual review queue with evidence summary (IP, email domain, device signals), user sees &quot;verification in progress&quot; message, SLA timer starts (24h target)</p>
-                </div>
-                <div className="bg-white p-3 rounded border border-slate-200">
-                  <p className="font-semibold text-slate-900">AC04: Feedback Loop</p>
-                  <p className="text-slate-700 mt-1"><strong>Given</strong> Ops completes a manual review</p>
-                  <p className="text-slate-700"><strong>When</strong> decision is made (approve/reject)</p>
-                  <p className="text-slate-700"><strong>Then</strong> outcome feeds back into risk model within 24 hours to improve future scoring accuracy</p>
-                </div>
-                <div className="bg-white p-3 rounded border border-slate-200">
-                  <p className="font-semibold text-slate-900">AC05: Audit Trail</p>
-                  <p className="text-slate-700 mt-1"><strong>Given</strong> any verification decision is made</p>
-                  <p className="text-slate-700"><strong>When</strong> decision is logged</p>
-                  <p className="text-slate-700"><strong>Then</strong> record includes timestamp, decision (approve/block/review), risk score, input signals used, outcome (if reviewed), and is retained for 7 years (regulatory requirement)</p>
-                </div>
+                {page6Data.exampleContent.acceptanceCriteria.map((ac, index) => (
+                  <div key={index} className="bg-white p-3 rounded border border-slate-200">
+                    <p className="font-semibold text-slate-900 mb-2">{ac.id}: {ac.title}</p>
+                    <ul className="space-y-1 text-sm text-slate-700">
+                      {ac.items.map((item, itemIndex) => (
+                        <li key={itemIndex} className="flex items-start gap-2">
+                          <span className="text-slate-500 mt-0.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
               <p className="mt-3 text-xs text-slate-600 italic">Notice: No &quot;should.&quot; No ambiguity. Engineering can estimate accurately and QA can test precisely.</p>
             </div>
@@ -674,25 +613,17 @@ So that we reduce fraud while minimising manual workload and customer friction.`
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    <tr>
-                      <td className="px-3 py-2 font-medium">Reduce fraud</td>
-                      <td className="px-3 py-2">AC02, AC04</td>
-                      <td className="px-3 py-2">Fraud loss £/week</td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 font-medium">Reduce manual workload</td>
-                      <td className="px-3 py-2">AC01, AC03, AC04</td>
-                      <td className="px-3 py-2">Review queue size</td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 font-medium">Protect conversion</td>
-                      <td className="px-3 py-2">AC01</td>
-                      <td className="px-3 py-2">Sign-up success %</td>
-                    </tr>
+                    {page6Data.exampleContent.traceability.map((row, index) => (
+                      <tr key={index}>
+                        <td className="px-3 py-2 font-medium">{row.outcome}</td>
+                        <td className="px-3 py-2">{row.requirement}</td>
+                        <td className="px-3 py-2">{row.measure}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-xs text-slate-600 italic">This is how you defend scope in steering meetings: &quot;AC04 directly reduces fraud loss by 30%.&quot;</p>
+              <p className="mt-2 text-xs text-slate-600 italic">This is how you defend scope in steering meetings: &quot;{selectedProject === 'cif' ? 'AC04 directly reduces fraud loss by 30%' : 'AC04 directly reduces void days by 30%'}.&quot;</p>
             </div>
           </div>
 

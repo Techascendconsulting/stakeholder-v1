@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { AppView } from '../types';
 import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from './page1-data';
+import { PAGE_4_DATA } from './page4-data';
 import {
   PageShell,
   PageTitle,
@@ -20,6 +21,7 @@ import {
   Video,
   MessageCircleMore,
   Phone,
+  MessageCircle,
 } from 'lucide-react';
 
 const VIEW_ID: AppView = 'ba_in_action_stakeholder_communication';
@@ -27,6 +29,7 @@ const VIEW_ID: AppView = 'ba_in_action_stakeholder_communication';
 const StakeholderCommunication: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const projectData = PAGE_1_DATA[selectedProject];
+  const page4Data = PAGE_4_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
@@ -35,155 +38,22 @@ const StakeholderCommunication: React.FC = () => {
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
 
-  const powerInterestGrid = [
-    {
-      quadrant: 'High Power, High Interest',
-      label: 'Key Players',
-      color: 'bg-rose-600',
-      textColor: 'text-white',
-      stakeholders: ['Ben (Product Owner)', 'Marie (Compliance Lead)'],
-      approach: 'Engage closely. Weekly updates. They shape direction.',
-    },
-    {
-      quadrant: 'High Power, Low Interest',
-      label: 'Keep Satisfied',
-      color: 'bg-amber-600',
-      textColor: 'text-white',
-      stakeholders: ['CFO', 'CTO'],
-      approach: "Keep informed at milestones. Don't over-communicate.",
-    },
-    {
-      quadrant: 'Low Power, High Interest',
-      label: 'Keep Informed',
-      color: 'bg-sky-600',
-      textColor: 'text-white',
-      stakeholders: ['James (Operations)', 'Customer Service Lead'],
-      approach: 'Regular updates. They provide ground truth.',
-    },
-    {
-      quadrant: 'Low Power, Low Interest',
-      label: 'Monitor',
-      color: 'bg-slate-400',
-      textColor: 'text-white',
-      stakeholders: ['IT Support', 'External auditor'],
-      approach: 'Inform as needed. No regular cadence.',
-    },
-  ];
-
-  const communicationChannels = [
-    {
-      tool: 'Microsoft Teams / Slack',
-      icon: <MessageCircleMore size={18} />,
-      when: 'Day-to-day updates, quick questions, async alignment',
-      tone: 'Professional but conversational. Use threads. Tag appropriately.',
-      example: '"Quick check: does the address-change flow require manual approval at KYC, or only for high-risk flags?"',
-    },
-    {
-      tool: 'Email',
-      icon: <Mail size={18} />,
-      when: 'Formal summaries, decision logs, external stakeholders',
-      tone: 'Structured. Subject line = decision/action. Use bullet points.',
-      example: 'Subject: "CI&F – Scope Confirmation Required by EOD Friday"',
-    },
-    {
-      tool: 'Video Calls (Teams/Zoom)',
-      icon: <Video size={18} />,
-      when: 'Complex topics, alignment on contentious issues, kickoffs',
-      tone: 'Calm, measured. Lead with agenda. Close with actions.',
-      example: 'Start: "Our goal today is to align on verification touchpoints and confirm non-negotiables."',
-    },
-    {
-      tool: 'In-Person / Walk-Ups',
-      icon: <Phone size={18} />,
-      when: 'Sensitive topics, building trust, urgent blockers',
-      tone: 'Human. Listen more than you speak. No laptop.',
-      example: '"Can I grab 10 minutes? I want to understand your concern about the compliance flow before I document it."',
-    },
-  ];
-
-  const conversationScripts = [
-    {
-      stakeholder: 'Product Owner',
-      goal: 'Align on outcomes without stepping on authority',
-      script: '"Before we define how, I want to confirm the success targets and guardrails. Here\'s what I\'m working with — tell me where it\'s wrong."',
-      why: 'Shows respect for ownership. Invites correction, not confrontation.',
-    },
-    {
-      stakeholder: 'Compliance',
-      goal: 'Understand immovable constraints',
-      script: '"Help me understand where verification cannot weaken under any circumstance. I want to design around those anchor points."',
-      why: 'You become a protector, not a risk. Compliance becomes your ally.',
-    },
-    {
-      stakeholder: 'Operations',
-      goal: 'Get real-world pain, not sanitised dashboards',
-      script: '"Show me a real case. Don\'t clean it up. Walk me through what happens step by step when an exception lands."',
-      why: 'Ops finally feels heard. You\'ll get the truth, not the story.',
-    },
-    {
-      stakeholder: 'Engineering',
-      goal: 'Understand feasibility early',
-      script: '"Before we talk solutions, can you walk me through where identity verification is invoked today and what triggers a manual review?"',
-      why: 'You speak their language. They\'ll trust your requirements.',
-    },
-    {
-      stakeholder: 'Finance',
-      goal: 'Ground the ROI story',
-      script: '"If we cut manual reviews by 40%, what\'s the rough cost-per-case or time-per-case impact? Directional is fine."',
-      why: 'Finance gets a number they can champion upwards.',
-    },
-  ];
-
-  const meetingFramework = [
-    {
-      stage: '1. Set the Frame',
-      action: 'State the purpose clearly',
-      script: '"Our goal today is to confirm success criteria and align on constraints."',
-    },
-    {
-      stage: '2. Reflect the Known',
-      action: 'Summarise shared understanding',
-      script: '"Fraud increased ~17%, review queues breach SLA, conversion drops at KYC."',
-    },
-    {
-      stage: '3. Surface Differences',
-      action: 'Ask where people disagree',
-      script: '"Does anyone see this differently before we continue?"',
-    },
-    {
-      stage: '4. Clarify Constraints',
-      action: 'Identify non-negotiables',
-      script: '"Which verification points cannot change due to regulatory controls?"',
-    },
-    {
-      stage: '5. Define Next Step',
-      action: 'Assign real actions with owners',
-      script: '"Analytics confirms baselines. Compliance shares audit notes. I\'ll draft the problem statement and post it EOD."',
-    },
-  ];
-
-  const notesComparison = [
-    {
-      type: 'Weak BA Notes',
-      color: 'border-rose-200 bg-rose-50',
-      textColor: 'text-rose-800',
-      notes: [
-        'Ops: queues are long',
-        'Compliance: worried about audit',
-        'PO: needs quick wins',
-      ],
-    },
-    {
-      type: 'Strong BA Notes',
-      color: 'border-emerald-200 bg-emerald-50',
-      textColor: 'text-emerald-800',
-      notes: [
-        'Ops pain = reviews >48h → SLA breach → reputational risk',
-        'Compliance pain = audit flagged address-change flow → must maintain chain-of-proof',
-        'PO pressure = quarterly outcomes → needs visible momentum, not long discovery',
-      ],
-    },
-  ];
+  // Map communication tool icons
+  const communicationChannelsWithIcons = page4Data.communicationChannels.map((channel) => {
+    let icon: React.ReactNode;
+    if (channel.tool.includes('Teams') || channel.tool.includes('Slack') || channel.tool.includes('Channel')) {
+      icon = <MessageCircleMore size={18} />;
+    } else if (channel.tool === 'Email') {
+      icon = <Mail size={18} />;
+    } else if (channel.tool.includes('Video') || channel.tool.includes('Calls')) {
+      icon = <Video size={18} />;
+    } else if (channel.tool.includes('Walkthroughs') || channel.tool.includes('Phone') || channel.tool.includes('In-Person')) {
+      icon = <Phone size={18} />;
+    } else {
+      icon = <MessageCircle size={18} />;
+    }
+    return { ...channel, icon };
+  });
 
   const handleOpenExample = () => {
     setShowExample(true);
@@ -254,7 +124,7 @@ const StakeholderCommunication: React.FC = () => {
           This is the single most important stakeholder tool. It tells you <strong>who to engage, how often, and with what depth.</strong>
         </p>
         <div className="grid grid-cols-2 gap-4 mb-4">
-          {powerInterestGrid.map((item) => (
+          {page4Data.powerInterestGrid.map((item) => (
             <div
               key={item.label}
               className={`rounded-2xl border border-slate-300 overflow-hidden shadow-sm`}
@@ -287,7 +157,7 @@ const StakeholderCommunication: React.FC = () => {
           BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
         </p>
         <div className="space-y-4">
-          {communicationChannels.map((channel) => (
+          {communicationChannelsWithIcons.map((channel) => (
             <div key={channel.tool} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600">
@@ -323,7 +193,7 @@ const StakeholderCommunication: React.FC = () => {
           Copy these scripts. Adapt them. Use them in your BA WorkXP scenarios and reference them in interviews.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
-          {conversationScripts.map((entry) => (
+          {page4Data.conversationScripts.map((entry) => (
             <div key={entry.stakeholder} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2 text-base font-semibold text-slate-900 mb-1">
                 <Quote size={16} className="text-indigo-600" />
@@ -356,7 +226,7 @@ const StakeholderCommunication: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {meetingFramework.map((row) => (
+              {page4Data.meetingFramework.map((row) => (
                 <tr key={row.stage} className="hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-4 font-semibold text-slate-900">{row.stage}</td>
                   <td className="px-5 py-4 text-slate-700">{row.action}</td>
@@ -377,7 +247,7 @@ const StakeholderCommunication: React.FC = () => {
           Weak BAs transcribe. Strong BAs analyse. Your notes should capture meaning, not words.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
-          {notesComparison.map((comparison) => (
+          {page4Data.notesComparison.map((comparison) => (
             <div key={comparison.type} className={`rounded-2xl border ${comparison.color} p-5 shadow-sm`}>
               <div className={`text-base font-semibold ${comparison.textColor} mb-3`}>{comparison.type}</div>
               <ul className="space-y-2">
@@ -394,9 +264,9 @@ const StakeholderCommunication: React.FC = () => {
       </Section>
 
       {/* Task 1: Stakeholder Mapping */}
-      <Section title="7) Your Task: Map the CI&F Stakeholders">
+      <Section title={`7) Your Task: ${page4Data.taskTitle}`}>
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          Using the Power-Interest Grid, map the CI&F stakeholders. For each, write:
+          Using the Power-Interest Grid, map the stakeholders. For each, write:
         </p>
         <ul className="list-disc list-inside space-y-1 text-sm text-slate-700 mb-4">
           <li>Name & role</li>
@@ -407,7 +277,7 @@ const StakeholderCommunication: React.FC = () => {
         <textarea
           className="w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
           rows={8}
-          placeholder="Example:&#10;Ben Carter (Product Owner) → High Power, High Interest → Weekly updates, close collaboration → Risk: scope creep under quarterly pressure.&#10;&#10;Marie Dupont (Compliance) → High Power, High Interest → ..."
+          placeholder={page4Data.taskPlaceholder}
           value={stakeholderMap}
           onChange={(e) => setStakeholderMap(e.target.value)}
         />
@@ -419,7 +289,7 @@ const StakeholderCommunication: React.FC = () => {
       {/* Task 2: Draft First Message */}
       <Section title="8) Your Task: Draft Your First Stakeholder Message">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          Choose one stakeholder (Ben, Marie, or James). Draft your first message to them in Teams/Slack. Include:
+          Choose one stakeholder. Draft your first message to them in Teams/Slack. Include:
         </p>
         <ul className="list-disc list-inside space-y-1 text-sm text-slate-700 mb-4">
           <li>Context (why you&apos;re reaching out)</li>
@@ -429,7 +299,7 @@ const StakeholderCommunication: React.FC = () => {
         <textarea
           className="w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
           rows={6}
-          placeholder="Example:&#10;Hi Marie — following our intro yesterday, I want to understand the regulatory anchor points for identity verification (particularly at signup and address change).&#10;&#10;Could we grab 20 minutes this week to walk through the controls that cannot weaken? I'll take notes and share them back for review.&#10;&#10;Thanks,&#10;[Your name]"
+          placeholder={page4Data.firstMessagePlaceholder}
           value={firstMessage}
           onChange={(e) => setFirstMessage(e.target.value)}
         />
@@ -454,14 +324,11 @@ const StakeholderCommunication: React.FC = () => {
           After every meeting, post a summary in the project channel. This builds trust and creates a decision trail.
         </p>
         <div className="rounded-2xl border border-slate-300 bg-slate-900 p-5 text-sm text-white shadow-lg font-mono leading-relaxed">
-          <p className="mb-2">Good session — summarising decisions to ensure shared clarity:</p>
-          <p>• <strong>Outcome:</strong> Reduce fraud loss while protecting conversion baseline.</p>
-          <p>• <strong>Constraints:</strong> KYC control points at signup + address change remain non-negotiable (regulatory).</p>
-          <p>• <strong>Next steps:</strong></p>
-          <p className="ml-4">– Analytics confirming fraud loss baselines by EOD Wednesday</p>
-          <p className="ml-4">– Ops providing 3 real exception cases for review flow analysis</p>
-          <p className="ml-4">– Compliance sharing audit notes on address-change flow</p>
-          <p>• <strong>BA action:</strong> I&apos;ll draft the problem statement and post it EOD tomorrow for review.</p>
+          {page4Data.followUpMessage.map((line, index) => (
+            <p key={index} className={line.startsWith('  ') ? 'ml-4' : line.startsWith('•') ? '' : 'mb-2'}>
+              {line}
+            </p>
+          ))}
         </div>
         <p className="mt-3 text-sm text-slate-700 leading-relaxed">
           This message tells everyone: <strong>you are calm, structured, reliable, and leading.</strong> That&apos;s how trust is earned.
@@ -480,26 +347,16 @@ const StakeholderCommunication: React.FC = () => {
           
           {/* Example Stakeholder Map */}
           <div>
-            <h4 className="text-base font-semibold text-slate-900 mb-3">Example: CI&F Stakeholder Mapping</h4>
+            <h4 className="text-base font-semibold text-slate-900 mb-3">Example: {projectData.initiativeName} Stakeholder Mapping</h4>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 space-y-3 text-sm text-slate-800">
-              <div className="pb-3 border-b border-slate-200">
-                <p className="font-semibold text-slate-900">Ben Carter (Product Owner)</p>
-                <p className="text-xs text-slate-600 mt-1">Quadrant: High Power, High Interest (Key Player)</p>
-                <p className="mt-2 leading-relaxed">Engagement: Weekly 1:1s + ad-hoc alignment. Share drafts early for feedback.</p>
-                <p className="mt-1 leading-relaxed"><strong>Risk:</strong> Quarterly pressure → scope creep. Keep him grounded in success criteria.</p>
-              </div>
-              <div className="pb-3 border-b border-slate-200">
-                <p className="font-semibold text-slate-900">Marie Dupont (Compliance Lead)</p>
-                <p className="text-xs text-slate-600 mt-1">Quadrant: High Power, High Interest (Key Player)</p>
-                <p className="mt-2 leading-relaxed">Engagement: Bi-weekly check-ins. Always frame changes through a regulatory lens.</p>
-                <p className="mt-1 leading-relaxed"><strong>Risk:</strong> Audit defensibility. If she's not comfortable, nothing moves.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">James Walker (Operations Manager)</p>
-                <p className="text-xs text-slate-600 mt-1">Quadrant: Low Power, High Interest (Keep Informed)</p>
-                <p className="mt-2 leading-relaxed">Engagement: Async updates in Slack + monthly walkthrough of queue changes.</p>
-                <p className="mt-1 leading-relaxed"><strong>Value:</strong> Ground truth. He knows where the process breaks.</p>
-              </div>
+              {page4Data.exampleStakeholderMap.map((stakeholder, index) => (
+                <div key={index} className={index < page4Data.exampleStakeholderMap.length - 1 ? 'pb-3 border-b border-slate-200' : ''}>
+                  <p className="font-semibold text-slate-900">{stakeholder.name} ({stakeholder.role})</p>
+                  <p className="text-xs text-slate-600 mt-1">Quadrant: {stakeholder.quadrant}</p>
+                  <p className="mt-2 leading-relaxed">Engagement: {stakeholder.engagement}</p>
+                  <p className="mt-1 leading-relaxed"><strong>{stakeholder.risk.includes('Ground truth') ? 'Value' : 'Risk'}:</strong> {stakeholder.risk}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -507,30 +364,21 @@ const StakeholderCommunication: React.FC = () => {
           <div>
             <h4 className="text-base font-semibold text-slate-900 mb-3">Example: First Message Templates</h4>
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">To: Marie (Compliance)</p>
-                <div className="font-mono text-sm text-slate-800 leading-relaxed space-y-2">
-                  <p>Hi Marie — following our intro yesterday, I want to understand the regulatory anchor points for identity verification (particularly at signup and address change).</p>
-                  <p>Could we grab 20 minutes this week to walk through the controls that cannot weaken under any circumstance? I&apos;ll take notes and share them back for your review.</p>
-                  <p className="text-slate-600">Thanks,<br/>[Your name]</p>
+              {page4Data.exampleMessages.map((message, index) => (
+                <div key={index} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">To: {message.to}</p>
+                  <div className="font-mono text-sm text-slate-800 leading-relaxed space-y-2">
+                    {message.content.map((line, lineIndex) => (
+                      <p key={lineIndex} className={line.includes('[Your name]') ? 'text-slate-600' : ''}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600">
+                    <strong>Why this works:</strong> {message.why}
+                  </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600">
-                  <strong>Why this works:</strong> Clear purpose. Specific ask. Respectful of her expertise. Offers to document.
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">To: James (Operations)</p>
-                <div className="font-mono text-sm text-slate-800 leading-relaxed space-y-2">
-                  <p>Hi James — I&apos;m mapping the manual review process to understand where delays occur.</p>
-                  <p>Could you show me 2-3 real exception cases (don&apos;t clean them up)? I want to see what actually happens step-by-step when they land in the queue.</p>
-                  <p>15 minutes over Teams works — or I can swing by your desk.</p>
-                  <p className="text-slate-600">Cheers,<br/>[Your name]</p>
-                </div>
-                <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600">
-                  <strong>Why this works:</strong> Shows you want the real story, not dashboards. Low-friction ask. Flexible format.
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
