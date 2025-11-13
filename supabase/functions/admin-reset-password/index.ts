@@ -100,194 +100,119 @@ serve(async (req) => {
     const userName = userProfile?.display_name || resetData.user.email?.split('@')[0] || 'there'
 
     // Send password reset email via Resend
-    // New branded reset password email template
+    // Premium branded reset password email template
     const emailTemplate = (params: { name: string; resetLink: string }) => {
       return `
 <!DOCTYPE html>
-<html>
+<html lang="en" style="margin:0; padding:0;">
   <head>
     <meta charset="UTF-8" />
-    <title>Reset Your Password – BA WorkXP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>Reset Your Password - BA WorkXP</title>
   </head>
-  <body
-    style="
-      margin: 0;
-      padding: 0;
-      background-color: #f7f7fc;
-      font-family: Arial, Helvetica, sans-serif;
-    "
-  >
-    <!-- Header -->
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      style="background-color: #7c3aed; padding: 24px 0; text-align: center;"
-    >
-      <tr>
-        <td>
-          <span
-            style="
-              color: #ffffff;
-              font-size: 22px;
-              font-weight: bold;
-              letter-spacing: 0.5px;
-            "
-          >
-            BA WORKXP
-          </span>
-        </td>
-      </tr>
-    </table>
-    <!-- Body Container -->
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      style="padding: 32px 16px;"
-    >
+  <body style="margin:0; padding:0; background:#f7f7fb; font-family:Arial, Helvetica, sans-serif;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#f7f7fb; padding:32px 0;">
       <tr>
         <td align="center">
-          <table
-            width="100%"
-            cellpadding="0"
-            cellspacing="0"
-            style="
-              max-width: 560px;
-              background: #ffffff;
-              border-radius: 12px;
-              padding: 32px;
-              text-align: left;
-            "
-          >
-            <!-- Title -->
+          <!-- Main card -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(15,23,42,0.08);">
+            <!-- Gradient header with brand -->
             <tr>
-              <td
-                style="
-                  font-size: 26px;
-                  font-weight: 700;
-                  color: #1f2937;
-                  padding-bottom: 12px;
-                "
-              >
-                Reset Your Password
+              <td align="center" style="padding:24px 28px; background:linear-gradient(90deg,#7c3aed,#4f46e5);">
+                <span style="font-size:20px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#f9fafb;">
+                  BA WorkXP
+                </span>
               </td>
             </tr>
-            <!-- Greeting -->
+            <!-- Content wrapper -->
             <tr>
-              <td
-                style="
-                  font-size: 15px;
-                  line-height: 22px;
-                  color: #4b5563;
-                  padding-bottom: 20px;
-                "
-              >
-                Hi ${params.name},
-                <br /><br />
-                You requested to reset the password for your BA WorkXP account.
-                Click the button below to create a new password.
+              <td style="padding:40px 32px;">
+                <!-- Icon/Visual element -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                  <tr>
+                    <td align="center" style="padding-bottom:20px;">
+                      <div style="width:64px; height:64px; background:linear-gradient(135deg,#7c3aed,#4f46e5); border-radius:16px; display:inline-block; text-align:center; line-height:64px;">
+                        <span style="font-size:32px; color:#ffffff;">🔐</span>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                <!-- Title -->
+                <h1 style="margin:0 0 16px 0; font-size:28px; line-height:1.3; color:#111827; font-weight:700; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  Reset Your Password
+                </h1>
+                <!-- Greeting -->
+                <p style="margin:0 0 24px 0; font-size:16px; line-height:1.6; color:#4b5563; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  Hi ${params.name},
+                </p>
+                <p style="margin:0 0 32px 0; font-size:15px; line-height:1.7; color:#4b5563; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  You requested to reset your password for your BA WorkXP account. Click the button below to create a new secure password.
+                </p>
+                <!-- CTA Button -->
+                <table border="0" cellspacing="0" cellpadding="0" style="margin:0 auto 28px auto; width:100%; max-width:280px;">
+                  <tr>
+                    <td align="center">
+                      <a href="${params.resetLink}" style="
+                        background:linear-gradient(90deg,#7c3aed,#4f46e5);
+                        color:#ffffff;
+                        padding:16px 32px;
+                        border-radius:10px;
+                        text-decoration:none;
+                        font-size:16px;
+                        font-weight:600;
+                        display:inline-block;
+                        font-family:Arial, Helvetica, sans-serif;
+                        box-shadow:0 4px 12px rgba(124,58,237,0.3);
+                        transition:all 0.2s;
+                      ">
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <!-- Expiry Note -->
+                <div style="background:#f9fafb; border-left:4px solid #7c3aed; padding:16px 20px; border-radius:8px; margin-bottom:24px;">
+                  <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280; font-family:Arial, Helvetica, sans-serif;">
+                    <strong style="color:#111827;">⏰ Security Note:</strong> This link will expire in <strong style="color:#7c3aed;">2 hours</strong> for your security. If it stops working, you can request another reset link from the login page.
+                  </p>
+                </div>
+                <!-- Fallback Link -->
+                <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-bottom:24px;">
+                  <p style="margin:0 0 8px 0; font-size:12px; line-height:1.5; color:#6b7280; font-weight:600; font-family:Arial, Helvetica, sans-serif;">
+                    Having trouble with the button?
+                  </p>
+                  <p style="margin:0; font-size:12px; line-height:1.6; color:#4b5563; word-break:break-all; font-family:Arial, Helvetica, sans-serif;">
+                    <a href="${params.resetLink}" style="color:#7c3aed; text-decoration:none;">${params.resetLink}</a>
+                  </p>
+                </div>
+                <!-- Divider -->
+                <hr style="border:none; border-top:1px solid #e5e7eb; margin:32px 0 24px 0;" />
+                <!-- Security Message -->
+                <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#6b7280; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  If you didn't request this password reset, please ignore this email.
+                </p>
+                <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  Your account will remain unchanged and secure.
+                </p>
               </td>
             </tr>
-            <!-- CTA Button -->
+            <!-- Footer -->
             <tr>
-              <td align="center" style="padding: 16px 0;">
-                <a
-                  href="${params.resetLink}"
-                  style="
-                    display: inline-block;
-                    background-color: #7c3aed;
-                    color: #ffffff;
-                    padding: 14px 28px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    text-decoration: none;
-                    border-radius: 8px;
-                  "
-                >
-                  Reset Password
-                </a>
-              </td>
-            </tr>
-            <!-- Expiry Note -->
-            <tr>
-              <td
-                style="
-                  font-size: 13px;
-                  color: #6b7280;
-                  padding-top: 12px;
-                  line-height: 20px;
-                "
-              >
-                This link will expire in <strong>2 hours</strong> for security.
-                If it stops working, you can request another reset link anytime from the login page.
-              </td>
-            </tr>
-            <!-- Fallback Link -->
-            <tr>
-              <td
-                style="
-                  font-size: 13px;
-                  color: #6b7280;
-                  padding-top: 24px;
-                  word-break: break-all;
-                "
-              >
-                If the button doesn't work, paste this into your browser:<br />
-                <a href="${params.resetLink}" style="color: #7c3aed;">
-                  ${params.resetLink}
-                </a>
-              </td>
-            </tr>
-            <!-- Divider -->
-            <tr>
-              <td
-                style="
-                  border-top: 1px solid #e5e7eb;
-                  margin-top: 32px;
-                  padding-top: 24px;
-                "
-              ></td>
-            </tr>
-            <!-- Security Message -->
-            <tr>
-              <td
-                style="
-                  font-size: 13px;
-                  line-height: 20px;
-                  color: #6b7280;
-                "
-              >
-                If you didn't request this password reset, please ignore this email.
-                Your account will remain unchanged.
+              <td style="padding:24px 32px; background:#f9fafb; border-top:1px solid #e5e7eb;">
+                <p style="margin:0 0 8px 0; font-size:12px; line-height:1.6; color:#6b7280; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  <strong style="color:#111827;">BA WorkXP</strong> · Empowering Career-Changers to Gain Real BA Experience
+                </p>
+                <p style="margin:0; font-size:12px; line-height:1.6; color:#6b7280; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                  Need help? Email us at 
+                  <a href="mailto:support@baworkxp.com" style="color:#7c3aed; text-decoration:none; font-weight:600;">
+                    support@baworkxp.com
+                  </a>
+                </p>
               </td>
             </tr>
           </table>
-        </td>
-      </tr>
-    </table>
-    <!-- Footer -->
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      style="
-        padding: 24px 0;
-        background-color: #ffffff;
-        text-align: center;
-        font-size: 12px;
-        color: #9ca3af;
-      "
-    >
-      <tr>
-        <td>
-          BA WorkXP · Empowering Career-Changers to Gain Real BA Experience  
-          <br /><br />
-          Need help? Email us at: 
-          <a href="mailto:support@baworkxp.com" style="color: #7c3aed;">
-            support@baworkxp.com
-          </a>
         </td>
       </tr>
     </table>
