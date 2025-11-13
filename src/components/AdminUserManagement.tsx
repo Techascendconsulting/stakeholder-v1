@@ -75,6 +75,12 @@ const AdminUserManagement: React.FC = () => {
   const [blockReason, setBlockReason] = useState('');
   const [resendingWelcomeFor, setResendingWelcomeFor] = useState<string | null>(null);
   const [welcomeModal, setWelcomeModal] = useState<{ email: string; resetLink: string; emailSent: boolean } | null>(null);
+  
+  // Reset Password modal states
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
+  const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
+  const [resetPasswordError, setResetPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -643,30 +649,46 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleAdminResetPassword = async (_userId: string, email: string) => {
-    if (!confirm(`Send password reset email to ${email}?`)) {
-      return;
-    }
+    setSelectedUserForAction({ id: _userId, email });
+    setShowResetPasswordModal(true);
+    setResetPasswordSuccess(false);
+    setResetPasswordError(null);
+  };
+
+  const confirmResetPassword = async () => {
+    if (!selectedUserForAction) return;
 
     try {
-      setLoading(true);
+      setResetPasswordLoading(true);
+      setResetPasswordError(null);
+      setResetPasswordSuccess(false);
+      
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
 
       const { data, error } = await supabase.functions.invoke('admin-reset-password', {
-        body: { email },
+        body: { email: selectedUserForAction.email },
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
       if (error || !data?.success) {
-        alert(`Failed to send password reset email: ${error?.message || data?.error || 'Unknown error'}`);
+        setResetPasswordError(error?.message || data?.error || 'Unknown error');
       } else {
-        alert(`Password reset email sent to ${email}`);
+        setResetPasswordSuccess(true);
+        
+        // Log the action
+        await adminService.logActivity(
+          user?.id || '',
+          'admin_reset_password',
+          selectedUserForAction.id,
+          { email: selectedUserForAction.email, action: 'password_reset_email_sent', success: true }
+        );
       }
     } catch (error: any) {
       console.error('Error sending password reset:', error);
-      alert(`Failed to send password reset email: ${error.message || 'Unknown error'}`);
+      setResetPasswordError(error.message || 'Unknown error');
     } finally {
-      setLoading(false);
+      setResetPasswordLoading(false);
     }
   };
 
@@ -1754,6 +1776,97 @@ const AdminUserManagement: React.FC = () => {
           onClose={() => setShowCreateUserModal(false)}
           onUserCreated={() => loadUsers()}
         />
+      )}
+
+      {/* Reset Password Modal */}
+      {showResetPasswordModal && selectedUserForAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Key className="w-5 h-5 mr-2 text-blue-600" />
+              Reset Password
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2">User:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{selectedUserForAction.email}</p>
+              </div>
+              
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-900 dark:text-gray-100 font-medium mb-2">This will:</p>
+                <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1 ml-4">
+                  <li>• Send a password reset email to {selectedUserForAction.email}</li>
+                  <li>• The reset link will expire in 2 hours</li>
+                  <li>• The user can set a new password using the link</li>
+                  <li>• The user's current session (if any) will remain active</li>
+                </ul>
+              </div>
+
+              {resetPasswordSuccess && (
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-green-900 dark:text-green-100">Password reset email sent successfully!</p>
+                      <p className="text-xs text-green-800 dark:text-green-200 mt-1">
+                        The user will receive an email with instructions to reset their password.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {resetPasswordError && (
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-red-900 dark:text-red-100">Failed to send password reset email</p>
+                      <p className="text-xs text-red-800 dark:text-red-200 mt-1">
+                        {resetPasswordError}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowResetPasswordModal(false);
+                  setSelectedUserForAction(null);
+                  setResetPasswordSuccess(false);
+                  setResetPasswordError(null);
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors"
+                disabled={resetPasswordLoading}
+              >
+                {resetPasswordSuccess ? 'Close' : 'Cancel'}
+              </button>
+              {!resetPasswordSuccess && (
+                <button
+                  onClick={confirmResetPassword}
+                  disabled={resetPasswordLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
+                >
+                  {resetPasswordLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-4 h-4" />
+                      <span>Send Reset Email</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
