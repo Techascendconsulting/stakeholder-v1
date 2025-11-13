@@ -119,6 +119,7 @@ export type AppView =
   | 'admin'
   | 'admin-panel'
   | 'contact-us'
+  | 'contact-support'
   | 'admin-contact-submissions'
   | 'faq'
   | 'my-cohort'

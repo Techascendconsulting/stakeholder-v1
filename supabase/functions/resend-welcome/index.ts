@@ -66,7 +66,7 @@ serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: 'BA WorkXP <onboarding@resend.dev>',
+          from: 'BA WorkXP Notifications <notifications@baworkxp.com>',
           to: [email],
           subject: 'BA WorkXP – Set Your Password',
           html: `
@@ -96,5 +96,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: e.message || 'Internal error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   }
 })
+
+
 
 

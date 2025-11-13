@@ -11,8 +11,6 @@ import {
   PlayCircle,
   Volume2,
   Coins,
-  CheckCircle,
-  AlertCircle,
   MessageSquare,
   Mail,
   ArrowRight,
@@ -45,8 +43,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
-import { supabase } from '../../lib/supabase';
-import { ReportIssueButton } from '../Verity';
 import FAQView from './FAQView';
 
 interface Article {
@@ -60,12 +56,6 @@ interface Article {
   readTime: string;
 }
 
-interface SystemStatus {
-  feature_name: string;
-  status: 'operational' | 'maintenance' | 'degraded' | 'issue';
-  message: string;
-  updated_at: string;
-}
 
 const SupportCentreView: React.FC = () => {
   const { user } = useAuth();
@@ -114,59 +104,6 @@ const SupportCentreView: React.FC = () => {
     return parts.length > 0 ? parts : text;
   };
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [systemStatus, setSystemStatus] = useState<SystemStatus[]>([]);
-  const [statusLoading, setStatusLoading] = useState(true);
-
-  // Load system status from database
-  React.useEffect(() => {
-    const loadSystemStatus = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('system_status')
-          .select('feature_name, status, message, updated_at')
-          .order('updated_at', { ascending: false });
-
-        if (!error && data) {
-          setSystemStatus(data);
-        } else {
-          console.log('System status table not found or empty, using default');
-        }
-      } catch (error) {
-        console.error('Error loading system status:', error);
-      } finally {
-        setStatusLoading(false);
-      }
-    };
-
-    loadSystemStatus();
-    const interval = setInterval(loadSystemStatus, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Determine overall system health
-  const getOverallStatus = () => {
-    if (systemStatus.length === 0) {
-      return { status: 'operational', message: 'All systems operational' };
-    }
-
-    const hasIssue = systemStatus.some(s => s.status === 'issue');
-    const hasDegraded = systemStatus.some(s => s.status === 'degraded');
-    const hasMaintenance = systemStatus.some(s => s.status === 'maintenance');
-
-    if (hasIssue) {
-      return { status: 'issue', message: 'Some services are experiencing issues' };
-    }
-    if (hasDegraded) {
-      return { status: 'degraded', message: 'Some services may be running slowly' };
-    }
-    if (hasMaintenance) {
-      return { status: 'maintenance', message: 'Service update in progress' };
-    }
-
-    return { status: 'operational', message: 'All systems operational' };
-  };
-
-  const overall = getOverallStatus();
 
   // Comprehensive support articles based on codebase
   const supportArticles: Article[] = [
@@ -466,7 +403,7 @@ Remember: Practice makes perfect! Each session builds your confidence and skills
 2. **Firewall Settings**: Ensure platform isn't blocked
 3. **Browser Cache**: Clear cache and cookies
 4. **VPN Issues**: Try disconnecting VPN if in use
-5. **Contact Support**: If issues persist, use Report Issue button
+5. **Contact Support**: If issues persist, contact our support team
 
 ## Voice Recognition Issues
 **Problem**: AI doesn't understand your speech
@@ -2385,6 +2322,8 @@ Create a portfolio with:
       <FAQView 
         showTabs={true} 
         onTabChange={(tab) => setActiveTab(tab)}
+        hideNavigation={true}
+        onClose={() => setActiveTab('help')}
       />
     );
   }
@@ -2392,24 +2331,24 @@ Create a portfolio with:
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900" style={{ scrollbarGutter: 'stable' }}>
       {/* Hero Section - Matching FAQ Design */}
-      <section className="relative py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
+      <section className="relative py-16 md:py-20 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
         </div>
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 px-6 py-3 rounded-full text-sm font-medium mb-6 text-white">
+          <div className="inline-flex items-center bg-white/20 backdrop-blur-md border border-white/30 px-6 py-3 rounded-full text-sm font-medium mb-4 text-white">
             <HelpCircle className="w-4 h-4 mr-2" />
             Support Center
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">How Can We Help You?</h1>
-          <p className="text-xl text-purple-100 max-w-2xl mx-auto mb-8">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">How Can We Help You?</h1>
+          <p className="text-lg md:text-xl text-purple-100 max-w-2xl mx-auto mb-6">
             Everything you need to master Business Analysis and excel in your stakeholder conversations
           </p>
 
           {/* Tab Navigation */}
-          <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex items-center justify-center gap-3 mb-6">
             <button
               onClick={() => setActiveTab('help')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
@@ -2450,63 +2389,6 @@ Create a portfolio with:
         </div>
       </section>
 
-      {/* System Status Banner */}
-      {!statusLoading && (
-        <section className="py-8 -mt-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className={`rounded-2xl p-6 shadow-lg border ${
-              overall.status === 'operational' 
-                ? 'bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800'
-                : overall.status === 'maintenance'
-                ? 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800'
-                : overall.status === 'degraded'
-                ? 'bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800'
-                : 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-200 dark:border-red-800'
-            }`}>
-              <div className="flex items-center space-x-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  overall.status === 'operational' 
-                    ? 'bg-emerald-100 dark:bg-emerald-900/40'
-                    : overall.status === 'maintenance'
-                    ? 'bg-amber-100 dark:bg-amber-900/40'
-                    : overall.status === 'degraded'
-                    ? 'bg-orange-100 dark:bg-orange-900/40'
-                    : 'bg-red-100 dark:bg-red-900/40'
-                }`}>
-                  {overall.status === 'operational' && <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />}
-                  {overall.status === 'maintenance' && <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />}
-                  {overall.status === 'degraded' && <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
-                  {overall.status === 'issue' && <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
-                </div>
-                <div>
-                  <h3 className={`text-lg font-semibold ${
-                    overall.status === 'operational' 
-                      ? 'text-emerald-900 dark:text-emerald-100'
-                      : overall.status === 'maintenance'
-                      ? 'text-amber-900 dark:text-amber-100'
-                      : overall.status === 'degraded'
-                      ? 'text-orange-900 dark:text-orange-100'
-                      : 'text-red-900 dark:text-red-100'
-                  }`}>
-                    {overall.message}
-                  </h3>
-                  <p className={`text-sm ${
-                    overall.status === 'operational' 
-                      ? 'text-emerald-700 dark:text-emerald-300'
-                      : overall.status === 'maintenance'
-                      ? 'text-amber-700 dark:text-amber-300'
-                      : overall.status === 'degraded'
-                      ? 'text-orange-700 dark:text-orange-300'
-                      : 'text-red-700 dark:text-red-300'
-                  }`}>
-                    All systems are monitored 24/7
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Featured Articles */}
       {!searchQuery && !selectedCategory && (
@@ -2742,17 +2624,13 @@ Create a portfolio with:
               Can't find what you're looking for? Our support team is here to help!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <ReportIssueButton 
-                pageContext="help"
-                pageTitle="Help"
-              />
-              <a
-                href="mailto:support@baworkxp.com"
+              <button
+                onClick={() => setCurrentView('contact-support')}
                 className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center space-x-2"
               >
                 <Mail className="w-5 h-5" />
-                <span>Email Support</span>
-              </a>
+                <span>Contact Support</span>
+              </button>
             </div>
             <p className="text-purple-200 text-sm mt-6">
               We typically respond within 24 hours
@@ -2872,10 +2750,6 @@ Create a portfolio with:
                       <Bookmark className="w-4 h-4" />
                       <span className="text-sm">Save</span>
                     </button>
-                    <ReportIssueButton 
-                      pageContext={`article-${selectedArticle.id}`}
-                      pageTitle={`${selectedArticle.title} - Help Article`}
-                    />
                   </div>
                 </div>
               </div>

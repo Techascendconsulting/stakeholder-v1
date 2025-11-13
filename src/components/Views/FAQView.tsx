@@ -26,14 +26,24 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface FAQViewProps {
-  onClose: () => void;
+  onClose?: () => void;
   onStartNow?: () => void;
   onShowFeatures?: () => void;
   onShowPricing?: () => void;
   onShowContact?: () => void;
+  showTabs?: boolean;
+  onTabChange?: (tab: 'help' | 'faq') => void;
+  hideNavigation?: boolean;
 }
 
-const FAQView: React.FC<FAQViewProps> = ({ onClose, onStartNow, onShowFeatures, onShowPricing, onShowContact }) => {
+const FAQView: React.FC<FAQViewProps> = ({ 
+  onClose, 
+  onStartNow, 
+  onShowFeatures, 
+  onShowPricing, 
+  onShowContact,
+  hideNavigation = false
+}) => {
   const { resolvedTheme, toggleTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -196,131 +206,137 @@ const FAQView: React.FC<FAQViewProps> = ({ onClose, onStartNow, onShowFeatures, 
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-      {/* Navigation - Same as Landing Page */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={onClose}>
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-5 h-5 text-white" />
+      {/* Navigation - Same as Landing Page - Hidden when in support center */}
+      {!hideNavigation && (
+        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={onClose}>
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">BA WorkXP</span>
               </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
-            </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <button 
-                onClick={onClose}
-                className="text-gray-300 hover:text-white font-medium transition-colors"
-              >
-                Home
-              </button>
-              <button 
-                onClick={onShowFeatures}
-                className="text-gray-300 hover:text-white font-medium transition-colors"
-              >
-                Features
-              </button>
-              <button 
-                onClick={onShowPricing}
-                className="text-gray-300 hover:text-white font-medium transition-colors"
-              >
-                Pricing
-              </button>
-              <button 
-                className="text-white font-medium border-b-2 border-purple-500"
-              >
-                FAQ
-              </button>
-              <button 
-                onClick={onShowContact}
-                className="text-gray-300 hover:text-white font-medium transition-colors"
-              >
-                Contact
-              </button>
-            </nav>
-
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button
-                onClick={toggleTheme}
-                className="p-2 text-gray-300 hover:text-white transition-colors"
-                aria-label="Toggle theme"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-              <button
-                onClick={onStartNow}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
-              >
-                Start Free
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-white"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-800">
-              <nav className="flex flex-col space-y-4">
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex items-center space-x-6">
                 <button 
                   onClick={onClose}
-                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  className="text-gray-300 hover:text-white font-medium transition-colors"
                 >
                   Home
                 </button>
                 <button 
                   onClick={onShowFeatures}
-                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  className="text-gray-300 hover:text-white font-medium transition-colors"
                 >
                   Features
                 </button>
                 <button 
                   onClick={onShowPricing}
-                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  className="text-gray-300 hover:text-white font-medium transition-colors"
                 >
                   Pricing
                 </button>
                 <button 
-                  className="text-left text-white font-medium"
+                  className="text-white font-medium border-b-2 border-purple-500"
                 >
                   FAQ
                 </button>
                 <button 
                   onClick={onShowContact}
-                  className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  className="text-gray-300 hover:text-white font-medium transition-colors"
                 >
                   Contact
                 </button>
+              </nav>
+
+              {/* Desktop Actions */}
+              <div className="hidden md:flex items-center space-x-4">
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center gap-2 text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  className="p-2 text-gray-300 hover:text-white transition-colors"
+                  aria-label="Toggle theme"
                 >
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
                 </button>
-                <button
-                  onClick={onStartNow}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-center"
-                >
-                  Start Free
-                </button>
-              </nav>
+                {onStartNow && (
+                  <button
+                    onClick={onStartNow}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+                  >
+                    Start Free
+                  </button>
+                )}
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-white"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
-          )}
-        </div>
-      </header>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden py-4 border-t border-gray-800">
+                <nav className="flex flex-col space-y-4">
+                  <button 
+                    onClick={onClose}
+                    className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  >
+                    Home
+                  </button>
+                  <button 
+                    onClick={onShowFeatures}
+                    className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  >
+                    Features
+                  </button>
+                  <button 
+                    onClick={onShowPricing}
+                    className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  >
+                    Pricing
+                  </button>
+                  <button 
+                    className="text-left text-white font-medium"
+                  >
+                    FAQ
+                  </button>
+                  <button 
+                    onClick={onShowContact}
+                    className="text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  >
+                    Contact
+                  </button>
+                  <button
+                    onClick={toggleTheme}
+                    className="flex items-center gap-2 text-left text-gray-300 hover:text-white font-medium transition-colors"
+                  >
+                    {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                  </button>
+                  {onStartNow && (
+                    <button
+                      onClick={onStartNow}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold text-center"
+                    >
+                      Start Free
+                    </button>
+                  )}
+                </nav>
+              </div>
+            )}
+          </div>
+        </header>
+      )}
 
       {/* Content */}
-      <div className="pt-16">
+      <div className={hideNavigation ? "pt-0" : "pt-16"}>
         {/* Hero Section */}
         <section className="relative py-12 md:py-24 bg-gradient-to-r from-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0">

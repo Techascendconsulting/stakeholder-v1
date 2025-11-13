@@ -102,6 +102,7 @@ import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import ContactUsView from '../Views/ContactUsView';
+import ContactSupportView from '../Views/ContactSupportView';
 import AdminContactSubmissionsView from '../Views/AdminContactSubmissionsView';
 import SupportCentreView from '../Views/SupportCentreView';
 import CareerJourneyView from '../Views/CareerJourneyView';
@@ -459,6 +460,8 @@ const MainLayout: React.FC = () => {
         return <MyProgressWithMentor />;
       case 'contact-us':
         return <ContactUsView />;
+      case 'contact-support':
+        return <ContactSupportView />;
       case 'admin-contact-submissions':
         return <AdminContactSubmissionsView />;
       case 'support':

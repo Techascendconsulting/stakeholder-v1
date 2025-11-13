@@ -24,7 +24,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Verity Help <onboarding@resend.dev>', // Use onboarding@resend.dev for testing, or your verified domain
+        from: 'BA WorkXP Support <support@baworkxp.com>',
         to: ['techascendconsulting@gmail.com'],
         subject: `🆘 ${issueType === 'technical' ? 'Technical Issue' : 'Help Request'}: ${pageTitle}`,
         html: `
@@ -71,6 +71,7 @@ serve(async (req) => {
     })
   }
 })
+
 
 
 

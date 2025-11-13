@@ -158,6 +158,12 @@ serve(async (req) => {
     if (body.sendEmail) {
       try {
         const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+        
+        // DEBUG: Log API key status
+        console.log('🔍 [DEBUG] RESEND_API_KEY exists:', !!RESEND_API_KEY)
+        console.log('🔍 [DEBUG] RESEND_API_KEY length:', RESEND_API_KEY ? RESEND_API_KEY.length : 0)
+        console.log('🔍 [DEBUG] RESEND_API_KEY prefix:', RESEND_API_KEY ? RESEND_API_KEY.substring(0, 10) + '...' : 'N/A')
+        
         if (!RESEND_API_KEY) {
           console.warn('⚠️ RESEND_API_KEY not configured. Email will not be sent.')
           emailError = 'RESEND_API_KEY not configured in Supabase Edge Functions'
@@ -169,64 +175,94 @@ serve(async (req) => {
           })
 
           if (resetError) {
-            console.error('Error generating password reset link:', resetError)
+            console.error('❌ [DEBUG] Error generating password reset link:', resetError)
             emailError = resetError.message
           } else if (resetData?.properties?.action_link) {
             const resetLink = resetData.properties.action_link
-
+            const fromAddress = 'BA WorkXP <no-reply@baworkxp.com>'
+            
+            const emailPayload = {
+              from: fromAddress,
+              to: [body.email],
+              subject: 'Welcome to BA WorkXP - Set Your Password',
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #7c3aed;">Welcome to BA WorkXP!</h2>
+                  
+                  <p>Hi ${body.name},</p>
+                  
+                  <p>Your account has been created. To get started, please set your password by clicking the link below:</p>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetLink}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                      Set Your Password
+                    </a>
+                  </div>
+                  
+                  <p style="color: #6b7280; font-size: 14px;">
+                    Or use these temporary credentials to sign in:<br>
+                    Email: ${body.email}<br>
+                    Password: ${body.password}
+                  </p>
+                  
+                  <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+                    This link will expire in 24 hours. If you need help, contact support.
+                  </p>
+                </div>
+              `
+            }
+            
+            // DEBUG: Log email payload (without sensitive data)
+            console.log('🔍 [DEBUG] Sending email with:')
+            console.log('  - From:', fromAddress)
+            console.log('  - To:', body.email)
+            console.log('  - Subject:', emailPayload.subject)
+            console.log('  - Reset link generated:', !!resetLink)
+            
             const emailResponse = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${RESEND_API_KEY}`
               },
-              body: JSON.stringify({
-                from: 'BA WorkXP <onboarding@resend.dev>',
-                to: [body.email],
-                subject: 'Welcome to BA WorkXP - Set Your Password',
-                html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #7c3aed;">Welcome to BA WorkXP!</h2>
-                    
-                    <p>Hi ${body.name},</p>
-                    
-                    <p>Your account has been created. To get started, please set your password by clicking the link below:</p>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                      <a href="${resetLink}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-                        Set Your Password
-                      </a>
-                    </div>
-                    
-                    <p style="color: #6b7280; font-size: 14px;">
-                      Or use these temporary credentials to sign in:<br>
-                      Email: ${body.email}<br>
-                      Password: ${body.password}
-                    </p>
-                    
-                    <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-                      This link will expire in 24 hours. If you need help, contact support.
-                    </p>
-                  </div>
-                `
-              })
+              body: JSON.stringify(emailPayload)
             })
 
-            const emailResult = await emailResponse.json()
+            // DEBUG: Log response status
+            console.log('🔍 [DEBUG] Resend API response status:', emailResponse.status)
+            console.log('🔍 [DEBUG] Resend API response ok:', emailResponse.ok)
+            
+            let emailResult: any = {}
+            try {
+              emailResult = await emailResponse.json()
+              console.log('🔍 [DEBUG] Resend API response body:', JSON.stringify(emailResult, null, 2))
+            } catch (parseError) {
+              const textResult = await emailResponse.text()
+              console.error('❌ [DEBUG] Failed to parse Resend response as JSON:', textResult)
+              emailResult = { error: 'Failed to parse response', raw: textResult }
+            }
             
             if (emailResponse.ok) {
               console.log('✅ Welcome email sent successfully to:', body.email)
+              console.log('✅ [DEBUG] Resend email ID:', emailResult.id)
               emailSent = true
             } else {
-              console.error('❌ Failed to send email:', emailResult)
-              emailError = emailResult.message || 'Failed to send email'
+              console.error('❌ [DEBUG] Failed to send email. Status:', emailResponse.status)
+              console.error('❌ [DEBUG] Resend error details:', emailResult)
+              emailError = emailResult.message || emailResult.error?.message || `Resend API error: ${emailResponse.status} ${emailResponse.statusText}`
             }
           } else {
+            console.error('❌ [DEBUG] Failed to generate password reset link - no action_link in response')
             emailError = 'Failed to generate password reset link'
           }
         }
       } catch (err) {
-        console.error('Exception while sending email:', err)
+        console.error('❌ [DEBUG] Exception while sending email:', err)
+        console.error('❌ [DEBUG] Exception details:', {
+          message: err.message,
+          stack: err.stack,
+          name: err.name
+        })
         emailError = err.message || 'Email sending failed'
       }
     }
@@ -261,4 +297,6 @@ serve(async (req) => {
     )
   }
 })
+
+
 
