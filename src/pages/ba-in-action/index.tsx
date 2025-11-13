@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
 import { ArrowLeft, ArrowRight, Play, RefreshCw } from 'lucide-react';
 import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
 import { ProjectSelection } from '../../ba-in-action/ProjectSelection';
+import BAInActionIntro from '../../ba-in-action/BAInActionIntro';
 import { PROJECTS } from '../../ba-in-action/projectData';
 
 const journey: Array<{ id: number; label: string; view: AppView }> = [
@@ -15,12 +16,23 @@ const journey: Array<{ id: number; label: string; view: AppView }> = [
   { id: 6, label: 'Requirements & Documentation', view: 'ba_in_action_requirements' },
   { id: 7, label: 'Agile Delivery', view: 'ba_in_action_agile_delivery' },
   { id: 8, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
-  { id: 9, label: 'Continuous Improvement', view: 'ba_in_action_improvement' },
+  { id: 9, label: 'Continuous Improvement', view: 'ba_in_action_continuous_improvement' },
 ];
 
 const BAInActionIndexPage: React.FC = () => {
   const { setCurrentView, currentView } = useApp();
   const { selectedProject, setSelectedProject, hasSelectedProject } = useBAInActionProject();
+  const [showIntro, setShowIntro] = useState(() => {
+    // Check if user has seen the intro before
+    return !localStorage.getItem('ba_in_action_intro_seen');
+  });
+
+  useEffect(() => {
+    // Mark intro as seen once component mounts
+    if (!showIntro) {
+      localStorage.setItem('ba_in_action_intro_seen', 'true');
+    }
+  }, [showIntro]);
 
   const handleNavigate = (view: AppView) => {
     void setCurrentView(view);
@@ -35,6 +47,16 @@ const BAInActionIndexPage: React.FC = () => {
     localStorage.removeItem('ba_in_action_selected_project');
     window.location.reload();
   };
+
+  const handleContinueFromIntro = () => {
+    localStorage.setItem('ba_in_action_intro_seen', 'true');
+    setShowIntro(false);
+  };
+
+  // Show intro preamble first (only once)
+  if (showIntro) {
+    return <BAInActionIntro onContinue={handleContinueFromIntro} />;
+  }
 
   // Show project selection if not selected yet
   if (!hasSelectedProject) {
