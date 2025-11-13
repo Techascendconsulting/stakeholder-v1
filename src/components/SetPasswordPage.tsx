@@ -12,31 +12,86 @@ const SetPasswordPage: React.FC = () => {
   const [success, setSuccess] = useState(false)
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null)
 
-  // Extract token from URL hash or query params
+  // Extract token from URL hash or query params and set session
   useEffect(() => {
     const checkToken = async () => {
       try {
-        // Check URL hash (Supabase recovery tokens are typically in hash)
+        // Check URL hash (Supabase redirects with tokens in hash after verification)
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        
+        // Check for error parameters first (expired token, etc.)
+        const error = hashParams.get('error')
+        const errorCode = hashParams.get('error_code')
+        const errorDescription = hashParams.get('error_description')
+        
+        if (error || errorCode) {
+          // Clear the error from URL
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          
+          setIsValidToken(false)
+          
+          // Handle specific error cases
+          if (errorCode === 'otp_expired' || error === 'access_denied') {
+            setError('This password reset link has expired. Please request a new password reset link from the login page.')
+          } else {
+            const decodedDescription = errorDescription ? decodeURIComponent(errorDescription.replace(/\+/g, ' ')) : 'Unknown error'
+            setError(`Password reset link error: ${decodedDescription}. Please request a new password reset link.`)
+          }
+          return
+        }
+        
         const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
         const type = hashParams.get('type')
 
-        // Also check query params
+        // If we have tokens in hash from Supabase redirect, set the session
+        if (accessToken && type === 'recovery') {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          })
+
+          if (sessionError) {
+            console.error('Error setting session:', sessionError)
+            setIsValidToken(false)
+            setError('Failed to activate password reset session. Please try again.')
+          } else {
+            // Clear the hash after setting session
+            window.history.replaceState(null, '', window.location.pathname + window.location.search)
+            setIsValidToken(true)
+          }
+          return
+        }
+
+        // Also check query params (for direct token links)
         const queryParams = new URLSearchParams(window.location.search)
-        const token = queryParams.get('token') || accessToken
-        const recoveryType = queryParams.get('type') || type
+        const token = queryParams.get('token')
+        const recoveryType = queryParams.get('type')
 
         if (token && recoveryType === 'recovery') {
-          setIsValidToken(true)
-        } else if (!token && !accessToken) {
-          // Check if user is already authenticated via session
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            setIsValidToken(true)
-          } else {
-            setIsValidToken(false)
-            setError('Invalid or missing password reset token. Please request a new password reset link.')
+          // Try to use token to set session
+          try {
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: token,
+              refresh_token: ''
+            })
+            if (!sessionError) {
+              setIsValidToken(true)
+              return
+            }
+          } catch (e) {
+            // Token might need verification first
+            console.log('Token may need verification through Supabase endpoint')
           }
+        }
+
+        // Check if user is already authenticated via session
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setIsValidToken(true)
+        } else {
+          setIsValidToken(false)
+          setError('Invalid or missing password reset token. Please request a new password reset link.')
         }
       } catch (err) {
         console.error('Error checking token:', err)
@@ -71,21 +126,26 @@ const SetPasswordPage: React.FC = () => {
     setLoading(true)
 
     try {
-      // Extract token from URL
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const accessToken = hashParams.get('access_token')
-      const queryParams = new URLSearchParams(window.location.search)
-      const token = queryParams.get('token') || accessToken
-
-      if (token) {
-        // Set session from recovery token
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: token,
-          refresh_token: ''
-        })
-
-        if (sessionError) {
-          throw sessionError
+      // Session should already be set from useEffect if tokens were in hash
+      // Verify we have a valid session before updating password
+      const { data: { session }, error: sessionCheckError } = await supabase.auth.getSession()
+      
+      if (sessionCheckError || !session) {
+        // Try to extract tokens one more time as fallback
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        
+        if (accessToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          })
+          if (sessionError) {
+            throw new Error('Failed to activate password reset session. Please use a fresh reset link.')
+          }
+        } else {
+          throw new Error('No active session. Please use a valid password reset link.')
         }
       }
 
@@ -141,6 +201,34 @@ const SetPasswordPage: React.FC = () => {
             >
               Go to Login
             </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state with helpful message
+  if (isValidToken === false && error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600/95 via-indigo-600/95 to-purple-800/95 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Link Expired</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              {error}
+            </p>
+            <div className="space-y-3">
+              <a
+                href="/login"
+                className="inline-block w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              >
+                Go to Login
+              </a>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                On the login page, click "Forgot Password" to request a new reset link.
+              </p>
+            </div>
           </div>
         </div>
       </div>
