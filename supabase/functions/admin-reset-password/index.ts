@@ -97,98 +97,203 @@ serve(async (req) => {
       .eq('user_id', resetData.user.id)
       .single()
 
-    const displayName = userProfile?.display_name || ''
+    const userName = userProfile?.display_name || resetData.user.email?.split('@')[0] || 'there'
 
     // Send password reset email via Resend
-    // Branded email template
-    const emailTemplate = (params: { title: string; body: string; buttonUrl?: string; buttonText?: string }) => {
-        const buttonHtml = params.buttonUrl && params.buttonText
-          ? `
-            <tr><td height="25"></td></tr>
+    // New branded reset password email template
+    const emailTemplate = (params: { name: string; resetLink: string }) => {
+      return `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reset Your Password – BA WorkXP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7fc;
+      font-family: Arial, Helvetica, sans-serif;
+    "
+  >
+    <!-- Header -->
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #7c3aed; padding: 24px 0; text-align: center;"
+    >
+      <tr>
+        <td>
+          <span
+            style="
+              color: #ffffff;
+              font-size: 22px;
+              font-weight: bold;
+              letter-spacing: 0.5px;
+            "
+          >
+            BA WORKXP
+          </span>
+        </td>
+      </tr>
+    </table>
+    <!-- Body Container -->
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="padding: 32px 16px;"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              max-width: 560px;
+              background: #ffffff;
+              border-radius: 12px;
+              padding: 32px;
+              text-align: left;
+            "
+          >
+            <!-- Title -->
             <tr>
-              <td align="center">
-                <a href="${params.buttonUrl}" style="
-                  background:#7c3aed;
-                  color:#ffffff;
-                  padding:14px 28px;
-                  border-radius:8px;
-                  text-decoration:none;
-                  font-size:15px;
-                  font-weight:600;
-                  display:inline-block;
-                ">
-                  ${params.buttonText}
+              <td
+                style="
+                  font-size: 26px;
+                  font-weight: 700;
+                  color: #1f2937;
+                  padding-bottom: 12px;
+                "
+              >
+                Reset Your Password
+              </td>
+            </tr>
+            <!-- Greeting -->
+            <tr>
+              <td
+                style="
+                  font-size: 15px;
+                  line-height: 22px;
+                  color: #4b5563;
+                  padding-bottom: 20px;
+                "
+              >
+                Hi ${params.name},
+                <br /><br />
+                You requested to reset the password for your BA WorkXP account.
+                Click the button below to create a new password.
+              </td>
+            </tr>
+            <!-- CTA Button -->
+            <tr>
+              <td align="center" style="padding: 16px 0;">
+                <a
+                  href="${params.resetLink}"
+                  style="
+                    display: inline-block;
+                    background-color: #7c3aed;
+                    color: #ffffff;
+                    padding: 14px 28px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-decoration: none;
+                    border-radius: 8px;
+                  "
+                >
+                  Reset Password
                 </a>
               </td>
             </tr>
-            <tr><td height="30"></td></tr>
-          `
-          : ''
-
-        return `
-<!DOCTYPE html>
-<html lang="en" style="margin:0; padding:0;">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="supported-color-schemes" content="light dark" />
-  <title>BA WorkXP</title>
-</head>
-<body style="margin:0; padding:0; background:#f7f7f7; font-family:Arial, sans-serif;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#f7f7f7; padding:30px 0;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="
-          max-width:550px;
-          background:#ffffff;
-          border-radius:14px;
-          padding:40px 32px;
-          box-shadow:0 4px 12px rgba(0,0,0,0.08);
-        ">
-          <tr>
-            <td align="center" style="padding-bottom:20px;">
-              <div style="
-                background: linear-gradient(90deg, #7c3aed, #4f46e5);
-                width:100%;
-                height:6px;
-                border-radius:6px;
-                margin-bottom:28px;
-              "></div>
-            </td>
-          </tr>
-          <tr>
-            <td style="font-size:24px; font-weight:700; color:#111827; padding-bottom:10px;">
-              ${params.title}
-            </td>
-          </tr>
-          <tr>
-            <td style="font-size:15px; line-height:1.7; color:#4b5563;">
-              ${params.body}
-            </td>
-          </tr>
-          ${buttonHtml}
-          <tr>
-            <td style="border-bottom:1px solid #e5e7eb;"></td>
-          </tr>
-          <tr><td height="20"></td></tr>
-          <tr>
-            <td style="font-size:13px; line-height:1.6; color:#6b7280; text-align:center;">
-              If you didn't request this email, please ignore it.
-              <br/>
-              Need help? Contact 
-              <a href="mailto:support@baworkxp.com" style="color:#7c3aed; text-decoration:none;">
-                support@baworkxp.com
-              </a>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
+            <!-- Expiry Note -->
+            <tr>
+              <td
+                style="
+                  font-size: 13px;
+                  color: #6b7280;
+                  padding-top: 12px;
+                  line-height: 20px;
+                "
+              >
+                This link will expire in <strong>2 hours</strong> for security.
+                If it stops working, you can request another reset link anytime from the login page.
+              </td>
+            </tr>
+            <!-- Fallback Link -->
+            <tr>
+              <td
+                style="
+                  font-size: 13px;
+                  color: #6b7280;
+                  padding-top: 24px;
+                  word-break: break-all;
+                "
+              >
+                If the button doesn't work, paste this into your browser:<br />
+                <a href="${params.resetLink}" style="color: #7c3aed;">
+                  ${params.resetLink}
+                </a>
+              </td>
+            </tr>
+            <!-- Divider -->
+            <tr>
+              <td
+                style="
+                  border-top: 1px solid #e5e7eb;
+                  margin-top: 32px;
+                  padding-top: 24px;
+                "
+              ></td>
+            </tr>
+            <!-- Security Message -->
+            <tr>
+              <td
+                style="
+                  font-size: 13px;
+                  line-height: 20px;
+                  color: #6b7280;
+                "
+              >
+                If you didn't request this password reset, please ignore this email.
+                Your account will remain unchanged.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <!-- Footer -->
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        padding: 24px 0;
+        background-color: #ffffff;
+        text-align: center;
+        font-size: 12px;
+        color: #9ca3af;
+      "
+    >
+      <tr>
+        <td>
+          BA WorkXP · Empowering Career-Changers to Gain Real BA Experience  
+          <br /><br />
+          Need help? Email us at: 
+          <a href="mailto:support@baworkxp.com" style="color: #7c3aed;">
+            support@baworkxp.com
+          </a>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
-        `
+      `
     }
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -198,14 +303,12 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'BA WorkXP Admin <no-reply@baworkxp.com>',
+        from: 'BA WorkXP <no-reply@baworkxp.com>',
         to: [email],
-        subject: 'Your Password Reset Request - BA WorkXP',
+        subject: 'Reset Your Password – BA WorkXP',
         html: emailTemplate({
-          title: 'Your Password Reset Request',
-          body: `${displayName ? `Hi ${displayName},<br/><br/>` : ''}An administrator has triggered a password reset on your behalf. Click the button below to set a new password.<br/><br/>This link will expire in 24 hours.`,
-          buttonUrl: resetLink,
-          buttonText: 'Set New Password'
+          name: userName,
+          resetLink: resetLink
         })
       })
     })
