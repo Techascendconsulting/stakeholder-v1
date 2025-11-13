@@ -3,6 +3,7 @@ import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, GraduationCap,
 import { useAuth } from '../contexts/AuthContext'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
+import { supabase } from '../lib/supabase'
 
 interface LoginSignupProps {
   onBack?: () => void
@@ -182,30 +183,24 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
     setSuccess('')
     
     try {
-      // Call Edge Function instead of built-in Supabase auth
-      const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || ''}/functions/v1/reset-password`
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-      
-      const response = await fetch(functionsUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': anonKey
-        },
-        body: JSON.stringify({ email: emailToUse })
+      // Call Edge Function using Supabase client (handles headers automatically)
+      const { data, error } = await supabase.functions.invoke('reset-password', {
+        body: { email: emailToUse }
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setErrors({ general: data.error || 'Failed to send password reset email. Please try again.' })
+      if (error) {
+        console.error('Reset password error:', error)
+        setErrors({ general: error.message || 'Failed to send password reset email. Please try again.' })
+      } else if (!data?.success) {
+        setErrors({ general: data?.error || 'Failed to send password reset email. Please try again.' })
       } else {
         setSuccess(`Password reset email sent to ${emailToUse}! Check your inbox and click the link to reset your password.`)
         setShowForgotPassword(false)
         setForgotPasswordEmail('')
       }
-    } catch (err) {
-      setErrors({ general: 'An unexpected error occurred. Please try again.' })
+    } catch (err: any) {
+      console.error('Reset password exception:', err)
+      setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' })
     } finally {
       setLoading(false)
     }
