@@ -24,6 +24,7 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [credentialsCopied, setCredentialsCopied] = useState(false);
   const [createdUser, setCreatedUser] = useState<{email: string; password: string} | null>(null);
   const [errorModal, setErrorModal] = useState<{
     title: string;
@@ -49,9 +50,41 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
     setTimeout(() => setPasswordCopied(false), 2000);
   };
 
-  const handleCopyCredentials = () => {
-    const credentials = `Email: ${createdUser?.email}\nPassword: ${createdUser?.password}`;
-    navigator.clipboard.writeText(credentials);
+  const handleCopyCredentials = async () => {
+    if (!createdUser) return;
+    
+    const credentials = `Email: ${createdUser.email}\nPassword: ${createdUser.password}`;
+    
+    try {
+      // Use modern clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(credentials);
+        setCredentialsCopied(true);
+        setTimeout(() => setCredentialsCopied(false), 3000);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = credentials;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCredentialsCopied(true);
+          setTimeout(() => setCredentialsCopied(false), 3000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          alert('Failed to copy credentials. Please copy manually.');
+        }
+        document.body.removeChild(textArea);
+      }
+    } catch (error) {
+      console.error('Error copying credentials:', error);
+      alert('Failed to copy credentials. Please copy manually.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,10 +209,20 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
           <div className="flex space-x-3">
             <button
               onClick={handleCopyCredentials}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+              disabled={credentialsCopied}
             >
-              <Copy className="w-4 h-4" />
-              <span>Copy Credentials</span>
+              {credentialsCopied ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Credentials</span>
+                </>
+              )}
             </button>
             <button
               onClick={() => {
@@ -468,6 +511,8 @@ const AdminCreateUserModal: React.FC<AdminCreateUserModalProps> = ({ onClose, on
 };
 
 export default AdminCreateUserModal;
+
+
 
 
 
