@@ -185,8 +185,8 @@ export const ProfileView: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setStatusModal({ title: 'Weak password', message: 'New password must be at least 6 characters long.' });
+    if (newPassword.length < 8) {
+      setStatusModal({ title: 'Weak password', message: 'New password must be at least 8 characters long.' });
       return;
     }
 

@@ -200,9 +200,7 @@ serve(async (req) => {
                   </div>
                   
                   <p style="color: #6b7280; font-size: 14px;">
-                    Or use these temporary credentials to sign in:<br>
-                    Email: ${body.email}<br>
-                    Password: ${body.password}
+                    Click the button above to set your password and access your account.
                   </p>
                   
                   <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
@@ -297,6 +295,7 @@ serve(async (req) => {
     )
   }
 })
+
 
 
 

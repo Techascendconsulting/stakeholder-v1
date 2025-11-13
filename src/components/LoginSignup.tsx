@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { subscriptionService } from '../lib/subscription'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
-import { supabase } from '../lib/supabase'
 
 interface LoginSignupProps {
   onBack?: () => void
@@ -168,9 +167,23 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(formData.email)
-      if (error) {
-        setErrors({ general: error.message })
+      // Call Edge Function instead of built-in Supabase auth
+      const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || ''}/functions/v1/reset-password`
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+      
+      const response = await fetch(functionsUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey
+        },
+        body: JSON.stringify({ email: formData.email })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrors({ general: data.error || 'Failed to send password reset email' })
       } else {
         setSuccess('Password reset email sent! Check your inbox.')
       }

@@ -6,8 +6,8 @@ import { VoiceProvider } from './contexts/VoiceContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import LandingPage from './components/LandingPage'
 import { StakeholderBotProvider } from './context/StakeholderBotContext'
-import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
+import SetPasswordPage from './components/SetPasswordPage'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
@@ -44,6 +44,16 @@ const AppContent: React.FC = () => {
   }
 
   console.log('🚀 APP - Rendering main content, user:', !!user)
+  
+  // Check if we're on the set-password page (by URL path)
+  const isSetPasswordPage = window.location.pathname === '/set-password' || 
+                           window.location.hash.includes('type=recovery') ||
+                           window.location.search.includes('type=recovery')
+  
+  if (isSetPasswordPage) {
+    return <SetPasswordPage />
+  }
+  
   return user ? <MainLayout /> : <LandingPage />
 }
 

@@ -8,19 +8,17 @@ import {
   UserCheck, 
   UserX, 
   Mail, 
-  Clock,
   AlertCircle,
   CheckCircle,
-  Eye,
   EyeOff,
-  MoreVertical
+  Key,
+  LogIn
 } from 'lucide-react';
 import ActionDropdown from './ui/ActionDropdown';
 import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
-import EmailService from '../services/emailService';
 import { adminInviteService } from '../services/adminInviteService';
 import AdminCreateUserModal from './AdminCreateUserModal';
 import { supabase } from '../lib/supabase';
@@ -180,13 +178,10 @@ const AdminUserManagement: React.FC = () => {
         }
 
         // Skip auth.users query (not accessible) and use profiles only
-        const authUsers = null;
-        const authError = { message: 'Auth users not accessible' };
-
-        if (authError) {
-          console.error('Error loading auth users:', authError);
-          // Use profiles without emails
-          const formattedUsers = profiles?.map(item => ({
+        // Since auth users are not accessible, use profiles only
+        console.error('Auth users not accessible, using profiles only');
+        // Use profiles without emails
+        const formattedUsers = profiles?.map((item: any) => ({
             id: item.user_id,
             email: `user_${item.user_id.substring(0, 8)}@unknown.com`,
             display_name: item.display_name || 'No name',
@@ -203,31 +198,6 @@ const AdminUserManagement: React.FC = () => {
             max_projects: item.max_projects,
             subscription_status: item.subscription_status
           })) || [];
-          setUsers(formattedUsers);
-          return;
-        }
-
-        // Join profiles with auth users
-        const formattedUsers = profiles?.map(profile => {
-          const authUser = authUsers?.find(au => au.id === profile.user_id);
-          return {
-            id: profile.user_id,
-            email: authUser?.email || `user_${profile.user_id.substring(0, 8)}@unknown.com`,
-            display_name: profile.display_name || 'No name',
-            created_at: profile.created_at,
-            last_sign_in_at: authUser?.last_sign_in_at || null,
-            locked: profile.locked,
-            registered_device: profile.registered_device,
-            is_admin: profile.is_admin,
-            is_super_admin: profile.is_super_admin,
-            is_senior_admin: profile.is_senior_admin,
-            blocked: profile.blocked,
-            user_type: profile.user_type,
-            subscription_tier: profile.subscription_tier,
-            max_projects: profile.max_projects,
-            subscription_status: profile.subscription_status
-          };
-        }) || [];
         setUsers(formattedUsers);
         return;
       }
@@ -237,13 +207,13 @@ const AdminUserManagement: React.FC = () => {
       const needsMerge = formattedUsers.some(u => typeof u.locked === 'undefined' || typeof u.registered_device === 'undefined');
       if (needsMerge) {
         try {
-          const userIds = formattedUsers.map(u => u.id).filter(Boolean);
+          const userIds = formattedUsers.map((u: any) => u.id).filter(Boolean);
           const { data: profiles } = await supabase
             .from('user_profiles')
             .select('user_id, locked, registered_device')
             .in('user_id', userIds);
           const map = new Map<string, { locked?: boolean; registered_device?: string | null }>();
-          (profiles || []).forEach(p => map.set(p.user_id, { locked: p.locked, registered_device: p.registered_device }));
+          (profiles || []).forEach((p: any) => map.set(p.user_id, { locked: p.locked, registered_device: p.registered_device }));
           formattedUsers = formattedUsers.map(u => ({
             ...u,
             locked: typeof u.locked === 'undefined' ? map.get(u.id)?.locked ?? false : u.locked,
@@ -651,7 +621,7 @@ const AdminUserManagement: React.FC = () => {
       await adminService.logActivity(
         user.id,
         'invite_admin',
-        null,
+        undefined,
         { email: inviteEmail, role: inviteRole, action: 'admin_invited' }
       );
 
@@ -670,6 +640,75 @@ const AdminUserManagement: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
+
+  const handleAdminResetPassword = async (_userId: string, email: string) => {
+    if (!confirm(`Send password reset email to ${email}?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { email },
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+
+      if (error || !data?.success) {
+        alert(`Failed to send password reset email: ${error?.message || data?.error || 'Unknown error'}`);
+      } else {
+        alert(`Password reset email sent to ${email}`);
+      }
+    } catch (error: any) {
+      console.error('Error sending password reset:', error);
+      alert(`Failed to send password reset email: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdminLoginAsUser = async (userId: string, email: string) => {
+    if (!confirm(`Login as ${email}? This will create a 2-hour impersonation session.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const { data, error } = await supabase.functions.invoke('admin-login-as-user', {
+        body: { targetUserId: userId },
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+
+      if (error || !data?.success || !data?.access_token) {
+        alert(`Failed to create impersonation session: ${error?.message || data?.error || 'Unknown error'}`);
+        return;
+      }
+
+      // Set the session with the impersonated user's tokens
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token || ''
+      });
+
+      if (sessionError) {
+        alert(`Failed to set impersonation session: ${sessionError.message}`);
+        return;
+      }
+
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
+    } catch (error: any) {
+      console.error('Error creating impersonation session:', error);
+      alert(`Failed to create impersonation session: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -808,7 +847,7 @@ const AdminUserManagement: React.FC = () => {
           onClick: () => handleUnlockUser(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors',
           icon: <Unlock className="h-3 w-3 mr-1" />,
-          variant: 'success'
+          variant: 'success' as const
         });
       }
       
@@ -820,16 +859,39 @@ const AdminUserManagement: React.FC = () => {
           onClick: () => handleClearDeviceBinding(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors',
           icon: <EyeOff className="h-3 w-3 mr-1" />,
-          variant: 'warning'
+          variant: 'warning' as const
         });
       }
+    }
+    
+    // Add "Reset Password" button for all users (admin-only)
+    if (!isCurrentUser && (currentUserRole.is_admin || currentUserRole.is_senior_admin || currentUserRole.is_super_admin)) {
+      actions.push({
+        label: 'Reset Password',
+        onClick: () => handleAdminResetPassword(targetUser.id, targetUser.email),
+        className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors',
+        icon: <Key className="h-3 w-3 mr-1" />
+      });
+    }
+    
+    // Add "Login as User" button for admins (except for higher-level admins)
+    if (!isCurrentUser && 
+        (currentUserRole.is_super_admin || currentUserRole.is_senior_admin || currentUserRole.is_admin) &&
+        !(targetUser.is_super_admin && !currentUserRole.is_super_admin) &&
+        !(targetUser.is_senior_admin && !currentUserRole.is_super_admin)) {
+      actions.push({
+        label: 'Login as User',
+        onClick: () => handleAdminLoginAsUser(targetUser.id, targetUser.email),
+        className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors',
+        icon: <LogIn className="h-3 w-3 mr-1" />
+      });
     }
     
     return actions;
   };
 
   // Helper function to render action buttons or dropdown
-  const renderActions = (actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: string}>, userId: string) => {
+  const renderActions = (actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: 'default' | 'danger' | 'warning' | 'success'}>, _userId: string) => {
     if (actions.length <= 3) {
       // Show individual buttons
       return (
@@ -852,7 +914,7 @@ const AdminUserManagement: React.FC = () => {
         label: action.label,
         onClick: action.onClick,
         icon: action.icon,
-        variant: action.variant || 'default'
+        variant: (action.variant || 'default') as 'default' | 'danger' | 'warning' | 'success'
       }));
 
       return (
@@ -1135,7 +1197,7 @@ const AdminUserManagement: React.FC = () => {
                         
                         // Build actions array and render with smart dropdown logic
                         const actions = buildUserActions(targetUser);
-                        return renderActions(actions, targetUser.id);
+                        return renderActions(actions as Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: 'default' | 'danger' | 'warning' | 'success'}>, targetUser.id);
                       })()}
                       
                     </div>
@@ -1698,6 +1760,9 @@ const AdminUserManagement: React.FC = () => {
 };
 
 export default AdminUserManagement;
+
+
+
 
 
 
