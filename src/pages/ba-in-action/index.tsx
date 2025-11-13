@@ -16,7 +16,7 @@ const journey: Array<{ id: number; label: string; view: AppView }> = [
   { id: 6, label: 'Requirements & Documentation', view: 'ba_in_action_requirements' },
   { id: 7, label: 'Agile Delivery', view: 'ba_in_action_agile_delivery' },
   { id: 8, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
-  { id: 9, label: 'Continuous Improvement', view: 'ba_in_action_continuous_improvement' },
+  { id: 9, label: 'Continuous Improvement', view: 'ba_in_action_improvement' },
 ];
 
 const BAInActionIndexPage: React.FC = () => {
