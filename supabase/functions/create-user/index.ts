@@ -186,7 +186,7 @@ serve(async (req) => {
             const fromAddress = 'BA WorkXP <no-reply@baworkxp.com>'
             
             // Branded welcome email template with image
-            const emailTemplate = (params: { firstName: string; buttonUrl: string; buttonText: string }) => {
+            const emailTemplate = (params: { firstName: string; buttonUrl: string; buttonText: string; imageSrc: string }) => {
               return `
 <!DOCTYPE html>
 <html lang="en" style="margin:0; padding:0;">
@@ -263,7 +263,7 @@ serve(async (req) => {
                 ">
                   <tr>
                     <td>
-                      <img src="https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/community-files/email.jpg"
+                      <img src="${params.imageSrc}"
                            alt="Practicing stakeholder meetings inside BA WorkXP"
                            width="600"
                            style="display:block; border:0; max-width:100%; width:100%; height:auto; background:#0f172a;" />
@@ -324,15 +324,46 @@ serve(async (req) => {
             // Extract first name for personalization
             const firstName = body.name.split(' ')[0] || body.name
 
+            // Fetch image from Supabase Storage and convert to base64 for embedding
+            // Note: Embedding large images (1.8MB) as base64 increases email size significantly
+            // But this ensures the image displays in all email clients (they often block external images)
+            let imageBase64 = ''
+            try {
+              const imageUrl = 'https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/community-files/email.jpg'
+              const imageResponse = await fetch(imageUrl)
+              if (imageResponse.ok) {
+                const imageBuffer = await imageResponse.arrayBuffer()
+                const uint8Array = new Uint8Array(imageBuffer)
+                // Use TextDecoder for better performance with large buffers
+                let binaryString = ''
+                const chunkSize = 8192 // Process in chunks to avoid stack overflow
+                for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                  const chunk = uint8Array.subarray(i, i + chunkSize)
+                  binaryString += String.fromCharCode.apply(null, Array.from(chunk))
+                }
+                const imageBase64String = btoa(binaryString)
+                imageBase64 = `data:image/jpeg;base64,${imageBase64String}`
+                console.log('✅ [DEBUG] Image fetched and converted to base64, size:', imageBase64.length, 'bytes')
+              } else {
+                console.warn('⚠️ [DEBUG] Failed to fetch image, status:', imageResponse.status)
+              }
+            } catch (imageError) {
+              console.error('❌ [DEBUG] Error fetching image:', imageError)
+            }
+
+            // Update email template to use base64 image if available, otherwise fallback to URL
+            const emailHtml = emailTemplate({
+              firstName: firstName,
+              buttonUrl: resetLink,
+              buttonText: 'Set Your Password',
+              imageSrc: imageBase64 || 'https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/community-files/email.jpg'
+            })
+
             const emailPayload = {
               from: fromAddress,
               to: [body.email],
               subject: 'Welcome to BA WorkXP - Set Your Password',
-              html: emailTemplate({
-                firstName: firstName,
-                buttonUrl: resetLink,
-                buttonText: 'Set Your Password'
-              })
+              html: emailHtml
             }
             
             // DEBUG: Log email payload (without sensitive data)
@@ -341,6 +372,7 @@ serve(async (req) => {
             console.log('  - To:', body.email)
             console.log('  - Subject:', emailPayload.subject)
             console.log('  - Reset link generated:', !!resetLink)
+            console.log('  - Image embedded:', !!imageBase64)
             
             const emailResponse = await fetch('https://api.resend.com/emails', {
               method: 'POST',
