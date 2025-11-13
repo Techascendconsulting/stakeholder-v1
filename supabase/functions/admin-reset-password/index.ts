@@ -178,13 +178,10 @@ serve(async (req) => {
                     <strong style="color:#111827;">⏰ Security Note:</strong> This link will expire in <strong style="color:#7c3aed;">2 hours</strong> for your security. If it stops working, you can request another reset link from the login page.
                   </p>
                 </div>
-                <!-- Fallback Link -->
+                <!-- Fallback Message -->
                 <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-bottom:24px;">
-                  <p style="margin:0 0 8px 0; font-size:12px; line-height:1.5; color:#6b7280; font-weight:600; font-family:Arial, Helvetica, sans-serif;">
-                    Having trouble with the button?
-                  </p>
-                  <p style="margin:0; font-size:12px; line-height:1.6; color:#4b5563; word-break:break-all; font-family:Arial, Helvetica, sans-serif;">
-                    <a href="${params.resetLink}" style="color:#7c3aed; text-decoration:none;">${params.resetLink}</a>
+                  <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280; text-align:center; font-family:Arial, Helvetica, sans-serif;">
+                    Having trouble with the button? You can also copy and paste the reset link from the button above into your browser's address bar.
                   </p>
                 </div>
                 <!-- Divider -->
