@@ -145,7 +145,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = [
         'welcome',
-        'get-started',
         'dashboard',
         'learn',
         'learning-hub',
@@ -492,7 +491,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           pageType = 'project';
         } else if (view === 'admin' || view === 'admin-panel') {
           pageType = 'admin';
-        } else if (view === 'dashboard' || view === 'welcome' || view === 'get-started') {
+        } else if (view === 'dashboard' || view === 'welcome') {
           pageType = 'dashboard';
         } else if (view === 'profile' || view === 'settings') {
           pageType = 'settings';

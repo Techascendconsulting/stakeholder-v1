@@ -5,7 +5,6 @@ export * from './chat';
 // AppView type definition
 export type AppView = 
   | 'welcome'
-  | 'get-started'
   | 'dashboard'
   | 'learn'
   | 'learning-hub'

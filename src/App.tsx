@@ -10,7 +10,6 @@ import MainLayout from './components/Layout/MainLayout'
 import SetPasswordPage from './components/SetPasswordPage'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
-import { OnboardingProvider } from './contexts/OnboardingContext'
 import GlobalWatermark from './components/GlobalWatermark'
 import { useBlockCopyPaste } from './hooks/useBlockCopyPaste'
 import { BAInActionProjectProvider } from './contexts/BAInActionProjectContext'
@@ -163,14 +162,12 @@ function App() {
               <VoiceProvider>
                 <AppProvider>
                   <BAInActionProjectProvider>
-                    <OnboardingProvider>
-                      <MeetingSetupProvider>
-                        <StakeholderBotProvider>
-                          <AppContent />
-                          <GlobalWatermark />
-                        </StakeholderBotProvider>
-                      </MeetingSetupProvider>
-                    </OnboardingProvider>
+                    <MeetingSetupProvider>
+                      <StakeholderBotProvider>
+                        <AppContent />
+                        <GlobalWatermark />
+                      </StakeholderBotProvider>
+                    </MeetingSetupProvider>
                   </BAInActionProjectProvider>
                 </AppProvider>
               </VoiceProvider>

@@ -76,7 +76,6 @@ import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
 import WelcomeView from '../Views/WelcomeView';
-import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 // import AIProcessMapperView from '../Views/AIProcessMapperView'; // Archived
 import DiagramCreationView from '../Views/DiagramCreationView';
@@ -194,8 +193,6 @@ const MainLayout: React.FC = () => {
     switch (currentView) {
       case 'welcome':
         return <WelcomeView />;
-      case 'get-started':
-        return <GetStartedView />;
       case 'dashboard':
         // Using updated Dashboard with journey integration
         return <Dashboard />;

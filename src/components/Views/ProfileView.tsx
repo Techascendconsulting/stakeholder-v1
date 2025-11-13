@@ -3,7 +3,6 @@ import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useOnboarding } from '../../contexts/OnboardingContext';
 import { supabase } from '../../lib/supabase';
 import { getUserProfile, updateUserProfile } from '../../utils/profileUtils';
 import { deviceLockService } from '../../services/deviceLockService';
@@ -12,7 +11,6 @@ export const ProfileView: React.FC = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { setCurrentView } = useApp();
-  const { resetOnboarding } = useOnboarding();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security'>('profile');
 

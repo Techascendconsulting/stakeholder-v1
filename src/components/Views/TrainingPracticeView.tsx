@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
 import { TrainingSession, TrainingQuestion, TrainingFeedback } from '../../types/training';
 import { mockProjects, mockStakeholders } from '../../data/mockData';
