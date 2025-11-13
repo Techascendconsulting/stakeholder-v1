@@ -6,7 +6,9 @@ import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard'; // Updated with journey integration
 // import Dashboard2 from '../Views/Dashboard2'; // OLD: Clean, purposeful dashboard
 import VerityWidget from '../Verity/VerityWidget';
+import LearningIntro from '../../views/LearningFlow/LearningIntro';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
+import PracticeIntro from '../../views/PracticeFlow/PracticeIntro';
 import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
 import ProjectFlowView from '../../views/ProjectFlow/ProjectFlowView';
 
@@ -87,6 +89,7 @@ import LearnLandingView from '../Views/LearnLandingView';
 // import CommunityHub from '../Views/Community/CommunityHub'; // Archived for MVP
 // import AdminCommunityHub from '../Views/Community/AdminCommunityHub'; // Archived for MVP
 import ProjectLandingView from '../Views/ProjectLandingView';
+import BAInActionIntroPage from '../../pages/ba-in-action/intro';
 import BAInActionIndexPage from '../../pages/ba-in-action';
 import BAInActionPage1 from '../../pages/ba-in-action/join-orientation';
 import UnderstandProblemPage from '../../pages/ba-in-action/understand-problem';
@@ -206,8 +209,12 @@ const MainLayout: React.FC = () => {
         return <LearnLandingView />;
       case 'learning-hub':
         return <CoreLearningView />; // This will be the main Learning Hub view
+      case 'learning-intro':
+        return <LearningIntro />;
       case 'learning-flow':
         return <LearningFlowView />;
+      case 'practice-intro':
+        return <PracticeIntro />;
       case 'practice-flow':
         return <PracticeFlowView />;
       case 'project-flow':
@@ -363,6 +370,8 @@ const MainLayout: React.FC = () => {
       //   return <NavigationGuideView />;
       case 'analysis':
         return <AnalysisView />;
+      case 'ba-in-action-intro':
+        return <BAInActionIntroPage />;
       case 'ba-in-action-index':
         return <BAInActionIndexPage />;
       case 'ba_in_action_join_orientation':

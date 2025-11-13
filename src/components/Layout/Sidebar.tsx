@@ -213,17 +213,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: Briefcase
     },
     { 
-      id: 'learning-flow', 
+      id: 'learning-intro', 
       label: 'My Learning', 
       icon: GraduationCap
     },
     {
-      id: 'ba-in-action-index',
+      id: 'ba-in-action-intro',
       label: 'BA In Action',
       icon: PlayCircle
     },
     { 
-      id: 'practice-flow', 
+      id: 'practice-intro', 
       label: 'My Practice', 
       icon: Target
     },
