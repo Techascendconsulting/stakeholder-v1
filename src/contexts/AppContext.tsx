@@ -826,11 +826,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         checkOnboardingStatus()
         
-        console.log('🎯 ONBOARDING: Raw localStorage values:', {
-          onboardingCompleted: localStorage.getItem('onboardingCompleted'),
-          isOnboardingInProgress: localStorage.getItem('onboardingInProgress')
-        })
-        
         // Temporary debug: Add a way to manually complete onboarding
         if (typeof window !== 'undefined') {
           (window as any).completeOnboarding = () => {
