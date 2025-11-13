@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, GraduationCap, XCircle, Shield, X } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, GraduationCap, XCircle, Shield, X, ArrowRight } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { subscriptionService } from '../lib/subscription'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
 
@@ -24,6 +23,8 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
   const [success, setSuccess] = useState('')
   const [deviceLockResult, setDeviceLockResult] = useState<DeviceLockResult | null>(null)
   const [blockedAccount, setBlockedAccount] = useState<{ blocked: boolean; reason: string; email: string } | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
 
   const { signIn, signUp } = useAuth()
 
@@ -159,13 +160,27 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
     }
   }
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setErrors({ email: 'Please enter your email address first' })
+  const handleForgotPassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    
+    const emailToUse = showForgotPassword ? forgotPasswordEmail : formData.email
+    
+    if (!emailToUse) {
+      setErrors({ email: 'Please enter your email address' })
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailToUse)) {
+      setErrors({ email: 'Please enter a valid email address' })
       return
     }
 
     setLoading(true)
+    setErrors({})
+    setSuccess('')
+    
     try {
       // Call Edge Function instead of built-in Supabase auth
       const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || ''}/functions/v1/reset-password`
@@ -177,18 +192,20 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
           'Content-Type': 'application/json',
           'apikey': anonKey
         },
-        body: JSON.stringify({ email: formData.email })
+        body: JSON.stringify({ email: emailToUse })
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setErrors({ general: data.error || 'Failed to send password reset email' })
+        setErrors({ general: data.error || 'Failed to send password reset email. Please try again.' })
       } else {
-        setSuccess('Password reset email sent! Check your inbox.')
+        setSuccess(`Password reset email sent to ${emailToUse}! Check your inbox and click the link to reset your password.`)
+        setShowForgotPassword(false)
+        setForgotPasswordEmail('')
       }
     } catch (err) {
-      setErrors({ general: 'An unexpected error occurred' })
+      setErrors({ general: 'An unexpected error occurred. Please try again.' })
     } finally {
       setLoading(false)
     }
@@ -321,10 +338,80 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
           </div>
         )}
 
+        {/* Forgot Password Form */}
+        {showForgotPassword && (
+          <div className="px-8 pb-8">
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPassword(false)
+                  setForgotPasswordEmail('')
+                  setErrors({})
+                  setSuccess('')
+                }}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 flex items-center"
+              >
+                <ArrowRight className="w-4 h-4 mr-1 rotate-180" />
+                Back to Sign In
+              </button>
+            </div>
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Reset Your Password</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+            </div>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+                  <input
+                    type="email"
+                    id="forgot-email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => {
+                      setForgotPasswordEmail(e.target.value)
+                      if (errors.email) {
+                        setErrors(prev => ({ ...prev, email: '' }))
+                      }
+                    }}
+                    className={`w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.email ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''
+                    }`}
+                    placeholder="Enter your email address"
+                    required
+                    autoFocus
+                  />
+                </div>
+                {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:from-purple-700 hover:to-blue-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Sending Reset Link...
+                  </div>
+                ) : (
+                  'Send Password Reset Link'
+                )}
+              </button>
+            </form>
+          </div>
+        )}
+
         {/* Forms */}
-        <div className="px-8 pb-8">
-          {activeTab === 'signin' ? (
-            <form onSubmit={handleSignIn} className="space-y-4">
+        {!showForgotPassword && (
+          <div className="px-8 pb-8">
+            {activeTab === 'signin' ? (
+              <form onSubmit={handleSignIn} className="space-y-4">
               {/* Email Field */}
               <div>
                 <label htmlFor="signin-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -380,8 +467,13 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
               <div className="text-right">
                 <button
                   type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                  onClick={() => {
+                    setShowForgotPassword(true)
+                    setForgotPasswordEmail(formData.email)
+                    setErrors({})
+                    setSuccess('')
+                  }}
+                  className="text-sm text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium transition-colors"
                   disabled={loading}
                 >
                   Forgot Password?
@@ -421,7 +513,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                 </a>
               </div>
             </form>
-          ) : activeTab === 'signup' ? (
+            ) : activeTab === 'signup' ? (
             // Signup is disabled - show invite-only message
             <div className="text-center py-8">
               <Shield className="w-16 h-16 text-purple-600 dark:text-purple-400 mx-auto mb-4" />
@@ -455,7 +547,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
           ) : null}
           
           {/* Original Signup Form (hidden but kept for dev/admin purposes) */}
-          {false && activeTab === 'signup-hidden' && (
+          {false && (
             <form onSubmit={handleSignUp} className="space-y-4">
               {/* Name Field */}
               <div>
@@ -587,8 +679,9 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                 </button>
               </div>
             </form>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
       {/* Device Lock Alert */}
       {deviceLockResult && (

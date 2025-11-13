@@ -160,8 +160,10 @@ const SetPasswordPage: React.FC = () => {
 
       setSuccess(true)
       setTimeout(() => {
-        // Redirect to login
-        window.location.href = '/login?password_set=true'
+        // Redirect to login (show login form on landing page)
+        localStorage.setItem('showLoginForm', 'true')
+        localStorage.setItem('passwordSet', 'true')
+        window.location.href = '/'
       }, 2000)
 
     } catch (err: any) {
@@ -196,7 +198,12 @@ const SetPasswordPage: React.FC = () => {
               This password reset link is invalid or has expired. Please request a new password reset.
             </p>
             <a
-              href="/login"
+              href="/"
+              onClick={(e) => {
+                e.preventDefault()
+                localStorage.setItem('showLoginForm', 'true')
+                window.location.href = '/'
+              }}
               className="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
             >
               Go to Login
@@ -220,7 +227,12 @@ const SetPasswordPage: React.FC = () => {
             </p>
             <div className="space-y-3">
               <a
-                href="/login"
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault()
+                  localStorage.setItem('showLoginForm', 'true')
+                  window.location.href = '/'
+                }}
                 className="inline-block w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
               >
                 Go to Login
