@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
 import { TrainingStage } from '../../types/training';
 import { Project } from '../../types';
