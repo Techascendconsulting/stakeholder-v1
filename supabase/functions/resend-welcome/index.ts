@@ -157,8 +157,8 @@ serve(async (req) => {
                     <td>
                       <img src="https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/community-files/email.jpg"
                            alt="Practicing stakeholder meetings inside BA WorkXP"
-                           width="100%"
-                           style="display:block; border:0; max-width:100%; height:auto;" />
+                           width="600"
+                           style="display:block; border:0; max-width:100%; width:100%; height:auto; background:#0f172a;" />
                     </td>
                   </tr>
                 </table>
@@ -167,19 +167,19 @@ serve(async (req) => {
             <!-- What you'll be doing -->
             <tr>
               <td style="padding:16px 26px 8px 26px;">
-                <h2 style="margin:0 0 8px 0; font-size:16px; color:#111827;">
+                <h2 style="margin:0 0 8px 0; font-size:16px; font-weight:600; color:#111827; font-family:Arial, sans-serif;">
                   What you'll be doing inside BA WorkXP
                 </h2>
-                <p style="margin:0 0 12px 0; font-size:13px; line-height:1.7; color:#4b5563;">
+                <p style="margin:0 0 12px 0; font-size:14px; line-height:1.7; color:#4b5563; font-family:Arial, sans-serif;">
                   Once you've set your password and signed in, you'll be guided step-by-step through core BA activities, just like you're already on a real team:
                 </p>
-                <ul style="margin:0 0 14px 18px; padding:0; font-size:13px; line-height:1.7; color:#4b5563;">
+                <ul style="margin:0 0 14px 18px; padding:0; font-size:14px; line-height:1.7; color:#4b5563; font-family:Arial, sans-serif;">
                   <li>Learning how to talk to stakeholders and ask the right questions.</li>
                   <li>Breaking down business problems and mapping current vs future processes.</li>
                   <li>Practicing how to document requirements in a clear, structured way.</li>
                   <li>Writing user stories and acceptance criteria that developers can actually use.</li>
                 </ul>
-                <p style="margin:0 0 18px 0; font-size:13px; line-height:1.7; color:#4b5563;">
+                <p style="margin:0 0 18px 0; font-size:14px; line-height:1.7; color:#4b5563; font-family:Arial, sans-serif;">
                   It's not theory. It's practice — so when someone asks you to "talk about the work you've done as a BA", you'll finally have something real to say.
                 </p>
               </td>
