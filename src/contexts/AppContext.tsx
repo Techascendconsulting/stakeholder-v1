@@ -842,18 +842,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           };
         }
         
-        console.log('🎯 ONBOARDING: Checking onboarding state:', { 
-          onboardingCompleted: onboardingCompleted, 
-          isOnboardingInProgress: isOnboardingInProgress,
-          currentView 
-        })
-        
-        // If user is on dashboard but hasn't completed onboarding, redirect to welcome
-        if (currentView === 'dashboard' && !onboardingCompleted && !isOnboardingInProgress) {
-          console.log('🎯 ONBOARDING: User needs onboarding, redirecting to welcome page')
-          setCurrentViewState('welcome')
-          localStorage.setItem('currentView', 'welcome')
-        }
+        // Note: Onboarding check and redirect is now handled by checkOnboardingStatus() above
       }
       
       // Admin users should be redirected to admin panel immediately
