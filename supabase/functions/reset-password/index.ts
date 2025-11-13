@@ -35,7 +35,10 @@ serve(async (req) => {
     // Generate password reset link
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
-      email: email
+      email: email,
+      options: {
+        redirectTo: 'https://baworkxp.co.uk/set-password'
+      }
     })
 
     if (resetError || !resetData?.properties?.action_link) {
@@ -46,6 +49,7 @@ serve(async (req) => {
       )
     }
 
+    // Use Supabase's action_link which will verify and redirect to /set-password
     const resetLink = resetData.properties.action_link
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 

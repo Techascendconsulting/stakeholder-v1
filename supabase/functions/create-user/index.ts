@@ -171,13 +171,17 @@ serve(async (req) => {
           // Generate password reset link so user can set their own password
           const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'recovery',
-            email: body.email
+            email: body.email,
+            options: {
+              redirectTo: 'https://baworkxp.co.uk/set-password'
+            }
           })
 
           if (resetError) {
             console.error('❌ [DEBUG] Error generating password reset link:', resetError)
             emailError = resetError.message
           } else if (resetData?.properties?.action_link) {
+            // Use Supabase's action_link which will verify and redirect to /set-password
             const resetLink = resetData.properties.action_link
             const fromAddress = 'BA WorkXP <no-reply@baworkxp.com>'
             
@@ -259,7 +263,7 @@ serve(async (req) => {
                 ">
                   <tr>
                     <td>
-                      <img src="https://baworkxp.co.uk/images/email.jpg"
+                      <img src="https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/community-files/email.jpg"
                            alt="Practicing stakeholder meetings inside BA WorkXP"
                            width="100%"
                            style="display:block; border:0; max-width:100%; height:auto;" />
