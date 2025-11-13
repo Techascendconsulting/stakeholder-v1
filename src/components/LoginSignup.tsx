@@ -3,7 +3,6 @@ import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, GraduationCap,
 import { useAuth } from '../contexts/AuthContext'
 import { DeviceLockResult } from '../services/deviceLockService'
 import DeviceLockAlert from './DeviceLockAlert'
-import { supabase } from '../lib/supabase'
 
 interface LoginSignupProps {
   onBack?: () => void
@@ -183,14 +182,31 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
     setSuccess('')
     
     try {
-      // Call Edge Function using Supabase client (handles headers automatically)
-      const { data, error } = await supabase.functions.invoke('reset-password', {
-        body: { email: emailToUse }
+      // Call Edge Function - use direct fetch with apikey header since function is public
+      // The config.toml sets verify_jwt = false, so we just need the apikey header
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      
+      if (!supabaseUrl || !anonKey) {
+        setErrors({ general: 'Configuration error: Missing Supabase credentials' })
+        return
+      }
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}` // Some functions require this even with verify_jwt = false
+        },
+        body: JSON.stringify({ email: emailToUse })
       })
 
-      if (error) {
-        console.error('Reset password error:', error)
-        setErrors({ general: error.message || 'Failed to send password reset email. Please try again.' })
+      const data = await response.json().catch(() => ({ error: 'Failed to parse response' }))
+
+      if (!response.ok) {
+        console.error('Reset password error:', data)
+        setErrors({ general: data.error || `Failed to send password reset email (${response.status}). Please try again.` })
       } else if (!data?.success) {
         setErrors({ general: data?.error || 'Failed to send password reset email. Please try again.' })
       } else {

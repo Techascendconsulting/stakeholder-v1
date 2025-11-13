@@ -1,0 +1,13 @@
+# Supabase Configuration
+# This file configures Supabase project settings and Edge Functions
+
+[project]
+# Project reference
+# This is automatically managed by Supabase CLI
+
+[functions.reset-password]
+# Disable JWT verification for password reset function
+# This allows unauthenticated users to request password resets
+# The function still validates the apikey header for basic security
+verify_jwt = false
+
