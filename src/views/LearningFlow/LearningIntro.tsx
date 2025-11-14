@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { ArrowRight, ArrowLeft, BookOpen, CheckCircle, Target, TrendingUp } from 'lucide-react';
 
 const LearningIntro: React.FC = () => {
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
 
   const handleContinue = () => {
     void setCurrentView('learning-flow');
@@ -13,6 +17,30 @@ const LearningIntro: React.FC = () => {
   const handleBack = () => {
     void setCurrentView('dashboard');
   };
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data: userData } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (userData) {
+          setUserType(userData.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Error loading user type:', error);
+        setUserType('existing'); // Default to existing on error
+      }
+    };
+
+    void loadUserType();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900 flex items-center justify-center p-6">
@@ -72,6 +100,11 @@ const LearningIntro: React.FC = () => {
                   <p>
                     Each module builds on the last, giving you a complete foundation in Business Analysis. Learn at your own pace, track your progress, and unlock new modules as you complete each one.
                   </p>
+                  {userType === 'new' && (
+                    <p className="text-base font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-3 rounded-lg border border-indigo-200 dark:border-indigo-700">
+                      Unlocks elicitation practice after completion of 3 modules
+                    </p>
+                  )}
                 </div>
 
                 {/* Features */}
