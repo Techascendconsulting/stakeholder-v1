@@ -20,7 +20,6 @@ import {
   TrendingUp,
   MessageSquare,
   BarChart3,
-  GraduationCap,
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
@@ -173,8 +172,12 @@ const LandingPage: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg p-1">
+                <img 
+                  src="/images/workxp.svg" 
+                  alt="BA WorkXP Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-xl font-bold text-white">BA WorkXP™</span>
             </div>
@@ -307,7 +310,7 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section - Problem-Focused */}
-      <section className="relative pt-24 pb-16 overflow-hidden">
+      <section className="relative pb-16 overflow-hidden" style={{ paddingTop: 'calc(var(--security-banner-height, 0px) + 5.5rem)' }}>
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -362,13 +365,6 @@ const LandingPage: React.FC = () => {
                   See How It Works
                 </button>
               </div>
-              
-              <div className="flex items-start gap-3 pt-2">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm font-medium text-gray-300">
-                  No credit card required. Start building your BA portfolio today.
-                </p>
-              </div>
 
               {/* Social Proof Stats - Mini version in Hero */}
               <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-gray-700/50 mt-6">
@@ -401,10 +397,6 @@ const LandingPage: React.FC = () => {
             <div className="relative flex flex-col items-center justify-center">
               {/* Clear Explanation */}
               <div className="mb-6 text-center space-y-3">
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500/20 to-green-500/20 backdrop-blur-sm rounded-full border-2 border-emerald-400/40 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                  <span className="text-sm font-bold text-emerald-100">YOU Practicing Right Now</span>
-                </div>
                 <h3 className="text-2xl font-bold text-white max-w-md mx-auto leading-tight">
                   This Is You Interviewing Real Stakeholders
                 </h3>

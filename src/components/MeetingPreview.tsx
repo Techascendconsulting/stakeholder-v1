@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const participants = [
   { name: "Sarah Miller", avatar: "/images/avatars/sarah-avatar.png", speaking: true },
   { name: "David Thompson", avatar: "/images/avatars/tom-avatar.png", speaking: false },
-  { name: "You", avatar: "/images/avatars/victor-avatar.png", speaking: false },
+  { name: "You", avatar: "/images/avatars/bola-avatar.png", speaking: false },
   { name: "James Walker", avatar: "/images/avatars/srikanth-avatar.png", speaking: false },
 ];
 
@@ -99,6 +99,8 @@ export default function MeetingPreview() {
     </div>
   );
 }
+
+
 
 
 

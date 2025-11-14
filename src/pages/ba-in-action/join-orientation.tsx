@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useApp } from "../../contexts/AppContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useBAInActionProject } from "../../contexts/BAInActionProjectContext";
 import { PAGE_1_DATA } from "../../ba-in-action/page1-data";
 import type { AppView } from "../../types";
@@ -78,81 +79,87 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
 );
 
 // --- Email Component ---
-const WelcomeEmail: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="border-b border-slate-300 bg-slate-50 px-4 py-2.5">
-      <div className="flex items-center gap-2 text-sm text-slate-700">
-        <Mail size={16} className="text-indigo-600" />
-        <span className="font-semibold">Inbox</span>
-        <span className="text-slate-400">›</span>
-        <span className="text-slate-600">{data.emailSubject}</span>
-      </div>
-    </div>
-    
-    <div className="px-4 py-3 border-b border-slate-200 bg-white space-y-2">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-semibold text-base text-slate-900">{data.emailFrom}</div>
-          <div className="text-sm text-slate-600">{data.emailFromEmail}</div>
-        </div>
-        <div className="text-sm text-slate-500">Today, 09:12</div>
-      </div>
-      <div className="text-sm text-slate-600">
-        <span className="font-medium">To:</span> You
-      </div>
-      <div className="text-sm text-slate-600">
-        <span className="font-medium">Subject:</span> {data.emailSubject}
-      </div>
-    </div>
-
-    <div className="px-4 py-4 text-base text-slate-800 leading-relaxed space-y-3">
-      <p>Hi —</p>
-      
-      <p>
-        Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900">"{data.initiativeName}"</span> initiative.
-      </p>
-      
-      <p>
-        I've set up a short intro call for <span className="font-semibold text-slate-900">{data.meetingTime} this morning</span> (link below). 
-        Before we meet, please skim through the attached one-pager so we can hit the ground running.
-      </p>
-      
-      <p>
-        We'll align on the problem, key stakeholders, and what we need from you in the first 48 hours.
-      </p>
-      
-      <p>Cheers,<br/>{data.emailFrom.split(' ')[0]}</p>
-
-      <div className="pt-3 mt-4 border-t border-slate-200">
-        <div className="text-sm font-medium text-slate-700 mb-2">Attachments (2)</div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
-            <Paperclip size={14} />
-            <span>{data.attachmentName}</span>
-            <span className="text-slate-400 text-sm">124 KB</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
-            <Link2 size={14} />
-            <span>Teams: {data.teamsChannel}</span>
-          </div>
+const WelcomeEmail: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => {
+  const { user } = useAuth();
+  // Get user's first name from name or email
+  const userName = user?.user_metadata?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+  
+  return (
+    <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
+      <div className="border-b border-slate-300 bg-slate-50 px-4 py-2.5">
+        <div className="flex items-center gap-2 text-sm text-slate-700">
+          <Mail size={16} className="text-indigo-600" />
+          <span className="font-semibold">Inbox</span>
+          <span className="text-slate-400">›</span>
+          <span className="text-slate-600">{data.emailSubject}</span>
         </div>
       </div>
+      
+      <div className="px-4 py-3 border-b border-slate-200 bg-white space-y-2">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="font-semibold text-base text-slate-900">{data.emailFrom}</div>
+            <div className="text-sm text-slate-600">{data.emailFromEmail}</div>
+          </div>
+          <div className="text-sm text-slate-500">Today, 09:12</div>
+        </div>
+        <div className="text-sm text-slate-600">
+          <span className="font-medium">To:</span> You
+        </div>
+        <div className="text-sm text-slate-600">
+          <span className="font-medium">Subject:</span> {data.emailSubject}
+        </div>
+      </div>
+
+      <div className="px-4 py-4 text-base text-slate-800 leading-relaxed space-y-3">
+        <p>Hi {userName},</p>
+      
+        <p>
+          Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900">"{data.initiativeName}"</span> initiative.
+        </p>
+        
+        <p>
+          I've set up a short intro call for <span className="font-semibold text-slate-900">{data.meetingTime} this morning</span> (link below). 
+          Before we meet, please skim through the attached one-pager so we can hit the ground running.
+        </p>
+        
+        <p>
+          We'll align on the problem, key stakeholders, and what we need from you in the first 48 hours.
+        </p>
+        
+        <p>Cheers,<br/>{data.emailFrom.split(' ')[0]}</p>
+
+        <div className="pt-3 mt-4 border-t border-slate-200">
+          <div className="text-sm font-medium text-slate-700 mb-2">Attachments (2)</div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
+              <Paperclip size={14} />
+              <span>{data.attachmentName}</span>
+              <span className="text-slate-400 text-sm">124 KB</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-blue-700 hover:underline cursor-pointer">
+              <Link2 size={14} />
+              <span>Teams: {data.teamsChannel}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <LookFor items={[
+        "What's the initiative called? Write it down — you'll use it constantly.",
+        "Who sent this? They're likely your first point of contact.",
+        "When's the first meeting? What prep do they expect?",
+        "What attachments exist? Those are your context documents."
+      ]} />
+
+      <CoachingHint title="Why emails matter to a BA">
+        Real projects don't start with requirements docs. They start with communications like this. 
+        A BA reads these to understand <strong>who's involved, what's urgent, and where the pressure is coming from</strong>. 
+        Your job isn't to memorize it — it's to spot what you don't yet know and prepare questions.
+      </CoachingHint>
     </div>
-
-    <LookFor items={[
-      "What's the initiative called? Write it down — you'll use it constantly.",
-      "Who sent this? They're likely your first point of contact.",
-      "When's the first meeting? What prep do they expect?",
-      "What attachments exist? Those are your context documents."
-    ]} />
-
-    <CoachingHint title="Why emails matter to a BA">
-      Real projects don't start with requirements docs. They start with communications like this. 
-      A BA reads these to understand <strong>who's involved, what's urgent, and where the pressure is coming from</strong>. 
-      Your job isn't to memorize it — it's to spot what you don't yet know and prepare questions.
-    </CoachingHint>
-  </div>
-);
+  );
+};
 
 // --- Teams Meeting Component ---
 const TeamsMeeting: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
