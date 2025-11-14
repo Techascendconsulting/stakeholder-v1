@@ -2,6 +2,7 @@
 // SECURITY: No OpenAI API key in frontend
 
 import { VERITY_SYSTEM_PROMPT } from '../components/Verity/VerityPrompt';
+import { supabase } from '../lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -46,35 +47,50 @@ export class VerityService {
 The current page is: ${context.pageTitle || 'Unknown Page'} (${context.context}).
 User role: ${context.userRole || 'learner'}`;
 
+      // Get Supabase session token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        console.error('❌ Verity: No authentication token available');
+        return {
+          reply: "I'm having trouble authenticating. Please refresh the page and try again.",
+          escalate: true
+        };
+      }
+
       console.log('🔄 Verity: Calling backend API...');
       
-      const response = await fetch('/api/chat', {
+      // Call the correct endpoint with proper request format
+      const response = await fetch('/api/verity-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           messages: [
             { role: 'system', content: contextualSystemPrompt },
             ...messages
           ],
-          model: 'gpt-4o-mini',
-          temperature: 0.7,
-          max_tokens: 500
+          context: {
+            context: context.context,
+            pageTitle: context.pageTitle,
+            userRole: context.userRole
+          }
         })
       });
 
       if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error(`❌ Verity API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
-      const reply = data.message || "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
-      
-      // Check if escalation is needed (basic heuristic)
-      const escalate = reply.toLowerCase().includes('escalat') || 
-                       reply.toLowerCase().includes('report issue') ||
-                       reply.toLowerCase().includes('technical support');
+      // Backend returns { reply, escalate }, not { message }
+      const reply = data.reply || "I'm having trouble right now. Please use the **⚠️ Report Issue** tab to get help.";
+      const escalate = data.escalate || false;
       
       console.log('✅ Verity: Response received');
 
@@ -94,13 +110,24 @@ User role: ${context.userRole || 'learner'}`;
    */
   static async isAvailable(): Promise<boolean> {
     try {
-      // Simple health check - try a minimal API call
-      const response = await fetch('/api/chat', {
+      // Get Supabase session token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        return false;
+      }
+
+      // Simple health check - try a minimal API call to the correct endpoint
+      const response = await fetch('/api/verity-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           messages: [{ role: 'user', content: 'ping' }],
-          max_tokens: 5
+          context: {}
         })
       });
       return response.ok;
