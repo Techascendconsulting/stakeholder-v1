@@ -200,6 +200,8 @@ export function getPageTitle(view: string): string {
     'ba_in_action_requirements': 'BA In Action • Requirements & Documentation',
     'ba_in_action_implementation': 'BA In Action • Implementation & Agile Approach',
     'ba_in_action_agile_delivery': 'BA In Action • Using Jira as a Tool',
+    'ba_in_action_continuous_development': 'BA In Action • Continuous Development & Scrum Loop',
+    'ba_in_action_challenges': 'BA In Action • BA Challenges & How to Handle Them',
     'ba_in_action_handover_value': 'BA In Action • Handover & Value Tracking',
     'ba_in_action_improvement': 'BA In Action • Continuous Improvement',
   };

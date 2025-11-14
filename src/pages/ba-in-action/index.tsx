@@ -15,8 +15,8 @@ const journey: Array<{ id: number; label: string; view: AppView }> = [
   { id: 6, label: 'Requirements & Documentation', view: 'ba_in_action_requirements' },
   { id: 7, label: 'Implementation & Agile Approach', view: 'ba_in_action_implementation' },
   { id: 8, label: 'Using Jira as a Tool', view: 'ba_in_action_agile_delivery' },
-  { id: 9, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
-  { id: 10, label: 'Continuous Improvement', view: 'ba_in_action_improvement' },
+  { id: 9, label: 'Continuous Development & Scrum Loop', view: 'ba_in_action_continuous_development' },
+  { id: 10, label: 'BA Challenges & How to Handle Them', view: 'ba_in_action_challenges' },
 ];
 
 const BAInActionIndexPage: React.FC = () => {

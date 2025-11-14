@@ -61,16 +61,16 @@ const rawPages: Array<Omit<BAInActionPageDefinition, 'route'>> = [
     description: 'Learn how BAs use Jira and other tools for documentation and tracking during implementation.',
   },
   {
-    title: 'Handover & Value Tracking',
-    slug: 'handover-value',
-    view: 'ba_in_action_handover_value',
-    description: 'Support UAT, launch handover, and measure the value delivered after go-live.',
+    title: 'Continuous Development & Scrum Loop',
+    slug: 'continuous-development',
+    view: 'ba_in_action_continuous_development',
+    description: 'How BAs work during sprints: going back to stakeholders, following scrum meetings, and the iterative loop.',
   },
   {
-    title: 'Continuous Improvement',
-    slug: 'continuous-improvement',
-    view: 'ba_in_action_improvement',
-    description: 'Run retrospectives, capture lessons learned, and prioritize improvements for future iterations.',
+    title: 'BA Challenges & How to Handle Them',
+    slug: 'ba-challenges',
+    view: 'ba_in_action_challenges',
+    description: 'Common challenges BAs face: scope creep, difficult stakeholders, conflicting priorities, and how to handle them.',
   },
 ] as const;
 

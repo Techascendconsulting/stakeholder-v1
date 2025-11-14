@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { AppView } from '../types';
 import { useBAInActionProject } from '../contexts/BAInActionProjectContext';
 import { PAGE_1_DATA } from './page1-data';
-import { PAGE_9_DATA } from './page9-data';
+import { PAGE_9_IMPROVEMENT_DATA } from './page9-improvement-data';
 import {
   PageShell,
   PageTitle,
@@ -85,7 +85,7 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
 const ContinuousImprovement: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
   const projectData = PAGE_1_DATA[selectedProject];
-  const page9Data = PAGE_9_DATA[selectedProject];
+  const page9Data = PAGE_9_IMPROVEMENT_DATA[selectedProject];
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;

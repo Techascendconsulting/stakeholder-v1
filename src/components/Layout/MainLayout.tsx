@@ -100,6 +100,8 @@ import AnalysisSpottingIssues from '../../ba-in-action/AnalysisSpottingIssues';
 import ToBeAndSolutionShaping from '../../ba-in-action/ToBeAndSolutionShaping';
 import Implementation from '../../ba-in-action/Implementation';
 import WorkingWithDevelopers from '../../ba-in-action/WorkingWithDevelopers';
+import ContinuousDevelopment from '../../ba-in-action/ContinuousDevelopment';
+import BAChallenges from '../../ba-in-action/BAChallenges';
 import UATValidation from '../../ba-in-action/UATValidation';
 import ContinuousImprovement from '../../ba-in-action/ContinuousImprovement';
 import AdminDashboard from '../AdminDashboard';
@@ -391,6 +393,10 @@ const MainLayout: React.FC = () => {
         return <Implementation />;
       case 'ba_in_action_agile_delivery':
         return <WorkingWithDevelopers />;
+      case 'ba_in_action_continuous_development':
+        return <ContinuousDevelopment />;
+      case 'ba_in_action_challenges':
+        return <BAChallenges />;
       case 'ba_in_action_handover_value':
         return <UATValidation />;
       case 'ba_in_action_improvement':
