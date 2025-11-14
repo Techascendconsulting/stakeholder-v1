@@ -116,3 +116,4 @@ SELECT 'Training Stories:' as info, summary, moscow, epic_id FROM public.stories
 
 
 
+

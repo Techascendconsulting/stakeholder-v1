@@ -38,3 +38,4 @@ WHERE table_schema = 'public'
 AND table_name = 'user_meetings' 
 AND column_name = 'meeting_type';
 
+

@@ -105,8 +105,17 @@ const ProjectCard: React.FC<{ project: ProjectData; onSelect: () => void }> = ({
 
 export const ProjectSelection: React.FC<ProjectSelectionProps> = ({ onSelect }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 dark:from-blue-800 dark:via-indigo-800 dark:to-blue-900">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 dark:from-blue-800 dark:via-indigo-800 dark:to-blue-900 relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/blue.jpg" 
+          alt="" 
+          className="w-full h-full object-cover opacity-30 dark:opacity-20"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-indigo-600/80 to-blue-700/80 dark:from-blue-800/90 dark:via-indigo-800/90 dark:to-blue-900/90"></div>
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">

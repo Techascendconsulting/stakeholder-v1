@@ -488,14 +488,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                   onClick={() => {
                     console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
                     
-                    // Early return for locked items with alerts
-                    // Only show lock message for new users
-                    if (isPracticeLocked) {
-                      alert('Your Practice Journey unlocks after completing Modules 1–3 and submitting assignments.');
-                      return;
-                    }
-                    if (isProjectLocked) {
-                      alert('Complete your Practice Journey to unlock your Final Project.');
+                    // Early return for locked items - just prevent navigation
+                    if (isPracticeLocked || isProjectLocked) {
                       return;
                     }
                     

@@ -159,27 +159,27 @@ ${data.onePager.successMetrics.map(m => `${m.metric}: ${m.baseline} → ${m.targ
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <FileText className="w-6 h-6 text-indigo-600" />
+            <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h2 className="text-xl font-semibold text-slate-900">{fileName}</h2>
-              <p className="text-sm text-slate-500">124 KB</p>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{fileName}</h2>
+              <p className="text-sm text-slate-500 dark:text-gray-400">124 KB</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={handleDownload}
-              className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-gray-300 bg-slate-100 dark:bg-gray-700 rounded-md hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -189,49 +189,49 @@ ${data.onePager.successMetrics.map(m => `${m.metric}: ${m.baseline} → ${m.targ
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="text-base text-slate-800 space-y-4 leading-relaxed">
+          <div className="text-base text-slate-800 dark:text-gray-300 space-y-4 leading-relaxed">
             <div>
-              <div className="font-semibold text-slate-900 mb-2 text-lg">The Problem</div>
+              <div className="font-semibold text-slate-900 dark:text-white mb-2 text-lg">The Problem</div>
               <div>{data.onePager.problem}</div>
             </div>
 
             <div className="grid grid-cols-3 gap-3 pt-3">
               {data.onePager.impactStats.map((stat, idx) => (
-                <div key={idx} className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-rose-700">{stat.value}</div>
-                  <div className="text-xs text-rose-600 mt-1">{stat.label}</div>
+                <div key={idx} className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">{stat.value}</div>
+                  <div className="text-xs text-rose-600 dark:text-rose-400 mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
 
-            <div className="pt-3 border-t border-slate-200">
-              <div className="font-semibold text-slate-900 mb-2 text-lg">The Goal</div>
+            <div className="pt-3 border-t border-slate-200 dark:border-gray-700">
+              <div className="font-semibold text-slate-900 dark:text-white mb-2 text-lg">The Goal</div>
               <div>{data.onePager.goal}</div>
             </div>
 
-            <div className="pt-3 border-t border-slate-200">
-              <div className="font-semibold text-slate-900 mb-2 text-lg">Key Constraints</div>
+            <div className="pt-3 border-t border-slate-200 dark:border-gray-700">
+              <div className="font-semibold text-slate-900 dark:text-white mb-2 text-lg">Key Constraints</div>
               <ul className="space-y-1.5 text-sm">
                 {data.onePager.constraints.map((constraint, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-slate-700">
-                    <AlertCircle size={14} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                  <li key={idx} className="flex items-start gap-2 text-slate-700 dark:text-gray-300">
+                    <AlertCircle size={14} className="text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
                     <span>{constraint}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-200">
+            <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-200 dark:border-gray-700">
               <div>
-                <div className="font-semibold text-slate-900 mb-2 text-lg">Success Metrics</div>
+                <div className="font-semibold text-slate-900 dark:text-white mb-2 text-lg">Success Metrics</div>
                 <div className="space-y-2">
                   {data.onePager.successMetrics.map((metric, idx) => (
-                    <div key={idx} className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-sm">
-                      <div className="font-medium text-slate-900">{metric.metric}</div>
-                      <div className="text-slate-700">
-                        <span className="text-slate-500">{metric.baseline}</span>
-                        <span className="mx-2 text-emerald-600 font-bold">→</span>
-                        <span className="font-semibold text-emerald-700">{metric.target}</span>
+                    <div key={idx} className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-2.5 text-sm">
+                      <div className="font-medium text-slate-900 dark:text-white">{metric.metric}</div>
+                      <div className="text-slate-700 dark:text-gray-300">
+                        <span className="text-slate-500 dark:text-gray-400">{metric.baseline}</span>
+                        <span className="mx-2 text-emerald-600 dark:text-emerald-400 font-bold">→</span>
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">{metric.target}</span>
                       </div>
                     </div>
                   ))}
@@ -255,16 +255,16 @@ const TeamsModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <Link2 className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl font-semibold text-slate-900">Teams Channel</h2>
+            <Link2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Teams Channel</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -274,16 +274,16 @@ const TeamsModal: React.FC<{
         {/* Content */}
         <div className="p-6 space-y-4">
           <div>
-            <div className="text-sm font-medium text-slate-700 mb-2">Channel Name</div>
-            <div className="text-lg font-semibold text-slate-900">{channelName}</div>
+            <div className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Channel Name</div>
+            <div className="text-lg font-semibold text-slate-900 dark:text-white">{channelName}</div>
           </div>
           
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <div className="text-sm text-slate-700 leading-relaxed">
+          <div className="bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-700 rounded-lg p-4">
+            <div className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed">
               <p className="font-medium mb-2">About this channel:</p>
               <p>This is the main communication channel for the {channelName.includes('voids') ? 'Housing Voids Reduction Programme' : 'Customer Identity & Fraud Programme'}.</p>
               <p className="mt-2">Use this channel to:</p>
-              <ul className="list-disc list-inside mt-2 space-y-1 text-slate-600">
+              <ul className="list-disc list-inside mt-2 space-y-1 text-slate-600 dark:text-gray-400">
                 <li>Share updates and ask questions</li>
                 <li>Coordinate with team members</li>
                 <li>Access shared resources and documents</li>
@@ -294,7 +294,7 @@ const TeamsModal: React.FC<{
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded transition-colors"
+            className="w-full py-2.5 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white text-sm font-medium rounded transition-colors"
           >
             Got it
           </button>
@@ -325,20 +325,20 @@ const ProgressTracker: React.FC<{
   })();
 
   return (
-    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-gray-900/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
-          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+          <div className="text-base font-bold text-slate-900 dark:text-white mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600 dark:text-gray-400">{completed} of {total} steps completed</div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+          <div className="w-32 h-3 bg-blue-100 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
             <div 
               className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+          <span className="text-sm font-bold text-blue-700 dark:text-blue-400 min-w-[3rem]">{Math.round(percentage)}%</span>
         </div>
       </div>
       <div className="space-y-2">
@@ -356,27 +356,27 @@ const ProgressTracker: React.FC<{
                 className="flex-shrink-0"
               >
                 {completed ? (
-                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Circle size={18} className="text-slate-400" />
+                  <Circle size={18} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
               <button
                 onClick={() => onStepClick(step.sectionId)}
                 className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-600 shadow-md hover:shadow-lg' 
                     : completed 
-                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
-                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:shadow-md' 
+                      : 'bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-sm'
                 }`}
               >
-                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
-                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600 dark:text-emerald-400' : isActive ? 'text-blue-600 dark:text-blue-400 animate-pulse' : 'text-slate-400 dark:text-gray-500'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isActive ? 'text-blue-900 dark:text-blue-300 font-bold' : 'text-slate-700 dark:text-gray-300'}`}>
                   {step.label}
                 </span>
                 {idx < steps.length - 1 && (
-                  <ChevronDown size={14} className="text-slate-400" />
+                  <ChevronDown size={14} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
             </div>
@@ -403,21 +403,21 @@ const CollapsibleSection: React.FC<{
   const handleToggle = onToggle || (() => setInternalOpen(!internalOpen));
 
   return (
-    <div className={`bg-white border rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${
-      completed ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/50 to-white' : 'border-blue-200 bg-gradient-to-br from-white to-blue-50/20'
+    <div className={`bg-white dark:bg-gray-800 border rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${
+      completed ? 'border-emerald-300 dark:border-emerald-700 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-900/20 dark:to-gray-800' : 'border-blue-200 dark:border-blue-700 bg-gradient-to-br from-white to-blue-50/20 dark:from-gray-800 dark:to-gray-900/50'
     }`}>
       <button
         onClick={handleToggle}
-        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 transition-all duration-200"
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-200"
       >
         <div className="flex items-center gap-3">
           {completed ? (
-            <CheckCircle2 size={18} className="text-emerald-600" />
+            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <Circle size={18} className="text-slate-400" />
+            <Circle size={18} className="text-slate-400 dark:text-gray-500" />
           )}
-          <Icon size={20} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isOpen ? 'text-blue-600' : 'text-slate-500'}`} />
-          <span className={`text-lg font-bold ${completed ? 'text-emerald-900 line-through' : isOpen ? 'text-blue-900' : 'text-slate-900'}`}>
+          <Icon size={20} className={`transition-all duration-300 ${completed ? 'text-emerald-600 dark:text-emerald-400' : isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400'}`} />
+          <span className={`text-lg font-bold ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isOpen ? 'text-blue-900 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
             {title}
           </span>
         </div>
@@ -428,20 +428,20 @@ const CollapsibleSection: React.FC<{
                 e.stopPropagation();
                 onToggleComplete(!completed);
               }}
-              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-300"
             >
               {completed ? 'Mark incomplete' : 'Mark complete'}
             </button>
           )}
           {isOpen ? (
-            <ChevronDown size={18} className="text-slate-400" />
+            <ChevronDown size={18} className="text-slate-400 dark:text-gray-500" />
           ) : (
-            <ChevronRight size={18} className="text-slate-400" />
+            <ChevronRight size={18} className="text-slate-400 dark:text-gray-500" />
           )}
         </div>
       </button>
       {isOpen && (
-        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="border-t border-blue-200/50 dark:border-gray-700 animate-in slide-in-from-top-2 fade-in duration-300">
           {children}
         </div>
       )}
@@ -459,33 +459,33 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
   }
 
   return (
-    <div className="bg-white border border-blue-200 rounded-2xl shadow-md overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-md overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 transition-all duration-200"
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-200"
       >
         <div className="flex items-center gap-3">
-          <FileText size={20} className="text-blue-600" />
-          <span className="text-lg font-bold text-slate-900">Key Terms</span>
-          <span className="text-xs text-slate-500 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+          <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+          <span className="text-lg font-bold text-slate-900 dark:text-white">Key Terms</span>
+          <span className="text-xs text-slate-500 dark:text-gray-400 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
             {terms.length}
           </span>
         </div>
         {isOpen ? (
-          <ChevronDown size={18} className="text-slate-400" />
+          <ChevronDown size={18} className="text-slate-400 dark:text-gray-500" />
         ) : (
-          <ChevronRight size={18} className="text-slate-400" />
+          <ChevronRight size={18} className="text-slate-400 dark:text-gray-500" />
         )}
       </button>
       {isOpen && (
-        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="border-t border-blue-200/50 dark:border-gray-700 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {terms.map((item, idx) => (
-              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
-                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
-                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+              <div key={idx} className="border-b border-slate-100 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 dark:text-white mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 dark:text-gray-300 leading-relaxed">{item.definition}</div>
                 {item.context && (
-                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 italic">{item.context}</div>
                 )}
               </div>
             ))}
@@ -582,9 +582,9 @@ const WelcomeEmail: React.FC<{
   };
   
   return (
-    <div className="bg-white border border-blue-200 rounded-xl shadow-md overflow-hidden relative">
+    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-xl shadow-md overflow-hidden relative">
       {/* Subtle background image */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
         <img 
           src="/images/email.jpg" 
           alt="" 
@@ -592,40 +592,40 @@ const WelcomeEmail: React.FC<{
         />
       </div>
       <div className="relative z-10">
-      <div className="border-b border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-3">
-        <div className="flex items-center gap-2 text-sm text-slate-700">
-          <Mail size={18} className="text-blue-600" />
+      <div className="border-b border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-5 py-3">
+        <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300">
+          <Mail size={18} className="text-blue-600 dark:text-blue-400" />
           <span className="font-semibold">Inbox</span>
-          <span className="text-slate-400">›</span>
-          <span className="text-slate-600">{data.emailSubject}</span>
+          <span className="text-slate-400 dark:text-gray-500">›</span>
+          <span className="text-slate-600 dark:text-gray-400">{data.emailSubject}</span>
         </div>
       </div>
       
-      <div className="px-4 py-3 border-b border-slate-200 bg-white space-y-2">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-2">
         <div className="flex items-start justify-between">
           <div>
-            <div className="font-semibold text-base text-slate-900">{data.emailFrom}</div>
-            <div className="text-sm text-slate-600">{data.emailFromEmail}</div>
+            <div className="font-semibold text-base text-slate-900 dark:text-white">{data.emailFrom}</div>
+            <div className="text-sm text-slate-600 dark:text-gray-400">{data.emailFromEmail}</div>
           </div>
-          <div className="text-sm text-slate-500">Today, 09:12</div>
+          <div className="text-sm text-slate-500 dark:text-gray-400">Today, 09:12</div>
         </div>
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-slate-600 dark:text-gray-400">
           <span className="font-medium">To:</span> You
         </div>
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-slate-600 dark:text-gray-400">
           <span className="font-medium">Subject:</span> {data.emailSubject}
         </div>
       </div>
 
-      <div className="px-4 py-4 text-base text-slate-800 leading-relaxed space-y-3">
+      <div className="px-4 py-4 text-base text-slate-800 dark:text-gray-300 leading-relaxed space-y-3">
         <p>Hi {userName},</p>
       
         <p>
-          Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900">"{data.initiativeName}"</span> initiative.
+          Welcome aboard. You'll be our Business Analyst on the <span className="font-semibold text-slate-900 dark:text-white">"{data.initiativeName}"</span> initiative.
         </p>
         
         <p>
-          I've set up a short intro call for <span className="font-semibold text-slate-900">{data.meetingTime} this morning</span> (link below). 
+          I've set up a short intro call for <span className="font-semibold text-slate-900 dark:text-white">{data.meetingTime} this morning</span> (link below). 
           Before we meet, please <strong>click the attached PDF</strong> to review the one-pager so we can hit the ground running.
         </p>
         
@@ -635,20 +635,20 @@ const WelcomeEmail: React.FC<{
         
         <p>Cheers,<br/>{data.emailFrom.split(' ')[0]}</p>
 
-        <div className="pt-3 mt-4 border-t border-slate-200">
-          <div className="text-sm font-medium text-slate-700 mb-2">Attachments (2)</div>
+        <div className="pt-3 mt-4 border-t border-slate-200 dark:border-gray-700">
+          <div className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Attachments (2)</div>
           <div className="space-y-2">
             <button
               onClick={handlePDFClick}
-              className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 hover:underline cursor-pointer w-full text-left transition-colors"
+              className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline cursor-pointer w-full text-left transition-colors"
             >
               <Paperclip size={14} />
               <span>{data.attachmentName}</span>
-              <span className="text-slate-400 text-sm">124 KB</span>
+              <span className="text-slate-400 dark:text-gray-500 text-sm">124 KB</span>
             </button>
             <button
               onClick={() => setShowTeamsModal(true)}
-              className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 hover:underline cursor-pointer w-full text-left transition-colors"
+              className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline cursor-pointer w-full text-left transition-colors"
             >
               <Link2 size={14} />
               <span>Teams: {data.teamsChannel}</span>
@@ -693,7 +693,7 @@ const TeamsMeeting: React.FC<{
   data: typeof PAGE_1_DATA.cif;
   onJoin?: () => void;
 }> = ({ data, onJoin }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden">
+  <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
     <div className="bg-gradient-to-r from-[#464775] to-[#5b5d8f] px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2 text-white">
         <Calendar size={16} />
@@ -704,24 +704,24 @@ const TeamsMeeting: React.FC<{
 
     <div className="p-4 space-y-3">
       <div>
-        <div className="text-base font-semibold text-slate-900">{data.meetingTitle}</div>
-        <div className="text-sm text-slate-600 mt-1">Today, {data.meetingTime} AM</div>
+        <div className="text-base font-semibold text-slate-900 dark:text-white">{data.meetingTitle}</div>
+        <div className="text-sm text-slate-600 dark:text-gray-400 mt-1">Today, {data.meetingTime} AM</div>
       </div>
 
-      <div className="text-sm text-slate-700">
+      <div className="text-sm text-slate-700 dark:text-gray-300">
         <div className="font-semibold mb-2">Attendees</div>
         <div className="space-y-1">
           {data.meetingAttendees.map((attendee, idx) => (
             <div key={idx} className="flex items-center gap-2">
-              <Users size={14} className="text-slate-400" />
+              <Users size={14} className="text-slate-400 dark:text-gray-500" />
               <span>{attendee.name} {attendee.role !== attendee.name && `(${attendee.role})`}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-200">
-        <div className="text-sm text-slate-700">
+      <div className="pt-3 border-t border-slate-200 dark:border-gray-700">
+        <div className="text-sm text-slate-700 dark:text-gray-300">
           <span className="font-semibold">Purpose:</span> {data.meetingPurpose}
         </div>
       </div>
@@ -762,9 +762,9 @@ const AccessChecklist: React.FC<{
   };
 
   return (
-    <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-      <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
-        <div className="text-base font-semibold text-slate-900">Day 1 Checklist</div>
+    <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm">
+      <div className="px-4 py-2.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
+        <div className="text-base font-semibold text-slate-900 dark:text-white">Day 1 Checklist</div>
       </div>
       <div className="p-4">
         <div className="space-y-2.5">
@@ -775,16 +775,16 @@ const AccessChecklist: React.FC<{
                 className="mt-0.5"
               >
                 {checked[item.id] ? (
-                  <CheckSquare size={18} className="text-green-600" />
+                  <CheckSquare size={18} className="text-green-600 dark:text-green-400" />
                 ) : (
-                  <Square size={18} className="text-slate-400" />
+                  <Square size={18} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
               <div className="flex-1">
-                <div className={`text-slate-800 ${checked[item.id] ? 'line-through text-slate-500' : ''}`}>
+                <div className={`text-slate-800 dark:text-gray-300 ${checked[item.id] ? 'line-through text-slate-500 dark:text-gray-500' : ''}`}>
                   {item.task}
                 </div>
-                <div className="text-slate-500 text-sm mt-0.5">
+                <div className="text-slate-500 dark:text-gray-400 text-sm mt-0.5">
                   {item.owner} • {item.status}
                 </div>
               </div>
@@ -803,54 +803,54 @@ const AccessChecklist: React.FC<{
 
 // --- Project Brief Component ---
 const ProjectBrief: React.FC<{ data: typeof PAGE_1_DATA.cif }> = ({ data }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-      <div className="text-base font-semibold text-slate-900">{data.attachmentName}</div>
-      <FileText size={16} className="text-indigo-600" />
+  <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm">
+    <div className="px-4 py-2.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 flex items-center justify-between">
+      <div className="text-base font-semibold text-slate-900 dark:text-white">{data.attachmentName}</div>
+      <FileText size={16} className="text-indigo-600 dark:text-indigo-400" />
     </div>
-    <div className="p-4 text-base text-slate-800 space-y-4 leading-relaxed">
+    <div className="p-4 text-base text-slate-800 dark:text-gray-300 space-y-4 leading-relaxed">
       <div>
-        <div className="font-semibold text-slate-900 mb-2">The Problem</div>
+        <div className="font-semibold text-slate-900 dark:text-white mb-2">The Problem</div>
         <div>{data.onePager.problem}</div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 pt-3">
         {data.onePager.impactStats.map((stat, idx) => (
-          <div key={idx} className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-rose-700">{stat.value}</div>
-            <div className="text-xs text-rose-600 mt-1">{stat.label}</div>
+          <div key={idx} className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">{stat.value}</div>
+            <div className="text-xs text-rose-600 dark:text-rose-400 mt-1">{stat.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="pt-3 border-t border-slate-200">
-        <div className="font-semibold text-slate-900 mb-2">The Goal</div>
+      <div className="pt-3 border-t border-slate-200 dark:border-gray-700">
+        <div className="font-semibold text-slate-900 dark:text-white mb-2">The Goal</div>
         <div>{data.onePager.goal}</div>
       </div>
 
-      <div className="pt-3 border-t border-slate-200">
-        <div className="font-semibold text-slate-900 mb-2">Key Constraints</div>
+      <div className="pt-3 border-t border-slate-200 dark:border-gray-700">
+        <div className="font-semibold text-slate-900 dark:text-white mb-2">Key Constraints</div>
         <ul className="space-y-1.5 text-sm">
           {data.onePager.constraints.map((constraint, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-slate-700">
-              <AlertCircle size={14} className="text-amber-600 mt-0.5 flex-shrink-0" />
+            <li key={idx} className="flex items-start gap-2 text-slate-700 dark:text-gray-300">
+              <AlertCircle size={14} className="text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
               <span>{constraint}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-200">
+      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-200 dark:border-gray-700">
         <div>
-          <div className="font-semibold text-slate-900 mb-2">Success Metrics</div>
+          <div className="font-semibold text-slate-900 dark:text-white mb-2">Success Metrics</div>
           <div className="space-y-2">
             {data.onePager.successMetrics.map((metric, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-sm">
-                <div className="font-medium text-slate-900">{metric.metric}</div>
-                <div className="text-slate-700">
-                  <span className="text-slate-500">{metric.baseline}</span>
-                  <span className="mx-2 text-emerald-600 font-bold">→</span>
-                  <span className="font-semibold text-emerald-700">{metric.target}</span>
+              <div key={idx} className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-2.5 text-sm">
+                <div className="font-medium text-slate-900 dark:text-white">{metric.metric}</div>
+                <div className="text-slate-700 dark:text-gray-300">
+                  <span className="text-slate-500 dark:text-gray-400">{metric.baseline}</span>
+                  <span className="mx-2 text-emerald-600 dark:text-emerald-400 font-bold">→</span>
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">{metric.target}</span>
                 </div>
               </div>
             ))}
@@ -880,30 +880,30 @@ const StakeholderTable: React.FC<{
   completed?: boolean;
   onToggleComplete?: (completed: boolean) => void;
 }> = ({ data, completed, onToggleComplete }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
-      <div className="text-base font-semibold text-slate-900">Key Stakeholders</div>
+  <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm">
+    <div className="px-4 py-2.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
+      <div className="text-base font-semibold text-slate-900 dark:text-white">Key Stakeholders</div>
     </div>
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 border-b border-slate-200">
+        <thead className="bg-slate-50 dark:bg-gray-900/50 border-b border-slate-200 dark:border-gray-700">
           <tr>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Name & Role</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Cares About</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">Fears</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-slate-700">How to Engage</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700 dark:text-gray-300">Name & Role</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700 dark:text-gray-300">Cares About</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700 dark:text-gray-300">Fears</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-slate-700 dark:text-gray-300">How to Engage</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
           {data.stakeholders.map((sh, idx) => (
-            <tr key={idx} className="hover:bg-slate-50">
+            <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-gray-700/50">
               <td className="px-4 py-3">
-                <div className="font-semibold text-slate-900">{sh.name}</div>
-                <div className="text-xs text-slate-600 mt-0.5">{sh.role}</div>
+                <div className="font-semibold text-slate-900 dark:text-white">{sh.name}</div>
+                <div className="text-xs text-slate-600 dark:text-gray-400 mt-0.5">{sh.role}</div>
               </td>
-              <td className="px-4 py-3 text-slate-700">{sh.care}</td>
-              <td className="px-4 py-3 text-slate-700">{sh.fear}</td>
-              <td className="px-4 py-3 text-slate-700">{sh.cue}</td>
+              <td className="px-4 py-3 text-slate-700 dark:text-gray-300">{sh.care}</td>
+              <td className="px-4 py-3 text-slate-700 dark:text-gray-300">{sh.fear}</td>
+              <td className="px-4 py-3 text-slate-700 dark:text-gray-300">{sh.cue}</td>
             </tr>
           ))}
         </tbody>
@@ -933,17 +933,17 @@ const DiscoveryStarter: React.FC<{
   const { notes, saveNote } = useNotes();
   
   return (
-    <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-      <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
-        <div className="text-base font-semibold text-slate-900">Your Discovery Prep</div>
-        <div className="text-xs text-slate-600 mt-1">What you need to clarify before Day 2</div>
+    <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm">
+      <div className="px-4 py-2.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
+        <div className="text-base font-semibold text-slate-900 dark:text-white">Your Discovery Prep</div>
+        <div className="text-xs text-slate-600 dark:text-gray-400 mt-1">What you need to clarify before Day 2</div>
       </div>
       <div className="p-4 space-y-5">
         {data.tasks.map((task, idx) => (
           <div key={idx}>
-            <div className="text-sm font-semibold text-slate-900 mb-2">{task.title}</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-white mb-2">{task.title}</div>
             <textarea
-              className="w-full min-h-[100px] text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full min-h-[100px] text-base text-slate-800 dark:text-gray-300 leading-relaxed focus:outline-none resize-none bg-slate-50 dark:bg-gray-900/50 border border-slate-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               placeholder={task.placeholder}
               value={notes[`task_${idx}`] || ''}
               onChange={(e) => saveNote(`task_${idx}`, e.target.value)}
@@ -968,20 +968,20 @@ const WorkingNotes: React.FC<{
   value?: string;
   placeholder?: string;
 }> = ({ label, noteKey, save, value, placeholder }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-      <div className="text-base font-semibold text-slate-900">{label}</div>
-      <MessageSquare size={16} className="text-indigo-600" />
+  <div className="bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg shadow-sm">
+    <div className="px-4 py-2.5 border-b border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 flex items-center justify-between">
+      <div className="text-base font-semibold text-slate-900 dark:text-white">{label}</div>
+      <MessageSquare size={16} className="text-indigo-600 dark:text-indigo-400" />
     </div>
     <div className="p-4">
       <textarea
-        className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        className="w-full text-base text-slate-800 dark:text-gray-300 leading-relaxed focus:outline-none resize-none bg-slate-50 dark:bg-gray-900/50 border border-slate-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         rows={6}
         placeholder={placeholder || "Your notes..."}
         value={value || ""}
         onChange={(e) => save(noteKey, e.target.value)}
       />
-      <div className="text-sm text-slate-500 mt-2">Auto-saved locally</div>
+      <div className="text-sm text-slate-500 dark:text-gray-400 mt-2">Auto-saved locally</div>
     </div>
   </div>
 );
@@ -1039,21 +1039,30 @@ export default function BAInActionPage1() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-900 relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/blue.jpg" 
+          alt="" 
+          className="w-full h-full object-cover opacity-10 dark:opacity-5"
+        />
+      </div>
+      <div className="relative z-10">
       {/* Top bar */}
-      <div className="bg-white border-b border-slate-300 px-6 py-4 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-slate-300 dark:border-gray-700 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">BA In Action</div>
-              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-xs font-bold rounded-full border border-blue-300">
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold rounded-full border border-blue-300 dark:border-blue-700">
                 {selectedProject === 'cif' ? 'CI&F' : 'Voids'}
               </span>
             </div>
-            <div className="text-xl font-bold text-slate-900">Day 1: Join & Orientation</div>
-            <div className="text-sm text-slate-600 mt-1">{data.initiativeName}</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white">Day 1: Join & Orientation</div>
+            <div className="text-sm text-slate-600 dark:text-gray-400 mt-1">{data.initiativeName}</div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
             <Clock size={16} />
             <span>Today, 09:15</span>
           </div>
@@ -1130,9 +1139,9 @@ export default function BAInActionPage1() {
               sectionId="brief_section"
             >
               <div className="p-6">
-                <div className="mb-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm">
-                  <div className="text-sm text-slate-800 leading-relaxed">
-                    <strong className="text-blue-900">Note:</strong> You can also view this brief as a PDF by clicking the attachment in the email above, 
+                <div className="mb-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 shadow-sm">
+                  <div className="text-sm text-slate-800 dark:text-gray-300 leading-relaxed">
+                    <strong className="text-blue-900 dark:text-blue-200">Note:</strong> You can also view this brief as a PDF by clicking the attachment in the email above, 
                     or download it for reference.
                   </div>
                 </div>
@@ -1237,6 +1246,7 @@ export default function BAInActionPage1() {
 
         <NavigationButtons backLink={backLink} nextLink={nextLink} />
 
+      </div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ const BAInActionIntroPage: React.FC = () => {
             {/* Left: Image Section */}
             <div className="relative h-full min-h-[500px] md:min-h-[600px]">
               <img 
-                src="/images/collaborate1.jpg" 
+                src="/images/2people.jpg" 
                 alt="Business Analyst working with stakeholders"
                 className="w-full h-full object-cover"
                 onError={(e) => {

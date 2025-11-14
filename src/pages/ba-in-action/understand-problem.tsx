@@ -154,20 +154,20 @@ const ProgressTracker: React.FC<{
   const percentage = (completed / total) * 100;
 
   return (
-    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-gray-900/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
-          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+          <div className="text-base font-bold text-slate-900 dark:text-white mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600 dark:text-gray-400">{completed} of {total} steps completed</div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+          <div className="w-32 h-3 bg-blue-100 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
             <div 
               className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+          <span className="text-sm font-bold text-blue-700 dark:text-blue-400 min-w-[3rem]">{Math.round(percentage)}%</span>
         </div>
       </div>
       <div className="space-y-2">
@@ -185,27 +185,27 @@ const ProgressTracker: React.FC<{
                 className="flex-shrink-0"
               >
                 {completed ? (
-                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Circle size={18} className="text-slate-400" />
+                  <Circle size={18} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
               <button
                 onClick={() => onStepClick(step.sectionId)}
                 className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-600 shadow-md hover:shadow-lg' 
                     : completed 
-                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
-                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:shadow-md' 
+                      : 'bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-sm'
                 }`}
               >
-                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
-                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600 dark:text-emerald-400' : isActive ? 'text-blue-600 dark:text-blue-400 animate-pulse' : 'text-slate-400 dark:text-gray-500'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isActive ? 'text-blue-900 dark:text-blue-300 font-bold' : 'text-slate-700 dark:text-gray-300'}`}>
                   {step.label}
                 </span>
                 {idx < steps.length - 1 && (
-                  <ChevronDown size={14} className="text-slate-400" />
+                  <ChevronDown size={14} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
             </div>
@@ -232,21 +232,21 @@ const CollapsibleSection: React.FC<{
   const handleToggle = onToggle || (() => setInternalOpen(!internalOpen));
 
   return (
-    <div className={`bg-white border rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${
-      completed ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/50 to-white' : 'border-blue-200 bg-gradient-to-br from-white to-blue-50/20'
+    <div className={`bg-white dark:bg-gray-800 border rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${
+      completed ? 'border-emerald-300 dark:border-emerald-700 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-900/20 dark:to-gray-800' : 'border-blue-200 dark:border-blue-700 bg-gradient-to-br from-white to-blue-50/20 dark:from-gray-800 dark:to-gray-900/50'
     }`}>
       <button
         onClick={handleToggle}
-        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 transition-all duration-200"
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-200"
       >
         <div className="flex items-center gap-3">
           {completed ? (
-            <CheckCircle2 size={18} className="text-emerald-600" />
+            <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <Circle size={18} className="text-slate-400" />
+            <Circle size={18} className="text-slate-400 dark:text-gray-500" />
           )}
-          <Icon size={20} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isOpen ? 'text-blue-600' : 'text-slate-500'}`} />
-          <span className={`text-lg font-bold ${completed ? 'text-emerald-900 line-through' : isOpen ? 'text-blue-900' : 'text-slate-900'}`}>
+          <Icon size={20} className={`transition-all duration-300 ${completed ? 'text-emerald-600 dark:text-emerald-400' : isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-gray-400'}`} />
+          <span className={`text-lg font-bold ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isOpen ? 'text-blue-900 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
             {title}
           </span>
         </div>
@@ -257,20 +257,20 @@ const CollapsibleSection: React.FC<{
                 e.stopPropagation();
                 onToggleComplete(!completed);
               }}
-              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-300"
             >
               {completed ? 'Mark incomplete' : 'Mark complete'}
             </button>
           )}
           {isOpen ? (
-            <ChevronDown size={18} className="text-slate-400" />
+            <ChevronDown size={18} className="text-slate-400 dark:text-gray-500" />
           ) : (
-            <ChevronRight size={18} className="text-slate-400" />
+            <ChevronRight size={18} className="text-slate-400 dark:text-gray-500" />
           )}
         </div>
       </button>
       {isOpen && (
-        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="border-t border-blue-200/50 dark:border-gray-700 animate-in slide-in-from-top-2 fade-in duration-300">
           {children}
         </div>
       )}
@@ -292,15 +292,15 @@ const EvidenceRow: React.FC<{
   };
   
   return (
-    <tr className="hover:bg-slate-50">
-      <td className="px-3 py-3 text-sm font-medium text-slate-900">{signal}</td>
-      <td className="px-3 py-3 text-sm text-slate-700">{source}</td>
+    <tr className="hover:bg-slate-50 dark:hover:bg-gray-700/50">
+      <td className="px-3 py-3 text-sm font-medium text-slate-900 dark:text-white">{signal}</td>
+      <td className="px-3 py-3 text-sm text-slate-700 dark:text-gray-300">{source}</td>
       <td className="px-3 py-3">
         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${confidenceColor[confidence]}`}>
           {confidence}
         </span>
       </td>
-      <td className="px-3 py-3 text-sm text-slate-700">{notes}</td>
+      <td className="px-3 py-3 text-sm text-slate-700 dark:text-gray-300">{notes}</td>
     </tr>
   );
 };
@@ -312,18 +312,18 @@ const KPIRow: React.FC<{
   target: string;
   guardrail: string;
 }> = ({ kpi, baseline, target, guardrail }) => (
-  <tr className="hover:bg-slate-50">
-    <td className="px-3 py-3 text-sm font-medium text-slate-900">{kpi}</td>
-    <td className="px-3 py-3 text-sm text-slate-700">
+  <tr className="hover:bg-slate-50 dark:hover:bg-gray-700/50">
+    <td className="px-3 py-3 text-sm font-medium text-slate-900 dark:text-white">{kpi}</td>
+    <td className="px-3 py-3 text-sm text-slate-700 dark:text-gray-300">
       <input 
         type="text" 
         placeholder="Enter baseline..." 
         defaultValue={baseline}
-        className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        className="w-full px-2 py-1 border border-slate-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
       />
     </td>
-    <td className="px-3 py-3 text-sm text-slate-700">{target}</td>
-    <td className="px-3 py-3 text-sm text-slate-700">{guardrail}</td>
+    <td className="px-3 py-3 text-sm text-slate-700 dark:text-gray-300">{target}</td>
+    <td className="px-3 py-3 text-sm text-slate-700 dark:text-gray-300">{guardrail}</td>
   </tr>
 );
 
@@ -334,17 +334,17 @@ const EngagementCard: React.FC<{
   whatYouNeed: string;
   icon: React.ReactNode;
 }> = ({ person, why, whatYouNeed, icon }) => (
-  <div className="border border-slate-300 rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+  <div className="border border-slate-300 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
     <div className="flex items-start gap-3">
-      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex-shrink-0">
+      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex-shrink-0">
         {icon}
       </div>
       <div className="flex-1">
-        <div className="font-semibold text-slate-900 mb-1">{person}</div>
-        <div className="text-sm text-slate-600 mb-2">
+        <div className="font-semibold text-slate-900 dark:text-white mb-1">{person}</div>
+        <div className="text-sm text-slate-600 dark:text-gray-400 mb-2">
           <span className="font-medium">Why:</span> {why}
         </div>
-        <div className="text-sm text-slate-700">
+        <div className="text-sm text-slate-700 dark:text-gray-300">
           <span className="font-medium">Need:</span> {whatYouNeed}
         </div>
       </div>
@@ -356,7 +356,7 @@ const EngagementCard: React.FC<{
 const ScopeItem: React.FC<{label: string; checked?: boolean}> = ({ label, checked = false }) => {
   const [isChecked, setIsChecked] = useState(checked);
   return (
-    <label className="flex items-start gap-2 text-sm text-slate-800 cursor-pointer hover:bg-slate-50 p-2 rounded transition-colors">
+    <label className="flex items-start gap-2 text-sm text-slate-800 dark:text-gray-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700/50 p-2 rounded transition-colors">
       <input 
         type="checkbox" 
         checked={isChecked}
@@ -378,33 +378,33 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
   }
 
   return (
-    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-700 rounded-2xl shadow-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-all duration-200 bg-blue-50/30 dark:bg-blue-900/20"
       >
         <div className="flex items-center gap-3">
-          <FileText size={20} className="text-blue-600" />
-          <span className="text-lg font-bold text-slate-900">Key Terms</span>
-          <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
+          <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+          <span className="text-lg font-bold text-slate-900 dark:text-white">Key Terms</span>
+          <span className="text-xs font-bold bg-blue-600 dark:bg-blue-700 text-white px-2.5 py-1 rounded-full">
             {terms.length}
           </span>
         </div>
         {isOpen ? (
-          <ChevronDown size={18} className="text-blue-600" />
+          <ChevronDown size={18} className="text-blue-600 dark:text-blue-400" />
         ) : (
-          <ChevronRight size={18} className="text-blue-600" />
+          <ChevronRight size={18} className="text-blue-600 dark:text-blue-400" />
         )}
       </button>
       {isOpen && (
-        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="border-t border-blue-200/50 dark:border-gray-700 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {terms.map((item, idx) => (
-              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
-                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
-                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+              <div key={idx} className="border-b border-slate-100 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 dark:text-white mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 dark:text-gray-300 leading-relaxed">{item.definition}</div>
                 {item.context && (
-                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 italic">{item.context}</div>
                 )}
               </div>
             ))}

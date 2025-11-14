@@ -42,14 +42,14 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
   }
 
   return (
-    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden mb-8">
+    <div className="bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-700 rounded-2xl shadow-lg overflow-hidden mb-8">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
       >
         <div className="flex items-center gap-3">
           <FileText size={20} className="text-blue-600" />
-          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-white">Key Terms</span>
           <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
             {terms.length}
           </span>
@@ -65,8 +65,8 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {terms.map((item, idx) => (
               <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
-                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
-                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                <div className="font-semibold text-sm text-slate-900 dark:text-white mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 dark:text-gray-300 leading-relaxed">{item.definition}</div>
                 {item.context && (
                   <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
                 )}
@@ -129,11 +129,11 @@ const ProgressTracker: React.FC<{
   const percentage = (completed / total) * 100;
 
   return (
-    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-gray-900/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
-          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+          <div className="text-base font-bold text-slate-900 dark:text-white mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600 dark:text-gray-400">{completed} of {total} steps completed</div>
         </div>
         <div className="flex items-center gap-3">
           <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
@@ -176,7 +176,7 @@ const ProgressTracker: React.FC<{
                 }`}
               >
                 <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
-                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isActive ? 'text-blue-900 dark:text-blue-300 font-bold' : 'text-slate-700 dark:text-gray-300'}`}>
                   {step.label}
                 </span>
                 {idx < steps.length - 1 && (
@@ -203,14 +203,14 @@ const CollapsibleSection: React.FC<{
   sectionId?: string;
 }> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
   return (
-    <div className="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200"
       >
         <div className="flex items-center gap-3">
           <Icon size={20} className={`${completed ? 'text-emerald-600' : 'text-blue-600'}`} />
-          <span className={`text-base font-bold ${completed ? 'text-emerald-900' : 'text-slate-900'}`}>
+          <span className={`text-base font-bold ${completed ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-900 dark:text-white'}`}>
             {title}
           </span>
         </div>
@@ -221,7 +221,7 @@ const CollapsibleSection: React.FC<{
                 e.stopPropagation();
                 onToggleComplete(!completed);
               }}
-              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-300"
             >
               {completed ? 'Mark incomplete' : 'Mark complete'}
             </button>
@@ -360,7 +360,7 @@ const Implementation: React.FC = () => {
         </span>
       </div>
 
-      <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">
+      <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
         <Clock size={16} className="text-indigo-600" />
         <span className="font-medium">You have requirements. Now understand how they flow into implementation and how BAs work in agile teams.</span>
       </div>
@@ -412,9 +412,9 @@ const Implementation: React.FC = () => {
         sectionId="why_section"
       >
         <div className="p-5">
-          <div className="space-y-3 text-base text-slate-800">
+          <div className="space-y-3 text-base text-slate-800 dark:text-gray-300">
             <p className="leading-relaxed">
-              Interviewers ask: <strong className="text-slate-900">&quot;How do you work in an Agile environment?&quot;</strong> or <strong className="text-slate-900">&quot;What's the difference between waterfall and agile?&quot;</strong>
+              Interviewers ask: <strong className="text-slate-900 dark:text-white">&quot;How do you work in an Agile environment?&quot;</strong> or <strong className="text-slate-900 dark:text-white">&quot;What's the difference between waterfall and agile?&quot;</strong>
             </p>
             <p className="leading-relaxed">
               Understanding how requirements flow from problem understanding (Page 2) through to implementation is critical. This page shows you how.
@@ -435,41 +435,41 @@ const Implementation: React.FC = () => {
           >
             <div className="p-5">
               <div className="mb-4 space-y-4">
-                <p className="text-base text-slate-800 leading-relaxed">
+                <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
                   BAs use different tools to document requirements. The most popular ones are:
                 </p>
                 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-4">
-                    <div className="text-base font-bold text-blue-900 mb-2">Jira</div>
-                    <p className="text-sm text-blue-800 leading-relaxed">
+                  <div className="rounded-2xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
+                    <div className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Jira</div>
+                    <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
                       The most popular tool for Agile teams. BAs create epics, user stories, and acceptance criteria. Developers track work, QA tests against ACs. Everything is linked and traceable.
                     </p>
                   </div>
                   
-                  <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
-                    <div className="text-base font-bold text-indigo-900 mb-2">Azure DevOps (ADO)</div>
-                    <p className="text-sm text-indigo-800 leading-relaxed">
+                  <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 p-4">
+                    <div className="text-base font-bold text-indigo-900 dark:text-indigo-200 mb-2">Azure DevOps (ADO)</div>
+                    <p className="text-sm text-indigo-800 dark:text-indigo-300 leading-relaxed">
                       Microsoft's tool for Agile teams. Similar to Jira - BAs create work items (epics, features, user stories), link requirements, track progress. Popular in enterprise environments.
                     </p>
                   </div>
                   
-                  <div className="rounded-2xl border-2 border-purple-300 bg-purple-50 p-4">
-                    <div className="text-base font-bold text-purple-900 mb-2">Trello</div>
-                    <p className="text-sm text-purple-800 leading-relaxed">
+                  <div className="rounded-2xl border-2 border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 p-4">
+                    <div className="text-base font-bold text-purple-900 dark:text-purple-200 mb-2">Trello</div>
+                    <p className="text-sm text-purple-800 dark:text-purple-300 leading-relaxed">
                       Simpler tool using boards and cards. BAs create cards for user stories, move them through columns (To Do, In Progress, Done). Good for smaller teams or simpler projects.
                     </p>
                   </div>
                   
-                  <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4">
-                    <div className="text-base font-bold text-emerald-900 mb-2">Excel</div>
-                    <p className="text-sm text-emerald-800 leading-relaxed">
+                  <div className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-4">
+                    <div className="text-base font-bold text-emerald-900 dark:text-emerald-200 mb-2">Excel</div>
+                    <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
                       Many BAs start with Excel for high-level requirements. Easy to share with stakeholders for review and sign-off. Often moved to Jira/ADO later for development tracking.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+                <div className="mt-4 rounded-lg border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4 text-sm text-blue-900 dark:text-blue-200">
                   <strong>Key Point:</strong> The tool doesn't matter as much as the process. BAs document requirements, get stakeholder sign-off, and work with developers to break them down. The tool is just where you write it down.
                 </div>
               </div>
@@ -488,13 +488,13 @@ const Implementation: React.FC = () => {
           >
             <div className="p-5">
               <div className="mb-4 space-y-4">
-                <p className="text-base text-slate-800 leading-relaxed">
+                <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
                   Many BAs start by documenting high-level requirements in Excel. This is shared with stakeholders for review and sign-off before moving to development tools.
                 </p>
                 
-                <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5">
-                  <div className="text-base font-bold text-emerald-900 mb-3">Why Excel First?</div>
-                  <div className="space-y-2 text-sm text-emerald-800">
+                <div className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-5">
+                  <div className="text-base font-bold text-emerald-900 dark:text-emerald-200 mb-3">Why Excel First?</div>
+                  <div className="space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
                     <p><strong>Stakeholders are familiar with Excel</strong> - They can review, comment, and sign off easily.</p>
                     <p><strong>Easy to share</strong> - Send via email, get feedback, update, resend.</p>
                     <p><strong>Good for high-level</strong> - Before breaking down into detailed user stories, you get alignment on the big picture.</p>
@@ -502,9 +502,9 @@ const Implementation: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border-2 border-slate-300 bg-white p-4 shadow-sm">
-                  <div className="text-sm font-semibold text-slate-900 mb-2">Example Excel Structure:</div>
-                  <div className="text-xs text-slate-700 space-y-1">
+                <div className="rounded-2xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Example Excel Structure:</div>
+                  <div className="text-xs text-slate-700 dark:text-gray-300 space-y-1">
                     <p><strong>Column A:</strong> Requirement ID (REQ-001, REQ-002...)</p>
                     <p><strong>Column B:</strong> High-Level Requirement (e.g., "Evaluate identity risk at account creation")</p>
                     <p><strong>Column C:</strong> Business Outcome (e.g., "Reduce fraud losses by 30%")</p>
@@ -513,7 +513,7 @@ const Implementation: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-lg border-2 border-purple-300 bg-purple-50 p-4 text-sm text-purple-900">
+                <div className="mt-4 rounded-lg border-2 border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 p-4 text-sm text-purple-900 dark:text-purple-200">
                   <strong>After Sign-Off:</strong> Once stakeholders approve the Excel document, you break down the high-level requirements into detailed user stories and acceptance criteria in Jira/ADO. The Excel document becomes your source of truth for what was agreed.
                 </div>
               </div>
@@ -532,14 +532,14 @@ const Implementation: React.FC = () => {
           >
             <div className="p-5">
               <div className="mb-4 space-y-4">
-                <p className="text-base text-slate-800 leading-relaxed">
+                <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
                   As a BA, you work closely with developers (also called engineers or the engineering team). Understanding how you work together is critical.
                 </p>
                 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-4">
-                    <div className="text-base font-bold text-blue-900 mb-2">Your Role (BA)</div>
-                    <ul className="text-sm text-blue-800 leading-relaxed space-y-1">
+                  <div className="rounded-2xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
+                    <div className="text-base font-bold text-blue-900 dark:text-blue-200 mb-2">Your Role (BA)</div>
+                    <ul className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed space-y-1">
                       <li>• Write requirements and acceptance criteria</li>
                       <li>• Clarify what needs to be built</li>
                       <li>• Answer questions during development</li>
@@ -548,9 +548,9 @@ const Implementation: React.FC = () => {
                     </ul>
                   </div>
                   
-                  <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
-                    <div className="text-base font-bold text-indigo-900 mb-2">Developer Role</div>
-                    <ul className="text-sm text-indigo-800 leading-relaxed space-y-1">
+                  <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 p-4">
+                    <div className="text-base font-bold text-indigo-900 dark:text-indigo-200 mb-2">Developer Role</div>
+                    <ul className="text-sm text-indigo-800 dark:text-indigo-300 leading-relaxed space-y-1">
                       <li>• Read your requirements</li>
                       <li>• Ask questions to clarify</li>
                       <li>• Build the solution</li>
@@ -560,7 +560,7 @@ const Implementation: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+                <div className="mt-4 rounded-lg border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-4 text-sm text-emerald-900 dark:text-emerald-200">
                   <strong>Key Point:</strong> You're partners, not adversaries. Developers will ask questions - that's normal. Your job is to answer them, go back to stakeholders if needed, and keep requirements clear and up-to-date.
                 </div>
               </div>
@@ -579,14 +579,14 @@ const Implementation: React.FC = () => {
       >
         <div className="p-5">
           <div className="mb-4 space-y-4">
-            <p className="text-base text-slate-800 leading-relaxed">
+            <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
               There are two main ways teams deliver software. How you work with developers differs in each approach.
             </p>
             
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border-2 border-rose-300 bg-rose-50 p-5">
-                <div className="text-base font-bold text-rose-900 mb-3">Waterfall Approach</div>
-                <div className="space-y-2 text-sm text-rose-800">
+              <div className="rounded-2xl border-2 border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20 p-5">
+                <div className="text-base font-bold text-rose-900 dark:text-rose-200 mb-3">Waterfall Approach</div>
+                <div className="space-y-2 text-sm text-rose-800 dark:text-rose-300">
                   <p><strong>How it works:</strong> Collect ALL requirements upfront. Design everything. Build everything. Test everything. Then launch.</p>
                   <p><strong>BA's work with developers:</strong> You write complete, detailed requirements before developers start coding. Developers read your requirements and build. Less back-and-forth during development.</p>
                   <p><strong>When to use:</strong> When requirements are unlikely to change, when you have clear specifications, or in regulated industries where you need full documentation first.</p>
@@ -594,9 +594,9 @@ const Implementation: React.FC = () => {
                 </div>
               </div>
               
-              <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5">
-                <div className="text-base font-bold text-emerald-900 mb-3">Agile Approach</div>
-                <div className="space-y-2 text-sm text-emerald-800">
+              <div className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-5">
+                <div className="text-base font-bold text-emerald-900 dark:text-emerald-200 mb-3">Agile Approach</div>
+                <div className="space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
                   <p><strong>How it works:</strong> Start with high-level requirements. Build in small chunks (2-week sprints). Get feedback. Refine. Build more.</p>
                   <p><strong>BA's work with developers:</strong> You start with high-level requirements. Developers ask questions during refinement and sprint planning. You clarify, update requirements, go back to stakeholders if needed. Continuous collaboration.</p>
                   <p><strong>When to use:</strong> When requirements might change, when you're learning as you go, or when you want to deliver value quickly and iterate.</p>
@@ -634,32 +634,32 @@ const Implementation: React.FC = () => {
               <strong>Decomposition</strong> means breaking down high-level requirements into specific, detailed, testable statements. This happens during Backlog Refinement and Sprint Planning, often with developers asking questions.
             </p>
             
-            <div className="rounded-2xl border-2 border-purple-300 bg-purple-50 p-5">
-              <div className="text-base font-bold text-purple-900 mb-3">How Decomposition Works:</div>
-              <div className="space-y-3 text-sm text-purple-800">
-                <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  <div className="font-semibold text-purple-900 mb-2">High-Level Requirement (From Page 6):</div>
-                  <p className="text-slate-700">"Evaluate identity risk at account creation and output one of three decision states: approve automatically, block automatically, send to manual review."</p>
+            <div className="rounded-2xl border-2 border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 p-5">
+              <div className="text-base font-bold text-purple-900 dark:text-purple-200 mb-3">How Decomposition Works:</div>
+              <div className="space-y-3 text-sm text-purple-800 dark:text-purple-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="font-semibold text-purple-900 dark:text-purple-200 mb-2">High-Level Requirement (From Page 6):</div>
+                  <p className="text-slate-700 dark:text-gray-300">"Evaluate identity risk at account creation and output one of three decision states: approve automatically, block automatically, send to manual review."</p>
                 </div>
                 
                 <div className="text-center text-purple-600 font-bold">↓ Decompose into User Stories</div>
                 
-                <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  <div className="font-semibold text-purple-900 mb-2">User Story 1:</div>
-                  <p className="text-slate-700 mb-1">As a Risk Engine, I want to auto-approve low-risk accounts, so that legitimate users sign up smoothly.</p>
-                  <p className="text-xs text-slate-600 mt-2"><strong>AC:</strong> Risk score ≥85 → Account approved automatically</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="font-semibold text-purple-900 dark:text-purple-200 mb-2">User Story 1:</div>
+                  <p className="text-slate-700 dark:text-gray-300 mb-1">As a Risk Engine, I want to auto-approve low-risk accounts, so that legitimate users sign up smoothly.</p>
+                  <p className="text-xs text-slate-600 dark:text-gray-400 mt-2"><strong>AC:</strong> Risk score ≥85 → Account approved automatically</p>
                 </div>
                 
-                <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  <div className="font-semibold text-purple-900 mb-2">User Story 2:</div>
-                  <p className="text-slate-700 mb-1">As a Risk Engine, I want to route medium-risk accounts to manual review, so that we catch fraud without blocking legitimate users.</p>
-                  <p className="text-xs text-slate-600 mt-2"><strong>AC:</strong> Risk score 31-84 → Case routes to Ops queue</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="font-semibold text-purple-900 dark:text-purple-200 mb-2">User Story 2:</div>
+                  <p className="text-slate-700 dark:text-gray-300 mb-1">As a Risk Engine, I want to route medium-risk accounts to manual review, so that we catch fraud without blocking legitimate users.</p>
+                  <p className="text-xs text-slate-600 dark:text-gray-400 mt-2"><strong>AC:</strong> Risk score 31-84 → Case routes to Ops queue</p>
                 </div>
                 
-                <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  <div className="font-semibold text-purple-900 mb-2">User Story 3:</div>
-                  <p className="text-slate-700 mb-1">As a Risk Engine, I want to block high-risk accounts automatically, so that we prevent fraud immediately.</p>
-                  <p className="text-xs text-slate-600 mt-2"><strong>AC:</strong> Risk score ≤30 → Account blocked automatically</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="font-semibold text-purple-900 dark:text-purple-200 mb-2">User Story 3:</div>
+                  <p className="text-slate-700 dark:text-gray-300 mb-1">As a Risk Engine, I want to block high-risk accounts automatically, so that we prevent fraud immediately.</p>
+                  <p className="text-xs text-slate-600 dark:text-gray-400 mt-2"><strong>AC:</strong> Risk score ≤30 → Account blocked automatically</p>
                 </div>
               </div>
             </div>
@@ -683,36 +683,36 @@ const Implementation: React.FC = () => {
       >
         <div className="p-5">
           <div className="mb-4 space-y-4">
-            <p className="text-base text-slate-800 leading-relaxed">
+            <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
               <strong>Story Mapping</strong> is a technique some BAs use to visualize the user journey and break down requirements. It's especially useful for complex features or when you need to see the big picture.
             </p>
             
-            <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5">
-              <div className="text-base font-bold text-indigo-900 mb-3">How Story Mapping Works:</div>
-              <div className="space-y-3 text-sm text-indigo-800">
+            <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 p-5">
+              <div className="text-base font-bold text-indigo-900 dark:text-indigo-200 mb-3">How Story Mapping Works:</div>
+              <div className="space-y-3 text-sm text-indigo-800 dark:text-indigo-300">
                 <p><strong>1. Map the user journey (left to right):</strong> You list the main steps a user takes to complete a task.</p>
                 <p><strong>2. Break down each step (top to bottom):</strong> Under each step, you list user stories - from basic (must have) to nice-to-have.</p>
                 <p><strong>3. Prioritize:</strong> The top row is your MVP (Minimum Viable Product). Everything below can come later.</p>
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-slate-300 bg-white p-4 shadow-sm">
-              <div className="text-sm font-semibold text-slate-900 mb-2">Example: Account Creation Flow</div>
-              <div className="text-xs text-slate-700 space-y-2">
+            <div className="rounded-2xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+              <div className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Example: Account Creation Flow</div>
+              <div className="text-xs text-slate-700 dark:text-gray-300 space-y-2">
                 <div className="border-l-2 border-indigo-400 pl-2">
                   <p className="font-semibold">Step 1: User enters email</p>
-                  <p className="text-slate-600 ml-2">• Basic: Validate email format (MVP)</p>
-                  <p className="text-slate-600 ml-2">• Enhanced: Check if email already exists</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Basic: Validate email format (MVP)</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Enhanced: Check if email already exists</p>
                 </div>
-                <div className="border-l-2 border-indigo-400 pl-2">
+                <div className="border-l-2 border-indigo-400 dark:border-indigo-600 pl-2">
                   <p className="font-semibold">Step 2: User enters password</p>
-                  <p className="text-slate-600 ml-2">• Basic: Validate password strength (MVP)</p>
-                  <p className="text-slate-600 ml-2">• Enhanced: Show password strength meter</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Basic: Validate password strength (MVP)</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Enhanced: Show password strength meter</p>
                 </div>
-                <div className="border-l-2 border-indigo-400 pl-2">
+                <div className="border-l-2 border-indigo-400 dark:border-indigo-600 pl-2">
                   <p className="font-semibold">Step 3: Risk evaluation</p>
-                  <p className="text-slate-600 ml-2">• Basic: Calculate risk score (MVP)</p>
-                  <p className="text-slate-600 ml-2">• Enhanced: Show risk score to user</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Basic: Calculate risk score (MVP)</p>
+                  <p className="text-slate-600 dark:text-gray-400 ml-2">• Enhanced: Show risk score to user</p>
                 </div>
               </div>
             </div>
@@ -736,15 +736,15 @@ const Implementation: React.FC = () => {
       >
         <div className="p-5">
         <div className="mb-4 space-y-4">
-          <p className="text-base text-slate-800 leading-relaxed">
-            <strong>Critical Point:</strong> In Agile, you don't collect all requirements upfront. During implementation, developers will have questions. Edge cases will appear. <strong>You go back to stakeholders to get answers.</strong> This is normal and expected.
-          </p>
-          
-          <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5">
-            <div className="text-base font-bold text-indigo-900 mb-3">What Happens During Implementation:</div>
-            <div className="space-y-3 text-sm text-indigo-800">
+            <p className="text-base text-slate-800 dark:text-gray-300 leading-relaxed">
+              <strong>Critical Point:</strong> In Agile, you don't collect all requirements upfront. During implementation, developers will have questions. Edge cases will appear. <strong>You go back to stakeholders to get answers.</strong> This is normal and expected.
+            </p>
+            
+          <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 p-5">
+            <div className="text-base font-bold text-indigo-900 dark:text-indigo-200 mb-3">What Happens During Implementation:</div>
+            <div className="space-y-3 text-sm text-indigo-800 dark:text-indigo-300">
               <div className="flex items-start gap-3">
-                <span className="font-bold text-indigo-700 mt-0.5">1.</span>
+                <span className="font-bold text-indigo-700 dark:text-indigo-400 mt-0.5">1.</span>
                 <div>
                   <strong>Developer asks a question:</strong> "What happens if the user's account is locked but they try to verify?"
                 </div>

@@ -55,6 +55,52 @@ const scrumPracticeSubPages: Record<string, string> = {
   'sprint-retrospective': 'Sprint Retrospective'
 };
 
+// Get page theme colors based on prominent button colors
+const getPageTheme = (view: AppView | string): { bg: string; border: string } => {
+  const viewStr = view?.toString() || '';
+  
+  // BA in Action pages - blue/indigo gradient (matches button colors: from-blue-600 to-indigo-600)
+  if (viewStr.includes('ba-in-action') || viewStr.includes('ba_in_action')) {
+    return {
+      bg: 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 dark:from-blue-700/95 dark:to-indigo-700/95',
+      border: 'border-blue-500/50 dark:border-blue-600/50'
+    };
+  }
+  
+  // Practice pages - purple gradient (matches button colors: from-purple-600)
+  if (viewStr.includes('practice') || viewStr === 'scrum-practice' || viewStr === 'agile-hub') {
+    return {
+      bg: 'bg-gradient-to-r from-purple-600/95 to-indigo-600/95 dark:from-purple-700/95 dark:to-indigo-700/95',
+      border: 'border-purple-500/50 dark:border-purple-600/50'
+    };
+  }
+  
+  // Learning pages - blue gradient (matches button colors)
+  if (viewStr.includes('learning') || viewStr === 'core-learning' || viewStr === 'scrum-learning' || 
+      viewStr === 'scrum-essentials' || viewStr === 'project-initiation' || viewStr === 'stakeholder-mapping' ||
+      viewStr === 'elicitation' || viewStr === 'requirements-engineering' || viewStr === 'solution-options' ||
+      viewStr === 'design-hub' || viewStr === 'mvp-hub') {
+    return {
+      bg: 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 dark:from-blue-700/95 dark:to-indigo-700/95',
+      border: 'border-blue-500/50 dark:border-blue-600/50'
+    };
+  }
+  
+  // Project pages - emerald/teal gradient (matches button colors)
+  if (viewStr.includes('project') || viewStr === 'career-journey') {
+    return {
+      bg: 'bg-gradient-to-r from-emerald-600/95 to-teal-600/95 dark:from-emerald-700/95 dark:to-teal-700/95',
+      border: 'border-emerald-500/50 dark:border-emerald-600/50'
+    };
+  }
+  
+  // Default - neutral gray (matches most button colors)
+  return {
+    bg: 'bg-slate-600/95 dark:bg-gray-700/95',
+    border: 'border-slate-500/50 dark:border-gray-600/50'
+  };
+};
+
 const GlobalBreadcrumbs: React.FC = () => {
   const { currentView, setCurrentView } = useApp();
   const [breadcrumbTrail, setBreadcrumbTrail] = useState<AppView[]>([]);
@@ -148,26 +194,52 @@ const GlobalBreadcrumbs: React.FC = () => {
     }
   };
 
+  // Debug: log breadcrumb state
+  console.log('🍞 Breadcrumb Debug:', {
+    currentView,
+    breadcrumbTrail,
+    trailLength: breadcrumbTrail.length,
+    enhancedBreadcrumbs,
+    displayedBreadcrumbs
+  });
+
   // Hide breadcrumbs on pages that have their own internal breadcrumb systems
   const viewsWithOwnBreadcrumbs = ['voice-meeting-v2', 'documentation', 'documentation-practice'];
   if (viewsWithOwnBreadcrumbs.includes(currentView)) {
+    console.log('🍞 Breadcrumb hidden: has own breadcrumb system');
     return null;
   }
 
   // Don't show breadcrumbs on certain pages
   const hiddenViews: AppView[] = ['login', 'signup', 'welcome'];
   if (hiddenViews.includes(currentView)) {
+    console.log('🍞 Breadcrumb hidden: in hidden views');
     return null;
   }
 
   // Don't show if no breadcrumbs yet
   if (breadcrumbTrail.length === 0) {
+    console.log('🍞 Breadcrumb hidden: trail is empty');
     return null;
   }
 
+  // Get theme colors for current page
+  const theme = getPageTheme(currentView || '');
+  
+  // Debug: log theme for troubleshooting
+  const navClassName = `sticky top-0 z-30 ${theme.bg} backdrop-blur-sm border-b ${theme.border} shadow-sm`;
+  console.log('🍞 Breadcrumb theme:', {
+    currentView: currentView,
+    viewString: (currentView || '').toString(),
+    bg: theme.bg,
+    border: theme.border,
+    fullTheme: theme,
+    navClassName: navClassName
+  });
+
   return (
     <nav
-      className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm"
+      className={navClassName}
       aria-label="Breadcrumb navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -203,13 +275,13 @@ const GlobalBreadcrumbs: React.FC = () => {
               >
                 {index > 0 && (
                   <ChevronRight 
-                    className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" 
+                    className="w-4 h-4 text-white/80 dark:text-white/70 shrink-0" 
                     aria-hidden="true"
                   />
                 )}
                 {isEllipsis ? (
                   <span 
-                    className="text-gray-400 dark:text-gray-500 px-1"
+                    className="text-white/80 dark:text-white/70 px-1"
                     aria-label="More items"
                   >
                     ...
@@ -222,8 +294,8 @@ const GlobalBreadcrumbs: React.FC = () => {
                         disabled={isLast}
                         className={`flex items-center gap-1.5 transition-colors ${
                           isLast
-                            ? 'text-gray-900 dark:text-white font-medium cursor-default'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer'
+                            ? 'text-white font-medium cursor-default'
+                            : 'text-white/90 hover:text-white cursor-pointer'
                         }`}
                         aria-current={isLast ? 'page' : undefined}
                         aria-label={isLast ? 'Current page: Dashboard' : 'Navigate to Dashboard'}
@@ -237,8 +309,8 @@ const GlobalBreadcrumbs: React.FC = () => {
                         disabled={isLast}
                         className={`transition-colors whitespace-nowrap max-w-[200px] truncate ${
                           isLast
-                            ? 'text-gray-900 dark:text-white font-medium cursor-default'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer'
+                            ? 'text-white font-medium cursor-default'
+                            : 'text-white/90 hover:text-white cursor-pointer'
                         }`}
                         aria-current={isLast ? 'page' : undefined}
                         aria-label={isLast ? `Current page: ${displayLabel}` : `Navigate to ${displayLabel}`}

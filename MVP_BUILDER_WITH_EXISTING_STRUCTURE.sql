@@ -198,3 +198,4 @@ SELECT 'Tables with RLS enabled:' as info, COUNT(*) as count FROM information_sc
 
 
 
+

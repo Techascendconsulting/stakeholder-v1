@@ -77,11 +77,11 @@ const ProgressTracker: React.FC<{
   const percentage = (completed / total) * 100;
 
   return (
-    <div className="bg-white border border-blue-600/20 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-600/5">
+    <div className="bg-white dark:bg-gray-800 border border-blue-600/20 dark:border-blue-600/30 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-600/5 dark:from-gray-800 dark:to-gray-900/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
-          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+          <div className="text-base font-bold text-slate-900 dark:text-white mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600 dark:text-gray-400">{completed} of {total} steps completed</div>
         </div>
         <div className="flex items-center gap-3">
           <div className="w-32 h-3 bg-blue-600/10 rounded-full overflow-hidden shadow-inner">
@@ -108,27 +108,27 @@ const ProgressTracker: React.FC<{
                 className="flex-shrink-0"
               >
                 {completed ? (
-                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Circle size={18} className="text-slate-400" />
+                  <Circle size={18} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
               <button
                 onClick={() => onStepClick(step.sectionId)}
                 className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-600/10 to-indigo-600/10 border-2 border-blue-600 shadow-md hover:shadow-lg' 
+                    ? 'bg-gradient-to-r from-blue-600/10 to-indigo-600/10 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-600 dark:border-blue-500 shadow-md hover:shadow-lg' 
                     : completed 
-                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
-                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-600/5 hover:border-blue-600/30 hover:shadow-sm'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:shadow-md' 
+                      : 'bg-slate-50 dark:bg-gray-700/50 border border-slate-200 dark:border-gray-600 hover:bg-blue-600/5 dark:hover:bg-blue-900/20 hover:border-blue-600/30 dark:hover:border-blue-700 hover:shadow-sm'
                 }`}
               >
-                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
-                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-600 font-bold' : 'text-slate-700'}`}>
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600 dark:text-emerald-400' : isActive ? 'text-blue-600 dark:text-blue-400 animate-pulse' : 'text-slate-400 dark:text-gray-500'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 dark:text-emerald-300 line-through' : isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-gray-300'}`}>
                   {step.label}
                 </span>
                 {idx < steps.length - 1 && (
-                  <ChevronDown size={14} className="text-slate-400" />
+                  <ChevronDown size={14} className="text-slate-400 dark:text-gray-500" />
                 )}
               </button>
             </div>
@@ -151,14 +151,14 @@ const CollapsibleSection: React.FC<{
   sectionId?: string;
 }> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
   return (
-    <div className="bg-white border-2 border-blue-600/20 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 border-2 border-blue-600/20 dark:border-blue-600/30 rounded-2xl shadow-lg overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-600/5 transition-all duration-200"
       >
         <div className="flex items-center gap-3">
-          <Icon size={20} className={`${completed ? 'text-emerald-600' : 'text-blue-600'}`} />
-          <span className={`text-base font-bold ${completed ? 'text-emerald-900' : 'text-slate-900'}`}>
+          <Icon size={20} className={`${completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'}`} />
+          <span className={`text-base font-bold ${completed ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-900 dark:text-white'}`}>
             {title}
           </span>
         </div>
@@ -169,15 +169,15 @@ const CollapsibleSection: React.FC<{
                 e.stopPropagation();
                 onToggleComplete(!completed);
               }}
-              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-300"
             >
               {completed ? 'Mark incomplete' : 'Mark complete'}
             </button>
           )}
           {controlledIsOpen ? (
-            <ChevronDown size={18} className="text-slate-400" />
+            <ChevronDown size={18} className="text-slate-400 dark:text-gray-500" />
           ) : (
-            <ChevronRight size={18} className="text-slate-400" />
+            <ChevronRight size={18} className="text-slate-400 dark:text-gray-500" />
           )}
         </div>
       </button>
@@ -200,14 +200,14 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
   }
 
   return (
-    <div className="bg-white border-2 border-blue-600/30 rounded-2xl shadow-lg overflow-hidden mb-8">
+    <div className="bg-white dark:bg-gray-800 border-2 border-blue-600/30 dark:border-blue-600/40 rounded-2xl shadow-lg overflow-hidden mb-8">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-600/5 transition-all duration-200 bg-blue-600/5"
       >
         <div className="flex items-center gap-3">
           <FileText size={20} className="text-blue-600" />
-          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-white">Key Terms</span>
           <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2.5 py-1 rounded-full">
             {terms.length}
           </span>
@@ -223,8 +223,8 @@ const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> =
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {terms.map((item, idx) => (
               <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
-                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
-                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                <div className="font-semibold text-sm text-slate-900 dark:text-white mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 dark:text-gray-300 leading-relaxed">{item.definition}</div>
                 {item.context && (
                   <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
                 )}
@@ -362,7 +362,7 @@ const BAChallenges: React.FC = () => {
         </span>
       </div>
 
-      <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">
+      <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
         <AlertTriangle size={16} className="text-indigo-600" />
         <span className="font-medium">Common challenges BAs face and how to handle them with real examples from this project.</span>
       </div>
@@ -414,14 +414,14 @@ const BAChallenges: React.FC = () => {
             sectionId="why_section"
           >
             <div className="p-5">
-              <div className="space-y-3 text-base text-slate-800">
+              <div className="space-y-3 text-base text-slate-800 dark:text-gray-300">
                 <p className="leading-relaxed">
-                  Interviewers ask: <strong className="text-slate-900">&quot;Tell me about a time you dealt with scope creep&quot;</strong> or <strong className="text-slate-900">&quot;How do you handle difficult stakeholders?&quot;</strong>
+                  Interviewers ask: <strong className="text-slate-900 dark:text-white">&quot;Tell me about a time you dealt with scope creep&quot;</strong> or <strong className="text-slate-900 dark:text-white">&quot;How do you handle difficult stakeholders?&quot;</strong>
                 </p>
                 <p className="leading-relaxed">
                   Challenges are normal in BA work. Good BAs don't avoid them - they handle them systematically. This page shows you how, with real examples from this project.
                 </p>
-                <div className="mt-4 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+                <div className="mt-4 rounded-lg border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4 text-sm text-blue-900 dark:text-blue-200">
                   <strong>Key Point:</strong> Every challenge is an opportunity to demonstrate your problem-solving skills. Use the STAR method (Situation, Task, Action, Result) when discussing challenges in interviews.
                 </div>
               </div>
@@ -445,36 +445,36 @@ const BAChallenges: React.FC = () => {
               >
                 <div className="p-5">
                   <div className="mb-4 space-y-4">
-                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                      <div className="font-semibold text-blue-900 mb-2">What It Is:</div>
-                      <div className="text-sm text-slate-800">{challenge.whatItIs}</div>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                      <div className="font-semibold text-blue-900 dark:text-blue-200 mb-2">What It Is:</div>
+                      <div className="text-sm text-slate-800 dark:text-gray-300">{challenge.whatItIs}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                      <div className="font-semibold text-slate-900 mb-2">Example from This Project:</div>
+                    <div className="bg-slate-50 dark:bg-gray-800/50 rounded-lg p-4 border border-slate-200 dark:border-gray-700">
+                      <div className="font-semibold text-slate-900 dark:text-white mb-2">Example from This Project:</div>
                       <div className="space-y-3 text-sm">
                         <div>
-                          <div className="font-semibold text-slate-700 mb-1">Situation:</div>
-                          <div className="text-slate-800">{challenge.example.situation}</div>
+                          <div className="font-semibold text-slate-700 dark:text-gray-400 mb-1">Situation:</div>
+                          <div className="text-slate-800 dark:text-gray-300">{challenge.example.situation}</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-slate-700 mb-1">What Happened:</div>
-                          <div className="text-slate-800">{challenge.example.whatHappened}</div>
+                          <div className="font-semibold text-slate-700 dark:text-gray-400 mb-1">What Happened:</div>
+                          <div className="text-slate-800 dark:text-gray-300">{challenge.example.whatHappened}</div>
                         </div>
-                        <div className="bg-amber-50 rounded p-3 border border-amber-200">
-                          <div className="font-semibold text-amber-900 mb-1">Your BA Response:</div>
-                          <div className="text-slate-800">{challenge.example.baResponse}</div>
+                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded p-3 border border-amber-200 dark:border-amber-800">
+                          <div className="font-semibold text-amber-900 dark:text-amber-200 mb-1">Your BA Response:</div>
+                          <div className="text-slate-800 dark:text-gray-300">{challenge.example.baResponse}</div>
                         </div>
-                        <div className="bg-emerald-50 rounded p-3 border border-emerald-200">
-                          <div className="font-semibold text-emerald-900 mb-1">Outcome:</div>
-                          <div className="text-slate-800">{challenge.example.outcome}</div>
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded p-3 border border-emerald-200 dark:border-emerald-800">
+                          <div className="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">Outcome:</div>
+                          <div className="text-slate-800 dark:text-gray-300">{challenge.example.outcome}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-                      <div className="font-semibold text-indigo-900 mb-2">How to Handle:</div>
-                      <ul className="space-y-2 text-sm text-slate-800">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
+                      <div className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">How to Handle:</div>
+                      <ul className="space-y-2 text-sm text-slate-800 dark:text-gray-300">
                         {challenge.howToHandle.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <span className="text-indigo-600 mt-0.5 font-bold">→</span>
@@ -484,9 +484,9 @@ const BAChallenges: React.FC = () => {
                       </ul>
                     </div>
 
-                    <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                      <div className="font-semibold text-purple-900 mb-2">Interview Tip:</div>
-                      <div className="text-sm text-slate-800 italic">&quot;{challenge.interviewTip}&quot;</div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                      <div className="font-semibold text-purple-900 dark:text-purple-200 mb-2">Interview Tip:</div>
+                      <div className="text-sm text-slate-800 dark:text-gray-300 italic">&quot;{challenge.interviewTip}&quot;</div>
                     </div>
                   </div>
                 </div>
@@ -504,10 +504,10 @@ const BAChallenges: React.FC = () => {
       </div>
 
       {/* Slack Update */}
-      <div className="mt-8 bg-white border-2 border-slate-300 rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-slate-900 mb-4">Slack / Teams Update (Copy & Adapt)</h2>
-        <div className="rounded-lg border-2 border-slate-300 bg-white p-5 text-sm text-slate-800 shadow-sm">
-          <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 border border-slate-200">
+      <div className="mt-8 bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-lg shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Slack / Teams Update (Copy & Adapt)</h2>
+        <div className="rounded-lg border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm text-slate-800 dark:text-gray-300 shadow-sm">
+          <div className="font-mono text-sm leading-relaxed space-y-1 p-3 rounded bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-700">
             {page10Data.slackUpdate.map((line, index) => (
               <p key={index}>{line}</p>
             ))}
