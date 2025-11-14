@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
-import { ArrowLeft, ArrowRight, Play, RefreshCw } from 'lucide-react';
+import { ArrowRight, Play, RefreshCw } from 'lucide-react';
 import { useBAInActionProject } from '../../contexts/BAInActionProjectContext';
 import { ProjectSelection } from '../../ba-in-action/ProjectSelection';
 import { PROJECTS } from '../../ba-in-action/projectData';
@@ -52,15 +52,6 @@ const BAInActionIndexPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          {/* Back Button */}
-          <button
-            onClick={() => setCurrentView('dashboard')}
-            className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-3"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
-          
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">

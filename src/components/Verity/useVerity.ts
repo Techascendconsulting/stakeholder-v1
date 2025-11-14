@@ -215,7 +215,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       
       console.log('✅ Help request logged to Supabase');
 
-      // Send email notification to BA WorkXP team
+      // Send email notification to BA WorkXP™ team
       const emailSent = await EmailService.sendHelpRequestEmail({
         userEmail: user?.email || 'anonymous',
         userName: user?.full_name || user?.email,
@@ -227,7 +227,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
       });
 
       if (emailSent) {
-        console.log('✅ Email notification sent to BA WorkXP team');
+        console.log('✅ Email notification sent to BA WorkXP™ team');
       } else {
         console.warn('⚠️ Email notification failed');
       }
@@ -263,6 +263,7 @@ This helps us keep Verity available for everyone. See you tomorrow! 🌟`
 }
 
 export default useVerity;
+
 
 
 

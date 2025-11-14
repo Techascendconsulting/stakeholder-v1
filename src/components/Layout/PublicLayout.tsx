@@ -40,7 +40,7 @@ export default function PublicLayout({ children, active, onHome, onFAQClick, onC
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-gray-900">BA WorkXP</span>
+              <span className="text-lg font-bold text-gray-900">BA WorkXP™</span>
             </button>
 
             <nav className="hidden md:flex items-center space-x-6">

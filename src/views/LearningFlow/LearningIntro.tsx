@@ -3,7 +3,7 @@ import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { ArrowRight, ArrowLeft, BookOpen, CheckCircle, Target, TrendingUp } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckCircle, Target, TrendingUp } from 'lucide-react';
 
 const LearningIntro: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -12,10 +12,6 @@ const LearningIntro: React.FC = () => {
 
   const handleContinue = () => {
     void setCurrentView('learning-flow');
-  };
-
-  const handleBack = () => {
-    void setCurrentView('dashboard');
   };
 
   // Load user type
@@ -45,15 +41,6 @@ const LearningIntro: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
-        {/* Back Button */}
-        <button
-          onClick={handleBack}
-          className="inline-flex items-center space-x-2 text-white/90 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to Dashboard</span>
-        </button>
-
         {/* Main Content Card */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
           <div className="grid md:grid-cols-2 gap-0">

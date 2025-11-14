@@ -34,6 +34,8 @@ import PrivacyPolicyView from './Views/PrivacyPolicyView'
 import TermsOfServiceView from './Views/TermsOfServiceView'
 import CookiePolicyView from './Views/CookiePolicyView'
 import CookieConsent from './CookieConsent'
+import SecurityBanner from './SecurityBanner'
+import CompanyLogos from './CompanyLogos'
 import { useTheme } from '../contexts/ThemeContext'
 import ConversationTypingPreview from './ConversationTypingPreview'
 import MeetingPreview from './MeetingPreview'
@@ -156,12 +158,17 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      {/* Security Banner */}
+      <SecurityBanner />
+      
       {/* Navigation */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <header className={`fixed left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
           ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg' 
           : 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 shadow-lg'
-      }`}>
+      }`}
+      style={{ top: 'var(--security-banner-height, 0px)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -169,7 +176,7 @@ const LandingPage: React.FC = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
+              <span className="text-xl font-bold text-white">BA WorkXP™</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -559,7 +566,7 @@ const LandingPage: React.FC = () => {
             </div>
             
             <h2 className={`text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              What You'll Build Inside BA WorkXP
+              What You'll Build Inside BA WorkXP™
             </h2>
             <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
               A portfolio of real BA work products you can show employers — proving you can do the job, not just talk about it.
@@ -998,7 +1005,7 @@ const LandingPage: React.FC = () => {
               </span>
             </h2>
             <p className="text-xl text-white font-medium max-w-3xl mx-auto leading-relaxed">
-              Career-changers who broke through the experience barrier with BA WorkXP
+              Career-changers who broke through the experience barrier with BA WorkXP™
             </p>
           </div>
 
@@ -1016,7 +1023,7 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <p className="text-gray-300 leading-relaxed mb-6">
-                "After 6 months of failed applications, I practiced 30+ stakeholder sessions on BA WorkXP. In my next interview, I confidently answered every behavioral question with real examples. Landed my first BA role 2 weeks later."
+                "After 6 months of failed applications, I practiced 30+ stakeholder sessions on BA WorkXP™. In my next interview, I confidently answered every behavioral question with real examples. Landed my first BA role 2 weeks later."
               </p>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-emerald-400" />
@@ -1036,7 +1043,7 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <p className="text-gray-300 leading-relaxed mb-6">
-                "I had a CBAP certification but no experience. Employers didn't care about the cert. BA WorkXP gave me a portfolio of actual deliverables. That's what finally got me past the screening calls."
+                "I had a CBAP certification but no experience. Employers didn't care about the cert. BA WorkXP™ gave me a portfolio of actual deliverables. That's what finally got me past the screening calls."
               </p>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
@@ -1064,6 +1071,9 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Company Logos Section */}
+          <CompanyLogos />
 
           {/* Stats Bar */}
           <div className="grid md:grid-cols-4 gap-6">
@@ -1173,7 +1183,7 @@ const LandingPage: React.FC = () => {
           <div className={`pt-8 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                © 2024 BA WorkXP. All rights reserved.
+                © 2024 BA WorkXP™. All rights reserved.
               </p>
               <div className="flex items-center gap-4">
                 <a href="#" className={`hover:text-purple-600 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>

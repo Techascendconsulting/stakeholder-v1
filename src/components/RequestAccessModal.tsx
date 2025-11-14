@@ -52,7 +52,7 @@ const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBack
                   Request Access
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {onBackToHome ? 'Click logo to return home' : 'Join BA WorkXP Today'}
+                  {onBackToHome ? 'Click logo to return home' : 'Join BA WorkXP™ Today'}
                 </p>
               </div>
             </div>
@@ -78,7 +78,7 @@ const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBack
           {/* Description */}
           <div className="text-center">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-              BA WorkXP is currently invite-only for <span className="font-semibold text-purple-600 dark:text-purple-400">individual learners</span> and <span className="font-semibold text-indigo-600 dark:text-indigo-400">training platform partnerships</span>.
+              BA WorkXP™ is currently invite-only for <span className="font-semibold text-purple-600 dark:text-purple-400">individual learners</span> and <span className="font-semibold text-indigo-600 dark:text-indigo-400">training platform partnerships</span>.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ const RequestAccessModal: React.FC<RequestAccessModalProps> = ({ onClose, onBack
           <div className="space-y-3">
             <div className="flex space-x-3">
               <a
-                href={`mailto:${email}?subject=Access%20Request%20-%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AInterest: (Individual / Training Platform Partnership)%0D%0AOrganization (if applicable):%0D%0AHow I heard about you:%0D%0A%0D%0AThank you!`}
+                href={`mailto:${email}?subject=Access%20Request%20-%20BA%20WorkXP™&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP™.%0D%0A%0D%0AName:%0D%0AInterest: (Individual / Training Platform Partnership)%0D%0AOrganization (if applicable):%0D%0AHow I heard about you:%0D%0A%0D%0AThank you!`}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Mail className="w-5 h-5" />

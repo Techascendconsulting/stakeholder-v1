@@ -27,7 +27,7 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
+              <span className="text-xl font-bold text-white">BA WorkXP™</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -162,7 +162,7 @@ const FeaturesView: React.FC<FeaturesViewProps> = ({ onClose, onStartNow, onShow
               </div>
               
               <h2 className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                How BA WorkXP Works
+                How BA WorkXP™ Works
               </h2>
               <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
                 Experience the full BA lifecycle from stakeholder interviews to Scrum ceremonies

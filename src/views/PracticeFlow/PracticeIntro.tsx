@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AppView } from '../../types';
 import { useApp } from '../../contexts/AppContext';
-import { ArrowRight, ArrowLeft, Target, CheckCircle, Zap, TrendingUp } from 'lucide-react';
+import { ArrowRight, Target, CheckCircle, Zap, TrendingUp } from 'lucide-react';
 
 const PracticeIntro: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -10,22 +10,9 @@ const PracticeIntro: React.FC = () => {
     void setCurrentView('practice-flow');
   };
 
-  const handleBack = () => {
-    void setCurrentView('dashboard');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 dark:from-purple-900 dark:via-purple-800 dark:to-indigo-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
-        {/* Back Button */}
-        <button
-          onClick={handleBack}
-          className="inline-flex items-center space-x-2 text-white/90 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to Dashboard</span>
-        </button>
-
         {/* Main Content Card */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
           <div className="grid md:grid-cols-2 gap-0">

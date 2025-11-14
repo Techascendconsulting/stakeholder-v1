@@ -37,7 +37,7 @@ const GlobalWatermark: React.FC = () => {
         {/* Main watermark text - center */}
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-6xl font-bold text-gray-500 dark:text-gray-400 opacity-10 dark:opacity-10 transform -rotate-45 select-none whitespace-nowrap">
-            BA WorkXP
+            BA WorkXP™
           </span>
         </div>
       

@@ -320,7 +320,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                   Invite-Only Access
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  BA WorkXP is currently invite-only for individuals and training platforms.
+                  BA WorkXP™ is currently invite-only for individuals and training platforms.
                 </p>
                 <p className="text-sm text-purple-700 dark:text-purple-300 mt-2">
                   Request access: {' '}
@@ -513,10 +513,10 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                   Don't have an account?
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500 mb-3">
-                  BA WorkXP is currently invite-only for individuals and training platforms.
+                  BA WorkXP™ is currently invite-only for individuals and training platforms.
                 </p>
                 <a
-                  href="mailto:support@baworkxp.com?subject=Access%20Request%20for%20BA%20WorkXP&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP.%0D%0A%0D%0AName:%0D%0AOrganization:%0D%0AReferral/How I heard about you:%0D%0A%0D%0AThank you!"
+                  href="mailto:support@baworkxp.com?subject=Access%20Request%20for%20BA%20WorkXP™&body=Hello,%0D%0A%0D%0AI'm interested in accessing BA WorkXP™.%0D%0A%0D%0AName:%0D%0AOrganization:%0D%0AReferral/How I heard about you:%0D%0A%0D%0AThank you!"
                   className="inline-flex items-center space-x-2 text-sm text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold hover:underline"
                 >
                   <Mail className="w-4 h-4" />
@@ -532,7 +532,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onBack }) => {
                 Invite-Only Platform
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                BA WorkXP is currently invite-only for individual learners and training platform partnerships.
+                BA WorkXP™ is currently invite-only for individual learners and training platform partnerships.
               </p>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
                 Request access for yourself or explore partnership opportunities for your organization:

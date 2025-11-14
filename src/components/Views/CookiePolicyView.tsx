@@ -46,7 +46,7 @@ const CookiePolicyView: React.FC<CookiePolicyViewProps> = ({ onBack, onPrivacyPo
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              BA WorkXP ("we," "us," or "our") uses cookies and similar tracking technologies on our website 
+              BA WorkXP™ ("we," "us," or "our") uses cookies and similar tracking technologies on our website 
               to enhance your experience, analyze site traffic, and personalize content. This Cookie Policy 
               explains what cookies are, how we use them, and your choices regarding their use.
             </p>

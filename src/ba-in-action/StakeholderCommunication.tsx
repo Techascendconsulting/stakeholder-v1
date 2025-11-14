@@ -190,7 +190,7 @@ const StakeholderCommunication: React.FC = () => {
       {/* Conversation Scripts */}
       <Section title="4) Conversation Scripts for Each Stakeholder Type">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          Copy these scripts. Adapt them. Use them in your BA WorkXP scenarios and reference them in interviews.
+          Copy these scripts. Adapt them. Use them in your BA WorkXP™ scenarios and reference them in interviews.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
           {page4Data.conversationScripts.map((entry) => (

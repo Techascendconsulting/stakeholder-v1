@@ -16,7 +16,7 @@ const rawPages: Array<Omit<BAInActionPageDefinition, 'route'>> = [
     title: 'Join & Orientation (Day 1)',
     slug: 'join-orientation',
     view: 'ba_in_action_join_orientation',
-    description: 'Get welcomed, understand expectations, and set up your BA WorkXP workspace.',
+    description: 'Get welcomed, understand expectations, and set up your BA WorkXP™ workspace.',
   },
   {
     title: 'Understand the Business Problem',

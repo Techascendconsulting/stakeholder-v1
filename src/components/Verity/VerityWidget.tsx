@@ -230,7 +230,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
       console.log('✅ Issue submitted successfully:', data);
       
-      // Send email notification to BA WorkXP team
+      // Send email notification to BA WorkXP™ team
       const emailSent = await EmailService.sendHelpRequestEmail({
         userEmail: user?.email || 'anonymous',
         userName: user?.full_name || user?.email,
@@ -242,7 +242,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       });
       
       if (emailSent) {
-        console.log('✅ Email notification sent to BA WorkXP team');
+        console.log('✅ Email notification sent to BA WorkXP™ team');
       } else {
         console.log('⚠️ Email not sent (EmailJS not configured - check console)');
       }
@@ -304,7 +304,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
               </div>
               <div>
                 <h2 className="font-semibold text-white">Verity</h2>
-                <p className="text-xs text-purple-100">Your BA WorkXP Assistant</p>
+                <p className="text-xs text-purple-100">Your BA WorkXP™ Assistant</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -566,6 +566,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
+
 
 
 

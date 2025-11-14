@@ -26,7 +26,7 @@ const PricingView: React.FC<PricingViewProps> = ({ onClose, onStartNow, onShowFe
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
+              <span className="text-xl font-bold text-white">BA WorkXP™</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -255,7 +255,7 @@ const PricingView: React.FC<PricingViewProps> = ({ onClose, onStartNow, onShowFe
               </div>
               
               <h2 className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                How BA WorkXP Compares
+                How BA WorkXP™ Compares
               </h2>
               <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
                 The smarter, more affordable way to break into Business Analysis
@@ -271,7 +271,7 @@ const PricingView: React.FC<PricingViewProps> = ({ onClose, onStartNow, onShowFe
                     <th className={`text-center p-6 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Bootcamps</th>
                     <th className={`text-center p-6 border-l-2 border-purple-500 ${isDark ? 'bg-gradient-to-br from-purple-600/30 to-indigo-600/30' : 'bg-gradient-to-br from-purple-200 to-indigo-200'}`}>
                       <div className="flex items-center justify-center gap-2">
-                        <span className={isDark ? 'text-white' : 'text-purple-900'}>BA WorkXP</span>
+                        <span className={isDark ? 'text-white' : 'text-purple-900'}>BA WorkXP™</span>
                         <Award className="w-5 h-5 text-emerald-500" />
                       </div>
                     </th>

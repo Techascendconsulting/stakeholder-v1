@@ -76,7 +76,7 @@ const ContactUsView: React.FC<ContactUsViewProps> = ({ onClose, onStartNow, onSh
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">BA WorkXP</span>
+              <span className="text-xl font-bold text-white">BA WorkXP™</span>
             </div>
 
             {/* Desktop Navigation */}

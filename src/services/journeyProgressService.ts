@@ -282,15 +282,35 @@ export class JourneyProgressService {
   static async getPracticeProgress(userId: string): Promise<PracticeProgress> {
     try {
       // Count meetings from user_meetings table
+      // Try to get meeting_type, but handle gracefully if column doesn't exist
       const { data: meetings, error } = await supabase
         .from('user_meetings')
-        .select('meeting_type')
+        .select('id, meeting_type')
         .eq('user_id', userId);
 
-      if (error || !meetings) {
+      if (error) {
+        // If error is due to missing column, just count all meetings
+        const errorCode = (error as any)?.code;
+        if (errorCode === '42703' || error.message?.includes('column') || error.message?.includes('meeting_type')) {
+          // Column doesn't exist, just count total meetings
+          const { count } = await supabase
+            .from('user_meetings')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId);
+          
+          return {
+            scenariosCompleted: count || 0,
+            totalScenarios: 20,
+            progressPercentage: Math.min(Math.round(((count || 0) / 20) * 100), 100),
+            meetingsCount: count || 0,
+            voiceMeetingsCount: 0,
+            transcriptMeetingsCount: count || 0
+          };
+        }
+        
         return {
           scenariosCompleted: 0,
-          totalScenarios: 20, // Arbitrary total
+          totalScenarios: 20,
           progressPercentage: 0,
           meetingsCount: 0,
           voiceMeetingsCount: 0,
@@ -298,8 +318,24 @@ export class JourneyProgressService {
         };
       }
 
-      const voiceCount = meetings.filter(m => m.meeting_type === 'voice-only').length;
-      const transcriptCount = meetings.filter(m => m.meeting_type === 'transcript').length;
+      if (!meetings || meetings.length === 0) {
+        return {
+          scenariosCompleted: 0,
+          totalScenarios: 20,
+          progressPercentage: 0,
+          meetingsCount: 0,
+          voiceMeetingsCount: 0,
+          transcriptMeetingsCount: 0
+        };
+      }
+
+      // Handle both old schema (individual/group) and new schema (voice-only/transcript)
+      const voiceCount = meetings.filter(m => 
+        m.meeting_type === 'voice-only' || m.meeting_type === 'individual'
+      ).length;
+      const transcriptCount = meetings.filter(m => 
+        m.meeting_type === 'transcript' || m.meeting_type === 'group' || !m.meeting_type
+      ).length;
       const totalMeetings = meetings.length;
 
       return {

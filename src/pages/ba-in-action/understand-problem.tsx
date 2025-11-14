@@ -216,7 +216,7 @@ const MeetingSceneVisual: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }
       <div className="flex items-center gap-3 text-xs text-white/70">
         <span>Recording • On</span>
         <span>|</span>
-        <span>BA WorkXP • Teams</span>
+        <span>BA WorkXP™ • Teams</span>
       </div>
     </div>
 

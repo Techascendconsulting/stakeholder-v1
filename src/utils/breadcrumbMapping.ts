@@ -16,6 +16,10 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
   ],
 
   // Learning Journey paths
+  'learning-intro': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'Learning Journey', view: 'learning-intro' }
+  ],
   'learning-flow': [
     { label: 'Dashboard', view: 'dashboard' },
     { label: 'Learning Journey', view: 'learning-flow' }
@@ -82,6 +86,10 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
   ],
 
   // Practice Journey paths
+  'practice-intro': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'Practice Journey', view: 'practice-intro' }
+  ],
   'practice-flow': [
     { label: 'Dashboard', view: 'dashboard' },
     { label: 'Practice Journey', view: 'practice-flow' }
@@ -132,10 +140,24 @@ export const breadcrumbMapping: Record<string, BreadcrumbItem[]> = {
     { label: 'Meeting Details', view: 'meeting-details' }
   ],
 
+  // BA in Action paths
+  'ba-in-action-intro': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'BA in Action', view: 'ba-in-action-intro' }
+  ],
+  'ba-in-action-index': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'BA in Action', view: 'ba-in-action-index' }
+  ],
+
   // Project Journey
   'career-journey': [
     { label: 'Dashboard', view: 'dashboard' },
     { label: 'Project Journey', view: 'career-journey' }
+  ],
+  'project-flow': [
+    { label: 'Dashboard', view: 'dashboard' },
+    { label: 'Project Journey', view: 'project-flow' }
   ],
 
   // Agile Hub paths

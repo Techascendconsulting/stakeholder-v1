@@ -73,8 +73,8 @@ const FAQView: React.FC<FAQViewProps> = ({
       questions: [
         {
           id: 'q1',
-          question: 'What is BA WorkXP?',
-          answer: 'BA WorkXP is a practice platform where you build real Business Analyst work experience by interviewing AI stakeholders, completing projects, and creating professional deliverables. You\'ll practice stakeholder interviews, requirements gathering, process analysis, user stories, and Scrum ceremonies - building a portfolio that proves you can do the job.'
+          question: 'What is BA WorkXP™?',
+          answer: 'BA WorkXP™ is a practice platform where you build real Business Analyst work experience by interviewing AI stakeholders, completing projects, and creating professional deliverables. You\'ll practice stakeholder interviews, requirements gathering, process analysis, user stories, and Scrum ceremonies - building a portfolio that proves you can do the job.'
         },
         {
           id: 'q2',
@@ -130,12 +130,12 @@ const FAQView: React.FC<FAQViewProps> = ({
         {
           id: 'q9',
           question: 'How does this help me get a BA job?',
-          answer: 'Employers hire based on proven experience, not certificates. With BA WorkXP, you\'ll have real work artifacts to show: interview transcripts demonstrating elicitation skills, requirements documents, process maps, user stories - actual deliverables proving you can do the job. This portfolio + your ability to discuss real project experience in interviews is what gets you hired.'
+          answer: 'Employers hire based on proven experience, not certificates. With BA WorkXP™, you\'ll have real work artifacts to show: interview transcripts demonstrating elicitation skills, requirements documents, process maps, user stories - actual deliverables proving you can do the job. This portfolio + your ability to discuss real project experience in interviews is what gets you hired.'
         },
         {
           id: 'q10',
           question: 'Do employers care more about experience or certificates?',
-          answer: 'Experience wins every time. Employers want to see that you\'ve actually done BA work - interviewed stakeholders, handled conflicts, documented requirements, worked in Agile teams. Certificates show you studied theory; a portfolio shows you can execute. BA WorkXP gives you the experience employers are looking for, not just another certificate.'
+          answer: 'Experience wins every time. Employers want to see that you\'ve actually done BA work - interviewed stakeholders, handled conflicts, documented requirements, worked in Agile teams. Certificates show you studied theory; a portfolio shows you can execute. BA WorkXP™ gives you the experience employers are looking for, not just another certificate.'
         },
         {
           id: 'q11',
@@ -185,7 +185,7 @@ const FAQView: React.FC<FAQViewProps> = ({
         },
         {
           id: 'q17',
-          question: 'Where is BA WorkXP located?',
+          question: 'Where is BA WorkXP™ located?',
           answer: 'We\'re based in Manchester, UK at One Silk Street, Ancoats, Manchester M4 6LZ. Our office is in the Colony co-working space in Manchester\'s Ancoats neighborhood. We serve aspiring Business Analysts worldwide through our online platform.'
         }
       ]
@@ -216,7 +216,7 @@ const FAQView: React.FC<FAQViewProps> = ({
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg">
                   <GraduationCap className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">BA WorkXP</span>
+                <span className="text-xl font-bold text-white">BA WorkXP™</span>
               </div>
 
               {/* Desktop Navigation */}
