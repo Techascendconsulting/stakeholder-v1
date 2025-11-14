@@ -64,7 +64,7 @@ const GetStartedView: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading your onboarding status...</p>
         </div>
       </div>
@@ -77,8 +77,8 @@ const GetStartedView: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Settings className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Settings className="w-8 h-8 text-blue-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Onboarding Already Completed</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -90,7 +90,7 @@ const GetStartedView: React.FC = () => {
                   await resetOnboarding();
                   setCurrentView('dashboard');
                 }}
-                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Reset Onboarding
               </button>
@@ -167,7 +167,7 @@ const GetStartedView: React.FC = () => {
   const WelcomeStep: React.FC = () => (
     <div className="text-center max-w-2xl mx-auto">
       <div className="mb-8">
-        <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <User className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -178,7 +178,7 @@ const GetStartedView: React.FC = () => {
         </p>
       </div>
       
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 mb-8">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">What to expect:</h3>
         <div className="space-y-3 text-left">
           <div className="flex items-center gap-3">
@@ -219,7 +219,7 @@ const GetStartedView: React.FC = () => {
         title: "I've trained before and want structured practice scenarios.",
         description: "You want guided practice through structured learning modules and exercises.",
         icon: <Users className="w-6 h-6" />,
-        color: "from-indigo-500 to-purple-600"
+        color: "from-indigo-500 to-blue-600"
       },
       {
         value: 'starting_project' as OnboardingExperienceLevel,
@@ -233,7 +233,7 @@ const GetStartedView: React.FC = () => {
         title: "I'm already a BA, but I need help with my own project.",
         description: "You're experienced and need support for a specific project or challenge.",
         icon: <Building2 className="w-6 h-6" />,
-        color: "from-purple-500 to-pink-600"
+        color: "from-blue-500 to-indigo-600"
       }
     ];
 
@@ -254,7 +254,7 @@ const GetStartedView: React.FC = () => {
               key={option.value}
               className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                 experienceLevel === option.value
-                  ? 'border-purple-500 bg-purple-50 shadow-lg'
+                  ? 'border-blue-500 bg-blue-50 shadow-lg'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => setExperienceLevel(option.value)}
@@ -272,7 +272,7 @@ const GetStartedView: React.FC = () => {
                   </p>
                 </div>
                 {experienceLevel === option.value && (
-                  <CheckCircle className="w-6 h-6 text-purple-500 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 text-blue-500 flex-shrink-0" />
                 )}
               </div>
             </div>
@@ -306,7 +306,7 @@ const GetStartedView: React.FC = () => {
               title: "Understand how projects work",
               description: "Learn about the project structure and what you'll be building.",
               icon: <Workflow className="w-6 h-6" />,
-              color: "from-purple-500 to-pink-600"
+              color: "from-blue-500 to-indigo-600"
             }
           ];
         case 'trained_but_no_job':
@@ -340,7 +340,7 @@ const GetStartedView: React.FC = () => {
               title: "Practice asking stakeholders the right questions",
               description: "Work through structured question frameworks for each project stage.",
               icon: <GraduationCap className="w-6 h-6" />,
-              color: "from-indigo-500 to-purple-600"
+              color: "from-indigo-500 to-blue-600"
             },
             {
               value: 'practice_skills' as OnboardingIntent,
@@ -364,7 +364,7 @@ const GetStartedView: React.FC = () => {
               title: "Create a new project from my idea",
               description: "Start building a project based on your own concept or idea.",
               icon: <Workflow className="w-6 h-6" />,
-              color: "from-purple-500 to-pink-600"
+              color: "from-blue-500 to-indigo-600"
             },
             {
               value: 'start_real_project' as OnboardingIntent,
@@ -388,7 +388,7 @@ const GetStartedView: React.FC = () => {
               title: "Create a new project from my idea",
               description: "Start a new project to solve a specific business problem.",
               icon: <Workflow className="w-6 h-6" />,
-              color: "from-purple-500 to-pink-600"
+              color: "from-blue-500 to-indigo-600"
             },
             {
               value: 'get_project_help' as OnboardingIntent,
@@ -429,7 +429,7 @@ const GetStartedView: React.FC = () => {
               key={index}
               className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                 intent === option.value
-                  ? 'border-purple-500 bg-purple-50 shadow-lg'
+                  ? 'border-blue-500 bg-blue-50 shadow-lg'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => setIntent(option.value)}
@@ -447,7 +447,7 @@ const GetStartedView: React.FC = () => {
                   </p>
                 </div>
                 {intent === option.value && (
-                  <CheckCircle className="w-6 h-6 text-purple-500 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 text-blue-500 flex-shrink-0" />
                 )}
               </div>
             </div>
@@ -503,8 +503,8 @@ const GetStartedView: React.FC = () => {
             title: "Your Structured Practice",
             subtitle: "Reinforce your knowledge with guided exercises",
             icon: <Users className="w-8 h-8" />,
-            color: "from-indigo-500 to-purple-600",
-            gradient: "from-indigo-50 to-purple-50",
+            color: "from-indigo-500 to-blue-600",
+            gradient: "from-indigo-50 to-blue-50",
             destination: "Practice Lab",
             destinationDescription: "Structured questioning and guided learning",
             nextSteps: [
@@ -539,8 +539,8 @@ const GetStartedView: React.FC = () => {
             title: "Your Expert Support",
             subtitle: "Let's enhance your current project",
             icon: <Building2 className="w-8 h-8" />,
-            color: "from-purple-500 to-pink-600",
-            gradient: "from-purple-50 to-pink-50",
+            color: "from-blue-500 to-indigo-600",
+            gradient: "from-blue-50 to-indigo-50",
             destination: "Create Your Own Project",
             destinationDescription: "Custom project support and guidance",
             nextSteps: [
@@ -678,7 +678,7 @@ const GetStartedView: React.FC = () => {
                 <div
                   key={step}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    step <= currentStep ? 'bg-purple-500' : 'bg-gray-300'
+                    step <= currentStep ? 'bg-blue-500' : 'bg-gray-300'
                   }`}
                 />
               ))}
@@ -714,7 +714,7 @@ const GetStartedView: React.FC = () => {
               disabled={!canProceedToNext || isSaving}
               className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${
                 canProceedToNext && !isSaving
-                  ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:shadow-lg hover:scale-105'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:scale-105'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >

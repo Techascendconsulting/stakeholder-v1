@@ -11,7 +11,7 @@ const BAInActionIntroPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#ff09aa] via-[#ff56c9] to-[#c94bff] dark:from-[#7a0057] dark:via-[#6b008a] dark:to-[#4b0082] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 dark:from-blue-800 dark:via-indigo-800 dark:to-blue-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Main Content Card */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
@@ -41,9 +41,9 @@ const BAInActionIntroPage: React.FC = () => {
             <div className="p-8 md:p-12 flex flex-col justify-center">
               <div className="space-y-6">
                 {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full border border-purple-200 dark:border-purple-700">
-                  <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                  <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">Interactive Learning</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full border border-blue-200 dark:border-blue-700">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Interactive Learning</span>
                 </div>
 
                 {/* Title */}
@@ -86,7 +86,7 @@ const BAInActionIntroPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mt-0.5">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center mt-0.5">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -102,7 +102,7 @@ const BAInActionIntroPage: React.FC = () => {
                 <div className="pt-6">
                   <button
                     onClick={handleContinue}
-                    className="group w-full md:w-auto px-8 py-4 bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] text-white rounded-xl font-semibold text-lg shadow-lg shadow-[#ff09aa]/50 hover:shadow-xl hover:shadow-[#ff09aa]/60 transition-all transform hover:-translate-y-0.5 hover:scale-[1.02] flex items-center justify-center gap-3"
+                    className="group w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white rounded-xl font-semibold text-lg shadow-lg shadow-blue-600/50 hover:shadow-xl hover:shadow-blue-600/60 transition-all transform hover:-translate-y-0.5 hover:scale-[1.02] flex items-center justify-center gap-3"
                   >
                     <span>Continue to Project Selection</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

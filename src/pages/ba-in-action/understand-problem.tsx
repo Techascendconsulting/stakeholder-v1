@@ -931,7 +931,7 @@ export default function UnderstandProblemPage() {
               icon={<Calendar size={18} className="text-indigo-600" />}
               step={6}
             >
-              <div className="text-sm text-white mb-4 p-3 bg-gradient-to-r from-rose-600 to-pink-600 border-2 border-rose-400 rounded-lg shadow-md">
+              <div className="text-sm text-white mb-4 p-3 bg-gradient-to-r from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-lg shadow-md">
                 <strong className="font-bold">Your goal is not to solve.</strong> Your goal is to get clarity that lets you scope the work.
               </div>
 
@@ -1035,7 +1035,7 @@ export default function UnderstandProblemPage() {
             </div>
 
             {/* Key insight card */}
-            <div className="bg-gradient-to-br from-rose-600 to-pink-600 border-2 border-rose-400 rounded-lg p-4 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-lg p-4 shadow-lg">
               <div className="text-sm font-bold text-white mb-3">What you're building</div>
               <div className="text-sm text-white/95 leading-relaxed space-y-2">
                 <p>You're not writing a document.</p>

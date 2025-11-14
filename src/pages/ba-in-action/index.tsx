@@ -44,11 +44,11 @@ const BAInActionIndexPage: React.FC = () => {
   const project = PROJECTS[selectedProject];
   const bannerGradient =
     selectedProject === 'cif'
-      ? 'from-purple-700 via-purple-600 to-rose-500'
+      ? 'from-blue-700 via-blue-600 to-indigo-600'
       : 'from-sky-700 via-blue-600 to-cyan-500';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#ff09aa] via-[#ff56c9] to-[#c94bff] dark:from-[#7a0057] dark:via-[#6b008a] dark:to-[#4b0082]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 dark:from-blue-800 dark:via-indigo-800 dark:to-blue-900">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -58,14 +58,14 @@ const BAInActionIndexPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Shadow a Business Analyst in a Real Project Workflow
                 </h1>
-                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-bold rounded-full">
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-bold rounded-full">
                   {project.shortName}
                 </span>
               </div>
             </div>
             <button
               onClick={handleChangeProject}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition-colors text-sm font-semibold ml-4"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors text-sm font-semibold ml-4"
             >
               <RefreshCw size={16} />
               Switch Project
@@ -118,8 +118,8 @@ const BAInActionIndexPage: React.FC = () => {
                           w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
                           transition-all duration-300 transform hover:scale-110 mb-4
                           ${isActive 
-                            ? 'bg-gradient-to-br from-[#ff09aa] to-[#d238ff] text-white shadow-lg shadow-[#ff09aa]/50 ring-4 ring-[#ff73d3] dark:ring-[#ff73d3]' 
-                            : 'bg-white dark:bg-gray-800 text-[#ff09aa] dark:text-[#ff73d3] shadow-lg border-4 border-[#ff09aa] hover:border-[#d238ff] cursor-pointer'}
+                            ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/50 ring-4 ring-blue-400 dark:ring-blue-500' 
+                            : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-lg border-4 border-blue-600 hover:border-indigo-600 cursor-pointer'}
                         `}
                       >
                         {step.id}
@@ -131,8 +131,8 @@ const BAInActionIndexPage: React.FC = () => {
                         className={`
                           w-80 h-72 rounded-2xl shadow-xl p-6 border-[1.5px] transition-all duration-300 cursor-pointer flex flex-col
                           ${isActive 
-                            ? 'bg-gradient-to-br from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] border-transparent text-white scale-105 shadow-[0_18px_45px_-12px_rgba(255,9,170,0.55)]' 
-                            : 'bg-white/95 dark:bg-gray-800 border-[#ff09aa]/80 hover:shadow-2xl hover:scale-105'}
+                            ? 'bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 border-transparent text-white scale-105 shadow-[0_18px_45px_-12px_rgba(37,99,235,0.55)]' 
+                            : 'bg-white/95 dark:bg-gray-800 border-blue-600/80 hover:shadow-2xl hover:scale-105'}
                         `}
                       >
                         {/* Status Badge */}
@@ -141,7 +141,7 @@ const BAInActionIndexPage: React.FC = () => {
                             px-3 py-1 rounded-full text-xs font-semibold
                             ${isActive 
                               ? 'bg-white/20 text-white' 
-                              : 'bg-[#ffebf7] text-[#d60081] dark:bg-[#5b0050] dark:text-[#ff8cd9]'}
+                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'}
                           `}>
                             Step {index + 1}
                           </span>
@@ -168,8 +168,8 @@ const BAInActionIndexPage: React.FC = () => {
                               flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
                               transition-all duration-200
                               ${isActive 
-                                ? 'bg-white text-[#ff09aa] hover:bg-[#ffe6f5]' 
-                                : 'bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff] text-white hover:from-[#ff21b1] hover:to-[#b52fff]'}
+                                ? 'bg-white text-blue-600 hover:bg-blue-50' 
+                                : 'bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'}
                             `}
                           >
                             <Play className="w-4 h-4" />
@@ -182,7 +182,7 @@ const BAInActionIndexPage: React.FC = () => {
                     {/* Arrow - Positioned at Card Middle */}
                     {showArrow && (
                       <div className="flex items-center mx-6 self-center" style={{ marginTop: '80px' }}>
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-white/80 to-white/30 text-[#ff09aa] shadow-lg shadow-[#ff09aa]/40 dark:from-white/15 dark:to-white/5">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-white/80 to-white/30 text-blue-600 shadow-lg shadow-blue-600/40 dark:from-white/15 dark:to-white/5">
                           <ArrowRight className="w-6 h-6" />
                         </div>
                       </div>
@@ -197,7 +197,7 @@ const BAInActionIndexPage: React.FC = () => {
             <div className="mt-8 flex items-center justify-center gap-3 text-white/90 dark:text-white/80">
               <span className="text-sm uppercase tracking-[0.2em]">Scroll</span>
               <div className="relative h-1 w-40 overflow-hidden rounded-full bg-white/30 dark:bg-white/20">
-                <div className="absolute inset-y-0 left-0 w-1/3 animate-[scrollPulse_2.4s_infinite] rounded-full bg-gradient-to-r from-[#ff09aa] via-[#ff3cbf] to-[#d238ff]" />
+                <div className="absolute inset-y-0 left-0 w-1/3 animate-[scrollPulse_2.4s_infinite] rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600" />
               </div>
               <span className="text-sm uppercase tracking-[0.2em]">Explore</span>
             </div>

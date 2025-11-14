@@ -148,7 +148,7 @@ const StakeholderLandscape: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>If you don&apos;t understand who holds risk, veto power, and emotional investment, you will:</strong>
           <ul className="mt-2 list-disc list-inside space-y-1">
             <li>Propose solutions that get politely rejected.</li>
