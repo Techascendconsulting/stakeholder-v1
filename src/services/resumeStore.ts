@@ -198,7 +198,8 @@ export function getPageTitle(view: string): string {
     'ba_in_action_stakeholder_communication': 'BA In Action • Stakeholder Communication',
     'ba_in_action_as_is_to_be': 'BA In Action • As-Is → Gap → To-Be',
     'ba_in_action_requirements': 'BA In Action • Requirements & Documentation',
-    'ba_in_action_agile_delivery': 'BA In Action • Agile Delivery',
+    'ba_in_action_implementation': 'BA In Action • Implementation & Agile Approach',
+    'ba_in_action_agile_delivery': 'BA In Action • Using Jira as a Tool',
     'ba_in_action_handover_value': 'BA In Action • Handover & Value Tracking',
     'ba_in_action_improvement': 'BA In Action • Continuous Improvement',
   };

@@ -77,6 +77,7 @@ export type AppView =
   | 'ba_in_action_stakeholder_communication'
   | 'ba_in_action_as_is_to_be'
   | 'ba_in_action_requirements'
+  | 'ba_in_action_implementation'
   | 'ba_in_action_agile_delivery'
   | 'ba_in_action_handover_value'
   | 'custom-project'

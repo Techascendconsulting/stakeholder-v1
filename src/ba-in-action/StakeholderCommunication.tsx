@@ -22,9 +22,128 @@ import {
   MessageCircleMore,
   Phone,
   MessageCircle,
+  Target,
+  FileText,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
+import { getGlossaryTerms } from './glossary-data';
 
 const VIEW_ID: AppView = 'ba_in_action_stakeholder_communication';
+
+// --- Glossary Sidebar Component ---
+const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const terms = getGlossaryTerms(project, pageKey);
+
+  if (terms.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden mb-8">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
+      >
+        <div className="flex items-center gap-3">
+          <FileText size={20} className="text-blue-600" />
+          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
+            {terms.length}
+          </span>
+        </div>
+        {isOpen ? (
+          <ChevronDown size={18} className="text-blue-600" />
+        ) : (
+          <ChevronRight size={18} className="text-blue-600" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            {terms.map((item, idx) => (
+              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                {item.context && (
+                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- BA Journey Sidebar ---
+const BAJourneySidebar: React.FC = () => {
+  return (
+    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-2xl p-6 shadow-xl relative overflow-hidden mb-8">
+      {/* Subtle background image */}
+      <div className="absolute inset-0 opacity-5">
+        <img 
+          src="/images/collaborate1.jpg" 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={18} className="text-white" />
+          <div className="text-base font-bold text-white">A BA's Approach to Stakeholder Communication</div>
+        </div>
+        <div className="text-sm text-white/95 leading-relaxed space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">1.</span>
+              <div>
+                <div className="font-semibold">Choose the right channel</div>
+                <div className="text-white/80 text-xs mt-0.5">Email for formal, Teams for quick, video for complex</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">2.</span>
+              <div>
+                <div className="font-semibold">Draft your first message</div>
+                <div className="text-white/80 text-xs mt-0.5">Context, specific ask, suggested next step</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">3.</span>
+              <div>
+                <div className="font-semibold">Run the meeting with structure</div>
+                <div className="text-white/80 text-xs mt-0.5">Set frame, reflect, surface differences, clarify, define next steps</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">4.</span>
+              <div>
+                <div className="font-semibold">Take analytical notes</div>
+                <div className="text-white/80 text-xs mt-0.5">Capture meaning and decisions, not just words</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">5.</span>
+              <div>
+                <div className="font-semibold">Follow up immediately</div>
+                <div className="text-white/80 text-xs mt-0.5">Post summary in channel with decisions, owners, and next steps</div>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-white/30 mt-3">
+            <div className="text-xs font-semibold text-white mb-1">BA Mindset</div>
+            <div className="text-white/90 text-xs leading-relaxed">
+              You're not just talking. You're <strong>building trust, creating decision trails, and managing expectations</strong> so stakeholders feel heard and projects stay on track.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const StakeholderCommunication: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
@@ -33,7 +152,6 @@ const StakeholderCommunication: React.FC = () => {
   const { previous, next } = getBaInActionNavigation(VIEW_ID);
   const backLink = previous ? baInActionViewToPath[previous.view] : undefined;
   const nextLink = next ? baInActionViewToPath[next.view] : undefined;
-  const [stakeholderMap, setStakeholderMap] = useState('');
   const [firstMessage, setFirstMessage] = useState('');
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
@@ -114,45 +232,18 @@ const StakeholderCommunication: React.FC = () => {
         </div>
         <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
           <AlertCircle size={16} className="inline mr-2" />
-          <strong>Real BA work:</strong> You don&apos;t just &quot;communicate well.&quot; You map power, assess interest, choose channels strategically, and lead conversations with intent.
+          <strong>Real BA work:</strong> You don&apos;t just &quot;communicate well.&quot; You choose channels strategically, lead conversations with intent, and document decisions clearly.
         </div>
       </Section>
 
-      {/* Power-Interest Grid */}
-      <Section title="2) The Power-Interest Grid (How BAs Map Stakeholders)">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          This is the single most important stakeholder tool. It tells you <strong>who to engage, how often, and with what depth.</strong>
-        </p>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          {page4Data.powerInterestGrid.map((item) => (
-            <div
-              key={item.label}
-              className={`rounded-2xl border border-slate-300 overflow-hidden shadow-sm`}
-            >
-              <div className={`${item.color} ${item.textColor} px-4 py-3`}>
-                <div className="text-xs font-semibold uppercase tracking-wide opacity-90">{item.quadrant}</div>
-                <div className="text-lg font-bold mt-1">{item.label}</div>
-              </div>
-              <div className="bg-white p-4">
-                <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Examples</div>
-                <ul className="space-y-1 mb-3">
-                  {item.stakeholders.map((s) => (
-                    <li key={s} className="text-sm text-slate-800">• {s}</li>
-                  ))}
-                </ul>
-                <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">How to Engage</div>
-                <p className="text-sm text-slate-700 leading-relaxed">{item.approach}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <strong>In interviews:</strong> "I used a power-interest grid to prioritise stakeholder engagement. High-power, high-interest stakeholders received weekly updates, while low-power, low-interest were informed at key milestones only."
-        </div>
-      </Section>
+      {/* Glossary */}
+      <GlossarySidebar project={selectedProject} pageKey="stakeholder-communication" />
+
+      {/* BA Journey Sidebar */}
+      <BAJourneySidebar />
 
       {/* Communication Channels */}
-      <Section title="3) Tools of Communication (When to Use Teams, Slack, Email, or Face-to-Face)">
+      <Section title="2) Tools of Communication (When to Use Teams, Slack, Email, or Face-to-Face)">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
         </p>
@@ -188,7 +279,7 @@ const StakeholderCommunication: React.FC = () => {
       </Section>
 
       {/* Conversation Scripts */}
-      <Section title="4) Conversation Scripts for Each Stakeholder Type">
+      <Section title="3) Conversation Scripts for Each Stakeholder Type">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           Copy these scripts. Adapt them. Use them in your BA WorkXP™ scenarios and reference them in interviews.
         </p>
@@ -212,7 +303,7 @@ const StakeholderCommunication: React.FC = () => {
       </Section>
 
       {/* Meeting Framework */}
-      <Section title="5) The 5-Step BA Meeting Framework">
+      <Section title="4) The 5-Step BA Meeting Framework">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           This is the flow BAs use to lead meetings under pressure. Memorise it. Use it. Reference it in interviews.
         </p>
@@ -242,7 +333,7 @@ const StakeholderCommunication: React.FC = () => {
       </Section>
 
       {/* How You Take Notes */}
-      <Section title="6) How You Take Notes (Analysis vs. Transcription)">
+      <Section title="5) How You Take Notes (Analysis vs. Transcription)">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           Weak BAs transcribe. Strong BAs analyse. Your notes should capture meaning, not words.
         </p>
@@ -263,31 +354,8 @@ const StakeholderCommunication: React.FC = () => {
         </div>
       </Section>
 
-      {/* Task 1: Stakeholder Mapping */}
-      <Section title={`7) Your Task: ${page4Data.taskTitle}`}>
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          Using the Power-Interest Grid, map the stakeholders. For each, write:
-        </p>
-        <ul className="list-disc list-inside space-y-1 text-sm text-slate-700 mb-4">
-          <li>Name & role</li>
-          <li>Quadrant (High Power/High Interest, etc.)</li>
-          <li>Engagement approach (how often, what depth)</li>
-          <li>Potential concerns or risks</li>
-        </ul>
-        <textarea
-          className="w-full rounded-2xl border border-slate-300 bg-white p-4 text-sm leading-relaxed shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          rows={8}
-          placeholder={page4Data.taskPlaceholder}
-          value={stakeholderMap}
-          onChange={(e) => setStakeholderMap(e.target.value)}
-        />
-        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          <strong>How a BA would do this:</strong> They&apos;d create a simple table in Confluence or Excel, update it after each conversation, and reference it before every stakeholder interaction to adjust tone and depth.
-        </div>
-      </Section>
-
-      {/* Task 2: Draft First Message */}
-      <Section title="8) Your Task: Draft Your First Stakeholder Message">
+      {/* Task 1: Draft First Message */}
+      <Section title="6) Your Task: Draft Your First Stakeholder Message">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           Choose one stakeholder. Draft your first message to them in Teams/Slack. Include:
         </p>
@@ -319,7 +387,7 @@ const StakeholderCommunication: React.FC = () => {
       </Section>
 
       {/* Follow-Up Message */}
-      <Section title="9) Post-Meeting Follow-Up (Copy & Adapt for Slack/Teams)">
+      <Section title="7) Post-Meeting Follow-Up (Copy & Adapt for Slack/Teams)">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
           After every meeting, post a summary in the project channel. This builds trust and creates a decision trail.
         </p>

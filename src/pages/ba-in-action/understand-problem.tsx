@@ -5,6 +5,7 @@ import { PAGE_2_DATA } from "../../ba-in-action/page2-data";
 import type { AppView } from "../../types";
 import { NavigationButtons } from "../../ba-in-action/common";
 import { getBaInActionNavigation, baInActionViewToPath } from "../../ba-in-action/config";
+import { getGlossaryTerms } from "../../ba-in-action/glossary-data";
 import { 
   Clock,
   AlertCircle,
@@ -26,7 +27,11 @@ import {
   ArrowRight,
   Play,
   Volume2,
-  UserCircle2
+  UserCircle2,
+  Circle,
+  ChevronDown,
+  ChevronRight,
+  CheckSquare
 } from "lucide-react";
 
 /**
@@ -35,34 +40,73 @@ import {
  */
 
 function useNotes(initialNotes: string = "") {
-  const [notes, setNotes] = useState<{[k: string]: string}>({
-    meeting_notes: initialNotes,
-    problem_statement: "",
-    engagement_plan: "",
+  const [notes, setNotes] = useState<{[k: string]: string}>(() => {
+    const saved = localStorage.getItem('ba-action-problem-notes');
+    return saved ? JSON.parse(saved) : {
+      meeting_notes: initialNotes,
+      problem_statement: "",
+      engagement_plan: "",
+    };
   });
   const saveNote = (key: string, value: string) => {
-    setNotes((n) => ({ ...n, [key]: value }));
+    setNotes((n) => {
+      const updated = { ...n, [key]: value };
+      localStorage.setItem('ba-action-problem-notes', JSON.stringify(updated));
+      return updated;
+    });
   };
   return { notes, saveNote };
+}
+
+// Progress tracking hook
+function useProgress() {
+  const [progress, setProgress] = useState<{[k: string]: boolean}>(() => {
+    const saved = localStorage.getItem('ba-action-problem-progress');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const markComplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: true };
+      localStorage.setItem('ba-action-problem-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markIncomplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: false };
+      localStorage.setItem('ba-action-problem-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const getProgress = () => {
+    const steps = ['notes_captured', 'evidence_mapped', 'problem_stated', 'baselines_set', 'scope_defined', 'engagement_planned', 'update_sent'];
+    const completed = steps.filter(s => progress[s]).length;
+    return { completed, total: steps.length, percentage: (completed / steps.length) * 100 };
+  };
+
+  return { progress, markComplete, markIncomplete, getProgress };
 }
 
 // Coaching hint component
 const CoachingHint: React.FC<{title: string; children: React.ReactNode}> = ({ title, children }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-3 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600">
+    <div className="mt-3 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full px-3 py-2 text-left text-sm font-semibold text-white hover:text-purple-100 flex items-center justify-between transition-colors"
+        className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:text-blue-50 flex items-center justify-between transition-all duration-200"
       >
         <span className="flex items-center gap-2">
-          <Lightbulb size={14} />
+          <Lightbulb size={16} className="animate-pulse" />
           {title}
         </span>
         <span className="text-xs text-white/80">{open ? 'Hide' : 'Show'}</span>
       </button>
       {open && (
-        <div className="px-3 pb-3 pt-2 text-sm text-white/95 leading-relaxed bg-purple-700/30">
+        <div className="px-4 pb-3 pt-2 text-sm text-white/95 leading-relaxed bg-blue-700/30">
           {children}
         </div>
       )}
@@ -88,30 +132,151 @@ const LookFor: React.FC<{items: string[]}> = ({ items }) => (
   </div>
 );
 
-// Section wrapper
-const Section: React.FC<{
+// --- Progress Tracker Component ---
+const ProgressTracker: React.FC<{
+  progress: {[k: string]: boolean};
+  activeSection: string | null;
+  onStepClick: (stepId: string) => void;
+  onToggle: (step: string, completed: boolean) => void;
+}> = ({ progress, activeSection, onStepClick, onToggle }) => {
+  const steps = [
+    { id: 'notes_captured', label: 'Capture Meeting Notes', icon: MessageSquare, sectionId: 'notes_section' },
+    { id: 'evidence_mapped', label: 'Map Evidence', icon: BarChart3, sectionId: 'evidence_section' },
+    { id: 'problem_stated', label: 'Draft Problem Statement', icon: Target, sectionId: 'problem_section' },
+    { id: 'baselines_set', label: 'Set Baselines & Targets', icon: TrendingUp, sectionId: 'baselines_section' },
+    { id: 'scope_defined', label: 'Define Scope', icon: CheckSquare, sectionId: 'scope_section' },
+    { id: 'engagement_planned', label: 'Plan Engagement', icon: Calendar, sectionId: 'engagement_section' },
+    { id: 'update_sent', label: 'Send Update', icon: Send, sectionId: 'update_section' },
+  ];
+
+  const total = steps.length;
+  const completed = steps.filter(s => progress[s.id]).length;
+  const percentage = (completed / total) * 100;
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step, idx) => {
+          const completed = progress[step.id];
+          const isActive = activeSection === step.sectionId;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(step.id, !completed);
+                }}
+                className="flex-shrink-0"
+              >
+                {completed ? (
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                ) : (
+                  <Circle size={18} className="text-slate-400" />
+                )}
+              </button>
+              <button
+                onClick={() => onStepClick(step.sectionId)}
+                className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    : completed 
+                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
+                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                }`}
+              >
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                  {step.label}
+                </span>
+                {idx < steps.length - 1 && (
+                  <ChevronDown size={14} className="text-slate-400" />
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- Collapsible Section Wrapper ---
+const CollapsibleSection: React.FC<{
   title: string;
-  icon: React.ReactNode;
+  icon: React.ElementType;
+  completed?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
   children: React.ReactNode;
-  step?: number;
-}> = ({ title, icon, children, step }) => (
-  <div className="bg-white border border-slate-300 rounded-lg shadow-sm">
-    <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-      {step && (
-        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-white text-sm font-bold">
-          {step}
+  onToggleComplete?: (completed: boolean) => void;
+  sectionId?: string;
+}> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalOpen;
+  const handleToggle = onToggle || (() => setInternalOpen(!internalOpen));
+
+  return (
+    <div className={`bg-white border rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${
+      completed ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/50 to-white' : 'border-blue-200 bg-gradient-to-br from-white to-blue-50/20'
+    }`}>
+      <button
+        onClick={handleToggle}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          {completed ? (
+            <CheckCircle2 size={18} className="text-emerald-600" />
+          ) : (
+            <Circle size={18} className="text-slate-400" />
+          )}
+          <Icon size={20} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isOpen ? 'text-blue-600' : 'text-slate-500'}`} />
+          <span className={`text-lg font-bold ${completed ? 'text-emerald-900 line-through' : isOpen ? 'text-blue-900' : 'text-slate-900'}`}>
+            {title}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onToggleComplete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete(!completed);
+              }}
+              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {completed ? 'Mark incomplete' : 'Mark complete'}
+            </button>
+          )}
+          {isOpen ? (
+            <ChevronDown size={18} className="text-slate-400" />
+          ) : (
+            <ChevronRight size={18} className="text-slate-400" />
+          )}
+        </div>
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          {children}
         </div>
       )}
-      <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50">
-        {icon}
-      </div>
-      <div className="text-base font-semibold text-slate-900">{title}</div>
     </div>
-    <div className="p-4 space-y-4">
-      {children}
-    </div>
-  </div>
-);
+  );
+};
 
 // Evidence table row
 const EvidenceRow: React.FC<{
@@ -203,8 +368,152 @@ const ScopeItem: React.FC<{label: string; checked?: boolean}> = ({ label, checke
   );
 };
 
-// Hero visual component (illustrated meeting scene)
+// --- Glossary Sidebar Component ---
+const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const terms = getGlossaryTerms(project, pageKey);
+
+  if (terms.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
+      >
+        <div className="flex items-center gap-3">
+          <FileText size={20} className="text-blue-600" />
+          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
+            {terms.length}
+          </span>
+        </div>
+        {isOpen ? (
+          <ChevronDown size={18} className="text-blue-600" />
+        ) : (
+          <ChevronRight size={18} className="text-blue-600" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            {terms.map((item, idx) => (
+              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                {item.context && (
+                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- BA Journey Sidebar ---
+const BAJourneySidebar: React.FC = () => {
+  return (
+    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      {/* Subtle background image */}
+      <div className="absolute inset-0 opacity-5">
+        <img 
+          src="/images/collaborate1.jpg" 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={18} className="text-white" />
+          <div className="text-base font-bold text-white">A BA's Approach After the Meeting</div>
+        </div>
+        <div className="text-sm text-white/95 leading-relaxed space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">1.</span>
+              <div>
+                <div className="font-semibold">Capture raw notes</div>
+                <div className="text-white/80 text-xs mt-0.5">What was said, not what you think it means</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">2.</span>
+              <div>
+                <div className="font-semibold">Separate evidence from assumptions</div>
+                <div className="text-white/80 text-xs mt-0.5">What do you know vs. what you're guessing?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">3.</span>
+              <div>
+                <div className="font-semibold">Draft problem statement</div>
+                <div className="text-white/80 text-xs mt-0.5">One sentence that captures the core issue</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">4.</span>
+              <div>
+                <div className="font-semibold">Identify what's missing</div>
+                <div className="text-white/80 text-xs mt-0.5">What data, baselines, or clarity do you need?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">5.</span>
+              <div>
+                <div className="font-semibold">Plan your next 48 hours</div>
+                <div className="text-white/80 text-xs mt-0.5">Who to talk to, what to request, when</div>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-white/30 mt-3">
+            <div className="text-xs font-semibold text-white mb-1">BA Mindset</div>
+            <div className="text-white/90 text-xs leading-relaxed">
+              You're not solving yet. You're <strong>establishing clarity</strong> so stakeholders agree on the problem before anyone builds solutions.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Simplified meeting visual - just a subtle background with icon
 const MeetingSceneVisual: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }) => (
+  <div className="mb-6 rounded-2xl border border-blue-200 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 relative">
+    {/* Subtle background image */}
+    <div className="absolute inset-0 opacity-10">
+      <img 
+        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=60" 
+        alt="Meeting" 
+        className="w-full h-full object-cover"
+      />
+    </div>
+    <div className="relative z-10 p-6">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+          <MessageSquare size={24} className="text-white" />
+        </div>
+        <div>
+          <div className="text-lg font-bold text-slate-900">{data.meetingTitle}</div>
+          <div className="text-sm text-slate-600">Yesterday, 11:00 AM • 28 minutes</div>
+        </div>
+      </div>
+      <div className="text-sm text-slate-700 leading-relaxed bg-white/80 rounded-lg p-4 border border-blue-200">
+        {data.meetingContext}
+      </div>
+    </div>
+  </div>
+);
+
+// Removed AnalysisSceneVisual - too complex, replaced with simple icon-based visual if needed
+
+// Hero visual component (illustrated meeting scene) - REMOVED, replaced with simplified version above
+const MeetingSceneVisualOld: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }) => (
   <div className="mb-6 rounded-2xl border border-slate-300 shadow-xl overflow-hidden bg-white">
     {/* Teams-style top bar */}
     <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-slate-800 to-slate-900 text-white text-sm">
@@ -288,69 +597,7 @@ const MeetingSceneVisual: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }
   </div>
 );
 
-// Analysis work visual (person at desk with documents)
-const AnalysisSceneVisual: React.FC = () => (
-  <div className="relative w-full h-56 bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50 rounded-2xl overflow-hidden border-2 border-blue-200 shadow-lg">
-    {/* Desk setup */}
-    <div className="absolute inset-0 flex items-end justify-center pb-8">
-      {/* Desk surface */}
-      <div className="relative w-4/5 h-32 bg-gradient-to-b from-amber-700 to-amber-900 rounded-t-2xl shadow-2xl">
-        
-        {/* Documents spread on desk */}
-        <div className="absolute -top-4 left-[5%] w-24 h-32 bg-white rounded shadow-lg transform -rotate-6 border border-slate-200 p-2">
-          <div className="text-[8px] font-mono text-slate-600 space-y-1">
-            <div className="font-bold">Meeting Notes</div>
-            <div className="h-1 bg-slate-200"></div>
-            <div className="h-1 bg-slate-200 w-4/5"></div>
-            <div className="h-1 bg-slate-200 w-3/5"></div>
-          </div>
-        </div>
-        
-        <div className="absolute -top-4 left-[25%] w-24 h-32 bg-white rounded shadow-lg transform rotate-3 border border-slate-200 p-2">
-          <div className="text-[8px] font-mono text-slate-600 space-y-1">
-            <div className="font-bold text-red-600">Problem Stmt</div>
-            <div className="h-1 bg-slate-200"></div>
-            <div className="h-1 bg-red-200 w-full"></div>
-            <div className="h-1 bg-red-200 w-4/5"></div>
-          </div>
-        </div>
-        
-        {/* Laptop in center */}
-        <div className="absolute -top-8 right-[25%] w-32 h-24 bg-gradient-to-b from-slate-300 to-slate-700 rounded-t-lg shadow-2xl">
-          <div className="w-full h-4/5 bg-gradient-to-br from-indigo-900 to-purple-900 rounded-t-lg p-2">
-            <div className="grid grid-cols-2 gap-1">
-              <div className="h-2 bg-indigo-400 rounded"></div>
-              <div className="h-2 bg-purple-400 rounded"></div>
-              <div className="h-2 bg-cyan-400 rounded col-span-2"></div>
-              <div className="h-2 bg-pink-400 rounded"></div>
-              <div className="h-2 bg-blue-400 rounded"></div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Coffee cup */}
-        <div className="absolute -top-2 right-[5%] w-8 h-10 bg-gradient-to-b from-amber-100 to-amber-200 rounded-b-2xl shadow-lg border-2 border-amber-300">
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-br from-amber-800 to-amber-900"></div>
-        </div>
-        
-        {/* Sticky notes */}
-        <div className="absolute top-2 left-[50%] w-16 h-16 bg-yellow-200 shadow-md transform rotate-12 border-b-4 border-yellow-400 p-1">
-          <div className="text-[8px] font-handwriting text-slate-700 space-y-0.5">
-            <div>✓ Fraud ↑ 17%</div>
-            <div>✓ SLA breach</div>
-            <div className="text-red-600 font-bold">? Baseline?</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    {/* Thought bubble above */}
-    <div className="absolute top-8 right-8 bg-white rounded-2xl px-4 py-3 shadow-xl border-2 border-indigo-300">
-      <div className="text-sm font-semibold text-indigo-900">Connecting the dots...</div>
-      <div className="text-xs text-slate-600 mt-1">Evidence → Clarity → Plan</div>
-    </div>
-  </div>
-);
+// AnalysisSceneVisual removed - too complex, replaced with simpler approach
 
 // Meeting transcript component
 const MeetingTranscript: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data }) => {
@@ -401,7 +648,7 @@ const MeetingTranscript: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data })
         
         <button 
           onClick={() => setExpanded(!expanded)}
-          className="mt-4 text-sm font-medium text-purple-700 hover:text-purple-900 flex items-center gap-1"
+          className="mt-4 text-sm font-medium text-blue-700 hover:text-blue-900 flex items-center gap-1"
         >
           {expanded ? 'Show less' : 'Read full transcript'}
           <ArrowRight size={14} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
@@ -422,7 +669,7 @@ const MeetingTranscript: React.FC<{ data: typeof PAGE_2_DATA.cif }> = ({ data })
 const ExpertComparison: React.FC<{ open: boolean; onToggle: () => void }> = ({ open, onToggle }) => {
   return (
     <div className="relative z-40 max-w-5xl mx-auto bg-white border-2 border-indigo-300 rounded-2xl shadow-xl overflow-hidden">
-      <div className="px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
+      <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Zap size={20} className="text-yellow-300" />
           <div className="text-base font-bold text-white">Example: How a BA Could Frame It</div>
@@ -441,7 +688,7 @@ const ExpertComparison: React.FC<{ open: boolean; onToggle: () => void }> = ({ o
             {/* Problem Statement */}
             <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
               <div className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                <Target size={14} className="text-purple-600" />
+                <Target size={14} className="text-blue-600" />
                 Problem Statement
               </div>
               <div className="text-sm text-slate-700 leading-relaxed">
@@ -547,8 +794,12 @@ export default function UnderstandProblemPage() {
   const { selectedProject } = useBAInActionProject();
   const data = PAGE_2_DATA[selectedProject];
   const { notes, saveNote } = useNotes(data.initialMeetingNotes);
+  const { progress, markComplete, markIncomplete, getProgress } = useProgress();
   const [showExpert, setShowExpert] = useState(false);
   const expertRef = useRef<HTMLDivElement | null>(null);
+
+  // Accordion state - only one main section open at a time
+  const [activeSection, setActiveSection] = useState<string | null>('notes_section'); // Start with first section open
 
   // Navigation setup
   const VIEW_ID: AppView = 'ba_in_action_understand_problem';
@@ -566,6 +817,47 @@ export default function UnderstandProblemPage() {
     });
   };
 
+  const handleProgressToggle = (step: string, completed: boolean) => {
+    if (completed) {
+      markComplete(step);
+      // Close the section when marked complete
+      const sectionMap: {[key: string]: string} = {
+        'notes_captured': 'notes_section',
+        'evidence_mapped': 'evidence_section',
+        'problem_stated': 'problem_section',
+        'baselines_set': 'baselines_section',
+        'scope_defined': 'scope_section',
+        'engagement_planned': 'engagement_section',
+        'update_sent': 'update_section',
+      };
+      if (activeSection === sectionMap[step]) {
+        setActiveSection(null);
+      }
+    } else {
+      markIncomplete(step);
+    }
+  };
+
+  const handleStepClick = (sectionId: string) => {
+    // If clicking the same section, toggle it closed
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    } else {
+      // Open the clicked section (closes others automatically)
+      setActiveSection(sectionId);
+    }
+  };
+
+  const handleSectionToggle = (sectionId: string) => {
+    // If clicking the same section, toggle it closed
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    } else {
+      // Open the clicked section (closes others automatically)
+      setActiveSection(sectionId);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top bar */}
@@ -573,10 +865,10 @@ export default function UnderstandProblemPage() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 BA In Action
               </div>
-              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-bold rounded">
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-xs font-bold rounded-full border border-blue-300">
                 {selectedProject === 'cif' ? 'CI&F' : 'Voids'}
               </span>
             </div>
@@ -594,26 +886,36 @@ export default function UnderstandProblemPage() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         
         {/* Context banner */}
-        <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 border-2 border-purple-400 rounded-lg p-4 flex items-start gap-3 shadow-lg">
-          <AlertCircle size={20} className="text-white mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-white leading-relaxed">
-            <strong className="font-bold">You've just come out of your intro call.</strong> You now have signals — but not clarity yet. 
-            <span className="block mt-1 text-white/90">
-              This page helps you turn scattered notes into a clear, defensible problem statement that you can share with stakeholders without embarrassing yourself or making assumptions.
-            </span>
+        <div className="mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-2xl p-6 flex items-start gap-4 shadow-xl relative overflow-hidden">
+          {/* Subtle background image */}
+          <div className="absolute inset-0 opacity-5">
+            <img 
+              src="/images/email.jpg" 
+              alt="" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative z-10 flex items-start gap-4 w-full">
+            <AlertCircle size={24} className="text-white mt-0.5 flex-shrink-0 animate-pulse" />
+            <div className="text-base text-white leading-relaxed">
+              <strong className="font-bold text-lg">You've just come out of your intro call.</strong> You now have signals — but not clarity yet. 
+              <span className="block mt-2 text-white/95">
+                This page helps you turn scattered notes into a clear, defensible problem statement that you can share with stakeholders without embarrassing yourself or making assumptions.
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Visual: Meeting Scene */}
-        <MeetingSceneVisual data={data} />
+        {/* Progress Tracker */}
+        <ProgressTracker 
+          progress={progress}
+          activeSection={activeSection}
+          onStepClick={handleStepClick}
+          onToggle={handleProgressToggle}
+        />
 
-        {/* Meeting Transcript - Full Width */}
-        <div className="mb-6">
-          <MeetingTranscript data={data} />
-        </div>
-        
-        {/* Visual: Analysis Work Scene */}
-        <AnalysisSceneVisual />
+        {/* Simplified Meeting Visual */}
+        <MeetingSceneVisual data={data} />
 
         {/* Main grid */}
         <div className="grid lg:grid-cols-3 gap-6">
@@ -621,30 +923,59 @@ export default function UnderstandProblemPage() {
           {/* Left column - main workflow */}
           <div className="lg:col-span-2 space-y-6">
             
+            {/* Meeting Transcript - Collapsible */}
+            <CollapsibleSection
+              title="Meeting Transcript"
+              icon={Volume2}
+              completed={progress.notes_captured}
+              isOpen={activeSection === 'transcript_section'}
+              onToggle={() => handleSectionToggle('transcript_section')}
+              sectionId="transcript_section"
+            >
+              <div className="p-4">
+                <MeetingTranscript data={data} />
+              </div>
+            </CollapsibleSection>
+
             {/* Meeting notes */}
-            <Section title="Your Meeting Notes (from the intro call)" icon={<MessageSquare size={18} className="text-indigo-600" />}>
-              <p className="text-sm text-slate-600 italic">What you heard, not what you think.</p>
-              <textarea
-                className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={6}
-                value={notes.meeting_notes}
-                onChange={(e) => saveNote("meeting_notes", e.target.value)}
-              />
-              
-              <LookFor items={[
-                "Where outcomes conflict",
-                "Who is pushing urgency",
-                "What success means to each stakeholder",
-                "What nobody could answer confidently yet (important)"
-              ]} />
-            </Section>
+            <CollapsibleSection
+              title="Your Meeting Notes (from the intro call)"
+              icon={MessageSquare}
+              completed={progress.notes_captured}
+              isOpen={activeSection === 'notes_section'}
+              onToggle={() => handleSectionToggle('notes_section')}
+              onToggleComplete={(completed) => handleProgressToggle('notes_captured', completed)}
+              sectionId="notes_section"
+            >
+              <div className="p-4">
+                <p className="text-sm text-slate-600 italic mb-4">What you heard, not what you think.</p>
+                <textarea
+                  className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={6}
+                  value={notes.meeting_notes}
+                  onChange={(e) => saveNote("meeting_notes", e.target.value)}
+                />
+                
+                <LookFor items={[
+                  "Where outcomes conflict",
+                  "Who is pushing urgency",
+                  "What success means to each stakeholder",
+                  "What nobody could answer confidently yet (important)"
+                ]} />
+              </div>
+            </CollapsibleSection>
 
             {/* Step 1 - Evidence */}
-            <Section 
-              title="Evidence Before Opinion" 
-              icon={<BarChart3 size={18} className="text-indigo-600" />}
-              step={1}
+            <CollapsibleSection
+              title="Evidence Before Opinion"
+              icon={BarChart3}
+              completed={progress.evidence_mapped}
+              isOpen={activeSection === 'evidence_section'}
+              onToggle={() => handleSectionToggle('evidence_section')}
+              onToggleComplete={(completed) => handleProgressToggle('evidence_mapped', completed)}
+              sectionId="evidence_section"
             >
+              <div className="p-4">
               <p className="text-sm text-slate-700">Look at what you <strong>know</strong> vs what you <strong>assume</strong>.</p>
               
               <div className="overflow-x-auto">
@@ -686,19 +1017,25 @@ export default function UnderstandProblemPage() {
                 </table>
               </div>
 
-              <CoachingHint title="Why this matters">
-                If you define the problem from assumption, you lose credibility. 
-                If you define it from signal, you become trusted.
-              </CoachingHint>
-            </Section>
+                <CoachingHint title="Why this matters">
+                  If you define the problem from assumption, you lose credibility. 
+                  If you define it from signal, you become trusted.
+                </CoachingHint>
+              </div>
+            </CollapsibleSection>
 
             {/* Step 2 - Problem statement */}
-            <Section 
-              title="One-Sentence Problem Statement" 
-              icon={<Target size={18} className="text-indigo-600" />}
-              step={2}
+            <CollapsibleSection
+              title="One-Sentence Problem Statement"
+              icon={Target}
+              completed={progress.problem_stated}
+              isOpen={activeSection === 'problem_section'}
+              onToggle={() => handleSectionToggle('problem_section')}
+              onToggleComplete={(completed) => handleProgressToggle('problem_stated', completed)}
+              sectionId="problem_section"
             >
-              <div className="text-sm text-white mb-3 p-3 bg-gradient-to-r from-purple-600 to-indigo-600 border-2 border-purple-400 rounded-lg shadow-md">
+              <div className="p-4">
+              <div className="text-sm text-white mb-3 p-3 bg-gradient-to-r from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-lg shadow-md">
                 <strong className="font-bold">Template:</strong> We are seeing [unwanted outcome] in [flow/area], currently [baseline metric], causing [impact]. We need to [direction of change] without [guardrail].
               </div>
 
@@ -711,7 +1048,7 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="unwanted outcome..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -720,7 +1057,7 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="flow/area..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -729,7 +1066,7 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="baseline metric..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -738,7 +1075,7 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="impact..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -747,7 +1084,7 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="direction of change..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -756,23 +1093,29 @@ export default function UnderstandProblemPage() {
                     <input 
                       type="text"
                       placeholder="guardrail..."
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-900">
-                <strong>This is the sentence you will say in meetings.</strong> When you say this sentence confidently, you sound like a BA who knows what they're doing.
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-900">
+                  <strong>This is the sentence you will say in meetings.</strong> When you say this sentence confidently, you sound like a BA who knows what they're doing.
+                </div>
               </div>
-            </Section>
+            </CollapsibleSection>
 
             {/* Step 3 - Success metrics */}
-            <Section 
-              title="What Success Looks Like (Measurable)" 
-              icon={<TrendingUp size={18} className="text-indigo-600" />}
-              step={3}
+            <CollapsibleSection
+              title="What Success Looks Like (Measurable)"
+              icon={TrendingUp}
+              completed={progress.baselines_set}
+              isOpen={activeSection === 'baselines_section'}
+              onToggle={() => handleSectionToggle('baselines_section')}
+              onToggleComplete={(completed) => handleProgressToggle('baselines_set', completed)}
+              sectionId="baselines_section"
             >
+              <div className="p-4">
               <p className="text-sm text-slate-700">Targets (not final — provisional until validated):</p>
               
               <div className="overflow-x-auto">
@@ -829,24 +1172,30 @@ export default function UnderstandProblemPage() {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-indigo-300 bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 shadow">
-                <div className="text-sm font-semibold text-white">Want to compare against a full BA example?</div>
-                <button
-                  onClick={handleOpenExpert}
-                  className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-900 transition-colors shadow"
-                >
-                  Open example walkthrough
-                  <ArrowRight size={14} />
-                </button>
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-blue-300 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 shadow">
+                  <div className="text-sm font-semibold text-white">Want to compare against a full BA example?</div>
+                  <button
+                    onClick={handleOpenExpert}
+                    className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-blue-700 hover:text-blue-900 transition-colors shadow"
+                  >
+                    Open example walkthrough
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
               </div>
-            </Section>
+            </CollapsibleSection>
 
             {/* Step 4 - Scope */}
-            <Section 
-              title="Scope & Non-Goals (So You Don't Boil the Ocean)" 
-              icon={<Target size={18} className="text-indigo-600" />}
-              step={4}
+            <CollapsibleSection
+              title="Scope & Non-Goals (So You Don't Boil the Ocean)"
+              icon={Target}
+              completed={progress.scope_defined}
+              isOpen={activeSection === 'scope_section'}
+              onToggle={() => handleSectionToggle('scope_section')}
+              onToggleComplete={(completed) => handleProgressToggle('scope_defined', completed)}
+              sectionId="scope_section"
             >
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-3">
@@ -883,17 +1232,22 @@ export default function UnderstandProblemPage() {
                 </div>
               </div>
 
-              <CoachingHint title="Why non-goals matter">
-                If you don't state non-goals, someone will expand your scope for you.
-              </CoachingHint>
-            </Section>
+                <CoachingHint title="Why non-goals matter">
+                  If you don't state non-goals, someone will expand your scope for you.
+                </CoachingHint>
+              </div>
+            </CollapsibleSection>
 
             {/* Step 5 - Constraints */}
-            <Section 
-              title="Constraints & Assumptions" 
-              icon={<Shield size={18} className="text-indigo-600" />}
-              step={5}
+            <CollapsibleSection
+              title="Constraints & Assumptions"
+              icon={Shield}
+              completed={false}
+              isOpen={activeSection === 'constraints_section'}
+              onToggle={() => handleSectionToggle('constraints_section')}
+              sectionId="constraints_section"
             >
+              <div className="p-4">
               <div className="space-y-3">
                 <div className="border border-red-200 bg-red-50 rounded-lg p-3">
                   <div className="font-semibold text-sm text-red-900 mb-2">Constraints (must honor)</div>
@@ -923,14 +1277,20 @@ export default function UnderstandProblemPage() {
                   </ul>
                 </div>
               </div>
-            </Section>
+              </div>
+            </CollapsibleSection>
 
             {/* Step 6 - Engagement plan */}
-            <Section 
-              title="The 48-Hour Engagement Plan" 
-              icon={<Calendar size={18} className="text-indigo-600" />}
-              step={6}
+            <CollapsibleSection
+              title="The 48-Hour Engagement Plan"
+              icon={Calendar}
+              completed={progress.engagement_planned}
+              isOpen={activeSection === 'engagement_section'}
+              onToggle={() => handleSectionToggle('engagement_section')}
+              onToggleComplete={(completed) => handleProgressToggle('engagement_planned', completed)}
+              sectionId="engagement_section"
             >
+              <div className="p-4">
               <div className="text-sm text-white mb-4 p-3 bg-gradient-to-r from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-lg shadow-md">
                 <strong className="font-bold">Your goal is not to solve.</strong> Your goal is to get clarity that lets you scope the work.
               </div>
@@ -971,7 +1331,7 @@ export default function UnderstandProblemPage() {
               <div className="mt-4">
                 <div className="font-semibold text-sm text-slate-900 mb-2">Write your actual plan:</div>
                 <textarea
-                  className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full text-base text-slate-800 leading-relaxed focus:outline-none resize-none bg-slate-50 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={8}
                   placeholder="Today:&#10;- Meet PO (align on wording + metrics)&#10;- Request Ops queue sample cases&#10;- Ask Data for last 12-week fraud loss + KYC funnel report&#10;&#10;Tomorrow:&#10;- Compliance review (confirm audit requirements)&#10;- Engineering feasibility check on risk-tiering logic"
                   value={notes.engagement_plan}
@@ -979,17 +1339,23 @@ export default function UnderstandProblemPage() {
                 />
               </div>
 
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-900">
-                This is what you are measured on this week, not "requirements."
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-900">
+                  This is what you are measured on this week, not "requirements."
+                </div>
               </div>
-            </Section>
+            </CollapsibleSection>
 
             {/* Step 7 - Stakeholder update */}
-            <Section 
-              title="Stakeholder Update Message (Copy + Paste)" 
-              icon={<Send size={18} className="text-indigo-600" />}
-              step={7}
+            <CollapsibleSection
+              title="Stakeholder Update Message (Copy + Paste)"
+              icon={Send}
+              completed={progress.update_sent}
+              isOpen={activeSection === 'update_section'}
+              onToggle={() => handleSectionToggle('update_section')}
+              onToggleComplete={(completed) => handleProgressToggle('update_sent', completed)}
+              sectionId="update_section"
             >
+              <div className="p-4">
               <div className="bg-slate-50 border border-slate-300 rounded-lg p-4">
                 <div className="text-sm text-slate-800 leading-relaxed space-y-2 font-mono">
                   <p>Drafting problem statement from initial context.</p>
@@ -1001,38 +1367,22 @@ export default function UnderstandProblemPage() {
                 </div>
               </div>
 
-              <CoachingHint title="This is how a real BA communicates">
-                Calm. Structured. No panic. No overpromising. You're demonstrating control and professionalism.
-              </CoachingHint>
-            </Section>
+                <CoachingHint title="This is how a real BA communicates">
+                  Calm. Structured. No panic. No overpromising. You're demonstrating control and professionalism.
+                </CoachingHint>
+              </div>
+            </CollapsibleSection>
 
           </div>
 
           {/* Right sidebar - context & guidance */}
           <div className="space-y-6">
             
-            {/* Progress indicator */}
-            <div className="bg-white border border-slate-300 rounded-lg p-4 shadow-sm">
-              <div className="text-sm font-semibold text-slate-900 mb-3">Your Progress Today</div>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <CheckCircle2 size={14} className="text-green-600" />
-                  <span>Meeting notes captured</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300"></div>
-                  <span>Problem statement drafted</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300"></div>
-                  <span>Baselines identified</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300"></div>
-                  <span>Engagement plan written</span>
-                </div>
-              </div>
-            </div>
+            {/* Glossary */}
+            <GlossarySidebar project={selectedProject} pageKey="understand-problem" />
+            
+            {/* BA Journey Guide */}
+            <BAJourneySidebar />
 
             {/* Key insight card */}
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-lg p-4 shadow-lg">
@@ -1056,7 +1406,7 @@ export default function UnderstandProblemPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded bg-purple-100 text-purple-700 font-semibold text-xs flex-shrink-0">2</div>
+                  <div className="flex items-center justify-center w-8 h-8 rounded bg-indigo-100 text-indigo-700 font-semibold text-xs flex-shrink-0">2</div>
                   <div className="text-xs text-slate-700">
                     <div className="font-semibold">Clarify</div>
                     <div className="text-slate-600">Define problem + success</div>

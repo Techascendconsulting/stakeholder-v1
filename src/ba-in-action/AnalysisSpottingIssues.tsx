@@ -20,7 +20,10 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
+  FileText,
+  ChevronRight,
 } from 'lucide-react';
+import { getGlossaryTerms } from './glossary-data';
 
 const VIEW_ID: AppView = 'ba_in_action_as_is_to_be';
 
@@ -46,34 +49,136 @@ const QUESTIONS_TO_ASK = [
       '"Where does the system assume something that\'s no longer true?"',
       '"What breaks when volume spikes or exceptions arrive?"',
     ],
-    whatToDo: 'Compare original intent vs current reality. Document assumptions that no longer hold. Identify constraint vs preference.',
-    why: 'Gaps exist where design assumptions diverged from reality. Understanding "why" prevents repeating the same mistake in To-Be.',
+    whatToDo: 'Compare what exists (As-Is) vs what you need (To-Be). The difference is the gap. Document why the gap exists and what impact it has.',
+    why: 'Gaps are what\'s missing or broken. Understanding why gaps exist helps you design a To-Be solution that actually fixes the problem.',
   },
   {
-    category: 'To-Be Direction',
+    category: 'To-Be Solution',
     questions: [
       '"If this worked perfectly, what would your day look like?"',
       '"What would you stop doing? What would you start seeing?"',
+      '"What must the system do? (requirements)"',
       '"What must stay the same? (non-negotiables, regulatory anchors)"',
       '"What does success look like in 6 months? How would we measure it?"',
     ],
-    whatToDo: 'Capture desired outcomes, not features. Identify constraints early. Define success metrics with stakeholders.',
-    why: 'To-Be is direction, not prescription. You need shared vision of success before designing solutions.',
+    whatToDo: 'Define the solution (how things will work) and the requirements (what the system must do). Identify constraints and success metrics.',
+    why: 'To-Be is your solution with requirements. It describes what will exist and what it must do to solve the gaps you identified.',
   },
 ];
 
-const AGILE_CONTEXT = {
-  sprint: 'As-Is/Gap/To-Be analysis typically happens during Discovery or Sprint 0.',
-  timing: 'Before writing user stories. This shapes what gets built.',
-  deliverables: [
-    'As-Is process map (visual or narrative)',
-    'Gap analysis table (gap → reason → impact)',
-    'To-Be direction statement (outcomes, not features)',
-    'Success metrics agreed with PO',
-  ],
-  ceremonies: 'Present findings in Sprint Planning or Refinement. Use it to prioritize backlog based on pain points.',
+// --- Glossary Sidebar Component ---
+const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const terms = getGlossaryTerms(project, pageKey);
+
+  if (terms.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden mb-8">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
+      >
+        <div className="flex items-center gap-3">
+          <FileText size={20} className="text-blue-600" />
+          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
+            {terms.length}
+          </span>
+        </div>
+        {isOpen ? (
+          <ChevronDown size={18} className="text-blue-600" />
+        ) : (
+          <ChevronRight size={18} className="text-blue-600" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            {terms.map((item, idx) => (
+              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                {item.context && (
+                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
+// --- BA Journey Sidebar ---
+const BAJourneySidebar: React.FC = () => {
+  return (
+    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-2xl p-6 shadow-xl relative overflow-hidden mb-8">
+      {/* Subtle background image */}
+      <div className="absolute inset-0 opacity-5">
+        <img 
+          src="/images/collaborate1.jpg" 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={18} className="text-white" />
+          <div className="text-base font-bold text-white">A BA's Approach to As-Is → Gap → To-Be</div>
+        </div>
+        <div className="text-sm text-white/95 leading-relaxed space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">1.</span>
+              <div>
+                <div className="font-semibold">Ask to shadow</div>
+                <div className="text-white/80 text-xs mt-0.5">"Can I watch you work? Show me the messy version."</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">2.</span>
+              <div>
+                <div className="font-semibold">Capture real As-Is</div>
+                <div className="text-white/80 text-xs mt-0.5">Observe behavior, note timestamps, listen for sighs and workarounds</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">3.</span>
+              <div>
+                <div className="font-semibold">Identify gaps</div>
+                <div className="text-white/80 text-xs mt-0.5">Compare original intent vs current reality. Why do gaps exist?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">4.</span>
+              <div>
+                <div className="font-semibold">Define To-Be solution</div>
+                <div className="text-white/80 text-xs mt-0.5">The solution (how things will work) and requirements (what it must do). What must stay? What can change?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">5.</span>
+              <div>
+                <div className="font-semibold">Document and validate</div>
+                <div className="text-white/80 text-xs mt-0.5">Share As-Is map, gap analysis, and To-Be direction with stakeholders for confirmation</div>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-white/30 mt-3">
+            <div className="text-xs font-semibold text-white mb-1">BA Mindset</div>
+            <div className="text-white/90 text-xs leading-relaxed">
+              You're not documenting the ideal. You're <strong>mapping reality, explaining why gaps exist, and defining direction</strong> so solutions solve real problems, not fictional ones.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AnalysisSpottingIssues: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
@@ -136,30 +241,43 @@ const AnalysisSpottingIssues: React.FC = () => {
       </div>
 
       {/* Why This Matters */}
-      <Section title="Why As-Is/Gap/To-Be Matters (Especially in Agile & Interviews)">
+      <Section title="Why As-Is/Gap/To-Be Matters (Especially in Interviews)">
         <div className="space-y-3 text-base text-slate-800">
           <p className="leading-relaxed">
             Interviewers ask: <strong className="text-slate-900">&quot;How do you analyze existing processes?&quot;</strong> or <strong className="text-slate-900">&quot;Tell me about a time when you identified a gap between current state and desired outcome.&quot;</strong>
           </p>
           <p className="leading-relaxed">
-            In Agile, this analysis happens during Discovery or Sprint 0. It shapes what gets built and why.
+            This analysis happens <strong>before you start building anything</strong>. It helps you understand what's broken and what needs to change.
           </p>
         </div>
         <div className="mt-4 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-4 text-sm text-white shadow-md">
-          <div className="flex items-center gap-2 font-bold mb-2">
+          <div className="flex items-center gap-2 font-bold mb-3">
             <Target size={16} />
-            Agile Context
+            When You Do This Work
           </div>
-          <p className="mb-2"><strong>When:</strong> {AGILE_CONTEXT.sprint} {AGILE_CONTEXT.timing}</p>
-          <p className="mb-2"><strong>Deliverables:</strong></p>
-          <ul className="ml-4 space-y-1">
-            {AGILE_CONTEXT.deliverables.map((d) => (
-              <li key={d}>• {d}</li>
-            ))}
+          <p className="mb-3 leading-relaxed">
+            <strong>Timing:</strong> Do this analysis at the start of a project, before anyone starts building features. This is when you figure out what the real problem is and what direction you want to move in.
+          </p>
+          <p className="mb-3 leading-relaxed">
+            <strong>What You Create:</strong>
+          </p>
+          <ul className="ml-4 space-y-2 mb-3">
+            <li>• <strong>As-Is map:</strong> A simple document showing how things work right now (the real version, not the ideal one)</li>
+            <li>• <strong>Gap analysis:</strong> A list showing what's broken, why it's broken, and what impact it has</li>
+            <li>• <strong>To-Be solution:</strong> The solution (how things will work) and the requirements (what the system must do)</li>
+            <li>• <strong>Success metrics:</strong> How you'll measure if the changes worked (agreed with your project lead)</li>
           </ul>
-          <p className="mt-2"><strong>Use in ceremonies:</strong> {AGILE_CONTEXT.ceremonies}</p>
+          <p className="leading-relaxed">
+            <strong>How You Use It:</strong> Share your findings with the team and project lead. Use the pain points you identified to decide what to work on first.
+          </p>
         </div>
       </Section>
+
+      {/* Glossary */}
+      <GlossarySidebar project={selectedProject} pageKey="as-is-to-be" />
+
+      {/* BA Journey Sidebar */}
+      <BAJourneySidebar />
 
       {/* Questions to Ask Section */}
       <Section title="1) Questions to Ask & What to Do with the Answers">
@@ -360,15 +478,32 @@ const AnalysisSpottingIssues: React.FC = () => {
         </div>
       </Section>
 
-      <Section title="5) Identify the Gaps (Mismatch Between Design & Reality)">
+      <Section title="5) What Is a Gap? (Simple Explanation with Example)">
+        <div className="mb-4 space-y-4">
+          <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-5">
+            <div className="text-base font-bold text-blue-900 mb-3">What Is a Gap?</div>
+            <p className="text-sm text-blue-800 leading-relaxed mb-3">
+              A <strong>gap</strong> is the difference between what you have (As-Is) and what you need (To-Be). It's what's missing or broken that prevents you from reaching your goal.
+            </p>
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <div className="text-sm font-semibold text-slate-900 mb-2">Example:</div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <p><strong>As-Is (What you have):</strong> Manual review process takes 3 days. Staff copy-paste data between 4 different systems.</p>
+                <p><strong>What you need:</strong> Reviews completed in 24 hours with all data in one place.</p>
+                <p className="font-semibold text-blue-700 mt-2">→ <strong>The Gap:</strong> No single system connects all the data. Manual work causes delays.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <p className="text-base text-slate-800 mb-4 leading-relaxed">
-          Gaps exist where original design assumptions diverged from current reality. Document why, not just what.
+          Now let's identify the specific gaps in this project:
         </p>
         <div className="overflow-hidden rounded-2xl border border-slate-300 shadow-sm">
           <table className="min-w-full border-collapse text-sm bg-white">
             <thead className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
-                <th className="px-5 py-3 border-b border-slate-200">Gap</th>
+                <th className="px-5 py-3 border-b border-slate-200">Gap (What's Missing)</th>
                 <th className="px-5 py-3 border-b border-slate-200">Why It Exists</th>
                 <th className="px-5 py-3 border-b border-slate-200">Impact</th>
               </tr>
@@ -392,9 +527,31 @@ const AnalysisSpottingIssues: React.FC = () => {
         </div>
       </Section>
 
-      <Section title="5) Define the To-Be (Direction, Not Detail)">
-        <p className="text-sm text-slate-700">
-          To-Be is the shape of success — the direction you steer towards.
+      <Section title="6) What Is To-Be? (The Solution with Requirements)">
+        <div className="mb-4 space-y-4">
+          <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5">
+            <div className="text-base font-bold text-emerald-900 mb-3">What Is To-Be?</div>
+            <p className="text-sm text-emerald-800 leading-relaxed mb-3">
+              <strong>To-Be</strong> is your solution. It describes how things will work in the future and includes the requirements (what the system must do) to make it happen.
+            </p>
+            <div className="bg-white rounded-lg p-4 border border-emerald-200">
+              <div className="text-sm font-semibold text-slate-900 mb-2">Example:</div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <p><strong>To-Be Solution:</strong> Automated review system that processes cases in 24 hours</p>
+                <p className="font-semibold text-emerald-700 mt-2">Requirements (what it must do):</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>System must pull data from all 4 sources automatically</li>
+                  <li>System must flag high-risk cases for manual review within 1 hour</li>
+                  <li>System must send notifications to reviewers when cases are assigned</li>
+                  <li>System must track review status and completion time</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <p className="text-base text-slate-800 mb-4 leading-relaxed">
+          Here's the To-Be for this project:
         </p>
         <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
@@ -404,11 +561,11 @@ const AnalysisSpottingIssues: React.FC = () => {
           </ul>
         </div>
         <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          If To-Be is right, people feel relief, pain reduces, and the room calms down.
+          <strong>Remember:</strong> To-Be is your solution with requirements. It describes what will exist and what it must do to solve the gaps you identified.
         </div>
       </Section>
 
-      <Section title="6) Translate Into a One-Slide Narrative">
+      <Section title="7) Translate Into a One-Slide Narrative">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-rose-500 font-semibold">Now (As-Is)</div>
@@ -490,7 +647,7 @@ const AnalysisSpottingIssues: React.FC = () => {
             <p><strong>Real As-Is:</strong> {page5Data.exampleNarrative.asIs}</p>
             <p><strong>Gap between intention and reality:</strong> {page5Data.exampleNarrative.gap}</p>
             <p><strong>Why it matters:</strong> {page5Data.exampleNarrative.whyMatters}</p>
-            <p><strong>To-Be direction:</strong> {page5Data.exampleNarrative.toBe}</p>
+            <p><strong>To-Be solution:</strong> {page5Data.exampleNarrative.toBe}</p>
           </div>
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
             This is what you say when someone asks, “What are you seeing so far?” Clarity without slides.

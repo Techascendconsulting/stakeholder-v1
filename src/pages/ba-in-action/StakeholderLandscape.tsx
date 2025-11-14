@@ -15,17 +15,14 @@ import {
   Users,
   Target,
   ShieldAlert,
-  MessageCircle,
-  Quote,
   Sparkles,
-  BookOpen,
   ArrowRight,
-  Mail,
-  Video,
-  MessageCircleMore,
-  Phone,
   Grid3x3,
+  FileText,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
+import { getGlossaryTerms } from '../../ba-in-action/glossary-data';
 
 const VIEW_ID: AppView = 'ba_in_action_whos_involved';
 
@@ -36,6 +33,120 @@ const HUMAN_REALITY = [
   `They don't want to be embarrassed in front of leadership.`,
   `They don't want to absorb extra blame when things go wrong.`,
 ];
+
+// --- Glossary Sidebar Component ---
+const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const terms = getGlossaryTerms(project, pageKey);
+
+  if (terms.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border-2 border-blue-300 rounded-2xl shadow-lg overflow-hidden mb-8">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 bg-blue-50/30"
+      >
+        <div className="flex items-center gap-3">
+          <FileText size={20} className="text-blue-600" />
+          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-xs font-bold bg-blue-600 text-white px-2.5 py-1 rounded-full">
+            {terms.length}
+          </span>
+        </div>
+        {isOpen ? (
+          <ChevronDown size={18} className="text-blue-600" />
+        ) : (
+          <ChevronRight size={18} className="text-blue-600" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            {terms.map((item, idx) => (
+              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                {item.context && (
+                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- BA Journey Sidebar ---
+const BAJourneySidebar: React.FC = () => {
+  return (
+    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border-2 border-blue-400 rounded-2xl p-6 shadow-xl relative overflow-hidden mb-8">
+      {/* Subtle background image */}
+      <div className="absolute inset-0 opacity-5">
+        <img 
+          src="/images/collaborate1.jpg" 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={18} className="text-white" />
+          <div className="text-base font-bold text-white">A BA's Approach to Stakeholder Analysis</div>
+        </div>
+        <div className="text-sm text-white/95 leading-relaxed space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">1.</span>
+              <div>
+                <div className="font-semibold">Review the stakeholder table</div>
+                <div className="text-white/80 text-xs mt-0.5">Who are they? What do they care about? What do they fear?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">2.</span>
+              <div>
+                <div className="font-semibold">Map power and interest</div>
+                <div className="text-white/80 text-xs mt-0.5">Who can approve/block? Who cares most about outcomes?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">3.</span>
+              <div>
+                <div className="font-semibold">Identify pressure signals</div>
+                <div className="text-white/80 text-xs mt-0.5">What motivates them? What are they protecting?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">4.</span>
+              <div>
+                <div className="font-semibold">Write the stakeholder narrative</div>
+                <div className="text-white/80 text-xs mt-0.5">Who drives urgency? Who controls risk? Who can block quietly?</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-100 font-bold mt-0.5">5.</span>
+              <div>
+                <div className="font-semibold">Document your map</div>
+                <div className="text-white/80 text-xs mt-0.5">Create a table with power/interest, engagement approach, and concerns</div>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-white/30 mt-3">
+            <div className="text-xs font-semibold text-white mb-1">BA Mindset</div>
+            <div className="text-white/90 text-xs leading-relaxed">
+              You're not just listing names. You're <strong>understanding influence, risk, and motivation</strong> so you can engage strategically and prevent political blockers.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const StakeholderLandscape: React.FC = () => {
   const { selectedProject } = useBAInActionProject();
@@ -50,23 +161,6 @@ const StakeholderLandscape: React.FC = () => {
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
 
-  // Map communication tool icons
-  const communicationToolsWithIcons = page3Data.communicationTools.map((tool) => {
-    let icon: React.ReactNode;
-    if (tool.tool.includes('Teams') || tool.tool.includes('Slack') || tool.tool.includes('Channel')) {
-      icon = <MessageCircleMore size={18} />;
-    } else if (tool.tool === 'Email') {
-      icon = <Mail size={18} />;
-    } else if (tool.tool.includes('Video') || tool.tool.includes('Calls')) {
-      icon = <Video size={18} />;
-    } else if (tool.tool.includes('Walkthroughs') || tool.tool.includes('Phone') || tool.tool.includes('In-Person')) {
-      icon = <Phone size={18} />;
-    } else {
-      icon = <MessageCircle size={18} />;
-    }
-    return { ...tool, icon };
-  });
-
   const handleOpenExample = () => {
     setShowExample(true);
     requestAnimationFrame(() => {
@@ -76,7 +170,7 @@ const StakeholderLandscape: React.FC = () => {
 
   return (
     <PageShell>
-      <PageTitle title="Day 3 — Who’s Involved & Why It Matters" />
+      <PageTitle title="Who's Involved & Why It Matters" />
 
       <div className="mt-2 mb-6 flex items-center gap-3 text-sm text-slate-700">
         <Clock size={16} className="text-indigo-600" />
@@ -112,13 +206,19 @@ const StakeholderLandscape: React.FC = () => {
             Interviewers ask: <strong className="text-slate-900">&quot;Tell me about a time when you had to manage conflicting stakeholder priorities&quot;</strong> or <strong className="text-slate-900">&quot;How do you identify who has decision-making authority?&quot;</strong>
           </p>
           <p className="leading-relaxed">
-            You need structured frameworks. This page gives you the Power-Interest Grid, communication tools, and stakeholder mapping techniques that BAs use daily.
+            You need structured frameworks. This page gives you the Power-Interest Grid and stakeholder mapping techniques that BAs use daily.
           </p>
         </div>
         <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
           <strong>Real BA work:</strong> Understanding who holds risk, veto power, and emotional investment prevents solutions from being politely rejected, hearing &quot;not now&quot; with no explanation, or being blocked by invisible politics.
         </div>
       </Section>
+
+      {/* Glossary */}
+      <GlossarySidebar project={selectedProject} pageKey="whos-involved" />
+
+      {/* BA Journey Sidebar */}
+      <BAJourneySidebar />
 
       <Section title="1) The People Landscape">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
@@ -196,43 +296,7 @@ const StakeholderLandscape: React.FC = () => {
         </div>
       </Section>
 
-      {/* Communication Tools */}
-      <Section title="3) Tools of Communication (When to Use Teams, Slack, Email, or Face-to-Face)">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
-        </p>
-        <div className="space-y-4">
-          {communicationToolsWithIcons.map((channel) => (
-            <div key={channel.tool} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600">
-                  {channel.icon}
-                </div>
-                <div className="font-semibold text-slate-900 text-base">{channel.tool}</div>
-              </div>
-              <div className="grid md:grid-cols-3 gap-3 text-sm">
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">When to use</div>
-                  <p className="text-slate-700 leading-relaxed">{channel.when}</p>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">How</div>
-                  <p className="text-slate-700 leading-relaxed">{channel.how}</p>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">Example</div>
-                  <p className="text-slate-700 italic leading-relaxed">{channel.example}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <strong>Pro tip:</strong> High-power stakeholders prefer structured, agenda-led meetings. Low-power, high-interest stakeholders prefer async updates (Slack/Teams) so they stay informed without meetings.
-        </div>
-      </Section>
-
-      <Section title="4) Stakeholder Intent & Pressure Signals">
+      <Section title="3) Stakeholder Intent & Pressure Signals">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">Look for what is unsaid. Pressure explains behaviour.</p>
         <div className="grid gap-4 md:grid-cols-2">
           {page3Data.pressureSignals.map((signal) => (
@@ -250,27 +314,7 @@ const StakeholderLandscape: React.FC = () => {
         </div>
       </Section>
 
-      <Section title="5) Relationship Scripts — Real Language">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          No &quot;BA school&quot; tone. Actual sentences you&apos;ll say. Copy these, adapt them, use them in interviews.
-        </p>
-        <div className="grid gap-4 md:grid-cols-2">
-          {page3Data.scripts.map((script) => (
-            <div key={script.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-2 text-base font-semibold text-slate-900 mb-2">
-                <Quote size={16} className="text-indigo-600" />
-                Talking to {script.label}
-              </div>
-              <p className="text-sm text-slate-700 leading-relaxed italic">&quot;{script.quote}&quot;</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <strong>In interviews:</strong> &quot;I tailored my communication style to each stakeholder. With Compliance, I led with control points and traceability. With Operations, I asked to see real exception cases, not sanitized dashboards.&quot;
-        </div>
-      </Section>
-
-      <Section title="5) The Human Reality" icon={<Sparkles size={18} className="text-indigo-600" />}>
+      <Section title="4) The Human Reality" icon={<Sparkles size={18} className="text-indigo-600" />}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-slate-500">
@@ -297,7 +341,7 @@ const StakeholderLandscape: React.FC = () => {
       </Section>
 
       {/* Task 1: Stakeholder Mapping */}
-      <Section title={`6) Your Task: ${page3Data.taskTitle}`}>
+      <Section title={`5) Your Task: ${page3Data.taskTitle}`}>
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           For each stakeholder, write:
         </p>
@@ -321,7 +365,7 @@ const StakeholderLandscape: React.FC = () => {
       </Section>
 
       {/* Task 2: Narrative */}
-      <Section title="7) Your Task: Write the Stakeholder Narrative">
+      <Section title="6) Your Task: Write the Stakeholder Narrative">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
           This isn&apos;t a table. It&apos;s a story you use when you speak to your PO, defend scope, and prevent derailment.
         </p>
@@ -355,7 +399,7 @@ const StakeholderLandscape: React.FC = () => {
         </div>
       </Section>
 
-      <Section title="8) Slack / Teams Update (Copy & Adapt)">
+      <Section title="7) Slack / Teams Update (Copy & Adapt)">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
           After mapping stakeholders, post an update. This shows you&apos;re structured and in control.
         </p>

@@ -104,7 +104,7 @@ const WorkingWithDevelopers: React.FC = () => {
       <div className="space-y-2 mb-6">
         <p className="uppercase tracking-wider text-xs font-semibold text-purple-500">BA In Action</p>
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agile Delivery: Working in Sprints</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Using Jira as a Tool</h1>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedProject === 'cif' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}>
             {projectData.initiativeName}
           </span>
@@ -138,10 +138,171 @@ const WorkingWithDevelopers: React.FC = () => {
         </div>
       </div>
 
+      {/* Breaking Down High-Level Requirements */}
+      <Section>
+        <div className="bg-white border-2 border-blue-300 rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">1) Breaking Down High-Level Requirements from Page 6</h2>
+          <div className="space-y-4">
+            <p className="text-base text-slate-800 leading-relaxed">
+              On Page 6, you wrote <strong>high-level requirements</strong>. Now, in tools (Jira or Excel), you break them down into detailed requirements with stakeholder sign-off.
+            </p>
+            
+            <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5">
+              <div className="text-base font-bold text-indigo-900 mb-3">The Process:</div>
+              <div className="space-y-3 text-sm text-indigo-800">
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">1.</span>
+                  <div>
+                    <strong>Take high-level requirements from Page 6</strong><br/>
+                    Example: "The system must evaluate identity risk at account creation and output one of three decision states."
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">2.</span>
+                  <div>
+                    <strong>Break down in tools (Jira or Excel)</strong><br/>
+                    Create epics, user stories, detailed acceptance criteria
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">3.</span>
+                  <div>
+                    <strong>Get stakeholder sign-off</strong><br/>
+                    Share the breakdown, get approval before development starts
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">4.</span>
+                  <div>
+                    <strong>Refine during implementation</strong><br/>
+                    As questions arise, update requirements, get sign-off again
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Excel Document Example */}
+      <Section>
+        <div className="bg-white border-2 border-emerald-300 rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">2) Requirements Breakdown in Excel (Alternative to Jira)</h2>
+          <div className="space-y-4">
+            <p className="text-base text-slate-800 leading-relaxed">
+              Some teams use Excel to break down requirements before moving to Jira. This is especially useful for getting stakeholder sign-off in a format they're familiar with.
+            </p>
+            
+            {/* Excel Mockup */}
+            <div className="border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-lg">
+              <div className="bg-emerald-600 px-4 py-2 flex items-center gap-3">
+                <div className="text-white font-semibold text-sm">Requirements Breakdown - Excel</div>
+                <div className="text-white/80 text-xs ml-auto">Project: {projectData.initiativeName}</div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse text-sm bg-white">
+                  <thead className="bg-slate-100 text-left font-semibold text-xs uppercase tracking-wide text-slate-600">
+                    <tr>
+                      <th className="px-4 py-3 border border-slate-300">Epic</th>
+                      <th className="px-4 py-3 border border-slate-300">User Story ID</th>
+                      <th className="px-4 py-3 border border-slate-300">User Story</th>
+                      <th className="px-4 py-3 border border-slate-300">Acceptance Criteria</th>
+                      <th className="px-4 py-3 border border-slate-300">Stakeholder Sign-Off</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    <tr className="bg-blue-50">
+                      <td className="px-4 py-3 border border-slate-300 font-semibold text-blue-900" rowSpan={2}>
+                        Risk-Based Identity Verification
+                      </td>
+                      <td className="px-4 py-3 border border-slate-300 font-mono text-xs">US-142</td>
+                      <td className="px-4 py-3 border border-slate-300">
+                        As a Risk Engine, I want to auto-approve low-risk accounts, so that legitimate users sign up smoothly.
+                      </td>
+                      <td className="px-4 py-3 border border-slate-300 text-xs">
+                        • Risk score ≥85<br/>
+                        • Account approved automatically<br/>
+                        • No manual review
+                      </td>
+                      <td className="px-4 py-3 border border-slate-300 text-center">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✓ Approved</span>
+                      </td>
+                    </tr>
+                    <tr className="bg-blue-50">
+                      <td className="px-4 py-3 border border-slate-300 font-mono text-xs">US-143</td>
+                      <td className="px-4 py-3 border border-slate-300">
+                        As a Risk Engine, I want to route medium-risk accounts to manual review, so that we catch fraud without blocking legitimate users.
+                      </td>
+                      <td className="px-4 py-3 border border-slate-300 text-xs">
+                        • Risk score 31-84<br/>
+                        • Case routes to Ops queue<br/>
+                        • User sees "verification in progress"
+                      </td>
+                      <td className="px-4 py-3 border border-slate-300 text-center">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✓ Approved</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="px-4 py-3 bg-slate-50 border-t border-slate-300 text-xs text-slate-600">
+                <strong>Note:</strong> This Excel document is shared with stakeholders for sign-off before requirements are moved to Jira for development.
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <strong>Why Excel?</strong> Some stakeholders prefer Excel because they can review, comment, and sign off in a familiar format. After sign-off, you move the requirements to Jira for development tracking.
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Jira Epics and User Stories */}
+      <Section>
+        <div className="bg-white border-2 border-purple-300 rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">3) Requirements in Jira: Epics and User Stories</h2>
+          <div className="space-y-4">
+            <p className="text-base text-slate-800 leading-relaxed">
+              In Jira, requirements are organized as <strong>Epics</strong> (large features) containing multiple <strong>User Stories</strong> (specific functionality). This is where you break down your high-level requirements from Page 6.
+            </p>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
+                <div className="text-sm font-bold text-indigo-900 mb-2">Epic (Large Feature)</div>
+                <p className="text-sm text-indigo-800 leading-relaxed mb-2">
+                  Example: <strong>"Risk-Based Identity Verification"</strong>
+                </p>
+                <p className="text-sm text-indigo-800 leading-relaxed">
+                  This is the high-level requirement from Page 6, broken down into multiple user stories.
+                </p>
+              </div>
+              
+              <div className="rounded-2xl border-2 border-purple-300 bg-purple-50 p-4">
+                <div className="text-sm font-bold text-purple-900 mb-2">User Stories (Specific Functionality)</div>
+                <p className="text-sm text-purple-800 leading-relaxed mb-2">
+                  Examples:
+                </p>
+                <ul className="text-sm text-purple-800 space-y-1 list-disc ml-5">
+                  <li>US-142: Auto-approve low-risk accounts</li>
+                  <li>US-143: Route medium-risk to review</li>
+                  <li>US-144: Auto-block high-risk accounts</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg border-2 border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+              <strong>Stakeholder Sign-Off:</strong> Before development starts, you share the epic and user stories with stakeholders (via Jira or Excel), get their approval, then the team starts building.
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Why This Matters */}
       <Section>
         <div className="bg-white border border-slate-300 rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-slate-900 mb-4">Why Agile Matters (Especially in Interviews)</h2>
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">Why This Matters (Especially in Interviews)</h2>
           <div className="space-y-3 text-base text-slate-800">
             <p className="leading-relaxed">
               Interviewers ask: <strong className="text-slate-900">&quot;How do you work in an Agile environment?&quot;</strong> or <strong className="text-slate-900">&quot;Walk me through your role in sprint ceremonies.&quot;</strong>
@@ -153,11 +314,61 @@ const WorkingWithDevelopers: React.FC = () => {
           <div className="mt-4 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-4 text-sm text-white shadow-md">
             <div className="flex items-center gap-2 font-bold mb-2">
               <Target size={16} />
-              Agile Context for This Project
+              Context for This Project
             </div>
             <p className="mb-2"><strong>Sprint:</strong> {page7Data.sprintContext.sprint}</p>
             <p className="mb-2"><strong>Team:</strong> {page7Data.sprintContext.team}</p>
             <p><strong>Tools:</strong> {page7Data.sprintContext.tools}</p>
+          </div>
+        </div>
+      </Section>
+
+      {/* The Iterative Loop */}
+      <Section>
+        <div className="bg-white border-2 border-indigo-300 rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">The Iterative Loop: Going Back to Stakeholders</h2>
+          <div className="space-y-4">
+            <p className="text-base text-slate-800 leading-relaxed">
+              <strong>Important:</strong> Requirements are not set in stone. During implementation, developers will have questions. Edge cases will appear. Things you didn't think of will come up. <strong>This is normal.</strong>
+            </p>
+            <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5">
+              <div className="text-base font-bold text-indigo-900 mb-3">What Happens During Implementation:</div>
+              <div className="space-y-3 text-sm text-indigo-800">
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">1.</span>
+                  <div>
+                    <strong>Developer asks a question:</strong> "What happens if the user's account is locked but they try to verify?"
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">2.</span>
+                  <div>
+                    <strong>You don't know the answer</strong> - this is an edge case you didn't think of
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">3.</span>
+                  <div>
+                    <strong>You go back to the stakeholder:</strong> "Hi [Stakeholder], quick question - if a user's account is locked, should they still be able to verify their identity, or should we block them?"
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">4.</span>
+                  <div>
+                    <strong>You get the answer and update requirements:</strong> Add this to the acceptance criteria or create a new requirement
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-indigo-700 mt-0.5">5.</span>
+                  <div>
+                    <strong>Developer continues building</strong> with the clarified requirement
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <strong>This is not failure.</strong> This is being thorough. Good BAs expect questions and are ready to go back to stakeholders. You're not expected to think of everything upfront.
+            </div>
           </div>
         </div>
       </Section>

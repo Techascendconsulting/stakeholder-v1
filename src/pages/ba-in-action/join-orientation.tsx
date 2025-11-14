@@ -6,6 +6,7 @@ import { PAGE_1_DATA } from "../../ba-in-action/page1-data";
 import type { AppView } from "../../types";
 import { NavigationButtons } from "../../ba-in-action/common";
 import { baInActionViewToPath, getBaInActionNavigation } from "../../ba-in-action/config";
+import { getGlossaryTerms } from "../../ba-in-action/glossary-data";
 import { 
   Mail, 
   Calendar,
@@ -442,6 +443,53 @@ const CollapsibleSection: React.FC<{
       {isOpen && (
         <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
           {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Glossary Sidebar Component ---
+const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const terms = getGlossaryTerms(project, pageKey);
+
+  if (terms.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-2xl shadow-md overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/30 transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <FileText size={20} className="text-blue-600" />
+          <span className="text-lg font-bold text-slate-900">Key Terms</span>
+          <span className="text-xs text-slate-500 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+            {terms.length}
+          </span>
+        </div>
+        {isOpen ? (
+          <ChevronDown size={18} className="text-slate-400" />
+        ) : (
+          <ChevronRight size={18} className="text-slate-400" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            {terms.map((item, idx) => (
+              <div key={idx} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                <div className="font-semibold text-sm text-slate-900 mb-1">{item.term}</div>
+                <div className="text-xs text-slate-700 leading-relaxed">{item.definition}</div>
+                {item.context && (
+                  <div className="text-xs text-blue-600 mt-1 italic">{item.context}</div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -1152,6 +1200,9 @@ export default function BAInActionPage1() {
 
           {/* Right: sidebar context */}
           <div className="space-y-8">
+            
+            {/* Glossary */}
+            <GlossarySidebar project={selectedProject} pageKey="join-orientation" />
             
             {/* BA Journey Guide */}
             <BAJourneySidebar data={data} />

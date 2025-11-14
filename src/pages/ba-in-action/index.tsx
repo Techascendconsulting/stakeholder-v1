@@ -13,9 +13,10 @@ const journey: Array<{ id: number; label: string; view: AppView }> = [
   { id: 4, label: 'Stakeholder Communication', view: 'ba_in_action_stakeholder_communication' },
   { id: 5, label: 'As-Is → Gap → To-Be', view: 'ba_in_action_as_is_to_be' },
   { id: 6, label: 'Requirements & Documentation', view: 'ba_in_action_requirements' },
-  { id: 7, label: 'Agile Delivery', view: 'ba_in_action_agile_delivery' },
-  { id: 8, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
-  { id: 9, label: 'Continuous Improvement', view: 'ba_in_action_improvement' },
+  { id: 7, label: 'Implementation & Agile Approach', view: 'ba_in_action_implementation' },
+  { id: 8, label: 'Using Jira as a Tool', view: 'ba_in_action_agile_delivery' },
+  { id: 9, label: 'Handover & Value Tracking', view: 'ba_in_action_handover_value' },
+  { id: 10, label: 'Continuous Improvement', view: 'ba_in_action_improvement' },
 ];
 
 const BAInActionIndexPage: React.FC = () => {

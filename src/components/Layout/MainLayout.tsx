@@ -98,6 +98,7 @@ import UnderstandingContext from '../../ba-in-action/UnderstandingContext';
 import StakeholderCommunication from '../../ba-in-action/StakeholderCommunication';
 import AnalysisSpottingIssues from '../../ba-in-action/AnalysisSpottingIssues';
 import ToBeAndSolutionShaping from '../../ba-in-action/ToBeAndSolutionShaping';
+import Implementation from '../../ba-in-action/Implementation';
 import WorkingWithDevelopers from '../../ba-in-action/WorkingWithDevelopers';
 import UATValidation from '../../ba-in-action/UATValidation';
 import ContinuousImprovement from '../../ba-in-action/ContinuousImprovement';
@@ -386,6 +387,8 @@ const MainLayout: React.FC = () => {
         return <AnalysisSpottingIssues />;
       case 'ba_in_action_requirements':
         return <ToBeAndSolutionShaping />;
+      case 'ba_in_action_implementation':
+        return <Implementation />;
       case 'ba_in_action_agile_delivery':
         return <WorkingWithDevelopers />;
       case 'ba_in_action_handover_value':

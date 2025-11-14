@@ -49,10 +49,16 @@ const rawPages: Array<Omit<BAInActionPageDefinition, 'route'>> = [
     description: 'Capture requirements, documentation, and traceability so delivery teams have clarity.',
   },
   {
-    title: 'Agile Delivery',
-    slug: 'agile-delivery',
+    title: 'Implementation & Agile Approach',
+    slug: 'implementation',
+    view: 'ba_in_action_implementation',
+    description: 'Understand how requirements flow into implementation, waterfall vs agile, scrum ceremonies, and the iterative approach.',
+  },
+  {
+    title: 'Using Jira as a Tool',
+    slug: 'using-jira',
     view: 'ba_in_action_agile_delivery',
-    description: 'Work with developers and QA to turn requirements into working solutions.',
+    description: 'Learn how BAs use Jira and other tools for documentation and tracking during implementation.',
   },
   {
     title: 'Handover & Value Tracking',

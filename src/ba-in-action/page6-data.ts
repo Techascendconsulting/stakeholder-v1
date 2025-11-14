@@ -70,10 +70,10 @@ export const PAGE_6_DATA: Record<BAInActionProject, Page6Data> = {
       'Ops capacity is finite.',
     ],
     requirements: [
-      'The system must evaluate identity risk at account creation, high-value checkout, and change of delivery address.',
-      'The system must output one of three decision states: approve automatically, block automatically, send to manual review.',
-      'Decision logic must be explainable for audit purposes.',
-      'Manual review decisions must feed back into the scoring model within 24 hours.',
+      'Evaluate identity risk at account creation, high-value checkout, and change of delivery address.',
+      'Output one of three decision states: approve automatically, block automatically, send to manual review.',
+      'Decision logic is explainable for audit purposes.',
+      'Manual review decisions feed back into the scoring model within 24 hours.',
     ],
     acceptanceCriteria: [
       'AC01: When risk score ≥ threshold_A, account is approved with no manual step.',
@@ -274,10 +274,10 @@ So that we reduce fraud while minimising manual workload and customer friction.`
       'Health and safety checks are non-negotiable (regulatory requirement).',
     ],
     requirements: [
-      'The system must evaluate void readiness at inspection completion, repairs completion, and final sign-off.',
-      'The system must output one of three decision states: ready for re-let, needs more work, send to quality check.',
-      'Decision logic must be traceable for audit purposes.',
-      'Completed void outcomes must feed back into the process within 24 hours.',
+      'Evaluate void readiness at inspection completion, repairs completion, and final sign-off.',
+      'Output one of three decision states: ready for re-let, needs more work, send to quality check.',
+      'Decision logic is traceable for audit purposes.',
+      'Completed void outcomes feed back into the process within 24 hours.',
     ],
     acceptanceCriteria: [
       'AC01: When void status = "ready" and all checks passed, property is approved for re-let with no additional steps.',
