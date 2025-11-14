@@ -124,10 +124,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('🔍 INIT: AppContext initializing currentView...')
     
     try {
-      // First check localStorage for saved view (user's last location)
-      const savedView = localStorage.getItem('currentView')
-      console.log('🔍 INIT: Found saved view in localStorage:', savedView)
-      
       // Check onboarding status to determine if welcome page should be accessible
       const onboardingCompleted = localStorage.getItem('onboardingCompleted')
       const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
@@ -137,6 +133,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log('🔍 INIT: No onboarding flags found, assuming user has completed onboarding')
         localStorage.setItem('onboardingCompleted', 'true')
       }
+      
+      // FIRST: Check URL path for direct URL access (takes priority for BA in Action)
+      if (typeof window !== 'undefined') {
+        const initialPath = window.location.pathname
+        // Only use URL path if it's a BA in Action route (not root '/')
+        if (initialPath !== '/' && initialPath !== '') {
+          const mappedView = baInActionPathToView[initialPath]
+          if (mappedView) {
+            console.log('🔍 INIT: URL path matched BA In Action route:', initialPath, '->', mappedView)
+            return mappedView
+          }
+        }
+      }
+      
+      // SECOND: Check localStorage for saved view (user's last location)
+      const savedView = localStorage.getItem('currentView')
+      console.log('🔍 INIT: Found saved view in localStorage:', savedView)
       
       // If user has completed onboarding and is trying to access welcome page, redirect to dashboard
       if (savedView === 'welcome' && localStorage.getItem('onboardingCompleted') === 'true') {
@@ -201,16 +214,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (validViews.includes(savedView as AppView)) {
           console.log('✅ INIT: Using saved view from localStorage:', savedView)
           return savedView as AppView
-        }
-      }
-      
-      // Only check URL path if no valid saved view exists (for direct URL access)
-      if (typeof window !== 'undefined') {
-        const initialPath = window.location.pathname
-        const mappedView = baInActionPathToView[initialPath]
-        if (mappedView) {
-          console.log('🔍 INIT: No saved view, using URL path:', initialPath, '->', mappedView)
-          return mappedView
         }
       }
       
@@ -418,11 +421,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const baInActionPath = baInActionViewToPath[view]
       if (typeof window !== 'undefined') {
         if (baInActionPath) {
+          // Navigating TO a BA in Action view - set the URL
           if (window.location.pathname !== baInActionPath) {
             window.history.pushState({ view }, '', baInActionPath)
           }
-        } else if (window.location.pathname.startsWith(`${BA_IN_ACTION_BASE_PATH}/`)) {
-          window.history.pushState({ view }, '', '/')
+        } else {
+          // Navigating AWAY from BA in Action - clear the URL if we're on a BA in Action path
+          const currentPath = window.location.pathname
+          if (currentPath === BA_IN_ACTION_BASE_PATH || currentPath.startsWith(`${BA_IN_ACTION_BASE_PATH}/`)) {
+            window.history.pushState({ view }, '', '/')
+          }
         }
       }
       
