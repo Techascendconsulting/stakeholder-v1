@@ -166,6 +166,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           'dashboard',
           'learn',
           'learning-hub',
+          'learning-intro',
+          'learning-flow',
+          'practice-intro',
+          'practice-flow',
           'core-learning',
           'practice',
           'practice-2',
@@ -208,11 +212,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           'support',
           'navigation-guide',
           'analysis',
+          'ba-in-action-intro',
           'ba-in-action-index',
+          'project-flow',
+          'career-journey',
           ...BA_IN_ACTION_VIEW_IDS
         ];
         if (validViews.includes(savedView as AppView)) {
           console.log('✅ INIT: Using saved view from localStorage:', savedView)
+          return savedView as AppView
+        } else {
+          // If saved view is not in explicit list but looks valid, use it anyway
+          // This handles views that might have been added but not yet in the list
+          console.log('⚠️ INIT: Saved view not in explicit list, but using it anyway:', savedView)
           return savedView as AppView
         }
       }
