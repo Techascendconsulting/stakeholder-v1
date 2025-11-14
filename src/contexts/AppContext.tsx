@@ -124,15 +124,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('🔍 INIT: AppContext initializing currentView...')
     
     try {
-      if (typeof window !== 'undefined') {
-        const initialPath = window.location.pathname
-        const mappedView = baInActionPathToView[initialPath]
-        if (mappedView) {
-          console.log('🔍 INIT: Initial path matched BA In Action route:', initialPath)
-          return mappedView
-        }
-      }
-
+      // First check localStorage for saved view (user's last location)
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
       
@@ -152,118 +144,79 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return 'dashboard'
       }
       
-      // SAFETY CHECK: If no saved view exists (first time after onboarding), default to dashboard
-      if (!savedView) {
-        console.log('🔍 INIT: No saved view found, defaulting to dashboard')
-        return 'dashboard'
+      // If we have a saved view, use it (unless it's welcome and onboarding is complete)
+      if (savedView && savedView !== 'welcome') {
+        // Validate that the saved view is a valid AppView
+        const validViews: AppView[] = [
+          'welcome',
+          'get-started',
+          'dashboard',
+          'learn',
+          'learning-hub',
+          'core-learning',
+          'practice',
+          'practice-2',
+          'documentation-practice',
+          'mvp-practice',
+          'scrum-practice',
+          'hands-on-project',
+          'elicitation-hub',
+          'motivation',
+          'community-hub',
+          'project',
+          'core-concepts',
+          'agile-scrum',
+          'scrum-essentials',
+          'scrum-learning',
+          'scrum-practice',
+          'agile-practice',
+          'progress-tracking',
+          'project-workspace',
+          'meeting-history',
+          'portfolio',
+          'create-project',
+          'ba-fundamentals',
+          'process-mapper',
+          'ai-process-mapper',
+          'process-mapper-editor',
+          'diagram-creation',
+          'advanced-topics',
+          'projects',
+          'project-setup',
+          'meeting',
+          'voice-only-meeting',
+          'voice-meeting-v2',
+          'meeting-summary',
+          'meeting-details',
+          'raw-transcript',
+          'notes',
+          'deliverables',
+          'profile',
+          'support',
+          'navigation-guide',
+          'analysis',
+          'ba-in-action-index',
+          ...BA_IN_ACTION_VIEW_IDS
+        ];
+        if (validViews.includes(savedView as AppView)) {
+          console.log('✅ INIT: Using saved view from localStorage:', savedView)
+          return savedView as AppView
+        }
       }
       
-      // Validate that the saved view is a valid AppView
-      const validViews: AppView[] = [
-        'welcome',
-        'get-started',
-        'dashboard',
-        'learn',
-        'learning-hub',
-        'core-learning',
-        'practice',
-        'motivation',
-        'project',
-        'core-concepts',
-        'agile-hub',
-        'agile-scrum',
-        'scrum-essentials',
-        'scrum-learning',
-        'agile-practice',
-        'user-story-checker',
-        'my-meetings',
-        'voice-meeting',
-        'settings',
-        'profile',
-        'custom-project',
-        'create-project',
-        'custom-stakeholders',
-        'project-workspace',
-        'projects',
-        'project-brief',
-        'stakeholders',
-        'meeting-mode-selection',
-        'meeting',
-        'voice-only-meeting',
-        'elevenlabs-meeting',
-        'individual-agent-meeting',
-        'meeting-history',
-        'meeting-summary',
-        'raw-transcript',
-        'notes',
-        'training-hub',
-        'training-hub-project-selection',
-        'practice-hub-cards',
-        'training-practice',
-        'training-assess',
-        'training-feedback',
-        'training-dashboard',
-        'training-deliverables',
-        'project-deliverables',
-        'progress-tracking',
-        'deliverables',
-        'portfolio',
-        'advanced-topics',
-        'meeting-details',
-        'enhanced-training-flow',
-        'analysis',
-        'ba-fundamentals',
-        'process-mapper',
-        'ai-process-mapper',
-        'process-mapper-editor',
-        'diagram-creation',
-        'project-setup',
-        'structured-training',
-        'pre-brief',
-        'live-training-meeting',
-        'post-brief',
-        // 'community-hub', // Archived for MVP
-        // 'community-admin', // Archived for MVP
-        'admin',
-        'admin-panel',
-        // Learning pages that were missing
-        'project-initiation',
-        'requirements-engineering',
-        'documentation',
-        'documentation-practice',
-        'my-resources',
-        'solution-options',
-        'design-hub',
-        'mvp-hub',
-        'mvp-engine',
-        'mvp-practice',
-        'elicitation',
-        'practice-2',
-        'elicitation-hub',
-        'scrum-practice',
-        'my-mentorship',
-        'book-session',
-        'mentor-feedback',
-        'career-coaching',
-        'my-progress-mentor',
-        'contact-us',
-        'admin-contact-submissions',
-        'faq',
-        'career-journey',
-        'learning-flow',
-        'practice-flow',
-        'project-flow',
-        'ba-in-action-index',
-        ...BA_IN_ACTION_VIEW_IDS
-      ];
-      if (savedView && validViews.includes(savedView as AppView)) {
-        console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
-        return savedView as AppView
-      } else {
-        console.log('⚠️ INIT: Invalid or missing saved view, using saved view as-is if exists:', savedView)
-        // Return the saved view even if not in list, to preserve user's last page
-        return (savedView as AppView) || 'dashboard'
+      // Only check URL path if no valid saved view exists (for direct URL access)
+      if (typeof window !== 'undefined') {
+        const initialPath = window.location.pathname
+        const mappedView = baInActionPathToView[initialPath]
+        if (mappedView) {
+          console.log('🔍 INIT: No saved view, using URL path:', initialPath, '->', mappedView)
+          return mappedView
+        }
       }
+      
+      // SAFETY CHECK: If no saved view exists (first time after onboarding), default to dashboard
+      console.log('🔍 INIT: No saved view found, defaulting to dashboard')
+      return 'dashboard'
     } catch (error) {
       console.log('❌ INIT: Error loading saved view, defaulting to dashboard:', error)
       return 'dashboard'
