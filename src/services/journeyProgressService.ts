@@ -281,9 +281,9 @@ export class JourneyProgressService {
    */
   static async getPracticeProgress(userId: string): Promise<PracticeProgress> {
     try {
-      // Count meetings from meetings table
+      // Count meetings from user_meetings table
       const { data: meetings, error } = await supabase
-        .from('meetings')
+        .from('user_meetings')
         .select('meeting_type')
         .eq('user_id', userId);
 

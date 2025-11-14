@@ -71,7 +71,7 @@ const Dashboard2: React.FC = () => {
       // Get meeting and deliverable counts for existing users
       if (profileData?.user_type === 'existing') {
         const { count: meetingsCount } = await supabase
-          .from('meetings')
+          .from('user_meetings')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
 
