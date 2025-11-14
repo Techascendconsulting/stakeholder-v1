@@ -26,10 +26,176 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  CheckCircle2,
+  Circle,
+  MessageSquare,
+  Send,
+  ClipboardList,
 } from 'lucide-react';
 import { getGlossaryTerms } from './glossary-data';
 
 const VIEW_ID: AppView = 'ba_in_action_stakeholder_communication';
+
+// --- Progress Tracking Hook ---
+function useProgress() {
+  const [progress, setProgress] = useState<{[k: string]: boolean}>(() => {
+    const saved = localStorage.getItem('ba-action-communication-progress');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const markComplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: true };
+      localStorage.setItem('ba-action-communication-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markIncomplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: false };
+      localStorage.setItem('ba-action-communication-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  return { progress, markComplete, markIncomplete };
+}
+
+// --- Progress Tracker Component ---
+const ProgressTracker: React.FC<{
+  progress: {[k: string]: boolean};
+  activeSection: string | null;
+  onStepClick: (stepId: string) => void;
+  onToggle: (step: string, completed: boolean) => void;
+}> = ({ progress, activeSection, onStepClick, onToggle }) => {
+  const steps = [
+    { id: 'why_matters', label: 'Understand Why It Matters', icon: AlertCircle, sectionId: 'why_section' },
+    { id: 'choose_channel', label: 'Choose Communication Channel', icon: MessageCircleMore, sectionId: 'channels_section' },
+    { id: 'conversation_scripts', label: 'Prepare Conversation Scripts', icon: Quote, sectionId: 'scripts_section' },
+    { id: 'meeting_framework', label: 'Use 5-Step Meeting Framework', icon: ClipboardList, sectionId: 'framework_section' },
+    { id: 'take_notes', label: 'Take Analytical Notes', icon: FileText, sectionId: 'notes_section' },
+    { id: 'draft_message', label: 'Draft First Message', icon: MessageSquare, sectionId: 'draft_section' },
+    { id: 'follow_up', label: 'Post Follow-Up', icon: Send, sectionId: 'followup_section' },
+  ];
+
+  const total = steps.length;
+  const completed = steps.filter(s => progress[s.id]).length;
+  const percentage = (completed / total) * 100;
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step, idx) => {
+          const completed = progress[step.id];
+          const isActive = activeSection === step.sectionId;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(step.id, !completed);
+                }}
+                className="flex-shrink-0"
+              >
+                {completed ? (
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                ) : (
+                  <Circle size={18} className="text-slate-400" />
+                )}
+              </button>
+              <button
+                onClick={() => onStepClick(step.sectionId)}
+                className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    : completed 
+                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
+                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                }`}
+              >
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                  {step.label}
+                </span>
+                {idx < steps.length - 1 && (
+                  <ChevronDown size={14} className="text-slate-400" />
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- Collapsible Section Wrapper ---
+const CollapsibleSection: React.FC<{
+  title: string;
+  icon: React.ElementType;
+  completed?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
+  children: React.ReactNode;
+  onToggleComplete?: (completed: boolean) => void;
+  sectionId?: string;
+}> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
+  return (
+    <div className="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={20} className={`${completed ? 'text-emerald-600' : 'text-blue-600'}`} />
+          <span className={`text-base font-bold ${completed ? 'text-emerald-900' : 'text-slate-900'}`}>
+            {title}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onToggleComplete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete(!completed);
+              }}
+              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {completed ? 'Mark incomplete' : 'Mark complete'}
+            </button>
+          )}
+          {controlledIsOpen ? (
+            <ChevronDown size={18} className="text-slate-400" />
+          ) : (
+            <ChevronRight size={18} className="text-slate-400" />
+          )}
+        </div>
+      </button>
+      {controlledIsOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Glossary Sidebar Component ---
 const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
@@ -155,6 +321,39 @@ const StakeholderCommunication: React.FC = () => {
   const [firstMessage, setFirstMessage] = useState('');
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
+  const { progress, markComplete, markIncomplete } = useProgress();
+  const [activeSection, setActiveSection] = useState<string | null>('why_section');
+
+  const handleProgressToggle = (step: string, completed: boolean) => {
+    if (completed) {
+      markComplete(step);
+      // Close the section when marked complete
+      const sectionMap: {[key: string]: string} = {
+        'why_matters': 'why_section',
+        'choose_channel': 'channels_section',
+        'conversation_scripts': 'scripts_section',
+        'meeting_framework': 'framework_section',
+        'take_notes': 'notes_section',
+        'draft_message': 'draft_section',
+        'follow_up': 'followup_section',
+      };
+      if (activeSection === sectionMap[step]) {
+        setActiveSection(null);
+      }
+    } else {
+      markIncomplete(step);
+    }
+  };
+
+  const handleStepClick = (sectionId: string) => {
+    // If clicking the same section, toggle it closed
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    } else {
+      // Open the clicked section (closes others automatically)
+      setActiveSection(sectionId);
+    }
+  };
 
   // Map communication tool icons
   const communicationChannelsWithIcons = page4Data.communicationChannels.map((channel) => {
@@ -216,37 +415,64 @@ const StakeholderCommunication: React.FC = () => {
         </div>
       </div>
 
+      {/* Progress Tracker */}
+      <ProgressTracker 
+        progress={progress}
+        activeSection={activeSection}
+        onStepClick={handleStepClick}
+        onToggle={handleProgressToggle}
+      />
+
+      {/* Main grid layout */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        
+        {/* Left column - main content */}
+        <div className="lg:col-span-2 space-y-6">
+
       {/* Why This Matters */}
-      <Section title="1) Why Stakeholder Communication Matters (Especially for Interviews)">
-        <div className="space-y-4 text-sm text-slate-800">
-          <p className="leading-relaxed">
-            Interviewers don&apos;t ask &quot;Do you know how to talk to people?&quot; They ask:{' '}
-            <strong className="text-slate-900">"Tell me about a time when you had to manage conflicting stakeholder priorities."</strong>
-          </p>
-          <p className="leading-relaxed">
-            Or: <strong className="text-slate-900">"How do you handle a stakeholder who is resistant to change?"</strong>
-          </p>
-          <p className="leading-relaxed">
-            You need structured examples. This page gives you the frameworks, scripts, and tools that BAs use daily — so you can reference them confidently in interviews.
-          </p>
+      <CollapsibleSection
+        title="1) Why Stakeholder Communication Matters (Especially for Interviews)"
+        icon={AlertCircle}
+        completed={progress.why_matters}
+        isOpen={activeSection === 'why_section'}
+        onToggle={() => handleStepClick('why_section')}
+        onToggleComplete={(completed) => handleProgressToggle('why_matters', completed)}
+        sectionId="why_section"
+      >
+        <div className="p-5">
+          <div className="space-y-4 text-sm text-slate-800">
+            <p className="leading-relaxed">
+              Interviewers don&apos;t ask &quot;Do you know how to talk to people?&quot; They ask:{' '}
+              <strong className="text-slate-900">"Tell me about a time when you had to manage conflicting stakeholder priorities."</strong>
+            </p>
+            <p className="leading-relaxed">
+              Or: <strong className="text-slate-900">"How do you handle a stakeholder who is resistant to change?"</strong>
+            </p>
+            <p className="leading-relaxed">
+              You need structured examples. This page gives you the frameworks, scripts, and tools that BAs use daily — so you can reference them confidently in interviews.
+            </p>
+          </div>
+          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            <AlertCircle size={16} className="inline mr-2" />
+            <strong>Real BA work:</strong> You don&apos;t just &quot;communicate well.&quot; You choose channels strategically, lead conversations with intent, and document decisions clearly.
+          </div>
         </div>
-        <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
-          <AlertCircle size={16} className="inline mr-2" />
-          <strong>Real BA work:</strong> You don&apos;t just &quot;communicate well.&quot; You choose channels strategically, lead conversations with intent, and document decisions clearly.
-        </div>
-      </Section>
-
-      {/* Glossary */}
-      <GlossarySidebar project={selectedProject} pageKey="stakeholder-communication" />
-
-      {/* BA Journey Sidebar */}
-      <BAJourneySidebar />
+      </CollapsibleSection>
 
       {/* Communication Channels */}
-      <Section title="2) Tools of Communication (When to Use Teams, Slack, Email, or Face-to-Face)">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
-        </p>
+      <CollapsibleSection
+        title="2) Tools of Communication (When to Use Teams, Slack, Email, or Face-to-Face)"
+        icon={MessageCircleMore}
+        completed={progress.choose_channel}
+        isOpen={activeSection === 'channels_section'}
+        onToggle={() => handleStepClick('channels_section')}
+        onToggleComplete={(completed) => handleProgressToggle('choose_channel', completed)}
+        sectionId="channels_section"
+      >
+        <div className="p-5">
+          <p className="text-sm text-slate-800 mb-4 leading-relaxed">
+            BAs don&apos;t just &quot;send a message.&quot; They choose the right channel for the right purpose. Here&apos;s how:
+          </p>
         <div className="space-y-4">
           {communicationChannelsWithIcons.map((channel) => (
             <div key={channel.tool} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -273,16 +499,26 @@ const StakeholderCommunication: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <strong>Pro tip:</strong> High-power stakeholders prefer structured, agenda-led meetings. Low-power, high-interest stakeholders prefer async updates (Slack/Teams) so they stay informed without meetings.
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <strong>Pro tip:</strong> High-power stakeholders prefer structured, agenda-led meetings. Low-power, high-interest stakeholders prefer async updates (Slack/Teams) so they stay informed without meetings.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       {/* Conversation Scripts */}
-      <Section title="3) Conversation Scripts for Each Stakeholder Type">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          Copy these scripts. Adapt them. Use them in your BA WorkXP™ scenarios and reference them in interviews.
-        </p>
+      <CollapsibleSection
+        title="3) Conversation Scripts for Each Stakeholder Type"
+        icon={Quote}
+        completed={progress.conversation_scripts}
+        isOpen={activeSection === 'scripts_section'}
+        onToggle={() => handleStepClick('scripts_section')}
+        onToggleComplete={(completed) => handleProgressToggle('conversation_scripts', completed)}
+        sectionId="scripts_section"
+      >
+        <div className="p-5">
+          <p className="text-sm text-slate-800 mb-4 leading-relaxed">
+            Copy these scripts. Adapt them. Use them in your BA WorkXP™ scenarios and reference them in interviews.
+          </p>
         <div className="grid gap-4 md:grid-cols-2">
           {page4Data.conversationScripts.map((entry) => (
             <div key={entry.stakeholder} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -300,10 +536,20 @@ const StakeholderCommunication: React.FC = () => {
             </div>
           ))}
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
       {/* Meeting Framework */}
-      <Section title="4) The 5-Step BA Meeting Framework">
+      <CollapsibleSection
+        title="4) The 5-Step BA Meeting Framework"
+        icon={ClipboardList}
+        completed={progress.meeting_framework}
+        isOpen={activeSection === 'framework_section'}
+        onToggle={() => handleStepClick('framework_section')}
+        onToggleComplete={(completed) => handleProgressToggle('meeting_framework', completed)}
+        sectionId="framework_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           This is the flow BAs use to lead meetings under pressure. Memorise it. Use it. Reference it in interviews.
         </p>
@@ -327,13 +573,23 @@ const StakeholderCommunication: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <strong>In interviews:</strong> "I always open meetings by setting the frame — stating the purpose clearly — then reflecting what we know, surfacing differences, clarifying constraints, and defining next steps with owners. This keeps meetings productive and focused."
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            <strong>In interviews:</strong> "I always open meetings by setting the frame — stating the purpose clearly — then reflecting what we know, surfacing differences, clarifying constraints, and defining next steps with owners. This keeps meetings productive and focused."
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       {/* How You Take Notes */}
-      <Section title="5) How You Take Notes (Analysis vs. Transcription)">
+      <CollapsibleSection
+        title="5) How You Take Notes (Analysis vs. Transcription)"
+        icon={FileText}
+        completed={progress.take_notes}
+        isOpen={activeSection === 'notes_section'}
+        onToggle={() => handleStepClick('notes_section')}
+        onToggleComplete={(completed) => handleProgressToggle('take_notes', completed)}
+        sectionId="notes_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           Weak BAs transcribe. Strong BAs analyse. Your notes should capture meaning, not words.
         </p>
@@ -349,13 +605,23 @@ const StakeholderCommunication: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
-          <strong>Your notes become the decision trail.</strong> They&apos;re referenced in requirements docs, user stories, and design sessions. Write them like you&apos;re building a case.
+          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            <strong>Your notes become the decision trail.</strong> They&apos;re referenced in requirements docs, user stories, and design sessions. Write them like you&apos;re building a case.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       {/* Task 1: Draft First Message */}
-      <Section title="6) Your Task: Draft Your First Stakeholder Message">
+      <CollapsibleSection
+        title="6) Your Task: Draft Your First Stakeholder Message"
+        icon={MessageSquare}
+        completed={progress.draft_message}
+        isOpen={activeSection === 'draft_section'}
+        onToggle={() => handleStepClick('draft_section')}
+        onToggleComplete={(completed) => handleProgressToggle('draft_message', completed)}
+        sectionId="draft_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           Choose one stakeholder. Draft your first message to them in Teams/Slack. Include:
         </p>
@@ -384,10 +650,20 @@ const StakeholderCommunication: React.FC = () => {
             <ArrowRight size={14} />
           </button>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
       {/* Follow-Up Message */}
-      <Section title="7) Post-Meeting Follow-Up (Copy & Adapt for Slack/Teams)">
+      <CollapsibleSection
+        title="7) Post-Meeting Follow-Up (Copy & Adapt for Slack/Teams)"
+        icon={Send}
+        completed={progress.follow_up}
+        isOpen={activeSection === 'followup_section'}
+        onToggle={() => handleStepClick('followup_section')}
+        onToggleComplete={(completed) => handleProgressToggle('follow_up', completed)}
+        sectionId="followup_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
           After every meeting, post a summary in the project channel. This builds trust and creates a decision trail.
         </p>
@@ -398,10 +674,25 @@ const StakeholderCommunication: React.FC = () => {
             </p>
           ))}
         </div>
-        <p className="mt-3 text-sm text-slate-700 leading-relaxed">
-          This message tells everyone: <strong>you are calm, structured, reliable, and leading.</strong> That&apos;s how trust is earned.
-        </p>
-      </Section>
+          <p className="mt-3 text-sm text-slate-700 leading-relaxed">
+            This message tells everyone: <strong>you are calm, structured, reliable, and leading.</strong> That&apos;s how trust is earned.
+          </p>
+        </div>
+      </CollapsibleSection>
+
+            </div>
+
+            {/* Right sidebar - context & guidance */}
+            <div className="space-y-6">
+              
+              {/* Glossary */}
+              <GlossarySidebar project={selectedProject} pageKey="stakeholder-communication" />
+
+              {/* BA Journey Sidebar */}
+              <BAJourneySidebar />
+              
+            </div>
+          </div>
 
       {showExample && (
         <div

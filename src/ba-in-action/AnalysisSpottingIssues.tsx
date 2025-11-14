@@ -22,12 +22,183 @@ import {
   ChevronUp,
   FileText,
   ChevronRight,
+  CheckCircle2,
+  Circle,
+  MessageSquare,
+  Send,
+  Eye,
+  Search,
+  FileCheck,
 } from 'lucide-react';
 import { getGlossaryTerms } from './glossary-data';
 
 const VIEW_ID: AppView = 'ba_in_action_as_is_to_be';
 
 const HERO_IMAGE = '/images/collaborate1.jpg';
+
+// --- Progress Tracking Hook ---
+function useProgress() {
+  const [progress, setProgress] = useState<{[k: string]: boolean}>(() => {
+    const saved = localStorage.getItem('ba-action-as-is-progress');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const markComplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: true };
+      localStorage.setItem('ba-action-as-is-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markIncomplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: false };
+      localStorage.setItem('ba-action-as-is-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  return { progress, markComplete, markIncomplete };
+}
+
+// --- Progress Tracker Component ---
+const ProgressTracker: React.FC<{
+  progress: {[k: string]: boolean};
+  activeSection: string | null;
+  onStepClick: (stepId: string) => void;
+  onToggle: (step: string, completed: boolean) => void;
+}> = ({ progress, activeSection, onStepClick, onToggle }) => {
+  const steps = [
+    { id: 'why_matters', label: 'Understand Why It Matters', icon: Target, sectionId: 'why_section' },
+    { id: 'ask_questions', label: 'Ask Questions & Get Answers', icon: MessageSquare, sectionId: 'questions_section' },
+    { id: 'capture_as_is', label: 'Capture Real As-Is', icon: Eye, sectionId: 'as_is_section' },
+    { id: 'draft_as_is', label: 'Draft As-Is Map', icon: FileText, sectionId: 'draft_as_is_section' },
+    { id: 'shadow_observation', label: 'Shadow & Observe', icon: Search, sectionId: 'shadow_section' },
+    { id: 'identify_gaps', label: 'Identify Gaps', icon: AlertTriangle, sectionId: 'gaps_section' },
+    { id: 'define_to_be', label: 'Define To-Be Solution', icon: Lightbulb, sectionId: 'to_be_section' },
+    { id: 'create_narrative', label: 'Create Narrative', icon: FileCheck, sectionId: 'narrative_section' },
+    { id: 'complete_task', label: 'Complete Your Task', icon: Target, sectionId: 'task_section' },
+    { id: 'send_update', label: 'Send Update', icon: Send, sectionId: 'update_section' },
+  ];
+
+  const total = steps.length;
+  const completed = steps.filter(s => progress[s.id]).length;
+  const percentage = (completed / total) * 100;
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step, idx) => {
+          const completed = progress[step.id];
+          const isActive = activeSection === step.sectionId;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(step.id, !completed);
+                }}
+                className="flex-shrink-0"
+              >
+                {completed ? (
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                ) : (
+                  <Circle size={18} className="text-slate-400" />
+                )}
+              </button>
+              <button
+                onClick={() => onStepClick(step.sectionId)}
+                className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    : completed 
+                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
+                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                }`}
+              >
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                  {step.label}
+                </span>
+                {idx < steps.length - 1 && (
+                  <ChevronDown size={14} className="text-slate-400" />
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- Collapsible Section Wrapper ---
+const CollapsibleSection: React.FC<{
+  title: string;
+  icon: React.ElementType;
+  completed?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
+  children: React.ReactNode;
+  onToggleComplete?: (completed: boolean) => void;
+  sectionId?: string;
+}> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
+  return (
+    <div className="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={20} className={`${completed ? 'text-emerald-600' : 'text-blue-600'}`} />
+          <span className={`text-base font-bold ${completed ? 'text-emerald-900' : 'text-slate-900'}`}>
+            {title}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onToggleComplete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete(!completed);
+              }}
+              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {completed ? 'Mark incomplete' : 'Mark complete'}
+            </button>
+          )}
+          {controlledIsOpen ? (
+            <ChevronDown size={18} className="text-slate-400" />
+          ) : (
+            <ChevronRight size={18} className="text-slate-400" />
+          )}
+        </div>
+      </button>
+      {controlledIsOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const QUESTIONS_TO_ASK = [
   {
@@ -192,6 +363,8 @@ const AnalysisSpottingIssues: React.FC = () => {
   const [showExample, setShowExample] = useState(false);
   const [expandedScript, setExpandedScript] = useState<string | null>(null);
   const exampleRef = useRef<HTMLDivElement | null>(null);
+  const { progress, markComplete, markIncomplete } = useProgress();
+  const [activeSection, setActiveSection] = useState<string | null>('why_section');
 
   const openExample = () => {
     setShowExample(true);
@@ -202,6 +375,40 @@ const AnalysisSpottingIssues: React.FC = () => {
 
   const toggleScript = (section: string) => {
     setExpandedScript(expandedScript === section ? null : section);
+  };
+
+  const handleProgressToggle = (step: string, completed: boolean) => {
+    if (completed) {
+      markComplete(step);
+      // Close the section when marked complete
+      const sectionMap: {[key: string]: string} = {
+        'why_matters': 'why_section',
+        'ask_questions': 'questions_section',
+        'capture_as_is': 'as_is_section',
+        'draft_as_is': 'draft_as_is_section',
+        'shadow_observation': 'shadow_section',
+        'identify_gaps': 'gaps_section',
+        'define_to_be': 'to_be_section',
+        'create_narrative': 'narrative_section',
+        'complete_task': 'task_section',
+        'send_update': 'update_section',
+      };
+      if (activeSection === sectionMap[step]) {
+        setActiveSection(null);
+      }
+    } else {
+      markIncomplete(step);
+    }
+  };
+
+  const handleStepClick = (sectionId: string) => {
+    // If clicking the same section, toggle it closed
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    } else {
+      // Open the clicked section (closes others automatically)
+      setActiveSection(sectionId);
+    }
   };
 
   return (
@@ -240,50 +447,77 @@ const AnalysisSpottingIssues: React.FC = () => {
         </div>
       </div>
 
+      {/* Progress Tracker */}
+      <ProgressTracker 
+        progress={progress}
+        activeSection={activeSection}
+        onStepClick={handleStepClick}
+        onToggle={handleProgressToggle}
+      />
+
+      {/* Main grid layout */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        
+        {/* Left column - main content */}
+        <div className="lg:col-span-2 space-y-6">
+
       {/* Why This Matters */}
-      <Section title="Why As-Is/Gap/To-Be Matters (Especially in Interviews)">
-        <div className="space-y-3 text-base text-slate-800">
-          <p className="leading-relaxed">
-            Interviewers ask: <strong className="text-slate-900">&quot;How do you analyze existing processes?&quot;</strong> or <strong className="text-slate-900">&quot;Tell me about a time when you identified a gap between current state and desired outcome.&quot;</strong>
-          </p>
-          <p className="leading-relaxed">
-            This analysis happens <strong>before you start building anything</strong>. It helps you understand what's broken and what needs to change.
-          </p>
-        </div>
-        <div className="mt-4 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-4 text-sm text-white shadow-md">
-          <div className="flex items-center gap-2 font-bold mb-3">
-            <Target size={16} />
-            When You Do This Work
+      <CollapsibleSection
+        title="Why As-Is/Gap/To-Be Matters (Especially in Interviews)"
+        icon={Target}
+        completed={progress.why_matters}
+        isOpen={activeSection === 'why_section'}
+        onToggle={() => handleStepClick('why_section')}
+        onToggleComplete={(completed) => handleProgressToggle('why_matters', completed)}
+        sectionId="why_section"
+      >
+        <div className="p-5">
+          <div className="space-y-3 text-base text-slate-800">
+            <p className="leading-relaxed">
+              Interviewers ask: <strong className="text-slate-900">&quot;How do you analyze existing processes?&quot;</strong> or <strong className="text-slate-900">&quot;Tell me about a time when you identified a gap between current state and desired outcome.&quot;</strong>
+            </p>
+            <p className="leading-relaxed">
+              This analysis happens <strong>before you start building anything</strong>. It helps you understand what's broken and what needs to change.
+            </p>
           </div>
-          <p className="mb-3 leading-relaxed">
-            <strong>Timing:</strong> Do this analysis at the start of a project, before anyone starts building features. This is when you figure out what the real problem is and what direction you want to move in.
-          </p>
-          <p className="mb-3 leading-relaxed">
-            <strong>What You Create:</strong>
-          </p>
-          <ul className="ml-4 space-y-2 mb-3">
-            <li>• <strong>As-Is map:</strong> A simple document showing how things work right now (the real version, not the ideal one)</li>
-            <li>• <strong>Gap analysis:</strong> A list showing what's broken, why it's broken, and what impact it has</li>
-            <li>• <strong>To-Be solution:</strong> The solution (how things will work) and the requirements (what the system must do)</li>
-            <li>• <strong>Success metrics:</strong> How you'll measure if the changes worked (agreed with your project lead)</li>
-          </ul>
-          <p className="leading-relaxed">
-            <strong>How You Use It:</strong> Share your findings with the team and project lead. Use the pain points you identified to decide what to work on first.
-          </p>
+          <div className="mt-4 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-4 text-sm text-white shadow-md">
+            <div className="flex items-center gap-2 font-bold mb-3">
+              <Target size={16} />
+              When You Do This Work
+            </div>
+            <p className="mb-3 leading-relaxed">
+              <strong>Timing:</strong> Do this analysis at the start of a project, before anyone starts building features. This is when you figure out what the real problem is and what direction you want to move in.
+            </p>
+            <p className="mb-3 leading-relaxed">
+              <strong>What You Create:</strong>
+            </p>
+            <ul className="ml-4 space-y-2 mb-3">
+              <li>• <strong>As-Is map:</strong> A simple document showing how things work right now (the real version, not the ideal one)</li>
+              <li>• <strong>Gap analysis:</strong> A list showing what's broken, why it's broken, and what impact it has</li>
+              <li>• <strong>To-Be solution:</strong> The solution (how things will work) and the requirements (what the system must do)</li>
+              <li>• <strong>Success metrics:</strong> How you'll measure if the changes worked (agreed with your project lead)</li>
+            </ul>
+            <p className="leading-relaxed">
+              <strong>How You Use It:</strong> Share your findings with the team and project lead. Use the pain points you identified to decide what to work on first.
+            </p>
+          </div>
         </div>
-      </Section>
-
-      {/* Glossary */}
-      <GlossarySidebar project={selectedProject} pageKey="as-is-to-be" />
-
-      {/* BA Journey Sidebar */}
-      <BAJourneySidebar />
+      </CollapsibleSection>
 
       {/* Questions to Ask Section */}
-      <Section title="1) Questions to Ask & What to Do with the Answers">
-        <p className="text-base text-slate-800 mb-4 leading-relaxed">
-          BAs don&apos;t guess at As-Is or Gaps. They ask specific questions and use the answers to build evidence-based analysis.
-        </p>
+      <CollapsibleSection
+        title="1) Questions to Ask & What to Do with the Answers"
+        icon={MessageSquare}
+        completed={progress.ask_questions}
+        isOpen={activeSection === 'questions_section'}
+        onToggle={() => handleStepClick('questions_section')}
+        onToggleComplete={(completed) => handleProgressToggle('ask_questions', completed)}
+        sectionId="questions_section"
+      >
+        <div className="p-5">
+          <p className="text-base text-slate-800 mb-4 leading-relaxed">
+            BAs don&apos;t guess at As-Is or Gaps. They ask specific questions and use the answers to build evidence-based analysis.
+          </p>
         <div className="space-y-4">
           {QUESTIONS_TO_ASK.map((section) => (
             <div key={section.category} className="border border-slate-300 rounded-lg bg-white shadow-sm">
@@ -329,15 +563,25 @@ const AnalysisSpottingIssues: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
-          <div className="flex items-center gap-2 font-semibold">
-            <Lightbulb size={16} />
-            Pro tip: Record permission, then ask &quot;Can you show me on your screen?&quot; Watching behavior reveals more than listening to descriptions.
+          <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
+            <div className="flex items-center gap-2 font-semibold">
+              <Lightbulb size={16} />
+              Pro tip: Record permission, then ask &quot;Can you show me on your screen?&quot; Watching behavior reveals more than listening to descriptions.
+            </div>
           </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="2) What As-Is Actually Means">
+      <CollapsibleSection
+        title="2) What As-Is Actually Means"
+        icon={Eye}
+        completed={progress.capture_as_is}
+        isOpen={activeSection === 'as_is_section'}
+        onToggle={() => handleStepClick('as_is_section')}
+        onToggleComplete={(completed) => handleProgressToggle('capture_as_is', completed)}
+        sectionId="as_is_section"
+      >
+        <div className="p-5">
         <p className="text-base text-slate-800 mb-4 leading-relaxed">
           As-Is is not a diagram. It&apos;s what actually happens when people, systems, and pressure collide.
         </p>
@@ -361,13 +605,22 @@ const AnalysisSpottingIssues: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-          <AlertTriangle size={16} className="inline mr-2" />
-          <strong>Critical:</strong> If you map the fictional As-Is (the one in documentation), your To-Be will fail.
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+            <AlertTriangle size={16} className="inline mr-2" />
+            <strong>Critical:</strong> If you map the fictional As-Is (the one in documentation), your To-Be will fail.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="2) How to Capture the Real As-Is (Fast + With Respect)">
+      <CollapsibleSection
+        title="2) How to Capture the Real As-Is (Fast + With Respect)"
+        icon={Eye}
+        completed={progress.capture_as_is}
+        isOpen={activeSection === 'as_is_section'}
+        onToggle={() => handleStepClick('as_is_section')}
+        sectionId="as_is_section"
+      >
+        <div className="p-5">
         <div className="grid gap-4 md:grid-cols-3 text-sm text-slate-700">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-indigo-600 font-semibold">You ask</div>
@@ -379,12 +632,22 @@ const AnalysisSpottingIssues: React.FC = () => {
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-indigo-600 font-semibold">You listen for</div>
-            <p className="mt-2">Sighs. “This part is annoying…” “We usually just…” “Ideally…” These reveal truth.</p>
+            <p className="mt-2">Sighs. "This part is annoying…" "We usually just…" "Ideally…" These reveal truth.</p>
           </div>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
-      <Section title="3) Your First High-Level As-Is Draft">
+      <CollapsibleSection
+        title="3) Your First High-Level As-Is Draft"
+        icon={FileText}
+        completed={progress.draft_as_is}
+        isOpen={activeSection === 'draft_as_is_section'}
+        onToggle={() => handleStepClick('draft_as_is_section')}
+        onToggleComplete={(completed) => handleProgressToggle('draft_as_is', completed)}
+        sectionId="draft_as_is_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-700">
           No diagrams yet. Capture the sequence and the pain.
         </p>
@@ -399,9 +662,19 @@ const AnalysisSpottingIssues: React.FC = () => {
             ))}
           </ul>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
-      <Section title={`4) BA Observation Notes: Shadowing ${selectedProject === 'cif' ? 'James (Ops)' : 'Tom (Repairs)'} for 2 Hours`}>
+      <CollapsibleSection
+        title={`4) BA Observation Notes: Shadowing ${selectedProject === 'cif' ? 'James (Ops)' : 'Tom (Repairs)'} for 2 Hours`}
+        icon={Search}
+        completed={progress.shadow_observation}
+        isOpen={activeSection === 'shadow_section'}
+        onToggle={() => handleStepClick('shadow_section')}
+        onToggleComplete={(completed) => handleProgressToggle('shadow_observation', completed)}
+        sectionId="shadow_section"
+      >
+        <div className="p-5">
         <p className="text-base text-slate-800 mb-4 leading-relaxed">
           This is what the BA observes when shadowing for 2 hours. Watch what the BA writes down.
         </p>
@@ -476,9 +749,19 @@ const AnalysisSpottingIssues: React.FC = () => {
             Pro tip: Always ask &quot;Can I shadow you?&quot; instead of &quot;Can you explain your process?&quot; Watching reveals truth that talking hides.
           </div>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
-      <Section title="5) What Is a Gap? (Simple Explanation with Example)">
+      <CollapsibleSection
+        title="5) What Is a Gap? (Simple Explanation with Example)"
+        icon={AlertTriangle}
+        completed={progress.identify_gaps}
+        isOpen={activeSection === 'gaps_section'}
+        onToggle={() => handleStepClick('gaps_section')}
+        onToggleComplete={(completed) => handleProgressToggle('identify_gaps', completed)}
+        sectionId="gaps_section"
+      >
+        <div className="p-5">
         <div className="mb-4 space-y-4">
           <div className="rounded-2xl border-2 border-blue-300 bg-blue-50 p-5">
             <div className="text-base font-bold text-blue-900 mb-3">What Is a Gap?</div>
@@ -525,9 +808,19 @@ const AnalysisSpottingIssues: React.FC = () => {
             These are explanations, not opinions. Evidence-based gap analysis prevents repeating the same mistakes in To-Be.
           </div>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
-      <Section title="6) What Is To-Be? (The Solution with Requirements)">
+      <CollapsibleSection
+        title="6) What Is To-Be? (The Solution with Requirements)"
+        icon={Lightbulb}
+        completed={progress.define_to_be}
+        isOpen={activeSection === 'to_be_section'}
+        onToggle={() => handleStepClick('to_be_section')}
+        onToggleComplete={(completed) => handleProgressToggle('define_to_be', completed)}
+        sectionId="to_be_section"
+      >
+        <div className="p-5">
         <div className="mb-4 space-y-4">
           <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5">
             <div className="text-base font-bold text-emerald-900 mb-3">What Is To-Be?</div>
@@ -560,12 +853,22 @@ const AnalysisSpottingIssues: React.FC = () => {
             ))}
           </ul>
         </div>
-        <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <strong>Remember:</strong> To-Be is your solution with requirements. It describes what will exist and what it must do to solve the gaps you identified.
+          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            <strong>Remember:</strong> To-Be is your solution with requirements. It describes what will exist and what it must do to solve the gaps you identified.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="7) Translate Into a One-Slide Narrative">
+      <CollapsibleSection
+        title="7) Translate Into a One-Slide Narrative"
+        icon={FileCheck}
+        completed={progress.create_narrative}
+        isOpen={activeSection === 'narrative_section'}
+        onToggle={() => handleStepClick('narrative_section')}
+        onToggleComplete={(completed) => handleProgressToggle('create_narrative', completed)}
+        sectionId="narrative_section"
+      >
+        <div className="p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-rose-500 font-semibold">Now (As-Is)</div>
@@ -584,12 +887,22 @@ const AnalysisSpottingIssues: React.FC = () => {
             </ul>
           </div>
         </div>
-        <p className="mt-3 text-sm text-slate-700">
-          Senior stakeholders understand this instantly. No diagrams needed yet.
-        </p>
-      </Section>
+          <p className="mt-3 text-sm text-slate-700">
+            Senior stakeholders understand this instantly. No diagrams needed yet.
+          </p>
+        </div>
+      </CollapsibleSection>
 
-      <Section title="7) Your Task Today">
+      <CollapsibleSection
+        title="7) Your Task Today"
+        icon={Target}
+        completed={progress.complete_task}
+        isOpen={activeSection === 'task_section'}
+        onToggle={() => handleStepClick('task_section')}
+        onToggleComplete={(completed) => handleProgressToggle('complete_task', completed)}
+        sectionId="task_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-700">
           Fill these in — thoughtfully, like someone who understands the system truthfully.
         </p>
@@ -616,9 +929,19 @@ const AnalysisSpottingIssues: React.FC = () => {
             <ArrowRight size={14} />
           </button>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
-      <Section title="9) Slack / Teams Update (Copy & Adapt)">
+      <CollapsibleSection
+        title="9) Slack / Teams Update (Copy & Adapt)"
+        icon={Send}
+        completed={progress.send_update}
+        isOpen={activeSection === 'update_section'}
+        onToggle={() => handleStepClick('update_section')}
+        onToggleComplete={(completed) => handleProgressToggle('send_update', completed)}
+        sectionId="update_section"
+      >
+        <div className="p-5">
         <p className="text-base text-slate-800 mb-3 leading-relaxed">
           After completing As-Is/Gap/To-Be analysis, post an update. This shows analytical rigor.
         </p>
@@ -629,10 +952,25 @@ const AnalysisSpottingIssues: React.FC = () => {
             ))}
           </div>
         </div>
-        <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">
-          <strong>Why this works:</strong> This message makes you look senior — calm, analytical, directional.
+          <div className="mt-3 rounded-lg border-2 border-blue-300 bg-gradient-to-r from-blue-600 to-cyan-600 p-3 text-sm text-white shadow-md">
+            <strong>Why this works:</strong> This message makes you look senior — calm, analytical, directional.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
+
+            </div>
+
+            {/* Right sidebar - context & guidance */}
+            <div className="space-y-6">
+              
+              {/* Glossary */}
+              <GlossarySidebar project={selectedProject} pageKey="as-is-to-be" />
+
+              {/* BA Journey Sidebar */}
+              <BAJourneySidebar />
+              
+            </div>
+          </div>
 
       {showExample && (
         <div

@@ -21,6 +21,13 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  CheckCircle2,
+  Circle,
+  MessageSquare,
+  Send,
+  Eye,
+  Search,
+  ClipboardList,
 } from 'lucide-react';
 import { getGlossaryTerms } from '../../ba-in-action/glossary-data';
 
@@ -33,6 +40,167 @@ const HUMAN_REALITY = [
   `They don't want to be embarrassed in front of leadership.`,
   `They don't want to absorb extra blame when things go wrong.`,
 ];
+
+// --- Progress Tracking Hook ---
+function useProgress() {
+  const [progress, setProgress] = useState<{[k: string]: boolean}>(() => {
+    const saved = localStorage.getItem('ba-action-stakeholder-landscape-progress');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const markComplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: true };
+      localStorage.setItem('ba-action-stakeholder-landscape-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markIncomplete = (step: string) => {
+    setProgress((prev) => {
+      const updated = { ...prev, [step]: false };
+      localStorage.setItem('ba-action-stakeholder-landscape-progress', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  return { progress, markComplete, markIncomplete };
+}
+
+// --- Progress Tracker Component ---
+const ProgressTracker: React.FC<{
+  progress: {[k: string]: boolean};
+  activeSection: string | null;
+  onStepClick: (stepId: string) => void;
+  onToggle: (step: string, completed: boolean) => void;
+}> = ({ progress, activeSection, onStepClick, onToggle }) => {
+  const steps = [
+    { id: 'why_matters', label: 'Understand Why It Matters', icon: Target, sectionId: 'why_section' },
+    { id: 'review_stakeholders', label: 'Review Stakeholder Table', icon: Users, sectionId: 'stakeholders_section' },
+    { id: 'map_power_interest', label: 'Map Power & Interest', icon: Grid3x3, sectionId: 'power_interest_section' },
+    { id: 'identify_pressure', label: 'Identify Pressure Signals', icon: ShieldAlert, sectionId: 'pressure_section' },
+    { id: 'write_narrative', label: 'Write Stakeholder Narrative', icon: FileText, sectionId: 'narrative_section' },
+    { id: 'complete_task', label: 'Complete Mapping Task', icon: ClipboardList, sectionId: 'task_section' },
+    { id: 'send_update', label: 'Send Update', icon: Send, sectionId: 'update_section' },
+  ];
+
+  const total = steps.length;
+  const completed = steps.filter(s => progress[s.id]).length;
+  const percentage = (completed / total) * 100;
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6 mb-8 bg-gradient-to-br from-white to-blue-50/30">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="text-base font-bold text-slate-900 mb-1">Your BA Journey</div>
+          <div className="text-xs text-slate-600">{completed} of {total} steps completed</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-32 h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 ease-out rounded-full shadow-sm"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <span className="text-sm font-bold text-blue-700 min-w-[3rem]">{Math.round(percentage)}%</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step, idx) => {
+          const completed = progress[step.id];
+          const isActive = activeSection === step.sectionId;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(step.id, !completed);
+                }}
+                className="flex-shrink-0"
+              >
+                {completed ? (
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                ) : (
+                  <Circle size={18} className="text-slate-400" />
+                )}
+              </button>
+              <button
+                onClick={() => onStepClick(step.sectionId)}
+                className={`flex-1 flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-300 transform hover:scale-[1.02] ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 shadow-md hover:shadow-lg' 
+                    : completed 
+                      ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:shadow-md' 
+                      : 'bg-slate-50 border border-slate-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-sm'
+                }`}
+              >
+                <Icon size={18} className={`transition-all duration-300 ${completed ? 'text-emerald-600' : isActive ? 'text-blue-600 animate-pulse' : 'text-slate-400'}`} />
+                <span className={`text-sm flex-1 font-medium ${completed ? 'text-emerald-900 line-through' : isActive ? 'text-blue-900 font-bold' : 'text-slate-700'}`}>
+                  {step.label}
+                </span>
+                {idx < steps.length - 1 && (
+                  <ChevronDown size={14} className="text-slate-400" />
+                )}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- Collapsible Section Wrapper ---
+const CollapsibleSection: React.FC<{
+  title: string;
+  icon: React.ElementType;
+  completed?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
+  children: React.ReactNode;
+  onToggleComplete?: (completed: boolean) => void;
+  sectionId?: string;
+}> = ({ title, icon: Icon, completed = false, isOpen: controlledIsOpen, onToggle, children, onToggleComplete, sectionId }) => {
+  return (
+    <div className="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={20} className={`${completed ? 'text-emerald-600' : 'text-blue-600'}`} />
+          <span className={`text-base font-bold ${completed ? 'text-emerald-900' : 'text-slate-900'}`}>
+            {title}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onToggleComplete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete(!completed);
+              }}
+              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {completed ? 'Mark incomplete' : 'Mark complete'}
+            </button>
+          )}
+          {controlledIsOpen ? (
+            <ChevronDown size={18} className="text-slate-400" />
+          ) : (
+            <ChevronRight size={18} className="text-slate-400" />
+          )}
+        </div>
+      </button>
+      {controlledIsOpen && (
+        <div className="border-t border-blue-200/50 animate-in slide-in-from-top-2 fade-in duration-300">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Glossary Sidebar Component ---
 const GlossarySidebar: React.FC<{ project: 'cif' | 'voids'; pageKey: string }> = ({ project, pageKey }) => {
@@ -160,6 +328,39 @@ const StakeholderLandscape: React.FC = () => {
   const [stakeholderMap, setStakeholderMap] = useState('');
   const [showExample, setShowExample] = useState(false);
   const exampleRef = useRef<HTMLDivElement | null>(null);
+  const { progress, markComplete, markIncomplete } = useProgress();
+  const [activeSection, setActiveSection] = useState<string | null>('why_section');
+
+  const handleProgressToggle = (step: string, completed: boolean) => {
+    if (completed) {
+      markComplete(step);
+      // Close the section when marked complete
+      const sectionMap: {[key: string]: string} = {
+        'why_matters': 'why_section',
+        'review_stakeholders': 'stakeholders_section',
+        'map_power_interest': 'power_interest_section',
+        'identify_pressure': 'pressure_section',
+        'write_narrative': 'narrative_section',
+        'complete_task': 'task_section',
+        'send_update': 'update_section',
+      };
+      if (activeSection === sectionMap[step]) {
+        setActiveSection(null);
+      }
+    } else {
+      markIncomplete(step);
+    }
+  };
+
+  const handleStepClick = (sectionId: string) => {
+    // If clicking the same section, toggle it closed
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    } else {
+      // Open the clicked section (closes others automatically)
+      setActiveSection(sectionId);
+    }
+  };
 
   const handleOpenExample = () => {
     setShowExample(true);
@@ -199,31 +400,58 @@ const StakeholderLandscape: React.FC = () => {
         </div>
       </div>
 
+      {/* Progress Tracker */}
+      <ProgressTracker 
+        progress={progress}
+        activeSection={activeSection}
+        onStepClick={handleStepClick}
+        onToggle={handleProgressToggle}
+      />
+
+      {/* Main grid layout */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        
+        {/* Left column - main content */}
+        <div className="lg:col-span-2 space-y-6">
+
       {/* Why This Matters for Interviews */}
-      <Section title="Why This Matters (Especially for Interviews)">
-        <div className="space-y-3 text-sm text-slate-800">
-          <p className="leading-relaxed">
-            Interviewers ask: <strong className="text-slate-900">&quot;Tell me about a time when you had to manage conflicting stakeholder priorities&quot;</strong> or <strong className="text-slate-900">&quot;How do you identify who has decision-making authority?&quot;</strong>
-          </p>
-          <p className="leading-relaxed">
-            You need structured frameworks. This page gives you the Power-Interest Grid and stakeholder mapping techniques that BAs use daily.
-          </p>
+      <CollapsibleSection
+        title="Why This Matters (Especially for Interviews)"
+        icon={Target}
+        completed={progress.why_matters}
+        isOpen={activeSection === 'why_section'}
+        onToggle={() => handleStepClick('why_section')}
+        onToggleComplete={(completed) => handleProgressToggle('why_matters', completed)}
+        sectionId="why_section"
+      >
+        <div className="p-5">
+          <div className="space-y-3 text-sm text-slate-800">
+            <p className="leading-relaxed">
+              Interviewers ask: <strong className="text-slate-900">&quot;Tell me about a time when you had to manage conflicting stakeholder priorities&quot;</strong> or <strong className="text-slate-900">&quot;How do you identify who has decision-making authority?&quot;</strong>
+            </p>
+            <p className="leading-relaxed">
+              You need structured frameworks. This page gives you the Power-Interest Grid and stakeholder mapping techniques that BAs use daily.
+            </p>
+          </div>
+          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            <strong>Real BA work:</strong> Understanding who holds risk, veto power, and emotional investment prevents solutions from being politely rejected, hearing &quot;not now&quot; with no explanation, or being blocked by invisible politics.
+          </div>
         </div>
-        <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
-          <strong>Real BA work:</strong> Understanding who holds risk, veto power, and emotional investment prevents solutions from being politely rejected, hearing &quot;not now&quot; with no explanation, or being blocked by invisible politics.
-        </div>
-      </Section>
+      </CollapsibleSection>
 
-      {/* Glossary */}
-      <GlossarySidebar project={selectedProject} pageKey="whos-involved" />
-
-      {/* BA Journey Sidebar */}
-      <BAJourneySidebar />
-
-      <Section title="1) The People Landscape">
-        <p className="text-sm text-slate-800 mb-4 leading-relaxed">
-          These are not &quot;stakeholders.&quot; These are humans with incentives, fears, KPIs, reputations, and turf to defend.
-        </p>
+      <CollapsibleSection
+        title="1) The People Landscape"
+        icon={Users}
+        completed={progress.review_stakeholders}
+        isOpen={activeSection === 'stakeholders_section'}
+        onToggle={() => handleStepClick('stakeholders_section')}
+        onToggleComplete={(completed) => handleProgressToggle('review_stakeholders', completed)}
+        sectionId="stakeholders_section"
+      >
+        <div className="p-5">
+          <p className="text-sm text-slate-800 mb-4 leading-relaxed">
+            These are not &quot;stakeholders.&quot; These are humans with incentives, fears, KPIs, reputations, and turf to defend.
+          </p>
         <div className="overflow-hidden rounded-2xl border border-slate-300 shadow-sm">
           <table className="min-w-full border-collapse text-sm bg-white">
             <thead className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
@@ -257,10 +485,20 @@ const StakeholderLandscape: React.FC = () => {
             <li>Get ignored in the rooms that matter.</li>
           </ul>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
       {/* Power-Interest Grid */}
-      <Section title="2) The Power-Interest Grid (Your Most Important Stakeholder Tool)">
+      <CollapsibleSection
+        title="2) The Power-Interest Grid (Your Most Important Stakeholder Tool)"
+        icon={Grid3x3}
+        completed={progress.map_power_interest}
+        isOpen={activeSection === 'power_interest_section'}
+        onToggle={() => handleStepClick('power_interest_section')}
+        onToggleComplete={(completed) => handleProgressToggle('map_power_interest', completed)}
+        sectionId="power_interest_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           This grid tells you <strong>who to engage, how often, and with what depth.</strong> In interviews, you can say: &quot;I used a Power-Interest Grid to prioritize stakeholder engagement.&quot;
         </p>
@@ -290,13 +528,23 @@ const StakeholderLandscape: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
-          <Grid3x3 size={16} className="inline mr-2" />
-          <strong>Pro tip:</strong> High-power stakeholders shape decisions. High-interest stakeholders surface risks. Map both axes before your first meeting.
+          <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            <Grid3x3 size={16} className="inline mr-2" />
+            <strong>Pro tip:</strong> High-power stakeholders shape decisions. High-interest stakeholders surface risks. Map both axes before your first meeting.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="3) Stakeholder Intent & Pressure Signals">
+      <CollapsibleSection
+        title="3) Stakeholder Intent & Pressure Signals"
+        icon={ShieldAlert}
+        completed={progress.identify_pressure}
+        isOpen={activeSection === 'pressure_section'}
+        onToggle={() => handleStepClick('pressure_section')}
+        onToggleComplete={(completed) => handleProgressToggle('identify_pressure', completed)}
+        sectionId="pressure_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">Look for what is unsaid. Pressure explains behaviour.</p>
         <div className="grid gap-4 md:grid-cols-2">
           {page3Data.pressureSignals.map((signal) => (
@@ -306,15 +554,24 @@ const StakeholderLandscape: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
-          <div className="flex items-center gap-2 font-semibold">
-            <ShieldAlert size={16} />
-            This isn&apos;t politics. It&apos;s reality. Understanding it keeps you safe.
+          <div className="mt-4 rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-sm text-white shadow-md">
+            <div className="flex items-center gap-2 font-semibold">
+              <ShieldAlert size={16} />
+              This isn&apos;t politics. It&apos;s reality. Understanding it keeps you safe.
+            </div>
           </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="4) The Human Reality" icon={<Sparkles size={18} className="text-indigo-600" />}>
+      <CollapsibleSection
+        title="4) The Human Reality"
+        icon={Sparkles}
+        completed={progress.identify_pressure}
+        isOpen={activeSection === 'pressure_section'}
+        onToggle={() => handleStepClick('pressure_section')}
+        sectionId="pressure_section"
+      >
+        <div className="p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="text-xs uppercase tracking-wide text-slate-500">
@@ -335,13 +592,23 @@ const StakeholderLandscape: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          A BA who understands this calms the room.
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            A BA who understands this calms the room.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       {/* Task 1: Stakeholder Mapping */}
-      <Section title={`5) Your Task: ${page3Data.taskTitle}`}>
+      <CollapsibleSection
+        title={`5) Your Task: ${page3Data.taskTitle}`}
+        icon={ClipboardList}
+        completed={progress.complete_task}
+        isOpen={activeSection === 'task_section'}
+        onToggle={() => handleStepClick('task_section')}
+        onToggleComplete={(completed) => handleProgressToggle('complete_task', completed)}
+        sectionId="task_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-4 leading-relaxed">
           For each stakeholder, write:
         </p>
@@ -359,13 +626,23 @@ const StakeholderLandscape: React.FC = () => {
           value={stakeholderMap}
           onChange={(e) => setStakeholderMap(e.target.value)}
         />
-        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          <strong>How a BA would do this:</strong> They&apos;d create a simple table in Confluence or Excel with columns for Name, Role, Power/Interest, Engagement Frequency, Preferred Channel, and Key Concerns. Update it after each conversation.
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <strong>How a BA would do this:</strong> They&apos;d create a simple table in Confluence or Excel with columns for Name, Role, Power/Interest, Engagement Frequency, Preferred Channel, and Key Concerns. Update it after each conversation.
+          </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       {/* Task 2: Narrative */}
-      <Section title="6) Your Task: Write the Stakeholder Narrative">
+      <CollapsibleSection
+        title="6) Your Task: Write the Stakeholder Narrative"
+        icon={FileText}
+        completed={progress.write_narrative}
+        isOpen={activeSection === 'narrative_section'}
+        onToggle={() => handleStepClick('narrative_section')}
+        onToggleComplete={(completed) => handleProgressToggle('write_narrative', completed)}
+        sectionId="narrative_section"
+      >
+        <div className="p-5">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
           This isn&apos;t a table. It&apos;s a story you use when you speak to your PO, defend scope, and prevent derailment.
         </p>
@@ -397,7 +674,8 @@ const StakeholderLandscape: React.FC = () => {
             <ArrowRight size={14} />
           </button>
         </div>
-      </Section>
+        </div>
+      </CollapsibleSection>
 
       <Section title="7) Slack / Teams Update (Copy & Adapt)">
         <p className="text-sm text-slate-800 mb-3 leading-relaxed">
@@ -437,7 +715,21 @@ const StakeholderLandscape: React.FC = () => {
         </div>
       )}
 
-      <NavigationButtons backLink={backLink} nextLink={nextLink} />
+          </div>
+
+          {/* Right sidebar - context & guidance */}
+          <div className="space-y-6">
+            
+            {/* Glossary */}
+            <GlossarySidebar project={selectedProject} pageKey="whos-involved" />
+
+            {/* BA Journey Sidebar */}
+            <BAJourneySidebar />
+
+          </div>
+        </div>
+
+        <NavigationButtons backLink={backLink} nextLink={nextLink} />
     </PageShell>
   );
 };
