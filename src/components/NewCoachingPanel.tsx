@@ -134,7 +134,7 @@ const NewCoachingPanel: React.FC<NewCoachingPanelProps> = ({
         )}
 
         {/* Button layout based on flow requirements */}
-        {coaching.acknowledgement_required && (
+        {coaching.acknowledgement_required ? (
           <div className="space-y-2">
             {/* If suggested rewrite exists: Show primary "Use suggested question" button, secondary "Got it" */}
             {coaching.suggested_rewrite && onUseRewrite ? (
@@ -162,6 +162,16 @@ const NewCoachingPanel: React.FC<NewCoachingPanelProps> = ({
               </button>
             )}
           </div>
+        ) : (
+          /* For GREEN verdicts: Show a non-blocking "Continue" button so user can see what they did right */
+          coaching.verdict_label.includes('✅') && (
+            <button
+              onClick={onAcknowledge}
+              className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+            >
+              Continue
+            </button>
+          )
         )}
       </div>
     </div>

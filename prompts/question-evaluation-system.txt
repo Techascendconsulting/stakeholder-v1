@@ -1,5 +1,12 @@
 You classify each user question as GREEN, AMBER, or RED.
 
+IMPORTANT: GREETINGS AND SOCIAL MESSAGES:
+- If the user's input is ONLY a greeting, social nicety, or acknowledgment (e.g., "hi", "hello", "hey", "good morning", "thanks", "got it"), classify it as GREEN with score 100
+- Greetings are natural in meetings, including when resuming previous conversations
+- Do NOT penalize greetings for stage alignment - they serve a social function
+- Examples of social-only messages: "hi", "hello", "hey everyone", "good morning", "thanks", "thank you", "got it", "okay"
+- If the message contains both greeting AND a question, evaluate the question part normally
+
 SCORING SYSTEM (0-100 total):
 - stage_alignment: 30 points (Does question match current stage objective?)
 - question_type: 30 points (Open-ended = 30, Closed = 10, Compound = 5)
@@ -7,7 +14,7 @@ SCORING SYSTEM (0-100 total):
 - neutrality: 20 points (Non-leading = 20, Slightly leading = 10, Judgmental = 0)
 
 VERDICTS:
-- 70-100 = GREEN (Strong elicitation)
+- 70-100 = GREEN (Strong elicitation OR social/greeting message)
 - 40-69 = AMBER (Partially effective)
 - 0-39 = RED (Ineffective/off-track)
 

@@ -75,6 +75,7 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
   const [pendingEvaluation, setPendingEvaluation] = useState<any>(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [hasCheckedResume, setHasCheckedResume] = useState(false);
+  const [justResumed, setJustResumed] = useState(false);
   const [contextEngine] = useState(() => new MeetingContextEngine(currentStage));
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -83,25 +84,37 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
     if (hasCheckedResume) return;
     setHasCheckedResume(true);
     
-    const savedMessages = sessionStorage.getItem(`chat-meeting-${projectContext.id || projectContext.name}-${currentStage}`);
+    // Use a stable key based on project name (normalized) and stage
+    const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+    const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
+    console.log('🔍 StakeholderChat: Checking for saved conversation with key:', storageKey);
+    
+    const savedMessages = sessionStorage.getItem(storageKey);
     if (savedMessages) {
       try {
         const parsed = JSON.parse(savedMessages);
+        console.log('🔍 StakeholderChat: Found saved messages:', parsed.length);
         if (parsed && parsed.length > 0) {
           setShowResumeModal(true);
         }
       } catch (e) {
         console.error('Error parsing saved messages:', e);
       }
+    } else {
+      console.log('🔍 StakeholderChat: No saved conversation found');
     }
-  }, [hasCheckedResume, projectContext.id || projectContext.name, currentStage]);
+  }, [hasCheckedResume, projectContext.id, projectContext.name, currentStage]);
 
   // Save messages to sessionStorage whenever they change
   useEffect(() => {
     if (messages.length > 0) {
-      sessionStorage.setItem(`chat-meeting-${projectContext.id || projectContext.name}-${currentStage}`, JSON.stringify(messages));
+      // Use a stable key based on project name (normalized) and stage
+      const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+      const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
+      console.log('💾 StakeholderChat: Saved', messages.length, 'messages to', storageKey);
     }
-  }, [messages, projectContext.id || projectContext.name, currentStage]);
+  }, [messages, projectContext.id, projectContext.name, currentStage]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -110,7 +123,9 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
 
   // Handle resume or start new
   const handleResume = () => {
-    const savedMessages = sessionStorage.getItem(`chat-meeting-${projectContext.id || projectContext.name}-${currentStage}`);
+    const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+    const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
+    const savedMessages = sessionStorage.getItem(storageKey);
     if (savedMessages) {
       try {
         const parsed = JSON.parse(savedMessages);
@@ -119,6 +134,13 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
           timestamp: m.timestamp ? new Date(m.timestamp) : new Date()
         }));
         setMessages(messagesWithDates);
+        setJustResumed(true); // Show resume notification
+        console.log('✅ StakeholderChat: Resumed conversation with', messagesWithDates.length, 'messages');
+        
+        // Auto-hide resume notification after 8 seconds
+        setTimeout(() => {
+          setJustResumed(false);
+        }, 8000);
       } catch (e) {
         console.error('Error loading saved messages:', e);
       }
@@ -127,14 +149,22 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
   };
 
   const handleStartNew = () => {
-    sessionStorage.removeItem(`chat-meeting-${projectContext.id || projectContext.name}-${currentStage}`);
+    const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+    const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
+    sessionStorage.removeItem(storageKey);
     setMessages([]);
     setShowResumeModal(false);
+    console.log('🆕 StakeholderChat: Starting new conversation');
   };
 
   const handleSendMessage = useCallback(async (questionOverride?: string) => {
     const questionToSend = questionOverride || inputMessage;
     if (!questionToSend.trim() || isLoading || isInputLocked) return;
+    
+    // Hide resume notification when user sends a message
+    if (justResumed) {
+      setJustResumed(false);
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -218,7 +248,7 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
       }
 
       // Step 3: Generate stakeholder response
-      // For GREEN: generate immediately
+      // For GREEN: generate immediately, but coaching panel stays visible so user can read feedback
       // For AMBER/RED: store question and wait for acknowledgement
       if (evaluation.verdict === 'GREEN') {
         const stakeholdersToSend = availableStakeholders || [stakeholderProfile];
@@ -339,7 +369,7 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
     } finally {
       setIsLoading(false);
     }
-  }, [currentStage, stakeholderProfile, availableStakeholders, projectContext, messages, onCoachingUpdate, onContextUpdate, onFollowUpsUpdate, isLoading, isInputLocked, inputMessage, pendingQuestion, pendingEvaluation]);
+  }, [currentStage, stakeholderProfile, availableStakeholders, projectContext, messages, onCoachingUpdate, onContextUpdate, onFollowUpsUpdate, isLoading, isInputLocked, inputMessage, pendingQuestion, pendingEvaluation, justResumed]);
 
   // Handle acknowledgement - generate stakeholder response for pending question
   const handleAcknowledgeAndContinue = useCallback(async () => {
@@ -518,6 +548,36 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
           </div>
         </div>
       )}
+      
+      {/* Resume Notification Banner */}
+      {justResumed && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 px-6 py-4 shadow-sm">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <span className="font-medium">Continuing from where you left off.</span> You're picking up your previous conversation. Feel free to exchange pleasantries or continue with your questions.
+              </p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setJustResumed(false)}
+                className="inline-flex text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+              >
+                <span className="sr-only">Dismiss</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Header with Project and Stakeholder Info - Enhanced */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">

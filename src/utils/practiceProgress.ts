@@ -23,6 +23,10 @@ export async function getPracticeProgress(userId: string, practiceId: string): P
       .maybeSingle();
 
     if (error) {
+      // If table doesn't exist (code 42P01), silently return null
+      if (error.code === '42P01') {
+        return null;
+      }
       console.error('Error fetching practice progress:', error);
       return null;
     }
@@ -51,7 +55,10 @@ export async function initializePracticeProgress(userId: string, practiceId: str
         });
 
       if (error) {
-        console.error('Error initializing practice progress:', error);
+        // If table doesn't exist (code 42P01), silently skip
+        if (error.code !== '42P01') {
+          console.error('Error initializing practice progress:', error);
+        }
       }
     }
   } catch (error) {
@@ -76,7 +83,10 @@ export async function markPracticeCompleted(userId: string, practiceId: string):
       });
 
     if (error) {
-      console.error('Error marking practice completed:', error);
+      // If table doesn't exist (code 42P01), silently skip
+      if (error.code !== '42P01') {
+        console.error('Error marking practice completed:', error);
+      }
     }
   } catch (error) {
     console.error('Exception in markPracticeCompleted:', error);
@@ -100,7 +110,10 @@ export async function markPracticeIncomplete(userId: string, practiceId: string)
       });
 
     if (error) {
-      console.error('Error marking practice incomplete:', error);
+      // If table doesn't exist (code 42P01), silently skip
+      if (error.code !== '42P01') {
+        console.error('Error marking practice incomplete:', error);
+      }
     }
   } catch (error) {
     console.error('Exception in markPracticeIncomplete:', error);
@@ -118,6 +131,11 @@ export async function getAllPracticeProgress(userId: string): Promise<Record<str
       .eq('user_id', userId);
 
     if (error) {
+      // If table doesn't exist (code 42P01), silently return empty object
+      // This is expected if the migration hasn't been run yet
+      if (error.code === '42P01') {
+        return {};
+      }
       console.error('Error fetching all practice progress:', error);
       return {};
     }

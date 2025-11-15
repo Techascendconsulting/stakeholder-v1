@@ -754,8 +754,6 @@ Response:`;
         <div className="max-w-4xl mx-auto px-6 py-8">
           {/* Ready to Start - Moved to TOP */}
           {(() => {
-            console.log('🔍 Debug - selectedStakeholders length:', selectedStakeholders.length);
-            console.log('🔍 Debug - selectedStakeholders:', selectedStakeholders);
             return selectedStakeholders.length > 0;
           })() && (
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 mb-6 text-white">
@@ -821,8 +819,6 @@ Response:`;
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(() => {
                 const project = mockProjects.find(p => p.id === session?.projectId);
-                console.log('🔍 Debug - Project found:', project?.name, 'Project ID:', session?.projectId);
-                console.log('🔍 Debug - Project relevantStakeholders:', project?.relevantStakeholders);
                 
                 if (!project) {
                   return <div className="col-span-3 text-center text-gray-500">Project not found</div>;
@@ -842,17 +838,14 @@ Response:`;
                     <button
                       key={stakeholder.id}
                       onClick={() => {
-                        console.log('🔍 Debug - Clicking stakeholder:', stakeholder.name, 'Currently selected:', isSelected);
                         if (isSelected) {
                           setSelectedStakeholders(prev => {
                             const newSelection = prev.filter(s => s.id !== stakeholder.id);
-                            console.log('🔍 Debug - Removed stakeholder, new selection:', newSelection);
                             return newSelection;
                           });
                         } else {
                           setSelectedStakeholders(prev => {
                             const newSelection = [...prev, stakeholder];
-                            console.log('🔍 Debug - Added stakeholder, new selection:', newSelection);
                             return newSelection;
                           });
                         }
@@ -1013,36 +1006,42 @@ Response:`;
     );
   };
 
-  const renderLiveMeeting = () => {
-    // Get project context - prioritize selectedProject from AppContext, then check ELEVENLABS_PROJECTS
-    console.log('🔍 TrainingPracticeView: Selected project from AppContext:', selectedProject?.id, selectedProject?.name);
-    console.log('🔍 TrainingPracticeView: Available projects in ELEVENLABS_PROJECTS:', ELEVENLABS_PROJECTS.map(p => ({ id: p.id, name: p.name })));
+  // Memoize project context calculation to prevent infinite loops
+  const { projectContext, project } = useMemo(() => {
+    // Normalize names for matching (handle variations like "Process" vs no "Process")
+    const normalizeName = (name: string) => {
+      if (!name) return '';
+      return name.toLowerCase()
+        .replace(/\s+(process|system|platform|management|implementation|enhancement)\s+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
     
     // First, try to find in ELEVENLABS_PROJECTS (has full context)
-    let project = ELEVENLABS_PROJECTS.find(
-      p => p.id === selectedProject?.id || p.name === selectedProject?.name
+    const foundProject = ELEVENLABS_PROJECTS.find(
+      p => p.id === selectedProject?.id || 
+           p.name === selectedProject?.name ||
+           (selectedProject?.name && normalizeName(p.name) === normalizeName(selectedProject.name))
     );
     
-    // If not found in ELEVENLABS_PROJECTS, build context from selectedProject (from mockProjects)
-    let projectContext;
-    if (project) {
+    let context;
+    if (foundProject) {
       // Use full context from ELEVENLABS_PROJECTS
-      projectContext = {
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        objective: project.objective,
-        industry: project.industry,
-        complexity: project.complexity,
-        challenges: project.context.challenges,
-        currentState: project.context.currentState,
-        expectedOutcomes: project.context.expectedOutcomes,
-        constraints: project.context.constraints
+      context = {
+        id: foundProject.id,
+        name: foundProject.name,
+        description: foundProject.description,
+        objective: foundProject.objective,
+        industry: foundProject.industry,
+        complexity: foundProject.complexity,
+        challenges: foundProject.context.challenges,
+        currentState: foundProject.context.currentState,
+        expectedOutcomes: foundProject.context.expectedOutcomes,
+        constraints: foundProject.context.constraints
       };
     } else if (selectedProject) {
       // Build context from selectedProject (mockProjects data)
-      console.log('⚠️ TrainingPracticeView: Project not in ELEVENLABS_PROJECTS, building context from selectedProject');
-      projectContext = {
+      context = {
         id: selectedProject.id,
         name: selectedProject.name,
         description: selectedProject.description || '',
@@ -1056,8 +1055,7 @@ Response:`;
       };
     } else {
       // Last resort fallback
-      console.warn('⚠️ TrainingPracticeView: No project available, using fallback');
-      projectContext = {
+      context = {
         name: 'Unknown Project',
         description: '',
         challenges: [],
@@ -1067,7 +1065,10 @@ Response:`;
       };
     }
     
-    console.log('✅ TrainingPracticeView: Using project context:', projectContext.name);
+    return { projectContext: context, project: foundProject };
+  }, [selectedProject?.id, selectedProject?.name]);
+
+  const renderLiveMeeting = () => {
 
     // Get stakeholder profile (use first selected or default to James Walker)
     const stakeholder = selectedStakeholders[0] || project?.stakeholders[0];

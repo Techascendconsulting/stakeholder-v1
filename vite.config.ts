@@ -152,69 +152,6 @@ export default defineConfig({
          * Helper function to detect if a message is purely social/greeting
          * Returns true if the message contains only greetings, thanks, or social niceties
          */
-        function isSocialOnly(message: string): boolean {
-          if (!message || typeof message !== 'string') return false;
-          
-          // Normalize: trim, lowercase, remove punctuation
-          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
-          
-          // If message is too long, it's likely not just a greeting
-          if (normalized.length > 50) return false;
-          
-            // List of social-only patterns
-            const socialPatterns = [
-              // Simple greetings
-              /^(hi|hello|hey|hiya|howdy)$/,
-              /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks|both)$/,
-            
-            // Time-based greetings (accept regardless of actual time for simplicity)
-            /^(good\s+)?(morning|afternoon|evening|night)$/,
-            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there)?$/,
-            
-            // Thanks/gratitude
-            /^(thanks|thank\s+you|thx|ty)$/,
-            /^(thanks|thank\s+you|thx|ty)\s+(so\s+much|a\s+lot|very\s+much)$/,
-            /^(much\s+)?appreciated$/,
-            
-            // Acknowledgment
-            /^(ok|okay|got\s+it|understood|sounds\s+good)$/,
-            /^(sure|yes|yep|yeah|alright)$/,
-            
-            // Combinations that are still social-only
-            /^(hi|hello|hey),?\s*(thanks|thank\s+you)$/,
-            /^(thanks|thank\s+you),?\s*(hi|hello|hey)$/,
-          ];
-          
-          // Check if message matches any social pattern
-          for (const pattern of socialPatterns) {
-            if (pattern.test(normalized)) {
-              return true;
-            }
-          }
-          
-          // Check for messages that are ONLY social words (no domain keywords)
-          const words = normalized.split(/\s+/);
-          const allSocialWords = words.every(word => {
-            const socialWords = [
-              'hi', 'hello', 'hey', 'hiya', 'howdy',
-              'good', 'morning', 'afternoon', 'evening', 'night',
-              'thanks', 'thank', 'you', 'thx', 'ty', 'appreciated',
-              'ok', 'okay', 'got', 'it', 'understood', 'sounds', 'good',
-              'sure', 'yes', 'yep', 'yeah', 'alright',
-              'there', 'everyone', 'all', 'guys', 'team', 'folks',
-              'so', 'much', 'a', 'lot', 'very'
-            ];
-            return socialWords.includes(word);
-          });
-          
-          // If all words are social and message is short, it's social-only
-          if (allSocialWords && words.length <= 5) {
-            return true;
-          }
-          
-          return false;
-        }
-        
         // Question Evaluation Endpoint
         app.post('/api/stakeholder/evaluate', async (req, res) => {
           try {
@@ -226,28 +163,7 @@ export default defineConfig({
               });
             }
 
-            // Pre-check: If this is a social-only message, return GREEN verdict without LLM call
-            if (isSocialOnly(userQuestion)) {
-              console.log('👋 Detected social-only message, skipping evaluation:', userQuestion);
-              return res.json({
-                success: true,
-                question_evaluation: {
-                  verdict: 'GREEN',
-                  overall_score: 100,
-                  breakdown: {
-                    stage_alignment: 30,
-                    question_type: 30,
-                    specificity: 20,
-                    neutrality: 20
-                  },
-                  triggers: [],
-                  reasons: ['Greeting or social nicety – no coaching needed.'],
-                  suggested_rewrite: ''
-                },
-                usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
-              });
-            }
-
+            // Let OpenAI determine if it's a greeting/social message through the evaluation prompt
             const promptPath = path.join(process.cwd(), 'prompts', 'question-evaluation-system.txt');
             const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 
@@ -337,31 +253,8 @@ Evaluate the user's question and return JSON with verdict, score, breakdown, rea
               });
             }
 
-            // Skip coaching for social-only messages or GREEN verdicts with social reason
-            const isSocial = isSocialOnly(userQuestion);
-            const isSocialReason = evaluationResult.reasons?.some((r: string) => 
-              r.toLowerCase().includes('greeting') || r.toLowerCase().includes('social nicety')
-            );
-            
-            if (isSocial || (evaluationResult.verdict === 'GREEN' && isSocialReason)) {
-              console.log('👋 Skipping coaching for social message:', userQuestion);
-              return res.json({
-                success: true,
-                coaching_feedback: {
-                  verdict_label: '✅',
-                  summary: '',
-                  what_happened: '',
-                  why_it_matters: '',
-                  what_to_do: '',
-                  suggested_rewrite: null,
-                  rewrite_explanation: null,
-                  principle: '',
-                  action: 'CONTINUE',
-                  acknowledgement_required: false
-                },
-                usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
-              });
-            }
+            // Let OpenAI generate coaching for all verdicts, including greetings
+            // This ensures users understand why greetings are appropriate in stakeholder meetings
 
             const promptPath = path.join(process.cwd(), 'prompts', 'coaching-system.txt');
             const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
@@ -432,32 +325,6 @@ Generate coaching feedback based on the evaluation. Return JSON with all require
           }
         });
 
-        // Helper function to detect if message is a greeting
-        function isGreeting(message: string): boolean {
-          if (!message || typeof message !== 'string') return false;
-          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
-          const greetingPatterns = [
-            /^(hi|hello|hey|hiya|howdy)$/,
-            /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks|both)$/,
-            /^(good\s+)?(morning|afternoon|evening|night)$/,
-            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there|\s+both)?$/
-          ];
-          return greetingPatterns.some(pattern => pattern.test(normalized));
-        }
-
-        // Helper function to detect greetings (simpler than isSocialOnly, focused on greetings only)
-        function isGreeting(message: string): boolean {
-          if (!message || typeof message !== 'string') return false;
-          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
-          const greetingPatterns = [
-            /^(hi|hello|hey|hiya|howdy)$/,
-            /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks)$/,
-            /^(good\s+)?(morning|afternoon|evening|night)$/,
-            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there)?$/,
-          ];
-          return greetingPatterns.some(pattern => pattern.test(normalized));
-        }
-
         // Stakeholder Response Endpoint with Multi-Stakeholder Routing
         app.post('/api/stakeholder/respond', async (req, res) => {
           try {
@@ -474,17 +341,13 @@ Generate coaching feedback based on the evaluation. Return JSON with all require
               });
             }
 
-            // Check if this is a greeting - handle specially
-            const isGreetingMessage = isGreeting(userQuestion);
-            console.log('🔍 [API] Is greeting?', isGreetingMessage);
-
             // Multi-stakeholder routing: Determine which stakeholder should respond based on question topic
-            // For greetings, use the first stakeholder or primary stakeholder
-            // For questions, route based on topic
+            // OpenAI will determine if it's a greeting through the prompt and handle it appropriately
             let respondingStakeholder = stakeholderProfile || (allStakeholders && allStakeholders[0]);
             console.log('🔍 [API] Initial responding stakeholder:', respondingStakeholder?.name || 'NONE');
             
-            if (!isGreetingMessage && allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1) {
+            // Route based on question topic - if no match, use fallback stakeholder (which is fine for greetings)
+            if (allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1) {
               const questionLower = userQuestion.toLowerCase();
               
               // Topic detection for routing
@@ -583,16 +446,8 @@ ${conversationHistory.slice(-6).map((msg: any) => `${msg.role}: ${msg.content}`)
 
 USER'S QUESTION: "${userQuestion}"
 
-${isGreetingMessage ? `
-This is a greeting. Respond with a warm, natural welcome that:
-- Introduces yourself briefly (name and role)
-- Shows enthusiasm for the meeting
-- Asks where they'd like to start or what they'd like to explore
-- Keep it friendly and professional, 2-3 sentences
-- Do NOT dive into project details yet
-- Example tone: "Hi! Thanks for taking the time to meet with me today. I'm ${respondingStakeholder.name}, ${respondingStakeholder.role}. I'm looking forward to discussing our ${projectContext?.name || 'project'} challenges. Where would you like to start?"
-` : `
 Generate the stakeholder's response. Follow response length rules based on question quality (${questionVerdict}).
+The system prompt already includes instructions for handling greetings - follow those if this is a greeting.
 ${allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1 ? `
 MULTI-STAKEHOLDER BEHAVIOR:
 - You can naturally reference other stakeholders when relevant (e.g., "Jess's team handles most of the support tickets..." or "David would know more about the technical side...")
@@ -600,7 +455,6 @@ MULTI-STAKEHOLDER BEHAVIOR:
 - Occasionally show different priorities or perspectives to feel realistic
 - Stay in character as ${respondingStakeholder.name}
 ` : ''}
-`}
 
 Return ONLY the response text, no JSON, no metadata.`;
 
@@ -611,7 +465,7 @@ Return ONLY the response text, no JSON, no metadata.`;
                 { role: 'user', content: `Respond to: "${userQuestion}"` }
               ],
               temperature: 0.8,
-              max_tokens: isGreetingMessage ? 150 : (questionVerdict === 'GREEN' ? 300 : questionVerdict === 'AMBER' ? 150 : 100)
+              max_tokens: questionVerdict === 'GREEN' ? 300 : questionVerdict === 'AMBER' ? 150 : 100
             });
 
             const response = completion.choices[0].message.content.trim();

@@ -194,48 +194,28 @@ const GlobalBreadcrumbs: React.FC = () => {
     }
   };
 
-  // Debug: log breadcrumb state
-  console.log('🍞 Breadcrumb Debug:', {
-    currentView,
-    breadcrumbTrail,
-    trailLength: breadcrumbTrail.length,
-    enhancedBreadcrumbs,
-    displayedBreadcrumbs
-  });
 
   // Hide breadcrumbs on pages that have their own internal breadcrumb systems
   const viewsWithOwnBreadcrumbs = ['voice-meeting-v2', 'documentation', 'documentation-practice'];
   if (viewsWithOwnBreadcrumbs.includes(currentView)) {
-    console.log('🍞 Breadcrumb hidden: has own breadcrumb system');
     return null;
   }
 
   // Don't show breadcrumbs on certain pages
   const hiddenViews: AppView[] = ['login', 'signup', 'welcome'];
   if (hiddenViews.includes(currentView)) {
-    console.log('🍞 Breadcrumb hidden: in hidden views');
     return null;
   }
 
   // Don't show if no breadcrumbs yet
   if (breadcrumbTrail.length === 0) {
-    console.log('🍞 Breadcrumb hidden: trail is empty');
     return null;
   }
 
   // Get theme colors for current page
   const theme = getPageTheme(currentView || '');
   
-  // Debug: log theme for troubleshooting
   const navClassName = `sticky top-0 z-30 ${theme.bg} backdrop-blur-sm border-b ${theme.border} shadow-sm`;
-  console.log('🍞 Breadcrumb theme:', {
-    currentView: currentView,
-    viewString: (currentView || '').toString(),
-    bg: theme.bg,
-    border: theme.border,
-    fullTheme: theme,
-    navClassName: navClassName
-  });
 
   return (
     <nav
@@ -332,3 +312,4 @@ const GlobalBreadcrumbs: React.FC = () => {
 };
 
 export default GlobalBreadcrumbs;
+
