@@ -71,7 +71,10 @@ const MeetingModeSelection: React.FC = () => {
 
   const handleModeSelection = (mode: 'transcript' | 'voice-only' | 'voice-v2') => {
     if (mode === 'transcript') {
-      setCurrentView('meeting');
+      // Set flag to skip directly to live-meeting when coming from meeting mode selection
+      sessionStorage.setItem('skipToLiveMeeting', 'true');
+      // Route to training-practice which uses the NEW elicitation engine (StakeholderChat)
+      setCurrentView('training-practice');
     } else if (mode === 'voice-only') {
       setCurrentView('voice-only-meeting');
     } else if (mode === 'voice-v2') {

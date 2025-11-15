@@ -7,9 +7,19 @@ import { mockProjects, mockStakeholders } from '../../data/mockData';
 import { Stakeholder } from '../../types';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
 import AIService from '../../services/aiService';
-import CompleteCoachingPanel from '../CompleteCoachingPanel';
-import DynamicCoachingPanel from '../DynamicCoachingPanel';
-import QuestionHelperBot from '../QuestionHelperBot';
+// OLD COACHING COMPONENTS - REPLACED WITH NEW ARCHITECTURE
+// import CompleteCoachingPanel from '../CompleteCoachingPanel';
+// import DynamicCoachingPanel from '../DynamicCoachingPanel';
+// import QuestionHelperBot from '../QuestionHelperBot';
+
+// NEW ELICITATION ENGINE COMPONENTS
+import StakeholderChat, { StakeholderChatRef } from '../StakeholderChat';
+import NewCoachingPanel from '../NewCoachingPanel';
+import FollowUpSuggestions from '../FollowUpSuggestions';
+import StageProgress from '../StageProgress';
+import ContextTracker from '../ContextTracker';
+import { MeetingStage } from '../../lib/meeting/meetingContext';
+import { ELEVENLABS_PROJECTS } from '../../data/elevenLabsProjects';
 
 import { 
   ArrowLeft, 
@@ -32,44 +42,67 @@ import {
 } from 'lucide-react';
 
 const TrainingPracticeView: React.FC = () => {
-  const { setCurrentView, selectedProject, setSelectedStakeholders: setAppSelectedStakeholders } = useApp();
+  const { setCurrentView, selectedProject, setSelectedStakeholders: setAppSelectedStakeholders, selectedStakeholders: appSelectedStakeholders } = useApp();
   const [currentStep, setCurrentStep] = useState<'meeting-prep' | 'live-meeting' | 'feedback'>('meeting-prep');
 
   const [session, setSession] = useState<TrainingSession | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  // OLD STATE - Still needed for session management but not for chat
+  // const [messages, setMessages] = useState<any[]>([]);
+  // const [inputMessage, setInputMessage] = useState('');
+  // const [isTyping, setIsTyping] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<TrainingQuestion | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
-  
-  // New coaching system state
-
-  
-  // Keep old coaching for backward compatibility during transition
-  const [coaching, setCoaching] = useState<{
-    suggestions: string[];
-    warnings: string[];
-    tips: string[];
-    coverage: Record<string, boolean>;
-    hintEvents: any[];
-  }>({
-    suggestions: [],
-    warnings: [],
-    tips: [],
-    coverage: {},
-    hintEvents: []
-  });
   
   const [feedback, setFeedback] = useState<TrainingFeedback | null>(null);
   const [meetingTime, setMeetingTime] = useState(0);
   const [isMeetingActive, setIsMeetingActive] = useState(false);
-  const [awaitingAcknowledgement, setAwaitingAcknowledgement] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const dynamicPanelRef = useRef<{ onUserSubmitted: (messageId: string) => void } | null>(null);
+  // OLD STATE - REPLACED
+  // const [awaitingAcknowledgement, setAwaitingAcknowledgement] = useState(false);
+  // const messagesEndRef = useRef<HTMLDivElement>(null);
+  // const dynamicPanelRef = useRef<{ onUserSubmitted: (messageId: string) => void } | null>(null);
+
+  // NEW ELICITATION ENGINE STATE
+  const [coaching, setCoaching] = useState<any>(null);
+  const [followUps, setFollowUps] = useState<any[]>([]);
+  const [context, setContext] = useState<any>(null);
+  const [isInputLocked, setIsInputLocked] = useState(false);
+  const chatRef = useRef<StakeholderChatRef>(null);
+  const previousProjectRef = useRef<string | undefined>(undefined);
 
   // Session initialization refs to prevent race conditions
   const initRef = useRef(false);        // prevents double init (StrictMode)
   const restoringRef = useRef(false);   // blocks other effects during restore
+  // Initialize stakeholders from AppContext when component loads (especially when coming from meeting-mode-selection)
+  useEffect(() => {
+    if (appSelectedStakeholders && appSelectedStakeholders.length > 0 && selectedStakeholders.length === 0) {
+      console.log('🔄 TrainingPracticeView: Initializing stakeholders from AppContext:', appSelectedStakeholders.map(s => s.name));
+      setSelectedStakeholders(appSelectedStakeholders);
+      // Also save to sessionStorage for consistency
+      sessionStorage.setItem('trainingStakeholders', JSON.stringify(appSelectedStakeholders));
+    }
+  }, [appSelectedStakeholders, selectedStakeholders.length]);
+  // Reset context when project changes
+  useEffect(() => {
+    const currentProjectId = selectedProject?.id || selectedProject?.name;
+    if (previousProjectRef.current !== undefined && previousProjectRef.current !== currentProjectId) {
+      console.log('🔄 TrainingPracticeView: Project changed, clearing context');
+      console.log('🔄 Previous project:', previousProjectRef.current);
+      console.log('�� New project:', currentProjectId);
+      setContext(null);
+      setCoaching(null);
+      setFollowUps([]);
+      // Also clear any saved chat messages for the old project
+      if (previousProjectRef.current) {
+        const stages = ['problem_exploration', 'as_is', 'to_be', 'wrap_up'];
+        stages.forEach(stage => {
+          sessionStorage.removeItem(`chat-meeting-${previousProjectRef.current}-${stage}`);
+        });
+      }
+    }
+    previousProjectRef.current = currentProjectId;
+  }, [selectedProject?.id, selectedProject?.name]);
+
+
 
   type StoredConfig = {
     sessionId: string;
@@ -137,21 +170,19 @@ Response:`;
 
 
 
-  const handleAcknowledgementStateChange = useCallback((awaiting: boolean) => {
-    console.log('🔄 TrainingPracticeView: handleAcknowledgementStateChange called with:', awaiting);
-    console.log('🔄 TrainingPracticeView: Previous awaitingAcknowledgement:', awaitingAcknowledgement);
-    setAwaitingAcknowledgement(prev => (prev === awaiting ? prev : awaiting));
-    console.log('🔄 TrainingPracticeView: New awaitingAcknowledgement will be:', awaiting);
-  }, [awaitingAcknowledgement]);
+  // OLD HANDLERS - REPLACED BY NEW ELICITATION ENGINE
+  // const handleAcknowledgementStateChange = useCallback((awaiting: boolean) => {
+  //   console.log('🔄 TrainingPracticeView: handleAcknowledgementStateChange called with:', awaiting);
+  //   setAwaitingAcknowledgement(prev => (prev === awaiting ? prev : awaiting));
+  // }, []);
 
-  const handleSuggestedRewrite = useCallback((rewrite: string) => {
-    setInputMessage(rewrite);
-    // Focus the text input
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      textarea.focus();
-    }
-  }, []);
+  // const handleSuggestedRewrite = useCallback((rewrite: string) => {
+  //   setInputMessage(rewrite);
+  //   const textarea = document.querySelector('textarea');
+  //   if (textarea) {
+  //     textarea.focus();
+  //   }
+  // }, []);
 
   // Single-threaded session initialization to prevent race conditions
   useEffect(() => {
@@ -185,6 +216,15 @@ Response:`;
             if (savedStep) {
               console.log('🔄 TrainingPracticeView: Restoring current step:', savedStep);
               setCurrentStep(savedStep as any);
+            } else {
+              // Check if we should skip directly to live-meeting (coming from meeting mode selection)
+              const skipToLiveMeeting = sessionStorage.getItem('skipToLiveMeeting');
+              if (skipToLiveMeeting === 'true') {
+                console.log('🔄 TrainingPracticeView: Skipping to live-meeting from meeting mode selection');
+                setCurrentStep('live-meeting');
+                setIsMeetingActive(true);
+                sessionStorage.removeItem('skipToLiveMeeting'); // Clear flag after use
+              }
             }
 
             const savedMessages = sessionStorage.getItem('trainingMessages');
@@ -231,6 +271,15 @@ Response:`;
             const q2 = trainingService.getCurrentQuestion(newSession.id);
             setCurrentQuestion(q2);
             console.log('🆕 Created new session:', newSession.id);
+            
+            // Check if we should skip directly to live-meeting (coming from meeting mode selection)
+            const skipToLiveMeeting = sessionStorage.getItem('skipToLiveMeeting');
+            if (skipToLiveMeeting === 'true') {
+              console.log('🔄 TrainingPracticeView: Skipping to live-meeting from meeting mode selection (new session)');
+              setCurrentStep('live-meeting');
+              setIsMeetingActive(true);
+              sessionStorage.removeItem('skipToLiveMeeting'); // Clear flag after use
+            }
           } else {
             console.error('❌ TrainingPracticeView: Could not find project for:', selectedProject.name);
           }
@@ -245,9 +294,10 @@ Response:`;
     })();
   }, [selectedProject]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // OLD SCROLL EFFECT - Handled by StakeholderChat component
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   // Save state to sessionStorage whenever it changes
   useEffect(() => {
@@ -271,10 +321,10 @@ Response:`;
       // Save current step
       sessionStorage.setItem('trainingCurrentStep', currentStep);
 
-      // Save messages if in live meeting
-      if (currentStep === 'live-meeting' && messages.length > 0) {
-        sessionStorage.setItem('trainingMessages', JSON.stringify(messages));
-      }
+      // OLD MESSAGE SAVING - Handled by StakeholderChat component
+      // if (currentStep === 'live-meeting' && messages.length > 0) {
+      //   sessionStorage.setItem('trainingMessages', JSON.stringify(messages));
+      // }
 
       // Save meeting time
       sessionStorage.setItem('trainingMeetingTime', meetingTime.toString());
@@ -285,7 +335,7 @@ Response:`;
     } catch (error) {
       console.error('❌ TrainingPracticeView: Error saving state:', error);
     }
-  }, [session, selectedStakeholders, currentStep, messages, meetingTime, isMeetingActive]);
+  }, [session, selectedStakeholders, currentStep, meetingTime, isMeetingActive]);
 
   // Cleanup sessionStorage when component unmounts
   useEffect(() => {
@@ -339,6 +389,9 @@ Response:`;
     }
   };
 
+  // OLD HANDLE SEND MESSAGE - REPLACED BY NEW ELICITATION ENGINE
+  // The new StakeholderChat component handles all message sending internally
+  /*
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !session) return;
 
@@ -504,9 +557,10 @@ Response:`;
       setIsTyping(false);
     }
   };
+  */
 
-
-
+  // OLD UPDATE COACHING - REPLACED BY NEW COACHING ENGINE
+  /*
   const updateCoaching = (userMessage: string, aiResponse: string) => {
     const newCoaching = { ...coaching };
     const message = userMessage.toLowerCase();
@@ -605,6 +659,7 @@ Response:`;
 
     setCoaching(newCoaching);
   };
+  */
 
   const handleEndMeeting = async () => {
     if (session) {
@@ -619,12 +674,13 @@ Response:`;
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  // OLD HANDLE KEY PRESS - REPLACED BY NEW ELICITATION ENGINE
+  // const handleKeyPress = (e: React.KeyboardEvent) => {
+  //   if (e.key === 'Enter' && !e.shiftKey) {
+  //     e.preventDefault();
+  //     handleSendMessage();
+  //   }
+  // };
 
   const handleBack = () => {
     // Clear sessionStorage when going back
@@ -957,171 +1013,225 @@ Response:`;
     );
   };
 
-  const renderLiveMeeting = () => (
-    <div className="content-root h-full flex flex-col">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleBack}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Practice Meeting</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {session?.stage.replace('_', ' ')} • {formatTime(meetingTime)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <Clock className="w-4 h-4" />
-              <span>{formatTime(meetingTime)}</span>
-            </div>
-            <button
-              onClick={handleEndMeeting}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              End Session
-            </button>
-          </div>
-        </div>
-      </div>
+  const renderLiveMeeting = () => {
+    // Get project context - prioritize selectedProject from AppContext, then check ELEVENLABS_PROJECTS
+    console.log('🔍 TrainingPracticeView: Selected project from AppContext:', selectedProject?.id, selectedProject?.name);
+    console.log('🔍 TrainingPracticeView: Available projects in ELEVENLABS_PROJECTS:', ELEVENLABS_PROJECTS.map(p => ({ id: p.id, name: p.name })));
+    
+    // First, try to find in ELEVENLABS_PROJECTS (has full context)
+    let project = ELEVENLABS_PROJECTS.find(
+      p => p.id === selectedProject?.id || p.name === selectedProject?.name
+    );
+    
+    // If not found in ELEVENLABS_PROJECTS, build context from selectedProject (from mockProjects)
+    let projectContext;
+    if (project) {
+      // Use full context from ELEVENLABS_PROJECTS
+      projectContext = {
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        objective: project.objective,
+        industry: project.industry,
+        complexity: project.complexity,
+        challenges: project.context.challenges,
+        currentState: project.context.currentState,
+        expectedOutcomes: project.context.expectedOutcomes,
+        constraints: project.context.constraints
+      };
+    } else if (selectedProject) {
+      // Build context from selectedProject (mockProjects data)
+      console.log('⚠️ TrainingPracticeView: Project not in ELEVENLABS_PROJECTS, building context from selectedProject');
+      projectContext = {
+        id: selectedProject.id,
+        name: selectedProject.name,
+        description: selectedProject.description || '',
+        objective: selectedProject.businessContext || selectedProject.problemStatement || '',
+        industry: selectedProject.companyProducts || '',
+        complexity: selectedProject.complexity || 'medium',
+        challenges: selectedProject.problemStatement ? [selectedProject.problemStatement] : [],
+        currentState: selectedProject.asIsProcess || selectedProject.businessContext || '',
+        expectedOutcomes: selectedProject.businessGoals || [],
+        constraints: []
+      };
+    } else {
+      // Last resort fallback
+      console.warn('⚠️ TrainingPracticeView: No project available, using fallback');
+      projectContext = {
+        name: 'Unknown Project',
+        description: '',
+        challenges: [],
+        currentState: '',
+        expectedOutcomes: [],
+        constraints: []
+      };
+    }
+    
+    console.log('✅ TrainingPracticeView: Using project context:', projectContext.name);
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+    // Get stakeholder profile (use first selected or default to James Walker)
+    const stakeholder = selectedStakeholders[0] || project?.stakeholders[0];
+    const stakeholderProfile = stakeholder ? {
+      id: stakeholder.id,
+      name: stakeholder.name,
+      role: stakeholder.role,
+      department: stakeholder.department,
+      personality: stakeholder.personality || 'professional',
+      priorities: stakeholder.priorities || []
+    } : {
+      id: 'james-walker',
+      name: 'James Walker',
+      role: 'Head of Customer Success',
+      department: 'Customer Success',
+      personality: 'Collaborative, data-driven, customer-focused, solution-oriented',
+      priorities: ['Reducing customer churn', 'Improving time-to-first-value']
+    };
+
+    // Map session stage to MeetingStage
+    const currentStage = (session?.stage || 'problem_exploration') as MeetingStage;
+
+    return (
+      <div className="content-root h-full flex flex-col">
+        {/* Header - KEEP EXACTLY AS IS */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                <div
-                  className={`max-w-3xl px-4 py-3 rounded-lg ${
-                    message.sender === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : message.sender === 'system'
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    {(message.sender === 'ai' || message.sender === 'stakeholder') && (
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          {message.stakeholderName ? message.stakeholderName.split(' ').map((n: string) => n[0]).join('').slice(0, 1) : 'S'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        {(message.sender === 'ai' || message.sender === 'stakeholder') && (
-                          <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                            {message.stakeholderName}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                    </div>
-                  </div>
-                </div>
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              </button>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {projectContext?.name || 'Practice Meeting'}
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Meeting with {selectedStakeholders.length > 0 ? (
+                    <span className="font-medium">
+                      {selectedStakeholders.length === 1 
+                        ? `${selectedStakeholders[0].name} (${selectedStakeholders[0].role})`
+                        : `${selectedStakeholders.length} stakeholders: ${selectedStakeholders.map(s => s.name).join(', ')}`
+                      }
+                    </span>
+                  ) : (
+                    <span className="font-medium">{stakeholderProfile?.name || 'Stakeholder'}</span>
+                  )} • {session?.stage?.replace('_', ' ') || 'Problem Exploration'} • {formatTime(meetingTime)}
+                </p>
               </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={awaitingAcknowledgement ? "Please acknowledge the feedback above first..." : "Type your message here..."}
-                  disabled={awaitingAcknowledgement}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                    awaitingAcknowledgement 
-                      ? 'border-gray-300 bg-gray-100 text-gray-500 placeholder-gray-400 cursor-not-allowed' 
-                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400'
-                  }`}
-                  rows={2}
-                />
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                <Clock className="w-4 h-4" />
+                <span>{formatTime(meetingTime)}</span>
               </div>
               <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping || awaitingAcknowledgement}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                onClick={handleEndMeeting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
-                <Send className="w-4 h-4" />
-                <span>Send</span>
+                End Session
               </button>
             </div>
-            
-            {/* User Guidance */}
-            {!awaitingAcknowledgement && (
-              <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                💡 <strong>Tip:</strong> You can ask your own questions or use the suggested question above. The AI will evaluate your question and provide coaching feedback.
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Dynamic Coaching Panel - New Response-Driven System */}
-        <CoachingPanelWrapper
-          ref={dynamicPanelRef}
-          projectName={selectedProject?.name || ''}
-          conversationHistory={messages}
-          sessionStage={session?.stage || 'pre_brief'}
-          onAcknowledgementStateChange={handleAcknowledgementStateChange}
-          onSuggestedRewrite={handleSuggestedRewrite}
-          onSessionComplete={handleEndMeeting}
-        />
-        
-        {/* Question Helper Bot - AI Suggestions */}
-        <QuestionHelperBot
-          conversationHistory={messages.map(msg => ({ 
-            role: msg.sender === 'user' ? 'user' : 'assistant', 
-            content: msg.content 
-          }))}
-          onQuestionSelect={(question) => {
-            setInputMessage(question);
-            // Auto-send the selected question
-            handleSendMessage();
-          }}
-          stakeholderContext={selectedStakeholders?.[0]}
-          selectedStage={session?.stage}
-        />
+        <div className="flex-1 flex overflow-hidden">
+          {/* Main Chat Area - NEW ELICITATION ENGINE */}
+          <div className="flex-1 flex flex-col">
+            {projectContext && stakeholderProfile ? (
+              <StakeholderChat
+                ref={chatRef}
+                currentStage={currentStage}
+                stakeholderProfile={stakeholderProfile}
+                availableStakeholders={selectedStakeholders.length > 0 ? selectedStakeholders.map(s => ({
+                  id: s.id,
+                  name: s.name,
+                  role: s.role,
+                  department: s.department || '',
+                  personality: s.personality || 'professional',
+                  priorities: s.priorities || []
+                })) : undefined}
+                projectContext={projectContext}
+                onCoachingUpdate={(coachingData) => {
+                  setCoaching(coachingData);
+                  if (coachingData?.acknowledgement_required) {
+                    setIsInputLocked(true);
+                  }
+                }}
+                onContextUpdate={(contextData) => {
+                  setContext(contextData);
+                }}
+                onFollowUpsUpdate={(followUpsData) => {
+                  setFollowUps(followUpsData || []);
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500 dark:text-gray-400">Loading meeting context...</p>
+              </div>
+            )}
+          </div>
 
+          {/* Right Sidebar - NEW COMPONENTS */}
+          <div className="w-80 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-y-auto p-4 space-y-4">
+            {/* Stage Progress */}
+            <StageProgress
+              currentStage={currentStage}
+              progress={context?.stage_progress?.[currentStage]?.percent_complete || 0}
+              milestone={context?.next_milestone || 'Continue gathering information'}
+            />
+
+            {/* Coaching Panel */}
+            {coaching && (
+              <NewCoachingPanel
+                coaching={coaching}
+                onAcknowledge={() => {
+                  setIsInputLocked(false);
+                  setCoaching(null);
+                  // "Got it" should NOT process the original question
+                  // Just dismiss coaching panel and unlock input
+                  // User can then ask a new question
+                  if (chatRef.current && chatRef.current.clearPendingState) {
+                    chatRef.current.clearPendingState();
+                  }
+                }}
+                onUseRewrite={(rewrite) => {
+                  // Use the suggested rewrite as a new question
+                  setCoaching(null);
+                  setIsInputLocked(false);
+                  if (chatRef.current) {
+                    chatRef.current.sendQuestion(rewrite);
+                  }
+                }}
+              />
+            )}
+
+            {/* Context Tracker */}
+            {context && (
+              <ContextTracker
+                topicsCovered={context.topics_covered || []}
+                painPoints={context.pain_points_identified || []}
+                informationLayer={context.information_layers_unlocked || 1}
+              />
+            )}
+
+            {/* Follow-up Suggestions */}
+            {followUps.length > 0 && (
+              <FollowUpSuggestions
+                followUps={followUps}
+                onSelect={(question) => {
+                  // Trigger the full message cycle: evaluate → coaching → stakeholder response → follow-ups → context
+                  if (chatRef.current) {
+                    chatRef.current.sendQuestion(question);
+                  }
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPostBrief = () => (
     <div className="space-y-6">
@@ -1252,7 +1362,9 @@ Response:`;
   );
 };
 
-// CoachingPanelWrapper component to fix Rules of Hooks violation
+// OLD COACHING PANEL WRAPPER - REPLACED BY NEW COACHING ENGINE
+// The new NewCoachingPanel component handles all coaching display
+/*
 const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: string) => void }, {
   projectName: string;
   conversationHistory: any[];
@@ -1268,7 +1380,7 @@ const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: str
   onSuggestedRewrite,
   onSessionComplete,
 }, ref) => {
-  const useDynamic = useMemo(() => true, []); // Temporarily hardcoded to test dynamic system
+  const useDynamic = useMemo(() => true, []);
   
   const handleSubmitMessage = useCallback((message: string) => {
     console.log('Dynamic panel submitted message:', message);
@@ -1295,5 +1407,6 @@ const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: str
     />
   );
 });
+*/
 
 export default TrainingPracticeView;

@@ -8,14 +8,28 @@ import { config } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 
-// Vite automatically loads .env, .env.local, .env.production, etc.
-// We only need to explicitly load env.local (without dot) if it exists for backwards compatibility
-// On Vercel, environment variables are injected automatically, so no file loading needed
-const envLocalPath = path.resolve(process.cwd(), 'env.local');
+// Explicitly load .env.local for server-side API routes
+// Vite automatically loads .env.local for client-side (VITE_ prefixed vars)
+// But server-side routes need explicit loading
+const envLocalPath = path.resolve(process.cwd(), '.env.local');
 if (fs.existsSync(envLocalPath)) {
   config({ path: envLocalPath });
+  console.log('✅ Loaded .env.local for server-side routes');
 }
-// Note: Vite will also automatically load .env.local, .env, etc. if they exist
+
+// Also check for env.local (without dot) for backwards compatibility
+const envLocalNoDot = path.resolve(process.cwd(), 'env.local');
+if (fs.existsSync(envLocalNoDot)) {
+  config({ path: envLocalNoDot });
+  console.log('✅ Loaded env.local for server-side routes');
+}
+
+// Debug: Log if OPENAI_API_KEY is loaded
+if (process.env.OPENAI_API_KEY) {
+  console.log('✅ OPENAI_API_KEY is loaded (length:', process.env.OPENAI_API_KEY.length, ')');
+} else {
+  console.warn('⚠️ OPENAI_API_KEY is NOT loaded from .env.local');
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -127,6 +141,668 @@ export default defineConfig({
           } catch (e: any) {
             console.error('Transcription error:', e?.message || e);
             res.status(e?.status ?? 500).json({ error: e?.message ?? 'Transcription failed' });
+          }
+        });
+
+        // ============================================
+        // NEW ELICITATION ENGINE API ROUTES
+        // ============================================
+        
+        /**
+         * Helper function to detect if a message is purely social/greeting
+         * Returns true if the message contains only greetings, thanks, or social niceties
+         */
+        function isSocialOnly(message: string): boolean {
+          if (!message || typeof message !== 'string') return false;
+          
+          // Normalize: trim, lowercase, remove punctuation
+          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
+          
+          // If message is too long, it's likely not just a greeting
+          if (normalized.length > 50) return false;
+          
+            // List of social-only patterns
+            const socialPatterns = [
+              // Simple greetings
+              /^(hi|hello|hey|hiya|howdy)$/,
+              /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks|both)$/,
+            
+            // Time-based greetings (accept regardless of actual time for simplicity)
+            /^(good\s+)?(morning|afternoon|evening|night)$/,
+            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there)?$/,
+            
+            // Thanks/gratitude
+            /^(thanks|thank\s+you|thx|ty)$/,
+            /^(thanks|thank\s+you|thx|ty)\s+(so\s+much|a\s+lot|very\s+much)$/,
+            /^(much\s+)?appreciated$/,
+            
+            // Acknowledgment
+            /^(ok|okay|got\s+it|understood|sounds\s+good)$/,
+            /^(sure|yes|yep|yeah|alright)$/,
+            
+            // Combinations that are still social-only
+            /^(hi|hello|hey),?\s*(thanks|thank\s+you)$/,
+            /^(thanks|thank\s+you),?\s*(hi|hello|hey)$/,
+          ];
+          
+          // Check if message matches any social pattern
+          for (const pattern of socialPatterns) {
+            if (pattern.test(normalized)) {
+              return true;
+            }
+          }
+          
+          // Check for messages that are ONLY social words (no domain keywords)
+          const words = normalized.split(/\s+/);
+          const allSocialWords = words.every(word => {
+            const socialWords = [
+              'hi', 'hello', 'hey', 'hiya', 'howdy',
+              'good', 'morning', 'afternoon', 'evening', 'night',
+              'thanks', 'thank', 'you', 'thx', 'ty', 'appreciated',
+              'ok', 'okay', 'got', 'it', 'understood', 'sounds', 'good',
+              'sure', 'yes', 'yep', 'yeah', 'alright',
+              'there', 'everyone', 'all', 'guys', 'team', 'folks',
+              'so', 'much', 'a', 'lot', 'very'
+            ];
+            return socialWords.includes(word);
+          });
+          
+          // If all words are social and message is short, it's social-only
+          if (allSocialWords && words.length <= 5) {
+            return true;
+          }
+          
+          return false;
+        }
+        
+        // Question Evaluation Endpoint
+        app.post('/api/stakeholder/evaluate', async (req, res) => {
+          try {
+            const { userQuestion, currentStage, projectContext, conversationHistory } = req.body;
+            
+            if (!userQuestion || !currentStage) {
+              return res.status(400).json({
+                error: 'Missing required fields: userQuestion, currentStage'
+              });
+            }
+
+            // Pre-check: If this is a social-only message, return GREEN verdict without LLM call
+            if (isSocialOnly(userQuestion)) {
+              console.log('👋 Detected social-only message, skipping evaluation:', userQuestion);
+              return res.json({
+                success: true,
+                question_evaluation: {
+                  verdict: 'GREEN',
+                  overall_score: 100,
+                  breakdown: {
+                    stage_alignment: 30,
+                    question_type: 30,
+                    specificity: 20,
+                    neutrality: 20
+                  },
+                  triggers: [],
+                  reasons: ['Greeting or social nicety – no coaching needed.'],
+                  suggested_rewrite: ''
+                },
+                usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+              });
+            }
+
+            const promptPath = path.join(process.cwd(), 'prompts', 'question-evaluation-system.txt');
+            const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+            // Debug: Log environment variable status
+            console.log('🔑 API Route - Environment check:', {
+              hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+              hasViteOpenAIKey: !!process.env.VITE_OPENAI_API_KEY,
+              keyLength: process.env.OPENAI_API_KEY?.length || 0,
+              allOpenAIKeys: Object.keys(process.env).filter(k => k.includes('OPENAI'))
+            });
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) {
+              console.error('❌ OPENAI_API_KEY is missing in API route');
+              return res.status(500).json({
+                error: 'Server configuration error: OPENAI_API_KEY is missing',
+                details: 'Please add OPENAI_API_KEY to your .env.local file and restart the dev server'
+              });
+            }
+
+            const openai = new OpenAI({ apiKey });
+
+            const contextualPrompt = `${systemPrompt}
+
+CURRENT CONTEXT:
+- Stage: ${currentStage}
+- Project: ${projectContext?.name || 'Customer Onboarding Optimization'}
+- User Question: "${userQuestion}"
+
+${conversationHistory && conversationHistory.length > 0 ? `
+RECENT CONVERSATION (last 3 exchanges):
+${conversationHistory.slice(-6).map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+` : ''}
+
+Evaluate the user's question and return JSON with verdict, score, breakdown, reasons, and suggested_rewrite.`;
+
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: contextualPrompt },
+                { role: 'user', content: `Evaluate: "${userQuestion}"` }
+              ],
+              temperature: 0.3,
+              response_format: { type: 'json_object' }
+            });
+
+            const response = completion.choices[0].message.content;
+            let evaluation;
+
+            try {
+              evaluation = JSON.parse(response || '{}');
+            } catch (parseError) {
+              evaluation = {
+                verdict: 'AMBER',
+                overall_score: 50,
+                breakdown: { stage_alignment: 15, question_type: 15, specificity: 10, neutrality: 10 },
+                triggers: ['PARSE_ERROR'],
+                reasons: ['Unable to parse evaluation response'],
+                suggested_rewrite: userQuestion
+              };
+            }
+
+            evaluation.verdict = evaluation.verdict?.toUpperCase() || 'AMBER';
+
+            res.json({
+              success: true,
+              question_evaluation: evaluation,
+              usage: completion.usage
+            });
+          } catch (error: any) {
+            console.error('Question Evaluation API Error:', error);
+            res.status(500).json({
+              error: 'Failed to evaluate question',
+              details: error.message
+            });
+          }
+        });
+
+        // Coaching Feedback Endpoint
+        app.post('/api/stakeholder/coaching', async (req, res) => {
+          try {
+            const { userQuestion, evaluationResult, currentStage, projectContext } = req.body;
+
+            if (!userQuestion || !evaluationResult) {
+              return res.status(400).json({
+                error: 'Missing required fields: userQuestion, evaluationResult'
+              });
+            }
+
+            // Skip coaching for social-only messages or GREEN verdicts with social reason
+            const isSocial = isSocialOnly(userQuestion);
+            const isSocialReason = evaluationResult.reasons?.some((r: string) => 
+              r.toLowerCase().includes('greeting') || r.toLowerCase().includes('social nicety')
+            );
+            
+            if (isSocial || (evaluationResult.verdict === 'GREEN' && isSocialReason)) {
+              console.log('👋 Skipping coaching for social message:', userQuestion);
+              return res.json({
+                success: true,
+                coaching_feedback: {
+                  verdict_label: '✅',
+                  summary: '',
+                  what_happened: '',
+                  why_it_matters: '',
+                  what_to_do: '',
+                  suggested_rewrite: null,
+                  rewrite_explanation: null,
+                  principle: '',
+                  action: 'CONTINUE',
+                  acknowledgement_required: false
+                },
+                usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+              });
+            }
+
+            const promptPath = path.join(process.cwd(), 'prompts', 'coaching-system.txt');
+            const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) {
+              return res.status(500).json({
+                error: 'Server configuration error: OPENAI_API_KEY is missing',
+                details: 'Please add OPENAI_API_KEY to your .env.local file'
+              });
+            }
+
+            const openai = new OpenAI({ apiKey });
+
+            const contextualPrompt = `${systemPrompt}
+
+CURRENT CONTEXT:
+- Stage: ${currentStage}
+- Project: ${projectContext?.name || 'Customer Onboarding Optimization'}
+- User Question: "${userQuestion}"
+- Evaluation Verdict: ${evaluationResult.verdict}
+- Evaluation Score: ${evaluationResult.overall_score}/100
+- Reasons: ${evaluationResult.reasons?.join(', ') || 'N/A'}
+
+Generate coaching feedback based on the evaluation. Return JSON with all required fields.`;
+
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: contextualPrompt },
+                { role: 'user', content: `Generate coaching for: "${userQuestion}" (${evaluationResult.verdict})` }
+              ],
+              temperature: 0.7,
+              response_format: { type: 'json_object' }
+            });
+
+            const response = completion.choices[0].message.content;
+            let coaching;
+
+            try {
+              coaching = JSON.parse(response || '{}');
+            } catch (parseError) {
+              coaching = {
+                verdict_label: evaluationResult.verdict === 'GREEN' ? '✅ Strong Question' : evaluationResult.verdict === 'AMBER' ? '⚠️ Could Be Better' : '🚨 Needs Realignment',
+                summary: `This question is ${evaluationResult.verdict === 'GREEN' ? 'effective' : evaluationResult.verdict === 'AMBER' ? 'partially effective' : 'ineffective'}.`,
+                what_happened: `You asked: "${userQuestion}"`,
+                why_it_matters: evaluationResult.reasons?.[0] || 'Question quality affects information gathering.',
+                what_to_do: evaluationResult.suggested_rewrite ? `Try: "${evaluationResult.suggested_rewrite}"` : 'Refine your question.',
+                suggested_rewrite: evaluationResult.suggested_rewrite || null,
+                rewrite_explanation: null,
+                principle: '🎯 BA Principle: Ask open-ended questions to elicit detailed responses.',
+                action: evaluationResult.verdict === 'GREEN' ? 'CONTINUE' : evaluationResult.verdict === 'AMBER' ? 'ACKNOWLEDGE_AND_RETRY' : 'PAUSE_FOR_COACHING',
+                acknowledgement_required: evaluationResult.verdict !== 'GREEN'
+              };
+            }
+
+            res.json({
+              success: true,
+              coaching_feedback: coaching,
+              usage: completion.usage
+            });
+          } catch (error: any) {
+            console.error('Coaching API Error:', error);
+            res.status(500).json({
+              error: 'Failed to generate coaching feedback',
+              details: error.message
+            });
+          }
+        });
+
+        // Helper function to detect if message is a greeting
+        function isGreeting(message: string): boolean {
+          if (!message || typeof message !== 'string') return false;
+          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
+          const greetingPatterns = [
+            /^(hi|hello|hey|hiya|howdy)$/,
+            /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks|both)$/,
+            /^(good\s+)?(morning|afternoon|evening|night)$/,
+            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there|\s+both)?$/
+          ];
+          return greetingPatterns.some(pattern => pattern.test(normalized));
+        }
+
+        // Helper function to detect greetings (simpler than isSocialOnly, focused on greetings only)
+        function isGreeting(message: string): boolean {
+          if (!message || typeof message !== 'string') return false;
+          const normalized = message.trim().toLowerCase().replace(/[.,!?;:]/g, '');
+          const greetingPatterns = [
+            /^(hi|hello|hey|hiya|howdy)$/,
+            /^(hi|hello|hey)\s+(there|everyone|all|guys|team|folks)$/,
+            /^(good\s+)?(morning|afternoon|evening|night)$/,
+            /^good\s+(morning|afternoon|evening|night)(\s+everyone|\s+all|\s+there)?$/,
+          ];
+          return greetingPatterns.some(pattern => pattern.test(normalized));
+        }
+
+        // Stakeholder Response Endpoint with Multi-Stakeholder Routing
+        app.post('/api/stakeholder/respond', async (req, res) => {
+          try {
+            const { userQuestion, questionVerdict, currentStage, stakeholderProfile, allStakeholders, conversationHistory, projectContext } = req.body;
+
+            console.log('🔍 [API] /api/stakeholder/respond called');
+            console.log('🔍 [API] Question:', userQuestion);
+            console.log('🔍 [API] All stakeholders received:', allStakeholders?.map((s: any) => `${s.name} (${s.role}, ${s.department})`).join(', ') || 'NONE');
+            console.log('🔍 [API] Stakeholder profile:', stakeholderProfile?.name || 'NONE');
+
+            if (!userQuestion || !currentStage) {
+              return res.status(400).json({
+                error: 'Missing required fields: userQuestion, currentStage'
+              });
+            }
+
+            // Check if this is a greeting - handle specially
+            const isGreetingMessage = isGreeting(userQuestion);
+            console.log('🔍 [API] Is greeting?', isGreetingMessage);
+
+            // Multi-stakeholder routing: Determine which stakeholder should respond based on question topic
+            // For greetings, use the first stakeholder or primary stakeholder
+            // For questions, route based on topic
+            let respondingStakeholder = stakeholderProfile || (allStakeholders && allStakeholders[0]);
+            console.log('🔍 [API] Initial responding stakeholder:', respondingStakeholder?.name || 'NONE');
+            
+            if (!isGreetingMessage && allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1) {
+              const questionLower = userQuestion.toLowerCase();
+              
+              // Topic detection for routing
+              const customerExperienceKeywords = ['customer', 'journey', 'experience', 'satisfaction', 'churn', 'onboarding', 'retention', 'success'];
+              const supportKeywords = ['support', 'ticket', 'service', 'help', 'issue', 'complaint', 'escalation', 'resolution'];
+              const technicalKeywords = ['system', 'technical', 'integration', 'api', 'security', 'infrastructure', 'database', 'server', 'platform', 'software'];
+              
+              // Check which stakeholder type matches the question
+              const isCustomerExperience = customerExperienceKeywords.some(kw => questionLower.includes(kw));
+              const isSupport = supportKeywords.some(kw => questionLower.includes(kw));
+              const isTechnical = technicalKeywords.some(kw => questionLower.includes(kw));
+              
+              console.log('🔍 [API] Topic detection - Customer Experience:', isCustomerExperience, 'Support:', isSupport, 'Technical:', isTechnical);
+              
+              // Find matching stakeholder by department/role
+              if (isCustomerExperience) {
+                const match = allStakeholders.find((s: any) => {
+                  const deptMatch = s.department?.toLowerCase().includes('customer success');
+                  const roleMatch = s.role?.toLowerCase().includes('customer success');
+                  console.log(`🔍 [API] Checking ${s.name}: dept="${s.department}", role="${s.role}", deptMatch=${deptMatch}, roleMatch=${roleMatch}`);
+                  return deptMatch || roleMatch;
+                });
+                if (match) {
+                  console.log('✅ [API] Routed to Customer Success stakeholder:', match.name);
+                  respondingStakeholder = match;
+                }
+              } else if (isSupport) {
+                const match = allStakeholders.find((s: any) => {
+                  const deptMatch = s.department?.toLowerCase().includes('service');
+                  const roleMatch = s.role?.toLowerCase().includes('service') || s.role?.toLowerCase().includes('support');
+                  console.log(`🔍 [API] Checking ${s.name}: dept="${s.department}", role="${s.role}", deptMatch=${deptMatch}, roleMatch=${roleMatch}`);
+                  return deptMatch || roleMatch;
+                });
+                if (match) {
+                  console.log('✅ [API] Routed to Support stakeholder:', match.name);
+                  respondingStakeholder = match;
+                }
+              } else if (isTechnical) {
+                const match = allStakeholders.find((s: any) => {
+                  const deptLower = s.department?.toLowerCase() || '';
+                  const roleLower = s.role?.toLowerCase() || '';
+                  const deptMatch = deptLower.includes('it') || deptLower.includes('technology') || deptLower.includes('information technology') || deptLower === 'information technology';
+                  const roleMatch = roleLower.includes('it') || roleLower.includes('systems') || roleLower.includes('technical');
+                  console.log(`🔍 [API] Checking ${s.name}: dept="${s.department}", role="${s.role}", deptMatch=${deptMatch}, roleMatch=${roleMatch}`);
+                  return deptMatch || roleMatch;
+                });
+                if (match) {
+                  console.log('✅ [API] Routed to Technical stakeholder:', match.name);
+                  respondingStakeholder = match;
+                }
+              } else {
+                console.log('⚠️ [API] No topic match found, using fallback stakeholder');
+              }
+              // If no match, use the originally selected stakeholder (fallback)
+            }
+            
+            console.log('🎯 [API] Final responding stakeholder:', respondingStakeholder?.name || 'NONE');
+
+            if (!respondingStakeholder) {
+              return res.status(400).json({
+                error: 'No stakeholder available to respond'
+              });
+            }
+
+            const promptPath = path.join(process.cwd(), 'prompts', 'stakeholder-response-system.txt');
+            const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) {
+              return res.status(500).json({
+                error: 'Server configuration error: OPENAI_API_KEY is missing',
+                details: 'Please add OPENAI_API_KEY to your .env.local file'
+              });
+            }
+
+            const openai = new OpenAI({ apiKey });
+
+            // Build stakeholder list for cross-referencing
+            const stakeholdersList = allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1
+              ? allStakeholders.map((s: any) => `${s.name} (${s.role}, ${s.department})`).join(', ')
+              : `${respondingStakeholder.name} (${respondingStakeholder.role})`;
+
+            const contextualPrompt = `${systemPrompt}
+
+CURRENT SITUATION:
+- Stage: ${currentStage}
+- Question Quality: ${questionVerdict}
+- Responding Stakeholder: ${respondingStakeholder.name} (${respondingStakeholder.role}, ${respondingStakeholder.department})
+- All Available Stakeholders: ${stakeholdersList}
+- Project: ${projectContext?.name || 'Customer Onboarding Optimization'}
+
+${conversationHistory && conversationHistory.length > 0 ? `
+RECENT CONVERSATION:
+${conversationHistory.slice(-6).map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+` : ''}
+
+USER'S QUESTION: "${userQuestion}"
+
+${isGreetingMessage ? `
+This is a greeting. Respond with a warm, natural welcome that:
+- Introduces yourself briefly (name and role)
+- Shows enthusiasm for the meeting
+- Asks where they'd like to start or what they'd like to explore
+- Keep it friendly and professional, 2-3 sentences
+- Do NOT dive into project details yet
+- Example tone: "Hi! Thanks for taking the time to meet with me today. I'm ${respondingStakeholder.name}, ${respondingStakeholder.role}. I'm looking forward to discussing our ${projectContext?.name || 'project'} challenges. Where would you like to start?"
+` : `
+Generate the stakeholder's response. Follow response length rules based on question quality (${questionVerdict}).
+${allStakeholders && Array.isArray(allStakeholders) && allStakeholders.length > 1 ? `
+MULTI-STAKEHOLDER BEHAVIOR:
+- You can naturally reference other stakeholders when relevant (e.g., "Jess's team handles most of the support tickets..." or "David would know more about the technical side...")
+- If the question touches on another stakeholder's area, you can defer or cross-reference them naturally
+- Occasionally show different priorities or perspectives to feel realistic
+- Stay in character as ${respondingStakeholder.name}
+` : ''}
+`}
+
+Return ONLY the response text, no JSON, no metadata.`;
+
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: contextualPrompt },
+                { role: 'user', content: `Respond to: "${userQuestion}"` }
+              ],
+              temperature: 0.8,
+              max_tokens: isGreetingMessage ? 150 : (questionVerdict === 'GREEN' ? 300 : questionVerdict === 'AMBER' ? 150 : 100)
+            });
+
+            const response = completion.choices[0].message.content.trim();
+
+            res.json({
+              success: true,
+              stakeholder_response: {
+                speaker_id: respondingStakeholder.id,
+                speaker_name: respondingStakeholder.name,
+                content: response,
+                metadata: {
+                  stage: currentStage,
+                  emotion: 'neutral',
+                  information_layer: 1,
+                  keywords: [],
+                  pain_points_revealed: []
+                }
+              },
+              usage: completion.usage
+            });
+          } catch (error: any) {
+            console.error('Stakeholder Response API Error:', error);
+            res.status(500).json({
+              error: 'Failed to generate stakeholder response',
+              details: error.message
+            });
+          }
+        });
+
+        // Follow-up Questions Endpoint
+        app.post('/api/stakeholder/followups', async (req, res) => {
+          try {
+            const { stakeholderResponse, currentStage, conversationHistory, projectContext } = req.body;
+
+            if (!stakeholderResponse) {
+              return res.status(400).json({
+                error: 'Missing required field: stakeholderResponse'
+              });
+            }
+
+            const promptPath = path.join(process.cwd(), 'prompts', 'followup-system.txt');
+            const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) {
+              return res.status(500).json({
+                error: 'Server configuration error: OPENAI_API_KEY is missing',
+                details: 'Please add OPENAI_API_KEY to your .env.local file'
+              });
+            }
+
+            const openai = new OpenAI({ apiKey });
+
+            const contextualPrompt = `${systemPrompt}
+
+CURRENT CONTEXT:
+- Stage: ${currentStage}
+- Project: ${projectContext?.name || 'Customer Onboarding Optimization'}
+- Stakeholder Response: "${stakeholderResponse}"
+
+${conversationHistory && conversationHistory.length > 0 ? `
+RECENT CONVERSATION:
+${conversationHistory.slice(-4).map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+` : ''}
+
+Generate exactly 3 follow-up questions. Return JSON array with type, question, and rationale.`;
+
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: contextualPrompt },
+                { role: 'user', content: `Generate follow-ups for: "${stakeholderResponse}"` }
+              ],
+              temperature: 0.7,
+              response_format: { type: 'json_object' }
+            });
+
+            const response = completion.choices[0].message.content;
+            let followUps;
+
+            try {
+              const parsed = JSON.parse(response || '{}');
+              followUps = parsed.follow_ups || parsed.suggested_follow_ups || parsed;
+              
+              if (!Array.isArray(followUps)) {
+                followUps = Object.values(followUps).filter((item: any) => item && typeof item === 'object');
+              }
+              
+              if (followUps.length > 3) followUps = followUps.slice(0, 3);
+              if (followUps.length < 3) {
+                const fallbacks = [
+                  { type: 'probe_deeper', question: 'Can you elaborate on that?', rationale: 'Digging deeper into the response' },
+                  { type: 'clarify', question: 'What does that look like in practice?', rationale: 'Seeking concrete examples' },
+                  { type: 'explore_impact', question: 'How does this impact your team?', rationale: 'Understanding broader implications' }
+                ];
+                followUps = [...followUps, ...fallbacks.slice(0, 3 - followUps.length)];
+              }
+            } catch (parseError) {
+              followUps = [
+                { type: 'probe_deeper', question: 'Can you give me a specific example?', rationale: 'Probing for concrete details' },
+                { type: 'clarify', question: 'What does that look like in practice?', rationale: 'Seeking practical understanding' },
+                { type: 'explore_impact', question: 'How does this affect your daily work?', rationale: 'Understanding impact' }
+              ];
+            }
+
+            res.json({
+              success: true,
+              suggested_follow_ups: followUps,
+              usage: completion.usage
+            });
+          } catch (error: any) {
+            console.error('Follow-ups API Error:', error);
+            res.status(500).json({
+              error: 'Failed to generate follow-up questions',
+              details: error.message
+            });
+          }
+        });
+
+        // Context Memory Update Endpoint
+        app.post('/api/stakeholder/context', async (req, res) => {
+          try {
+            const { conversationHistory, currentStage, projectContext } = req.body;
+
+            if (!conversationHistory || !currentStage) {
+              return res.status(400).json({
+                error: 'Missing required fields: conversationHistory, currentStage'
+              });
+            }
+
+            const promptPath = path.join(process.cwd(), 'prompts', 'context-memory-system.txt');
+            const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+            if (!apiKey) {
+              return res.status(500).json({
+                error: 'Server configuration error: OPENAI_API_KEY is missing',
+                details: 'Please add OPENAI_API_KEY to your .env.local file'
+              });
+            }
+
+            const openai = new OpenAI({ apiKey });
+
+            const contextualPrompt = `${systemPrompt}
+
+CURRENT CONTEXT:
+- Stage: ${currentStage}
+- Project: ${projectContext?.name || 'Customer Onboarding Optimization'}
+
+FULL CONVERSATION:
+${conversationHistory.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+
+Analyze the conversation and return JSON with topics_covered, pain_points_identified, information_layers_unlocked, stage_progress, should_transition, and next_milestone.`;
+
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: contextualPrompt },
+                { role: 'user', content: 'Analyze conversation and update context.' }
+              ],
+              temperature: 0.3,
+              response_format: { type: 'json_object' }
+            });
+
+            const response = completion.choices[0].message.content;
+            let contextUpdate;
+
+            try {
+              contextUpdate = JSON.parse(response || '{}');
+            } catch (parseError) {
+              contextUpdate = {
+                topics_covered: [],
+                pain_points_identified: [],
+                information_layers_unlocked: 1,
+                stage_progress: {},
+                should_transition: false,
+                next_milestone: 'Continue gathering information'
+              };
+            }
+
+            res.json({
+              success: true,
+              context_updates: contextUpdate,
+              usage: completion.usage
+            });
+          } catch (error: any) {
+            console.error('Context API Error:', error);
+            res.status(500).json({
+              error: 'Failed to update context',
+              details: error.message
+            });
           }
         });
 

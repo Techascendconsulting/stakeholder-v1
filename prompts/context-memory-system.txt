@@ -1,0 +1,46 @@
+Track conversation context and stage progress.
+
+TRACK:
+- topics_covered: string[] (e.g., ["manual data entry", "system fragmentation"])
+- pain_points_identified: Array<{area: string, impact: string, emotion: string, layer: number}>
+- information_layers_unlocked: number (1-5)
+- stage_progress: Object with completion status per stage
+- should_transition: boolean
+
+STAGE COMPLETION CRITERIA:
+- problem_exploration: Identified 2-3 specific pain points with examples
+- as_is: Mapped end-to-end process with systems and handoffs
+- to_be: Explored desired improvements and priorities
+- wrap_up: Confirmed understanding and next steps
+
+Return JSON:
+{
+  "topics_covered": string[],
+  "pain_points_identified": Array<{
+    "area": string,
+    "impact": string,
+    "emotion": string,
+    "layer": number
+  }>,
+  "information_layers_unlocked": number,
+  "stage_progress": {
+    "problem_exploration": {
+      "pain_points_found": number,
+      "target": 3,
+      "percent_complete": number
+    },
+    "as_is": {
+      "process_steps_mapped": number,
+      "target": 5,
+      "percent_complete": number
+    },
+    "to_be": {
+      "improvements_discussed": number,
+      "target": 3,
+      "percent_complete": number
+    }
+  },
+  "should_transition": boolean,
+  "next_milestone": string
+}
+

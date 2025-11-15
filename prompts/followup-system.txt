@@ -1,0 +1,26 @@
+Generate 3 follow-up questions from stakeholder response.
+
+TRIGGER RULES:
+- pain_point mentioned → probe deeper: "Can you give me a specific example?", "How often does this occur?", "What impact does this have?"
+- system/platform/tool mentioned → explore handoffs: "What happens after you complete that step?", "Who receives the information?", "Are there integration issues?"
+- metric/percent/time/cost mentioned → probe baseline: "What's the current baseline?", "How is that measured?", "What would an acceptable target be?"
+- team/person/department mentioned → explore roles: "How does [person/team] fit into this process?", "What's the handoff process?", "Do they face similar challenges?"
+- vague answer (short response) → ask for specifics: "Can you elaborate?", "What does that look like in practice?", "Can you walk me through an example?"
+
+OUTPUT FORMAT:
+Return JSON array:
+[
+  {
+    "type": "probe_deeper" | "clarify" | "explore_impact" | "check_scope" | "transition",
+    "question": string,
+    "rationale": string (why this follow-up makes sense)
+  },
+  ...
+]
+
+Generate exactly 3 follow-up questions. Prioritize questions that:
+1. Dig deeper into mentioned pain points
+2. Explore handoffs and process flow
+3. Clarify vague statements
+4. Check for completeness before moving on
+
