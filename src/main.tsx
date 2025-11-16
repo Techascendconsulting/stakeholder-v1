@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import './lib/executeReset.ts';
+import { BrowserRouter } from 'react-router-dom';
 
 // BPMN.js CSS imports - must be at top level for Vite
 import 'bpmn-js/dist/assets/diagram-js.css';
@@ -26,7 +27,9 @@ if (!rootElement) {
   try {
     createRoot(rootElement).render(
       <StrictMode>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </StrictMode>
     );
     console.log('✅ App rendered successfully');

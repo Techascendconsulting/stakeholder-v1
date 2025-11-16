@@ -80,41 +80,97 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check for saved conversation on mount
+  // Note: We check for ANY saved conversation, not just for current project/stage
+  // This allows resuming even if project context hasn't loaded yet
   useEffect(() => {
     if (hasCheckedResume) return;
     setHasCheckedResume(true);
     
-    // Use a stable key based on project name (normalized) and stage
-    const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
-    const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
-    console.log('🔍 StakeholderChat: Checking for saved conversation with key:', storageKey);
+    // Check all possible storage keys for any saved conversation
+    // We'll match by project name pattern
+    const stages = ['problem_exploration', 'as_is', 'to_be', 'wrap_up'];
+    let foundConversation = false;
+    let foundKey = '';
     
-    const savedMessages = sessionStorage.getItem(storageKey);
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        console.log('🔍 StakeholderChat: Found saved messages:', parsed.length);
-        if (parsed && parsed.length > 0) {
-          setShowResumeModal(true);
+    for (const stage of stages) {
+      // Try current project context first
+      if (projectContext && projectContext.name) {
+        const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+        const storageKey = `chat-meeting-${projectKey}-${stage}`;
+        const savedMessages = sessionStorage.getItem(storageKey);
+        if (savedMessages) {
+          try {
+            const parsed = JSON.parse(savedMessages);
+            if (parsed && parsed.length > 0) {
+              foundConversation = true;
+              foundKey = storageKey;
+              break;
+            }
+          } catch (e) {
+            // Continue checking other keys
+          }
         }
-      } catch (e) {
-        console.error('Error parsing saved messages:', e);
       }
+      
+      // Also check for any saved conversation (in case project context isn't loaded yet)
+      // This is a fallback - we'll validate context when resuming
+      if (!foundConversation) {
+        // Search all sessionStorage keys for chat-meeting-* pattern
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('chat-meeting-') && key.endsWith(`-${stage}`)) {
+            const savedMessages = sessionStorage.getItem(key);
+            if (savedMessages) {
+              try {
+                const parsed = JSON.parse(savedMessages);
+                if (parsed && parsed.length > 0) {
+                  foundConversation = true;
+                  foundKey = key;
+                  break;
+                }
+              } catch (e) {
+                // Continue
+              }
+            }
+          }
+        }
+      }
+      
+      if (foundConversation) break;
+    }
+    
+    if (foundConversation) {
+      console.log('🔍 StakeholderChat: Found saved conversation with key:', foundKey);
+      setShowResumeModal(true);
     } else {
       console.log('🔍 StakeholderChat: No saved conversation found');
     }
-  }, [hasCheckedResume, projectContext.id, projectContext.name, currentStage]);
+  }, [hasCheckedResume, projectContext?.id, projectContext?.name, currentStage]);
 
-  // Save messages to sessionStorage whenever they change
+  // Save messages and context to sessionStorage whenever they change
   useEffect(() => {
-    if (messages.length > 0) {
+    if (messages.length > 0 && projectContext && projectContext.name) {
       // Use a stable key based on project name (normalized) and stage
       const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
       const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
+      const contextKey = `chat-context-${projectKey}-${currentStage}`;
+      
+      // Save messages
       sessionStorage.setItem(storageKey, JSON.stringify(messages));
-      console.log('💾 StakeholderChat: Saved', messages.length, 'messages to', storageKey);
+      
+      // Save context needed to resume (project ID, stakeholder IDs, stage)
+      const contextData = {
+        projectId: projectContext.id,
+        projectName: projectContext.name,
+        currentStage,
+        stakeholderIds: availableStakeholders?.map(s => s.id) || [stakeholderProfile?.id].filter(Boolean),
+        timestamp: new Date().toISOString()
+      };
+      sessionStorage.setItem(contextKey, JSON.stringify(contextData));
+      
+      console.log('💾 StakeholderChat: Saved', messages.length, 'messages and context to', storageKey);
     }
-  }, [messages, projectContext.id, projectContext.name, currentStage]);
+  }, [messages, projectContext.id, projectContext.name, currentStage, availableStakeholders, stakeholderProfile?.id]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -123,9 +179,67 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
 
   // Handle resume or start new
   const handleResume = () => {
-    const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
-    const storageKey = `chat-meeting-${projectKey}-${currentStage}`;
-    const savedMessages = sessionStorage.getItem(storageKey);
+    // Find the saved conversation (search all stages)
+    const stages = ['problem_exploration', 'as_is', 'to_be', 'wrap_up'];
+    let savedMessages = null;
+    let foundKey = '';
+    let savedContext = null;
+    
+    // First try current project/stage
+    if (projectContext && projectContext.name) {
+      const projectKey = (projectContext.id || projectContext.name || 'unknown').toLowerCase().replace(/\s+/g, '-');
+      for (const stage of stages) {
+        const storageKey = `chat-meeting-${projectKey}-${stage}`;
+        const contextKey = `chat-context-${projectKey}-${stage}`;
+        const messages = sessionStorage.getItem(storageKey);
+        const context = sessionStorage.getItem(contextKey);
+        if (messages) {
+          savedMessages = messages;
+          foundKey = storageKey;
+          if (context) {
+            try {
+              savedContext = JSON.parse(context);
+            } catch (e) {
+              // Ignore context parse errors
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    // If not found, search all sessionStorage keys
+    if (!savedMessages) {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('chat-meeting-')) {
+          const messages = sessionStorage.getItem(key);
+          if (messages) {
+            try {
+              const parsed = JSON.parse(messages);
+              if (parsed && parsed.length > 0) {
+                savedMessages = messages;
+                foundKey = key;
+                // Try to get context
+                const contextKey = key.replace('chat-meeting-', 'chat-context-');
+                const context = sessionStorage.getItem(contextKey);
+                if (context) {
+                  try {
+                    savedContext = JSON.parse(context);
+                  } catch (e) {
+                    // Ignore
+                  }
+                }
+                break;
+              }
+            } catch (e) {
+              // Continue searching
+            }
+          }
+        }
+      }
+    }
+    
     if (savedMessages) {
       try {
         const parsed = JSON.parse(savedMessages);
@@ -134,8 +248,11 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
           timestamp: m.timestamp ? new Date(m.timestamp) : new Date()
         }));
         setMessages(messagesWithDates);
-        setJustResumed(true); // Show resume notification
+        setJustResumed(true);
         console.log('✅ StakeholderChat: Resumed conversation with', messagesWithDates.length, 'messages');
+        if (savedContext) {
+          console.log('✅ StakeholderChat: Restored context:', savedContext);
+        }
         
         // Auto-hide resume notification after 8 seconds
         setTimeout(() => {
@@ -180,7 +297,25 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
     setIsLoading(true);
 
     try {
+      // Validate required props before making API calls
+      if (!projectContext || !projectContext.name) {
+        throw new Error('Project context is missing. Please refresh the page and try again.');
+      }
+      if (!currentStage) {
+        throw new Error('Meeting stage is missing. Please refresh the page and try again.');
+      }
+      if (!stakeholderProfile || !stakeholderProfile.id) {
+        throw new Error('Stakeholder profile is missing. Please refresh the page and try again.');
+      }
+
       // Step 1: Evaluate question
+      console.log('🔍 [Frontend] Calling /api/stakeholder/evaluate with:', {
+        userQuestion: userMessage.content,
+        currentStage,
+        projectContext: projectContext.name,
+        hasProjectContext: !!projectContext
+      });
+
       const evaluationResponse = await fetch('/api/stakeholder/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -200,9 +335,10 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
         try {
           const errorData = await evaluationResponse.json();
           errorMessage = errorData.error || errorData.details || errorMessage;
-          console.error('Evaluation API error:', errorData);
+          console.error('❌ Evaluation API error:', errorData);
         } catch (parseError) {
           errorMessage = `HTTP ${evaluationResponse.status}: ${evaluationResponse.statusText}`;
+          console.error('❌ Evaluation API error (could not parse):', evaluationResponse.status, evaluationResponse.statusText);
         }
         throw new Error(errorMessage);
       }
@@ -349,12 +485,26 @@ const StakeholderChat = React.forwardRef<StakeholderChatRef, StakeholderChatProp
       }
 
     } catch (error: any) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error sending message:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+        projectContext: projectContext?.name,
+        currentStage,
+        stakeholderProfile: stakeholderProfile?.name
+      });
+      
       let errorText = 'Sorry, there was an error processing your message. Please try again.';
       
       // Check for fetch errors (network or API errors)
       if (error?.message) {
-        errorText = `Error: ${error.message}`;
+        // If it's a 404, provide more helpful message
+        if (error.message.includes('404') || error.message.includes('Not Found')) {
+          errorText = 'API endpoint not found. Please restart the dev server and try again.';
+        } else {
+          errorText = `Error: ${error.message}`;
+        }
       } else if (error?.toString) {
         errorText = `Error: ${error.toString()}`;
       }

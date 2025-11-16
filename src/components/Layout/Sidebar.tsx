@@ -222,6 +222,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'BA In Action',
       icon: PlayCircle
     },
+    // Feature-flagged: Start Your BA Role
+    ...(import.meta.env.VITE_FEATURE_STARTER_BA_ROLE
+      ? [{
+          id: 'start-your-ba-role',
+          label: 'Start Your BA Role',
+          icon: Layers
+        } as MenuItem]
+      : []),
     { 
       id: 'practice-intro', 
       label: 'My Practice', 
@@ -487,7 +495,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 <button
                   onClick={() => {
                     console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
-                    
+                    // Special handling for Start Your BA Role cinematic journey
+                    if (item.id === 'start-your-ba-role') {
+                      window.location.assign('/start-ba-role');
+                      return;
+                    }
                     // Early return for locked items - just prevent navigation
                     if (isPracticeLocked || isProjectLocked) {
                       return;

@@ -196,6 +196,7 @@ const MainLayout: React.FC = () => {
   }
 
   const renderView = () => {
+    console.log("FLAG VALUE inside MainLayout:", import.meta.env.VITE_FEATURE_STARTER_BA_ROLE);
     console.log('🔄 MainLayout: renderView called with currentView:', currentView);
     switch (currentView) {
       case 'welcome':
@@ -490,6 +491,26 @@ const MainLayout: React.FC = () => {
         return <MyCohortPage />;
       case 'admin-cohorts':
         return <AdminCohortsPage />;
+      case 'start-your-ba-role': {
+        // Feature-flagged lazy import to avoid loading bundle when disabled
+        if (!import.meta.env.VITE_FEATURE_STARTER_BA_ROLE) return <ProjectsView />;
+        const Starter = React.lazy(async () => {
+          console.log("📦 LAZY IMPORT TRIGGERED…");
+          try {
+            const mod = await import('@/starter-ba-role/index');
+            console.log("🔍 DYNAMIC IMPORT MODULE CONTENT:", mod);
+            return mod;
+          } catch (err) {
+            console.error("❌ DYNAMIC IMPORT FAILED:", err);
+            throw err;
+          }
+        });
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <Starter />
+          </Suspense>
+        );
+      }
       default:
         return <ProjectsView />;
     }

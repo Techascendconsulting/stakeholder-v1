@@ -7,6 +7,11 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import LandingPage from './components/LandingPage'
 import { StakeholderBotProvider } from './context/StakeholderBotContext'
 import MainLayout from './components/Layout/MainLayout'
+import JourneyMap from './cinematic-journey/JourneyMap'
+import PhasePage from './cinematic-journey/PhasePage'
+import StepPage from './cinematic-journey/StepPage'
+import StartBaRoleEntry from './start-ba-role'
+import { Routes, Route } from 'react-router-dom'
 import SetPasswordPage from './components/SetPasswordPage'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
@@ -45,16 +50,22 @@ const AppContent: React.FC = () => {
 
   console.log('🚀 APP - Rendering main content, user:', !!user)
   
-  // Check if we're on the set-password page (by URL path)
-  const isSetPasswordPage = window.location.pathname === '/set-password' || 
-                           window.location.hash.includes('type=recovery') ||
-                           window.location.search.includes('type=recovery')
-  
-  if (isSetPasswordPage) {
-    return <SetPasswordPage />
-  }
-  
-  return user ? <MainLayout /> : <LandingPage />
+  return (
+    <Routes>
+      {/* Password reset route */}
+      <Route path="/set-password" element={<SetPasswordPage />} />
+      {/* Start Your BA Role cinematic routes */}
+      <Route path="/start-ba-role" element={<StartBaRoleEntry />} />
+      <Route path="/start-ba-role/phase/:phaseId" element={<StartBaRoleEntry />} />
+      <Route path="/start-ba-role/phase/:phaseId/step/:stepId" element={<StartBaRoleEntry />} />
+      {/* Cinematic journey routes */}
+      <Route path="/journey" element={<JourneyMap />} />
+      <Route path="/journey/:phaseId" element={<PhasePage />} />
+      <Route path="/journey/:phaseId/step/:stepId" element={<StepPage />} />
+      {/* Fallback to existing app behavior */}
+      <Route path="*" element={user ? <MainLayout /> : <LandingPage />} />
+    </Routes>
+  )
 }
 
 const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
